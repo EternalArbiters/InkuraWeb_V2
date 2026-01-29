@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(_req: Request, { params }: { params: { chapterId: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+  const { chapterId } = await params;
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id || null;
 
@@ -11,7 +12,7 @@ export async function GET(_req: Request, { params }: { params: { chapterId: stri
   let canModerate = false;
   if (userId) {
     const chapter = await prisma.chapter.findUnique({
-      where: { id: params.chapterId },
+      where: { id: chapterId },
       select: { work: { select: { authorId: true } } },
     });
     const isOwner = chapter?.work?.authorId === userId;
@@ -21,7 +22,7 @@ export async function GET(_req: Request, { params }: { params: { chapterId: stri
 
   const comments = await prisma.comment.findMany({
     where: {
-      chapterId: params.chapterId,
+      chapterId: chapterId,
       ...(canModerate ? {} : { isHidden: false }),
     },
     orderBy: { createdAt: "desc" },
@@ -33,7 +34,8 @@ export async function GET(_req: Request, { params }: { params: { chapterId: stri
   return NextResponse.json({ ok: true, canModerate, comments });
 }
 
-export async function POST(req: Request, { params }: { params: { chapterId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+  const { chapterId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,12 +50,12 @@ export async function POST(req: Request, { params }: { params: { chapterId: stri
     return NextResponse.json({ error: "Comment too long" }, { status: 400 });
   }
 
-  const chapter = await prisma.chapter.findUnique({ where: { id: params.chapterId }, select: { id: true } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { id: true } });
   if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
   const comment = await prisma.comment.create({
     data: {
-      chapterId: params.chapterId,
+      chapterId: chapterId,
       userId: session.user.id,
       body: text,
     },

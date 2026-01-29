@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-export async function POST(req: Request, { params }: { params: { commentId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ commentId: string }> }) {
+  const { commentId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function POST(req: Request, { params }: { params: { commentId: stri
   const note = String(body?.reason || "").trim().slice(0, 200);
 
   const comment = await prisma.comment.findUnique({
-    where: { id: params.commentId },
+    where: { id: commentId },
     select: { id: true, isHidden: true, chapter: { select: { work: { select: { authorId: true } } } } },
   });
   if (!comment) return NextResponse.json({ error: "Comment not found" }, { status: 404 });
@@ -26,7 +27,7 @@ export async function POST(req: Request, { params }: { params: { commentId: stri
   }
 
   const updated = await prisma.comment.update({
-    where: { id: params.commentId },
+    where: { id: commentId },
     data: {
       isHidden: hide,
       hiddenAt: hide ? new Date() : null,

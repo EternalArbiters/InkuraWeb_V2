@@ -3,13 +3,14 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-export async function POST(_req: Request, { params }: { params: { userId: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const targetId = String(params.userId || "");
+  const targetId = String(userId || "");
   if (!targetId) {
     return NextResponse.json({ error: "userId required" }, { status: 400 });
   }

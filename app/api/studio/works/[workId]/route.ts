@@ -26,14 +26,15 @@ function safeBool(v: unknown) {
   return false
 }
 
-export async function GET(_req: Request, { params }: { params: { workId: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ workId: string }> }) {
+  const { workId } = await params;
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const work = await prisma.work.findUnique({
-    where: { id: params.workId },
+    where: { id: workId },
     include: {
       genres: true,
       tags: true,
@@ -50,14 +51,15 @@ export async function GET(_req: Request, { params }: { params: { workId: string 
   return NextResponse.json({ work })
 }
 
-export async function PATCH(req: Request, { params }: { params: { workId: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ workId: string }> }) {
+  const { workId } = await params;
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const existing = await prisma.work.findUnique({
-    where: { id: params.workId },
+    where: { id: workId },
     select: { id: true, authorId: true, coverImage: true },
   })
 
@@ -110,7 +112,7 @@ export async function PATCH(req: Request, { params }: { params: { workId: string
     }
 
     const updated = await prisma.work.update({
-      where: { id: params.workId },
+      where: { id: workId },
       data: {
         title,
         slug: slugify(slug),

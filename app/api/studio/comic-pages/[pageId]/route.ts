@@ -20,14 +20,15 @@ async function renumberChapterPages(chapterId: string) {
   ]);
 }
 
-export async function DELETE(_req: Request, { params }: { params: { pageId: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ pageId: string }> }) {
+  const { pageId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const page = await prisma.comicPage.findUnique({
-    where: { id: params.pageId },
+    where: { id: pageId },
     include: {
       chapter: { include: { work: { select: { id: true, authorId: true } } } },
     },
@@ -39,7 +40,7 @@ export async function DELETE(_req: Request, { params }: { params: { pageId: stri
   }
 
   try {
-    await prisma.comicPage.delete({ where: { id: params.pageId } });
+    await prisma.comicPage.delete({ where: { id: pageId } });
     await deletePublicUpload(page.imageUrl);
 
     await renumberChapterPages(page.chapterId);

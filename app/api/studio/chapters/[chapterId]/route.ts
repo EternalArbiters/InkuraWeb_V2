@@ -45,25 +45,27 @@ async function loadOwnedChapter(userId: string, chapterId: string) {
   return { kind: "ok" as const, chapter };
 }
 
-export async function GET(_req: Request, { params }: { params: { chapterId: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+  const { chapterId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await loadOwnedChapter(session.user.id, params.chapterId);
+  const res = await loadOwnedChapter(session.user.id, chapterId);
   if (res.kind === "not_found") return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (res.kind === "forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   return NextResponse.json({ chapter: res.chapter });
 }
 
-export async function PATCH(req: Request, { params }: { params: { chapterId: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+  const { chapterId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const owned = await loadOwnedChapter(session.user.id, params.chapterId);
+  const owned = await loadOwnedChapter(session.user.id, chapterId);
   if (owned.kind === "not_found") return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
   if (owned.kind === "forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
@@ -100,7 +102,7 @@ export async function PATCH(req: Request, { params }: { params: { chapterId: str
     }
 
     const updated = await prisma.chapter.update({
-      where: { id: params.chapterId },
+      where: { id: chapterId },
       data,
       select: { id: true, title: true, number: true, status: true, workId: true },
     });
@@ -108,12 +110,12 @@ export async function PATCH(req: Request, { params }: { params: { chapterId: str
     if (owned.chapter.work.type === "NOVEL" && content !== undefined) {
       if (owned.chapter.text) {
         await prisma.chapterText.update({
-          where: { chapterId: params.chapterId },
+          where: { chapterId: chapterId },
           data: { content },
         });
       } else {
         await prisma.chapterText.create({
-          data: { chapterId: params.chapterId, content },
+          data: { chapterId: chapterId, content },
         });
       }
     }

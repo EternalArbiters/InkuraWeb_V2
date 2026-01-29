@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-export async function PATCH(req: Request, { params }: { params: { reportId: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ reportId: string }> }) {
+  const { reportId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -18,7 +19,7 @@ export async function PATCH(req: Request, { params }: { params: { reportId: stri
     return NextResponse.json({ error: "status must be RESOLVED or DISMISSED" }, { status: 400 });
   }
 
-  const report = await prisma.report.findUnique({ where: { id: params.reportId } });
+  const report = await prisma.report.findUnique({ where: { id: reportId } });
   if (!report) return NextResponse.json({ error: "Report not found" }, { status: 404 });
 
   if (hideComment && report.targetType === "COMMENT") {
@@ -29,7 +30,7 @@ export async function PATCH(req: Request, { params }: { params: { reportId: stri
   }
 
   const updated = await prisma.report.update({
-    where: { id: params.reportId },
+    where: { id: reportId },
     data: {
       status: statusRaw as any,
       resolverId: session.user.id,

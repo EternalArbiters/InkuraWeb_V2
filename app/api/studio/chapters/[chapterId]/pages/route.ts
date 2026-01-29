@@ -6,7 +6,8 @@ import { savePublicUpload } from "@/lib/upload";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request, { params }: { params: { chapterId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+  const { chapterId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function POST(req: Request, { params }: { params: { chapterId: stri
 
   try {
     const chapter = await prisma.chapter.findUnique({
-      where: { id: params.chapterId },
+      where: { id: chapterId },
       include: { work: { select: { type: true, authorId: true } } },
     });
 

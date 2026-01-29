@@ -10,7 +10,8 @@ function clampRating(v: number) {
   return n;
 }
 
-export async function POST(req: Request, { params }: { params: { workId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ workId: string }> }) {
+  const { workId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,18 +25,18 @@ export async function POST(req: Request, { params }: { params: { workId: string 
 
   const userId = session.user.id;
 
-  const work = await prisma.work.findUnique({ where: { id: params.workId }, select: { id: true } });
+  const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true } });
   if (!work) return NextResponse.json({ error: "Work not found" }, { status: 404 });
 
   try {
     await prisma.workRating.upsert({
-      where: { userId_workId: { userId, workId: params.workId } },
+      where: { userId_workId: { userId, workId: workId } },
       update: { value },
-      create: { userId, workId: params.workId, value },
+      create: { userId, workId: workId, value },
     });
 
     const agg = await prisma.workRating.aggregate({
-      where: { workId: params.workId },
+      where: { workId: workId },
       _avg: { value: true },
       _count: { value: true },
     });
@@ -44,7 +45,7 @@ export async function POST(req: Request, { params }: { params: { workId: string 
     const ratingCount = Number(agg._count.value ?? 0);
 
     await prisma.work.update({
-      where: { id: params.workId },
+      where: { id: workId },
       data: { ratingAvg, ratingCount },
     });
 
