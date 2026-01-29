@@ -1,11 +1,21 @@
-"use client";
-
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
-export default function AuthErrorPage() {
-  const searchParams = useSearchParams();
-  const error = searchParams?.get("error");
+// This page depends on runtime query params (e.g. ?error=CredentialsSignin).
+// Force it to be dynamic so Next.js won't try to prerender it at build time.
+export const dynamic = "force-dynamic";
+
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function AuthErrorPage({
+  searchParams,
+}: {
+  // Next.js 15 types this as a Promise in many setups.
+  // We accept both to keep local/dev and CI consistent.
+  searchParams?: SearchParams | Promise<SearchParams>;
+}) {
+  const sp = await Promise.resolve(searchParams ?? {});
+  const errorRaw = sp.error;
+  const error = Array.isArray(errorRaw) ? errorRaw[0] : errorRaw;
 
   let message = "Terjadi kesalahan yang tidak diketahui.";
 
