@@ -38,7 +38,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           isMature: true,
           warningTags: { select: { name: true, slug: true } },
           pages: { select: { id: true }, take: 1 },
-          text: { select: { id: true }, take: 1 },
+          text: { select: { id: true } },
         },
       },
     },
