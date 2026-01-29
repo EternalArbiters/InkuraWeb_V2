@@ -26,9 +26,9 @@ function toStrArr(v: unknown): string[] {
 }
 
 export default async function SearchPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     q?: string;
     kind?: string;
     sort?: string;
@@ -52,8 +52,10 @@ export default async function SearchPage({
     mature?: string;
     ignoreBlocked?: string;
     ignoreLang?: string;
-  };
+  }>;
 }) {
+  const searchParams = await searchParamsPromise;
+
   const q = (searchParams.q || "").trim();
   const kind = (searchParams.kind || "all").toLowerCase();
   const sort = (searchParams.sort || "newest").toLowerCase();

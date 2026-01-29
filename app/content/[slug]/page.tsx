@@ -1,11 +1,12 @@
 import Link from "next/link";
 import PageScaffold from "../../components/PageScaffold";
 
-export default function ContentDetailPage({
-  params,
+export default async function ContentDetailPage({
+  params: paramsPromise,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const params = await paramsPromise;
   return (
     <PageScaffold
       title={` Content: ${params.slug}`}

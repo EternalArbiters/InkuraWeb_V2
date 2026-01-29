@@ -1,7 +1,8 @@
 import Link from "next/link";
 import PageScaffold from "../../components/PageScaffold";
 
-export default function CreatorPage({ params }: { params: { slug: string } }) {
+export default async function CreatorPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   return (
     <PageScaffold
       title={` Creator: ${params.slug}`}

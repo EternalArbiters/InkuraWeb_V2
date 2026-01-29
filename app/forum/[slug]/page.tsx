@@ -1,7 +1,8 @@
 import Link from "next/link";
 import PageScaffold from "../../components/PageScaffold";
 
-export default function ForumThreadPage({ params }: { params: { slug: string } }) {
+export default async function ForumThreadPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   return (
     <PageScaffold
       title={` Forum: ${params.slug}`}
