@@ -9,11 +9,11 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  // Next.js 15 types this as a Promise in many setups.
-  // We accept both to keep local/dev and CI consistent.
-  searchParams?: SearchParams | Promise<SearchParams>;
+  // Next.js 15 passes searchParams as a Promise.
+  // Keep the signature aligned with PageProps to satisfy next build type checks.
+  searchParams?: Promise<SearchParams>;
 }) {
-  const sp = await Promise.resolve(searchParams ?? {});
+  const sp = await (searchParams ?? Promise.resolve({}));
   const errorRaw = sp.error;
   const error = Array.isArray(errorRaw) ? errorRaw[0] : errorRaw;
 
