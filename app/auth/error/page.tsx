@@ -9,12 +9,10 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  // Next.js 15 passes searchParams as a Promise.
-  // Keep the signature aligned with PageProps to satisfy next build type checks.
   searchParams?: Promise<SearchParams>;
 }) {
-  const sp = await (searchParams ?? Promise.resolve({}));
-  const errorRaw = sp.error;
+  const sp: SearchParams = (await searchParams) ?? {};
+  const errorRaw = sp["error"];
   const error = Array.isArray(errorRaw) ? errorRaw[0] : errorRaw;
 
   let message = "Terjadi kesalahan yang tidak diketahui.";
