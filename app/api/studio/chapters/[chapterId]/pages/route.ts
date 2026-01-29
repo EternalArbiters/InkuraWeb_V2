@@ -34,17 +34,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
     });
     const baseOrder = last?.order ?? 0;
 
-    const created = await prisma.$transaction(
-      await Promise.all(
-        files.map(async (file, idx) => {
-          const saved = await savePublicUpload(file, "pages");
-          return prisma.comicPage.create({
-            data: { chapterId: chapter.id, order: baseOrder + idx + 1, imageUrl: saved.url },
-            select: { id: true, order: true, imageUrl: true },
-          });
-        })
-      )
+    // Upload files first (side-effectful IO), then create DB records in a single transaction.
+    // Prisma.$transaction expects an array of PrismaPromise's, not resolved values.
+    const uploads = await Promise.all(files.map((file) => savePublicUpload(file, "pages")));
+    const ops = uploads.map((saved, idx) =>
+      prisma.comicPage.create({
+        data: { chapterId: chapter.id, order: baseOrder + idx + 1, imageUrl: saved.url },
+        select: { id: true, order: true, imageUrl: true },
+      })
     );
+    const created = await prisma.$transaction(ops);
 
     return NextResponse.json({ ok: true, pages: created });
   } catch (e) {
