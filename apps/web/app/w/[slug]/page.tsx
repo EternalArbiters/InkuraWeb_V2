@@ -38,7 +38,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           isMature: true,
           warningTags: { select: { name: true, slug: true } },
           pages: { select: { id: true }, take: 1 },
-          text: { select: { id: true }, take: 1 },
+          // `text` is a 1:1 relation (not a list), so it doesn't support `take` in Prisma.
+          text: { select: { id: true } },
         },
       },
     },
