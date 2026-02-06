@@ -11,10 +11,11 @@ function chapterLabel(n: number, title: string) {
 }
 
 export default async function ReadChapterPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { slug: string; chapterId: string };
+  params: Promise<{ slug: string; chapterId: string }>;
 }) {
+  const params = await paramsPromise;
   const work = await prisma.work.findUnique({
     where: { slug: params.slug },
     select: {

@@ -2,7 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 
 // Legacy route: /read/novel/[workId]/[chapterId] -> /w/[slug]/read/[chapterId]
-export default async function LegacyNovelRedirect({ params }: { params: { workId: string; chapterId: string } }) {
+export default async function LegacyNovelRedirect({ params: paramsPromise }: { params: Promise<{ workId: string; chapterId: string }> }) {
+  const params = await paramsPromise;
   const work = await prisma.work.findUnique({ where: { id: params.workId }, select: { slug: true } });
   if (!work) return notFound();
   redirect(`/w/${work.slug}/read/${params.chapterId}`);

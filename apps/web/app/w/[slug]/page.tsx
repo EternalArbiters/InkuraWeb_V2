@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 
-export default async function WorkPage({ params }: { params: { slug: string } }) {
+export default async function WorkPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   const work = await prisma.work.findUnique({
     where: { slug: params.slug },
     select: {

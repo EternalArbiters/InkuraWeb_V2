@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import ComicPagesManager from "./ComicPagesManager";
 
-export default async function ChapterPagesPage({ params }: { params: { workId: string; chapterId: string } }) {
+export default async function ChapterPagesPage({ params: paramsPromise }: { params: Promise<{ workId: string; chapterId: string }> }) {
+  const params = await paramsPromise;
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 

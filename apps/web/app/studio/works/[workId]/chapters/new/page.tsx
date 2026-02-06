@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import ChapterCreateForm from "./ChapterCreateForm";
 
-export default async function NewChapterPage({ params }: { params: { workId: string } }) {
+export default async function NewChapterPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
+  const params = await paramsPromise;
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 

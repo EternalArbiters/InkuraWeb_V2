@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import PublishToggle from "./PublishToggle";
 
-export default async function StudioWorkPage({ params }: { params: { workId: string } }) {
+export default async function StudioWorkPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
+  const params = await paramsPromise;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/works/${params.workId}`)}`);
