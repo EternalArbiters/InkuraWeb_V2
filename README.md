@@ -1,57 +1,17 @@
-# Inkura (inkura_v4)
+# Inkura v10 (Monorepo)
 
-## Tech Stack
-- Next.js (App Router)
-- TailwindCSS
-- Prisma + SQLite
-- NextAuth (Credentials + optional Google/Discord)
-- Upload storage: lokal `public/uploads/...` (dev)
+Struktur: `apps/web` (frontend) dan `apps/api` (backend API + Prisma).
 
-## Requirements
-- Node.js 18+ (disarankan 20+)
-- npm / pnpm (project ini pakai npm scripts, tapi pnpm juga bisa)
+## Dev
 
-## Setup cepat
-1. Install deps
-   - `npm install`
-2. Generate Prisma client
-   - `npm run prisma:generate`
-3. Jalankan migration (membuat SQLite db)
-   - `npm run prisma:migrate`
-4. Optional seed
-   - `npm run prisma:seed`
-5. Run dev server
-   - `npm run dev`
-
-Lalu buka `http://localhost:3000`.
-
-## Environment (.env)
-File `.env` sudah disediakan untuk dev:
-
-```
-DATABASE_URL="file:./dev.db"
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=dev-secret-change-me
+```bash
+npm install
+npm run db:init
+npm run dev
 ```
 
-OAuth (opsional):
+- Web: http://localhost:3000
+- API: http://localhost:3001
 
-```
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-DISCORD_CLIENT_ID=
-DISCORD_CLIENT_SECRET=
-```
-
-## Feature checklist (v4)
--  Prisma schema: User, Work, Chapter, ChapterText (novel), ComicPage (comic)
--  NextAuth sebagai single source of truth (Credentials + optional OAuth)
--  Studio: create work → create chapter → upload text/images
--  Studio: edit work, edit chapter
--  Studio: manage comic pages (upload more, reorder, delete)
--  Publish/Draft toggle + `/all` hanya menampilkan PUBLISHED
--  Reader: novel (text) + comic (vertical pages)
-
-## Catatan
-- Upload disimpan di folder lokal `public/uploads`. Ini cocok untuk dev/MVP. Untuk production sebaiknya pindah ke S3/R2/Supabase Storage.
-- Routing + shell layout sudah dirapihin (navbar 1, tidak ada 404 untuk route utama).
+Catatan:
+- `apps/web` mem-proxy `/api/*` dan `/uploads/*` ke `apps/api`.
