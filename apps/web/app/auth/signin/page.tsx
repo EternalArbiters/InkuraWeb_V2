@@ -3,9 +3,9 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-export default function SignInPage() {
+function SignInInner() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params?.get("callbackUrl") || "/home";
@@ -85,5 +85,19 @@ export default function SignInPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
+          <div className="text-sm text-gray-600 dark:text-gray-300">Memuat...</div>
+        </main>
+      }
+    >
+      <SignInInner />
+    </Suspense>
   );
 }

@@ -1,11 +1,13 @@
-"use client";
-
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
-export default function AuthErrorPage() {
-  const searchParams = useSearchParams();
-  const error = searchParams?.get("error");
+type Props = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function AuthErrorPage({ searchParams }: Props) {
+  const sp = searchParams ? await searchParams : {};
+  const raw = sp.error;
+  const error = Array.isArray(raw) ? raw[0] : raw;
 
   let message = "Terjadi kesalahan yang tidak diketahui.";
 
