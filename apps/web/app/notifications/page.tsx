@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import NotificationsClient from "./NotificationsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function NotificationsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

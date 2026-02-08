@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 
+export const dynamic = "force-dynamic";
+
 function chapterLabel(n: number, title: string) {
   const t = title ? `: ${title}` : "";
   return `Ch. ${n}${t}`;

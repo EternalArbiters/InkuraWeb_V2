@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import PageScaffold from "../../components/PageScaffold";
 
+export const dynamic = "force-dynamic";
+
 export default async function HistorySettingsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function StudioPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

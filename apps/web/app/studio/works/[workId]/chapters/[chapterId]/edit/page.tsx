@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import ChapterEditForm from "./ChapterEditForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditChapterPage({ params: paramsPromise }: { params: Promise<{ workId: string; chapterId: string }> }) {
   const params = await paramsPromise;
   const session = await getServerSession(authOptions);

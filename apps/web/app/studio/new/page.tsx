@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import NewWorkForm from "./NewWorkForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewWorkPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");

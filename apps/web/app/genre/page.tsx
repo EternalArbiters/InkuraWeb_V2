@@ -2,6 +2,8 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import PageScaffold from "../components/PageScaffold";
 
+export const dynamic = "force-dynamic";
+
 export default async function GenrePage() {
   const genres = await prisma.genre.findMany({
     orderBy: { name: "asc" },

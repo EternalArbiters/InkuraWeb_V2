@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import PublishToggle from "./PublishToggle";
 
+export const dynamic = "force-dynamic";
+
 export default async function StudioWorkPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
   const params = await paramsPromise;
   const session = await getServerSession(authOptions);

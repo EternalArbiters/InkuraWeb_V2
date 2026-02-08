@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import AdminReportsClient from "./AdminReportsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminReportsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id || session.user.role !== "ADMIN") {

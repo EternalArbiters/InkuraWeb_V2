@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/auth";
 import PreferencesForm from "./PreferencesForm";
 import { parseJsonStringArray } from "@/lib/prefs";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountSettingsPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");

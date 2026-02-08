@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import ComicPagesManager from "./ComicPagesManager";
 
+export const dynamic = "force-dynamic";
+
 export default async function ChapterPagesPage({ params: paramsPromise }: { params: Promise<{ workId: string; chapterId: string }> }) {
   const params = await paramsPromise;
   const session = await getServerSession(authOptions);

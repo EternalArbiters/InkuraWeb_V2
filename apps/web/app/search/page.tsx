@@ -7,6 +7,8 @@ import SearchPresets from "@/components/SearchPresets";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { parseJsonStringArray } from "@/lib/prefs";
 
+export const dynamic = "force-dynamic";
+
 function splitList(v?: string) {
   return (v || "")
     .split(",")

@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import WorkEditForm from "./WorkEditForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function WorkEditPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
   const params = await paramsPromise;
   const session = await getServerSession(authOptions);

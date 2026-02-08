@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // Legacy route: /work/[workId] -> /w/[slug]
 export default async function WorkLegacyRedirect({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
   const params = await paramsPromise;
