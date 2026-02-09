@@ -1,0 +1,365 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --- Auth ---
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  name      String?
+  image     String?
+  role      Role     @default(USER)
+
+  // Preferences
+  matureOptIn            Boolean @default(false)
+  preferredLanguagesJson String  @default("[]")
+
+  // Content
+  works      Work[]
+  likes      WorkLike[]
+  ratings    WorkRating[]
+  bookmarks  Bookmark[]
+  progress   ReadingProgress[]
+  comments   Comment[]
+
+  // Social graph
+  following  FollowUser[] @relation("Following")
+  followers  FollowUser[] @relation("Followers")
+
+  // Notifications
+  notifications Notification[]
+
+  // Moderation
+  hiddenComments  Comment[] @relation("HiddenComments")
+  reportsMade     Report[]  @relation("ReportsMade")
+  reportsResolved Report[]  @relation("ReportsResolved")
+
+  // Preference blocks
+  blockedGenres    Genre[]      @relation("UserBlockedGenres")
+  blockedWarnings  WarningTag[] @relation("UserBlockedWarnings")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+// --- Content ---
+enum WorkType {
+  NOVEL
+  COMIC
+}
+
+enum WorkStatus {
+  DRAFT
+  PUBLISHED
+}
+
+
+
+enum ChapterStatus {
+  DRAFT
+  PUBLISHED
+}
+enum WorkOrigin {
+  UNKNOWN
+  ORIGINAL
+  FANFIC
+  ADAPTATION
+}
+
+enum WorkCompletion {
+  ONGOING
+  COMPLETED
+  HIATUS
+  CANCELLED
+}
+
+model Work {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  title       String
+  description String?
+  type        WorkType
+  status      WorkStatus @default(DRAFT)
+
+  // Content meta
+  isMature    Boolean        @default(false)
+  language    String         @default("unknown")
+  origin      WorkOrigin     @default(UNKNOWN)
+  completion  WorkCompletion @default(ONGOING)
+
+  // Cached counters (updated by API routes)
+  likeCount   Int        @default(0)
+  ratingAvg   Float      @default(0)
+  ratingCount Int        @default(0)
+
+  // Cached counts
+  chapterCount Int       @default(0)
+
+  coverImage  String?
+
+  // Taxonomy
+  genres      Genre[]      @relation("WorkGenres")
+  tags        Tag[]        @relation("WorkTags")
+  warningTags WarningTag[] @relation("WorkWarnings")
+
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+
+  chapters    Chapter[]
+
+  likes       WorkLike[]
+  ratings     WorkRating[]
+  bookmarks   Bookmark[]
+  progress    ReadingProgress[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([authorId])
+  @@index([type, status])
+  @@index([status, isMature])
+  @@index([language])
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  workId      String
+  work        Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  number      Int
+  title       String
+  status      ChapterStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  // Chapter-level meta
+  isMature    Boolean        @default(false)
+  warningTags WarningTag[]   @relation("ChapterWarnings")
+
+  text        ChapterText?
+  pages       ComicPage[]
+  comments    Comment[]
+  readingProgresses ReadingProgress[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([workId, number])
+  @@index([workId])
+}
+
+// --- Taxonomy ---
+model Genre {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  works     Work[]   @relation("WorkGenres")
+
+  blockedByUsers User[] @relation("UserBlockedGenres")
+
+  @@index([slug])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  works     Work[]   @relation("WorkTags")
+
+  @@index([slug])
+}
+
+model WarningTag {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  works     Work[]    @relation("WorkWarnings")
+  chapters  Chapter[] @relation("ChapterWarnings")
+
+  blockedByUsers User[] @relation("UserBlockedWarnings")
+
+  @@index([slug])
+}
+
+// --- Social ---
+model WorkLike {
+  userId    String
+  workId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work      Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, workId])
+  @@index([workId])
+}
+
+model WorkRating {
+  userId    String
+  workId    String
+  value     Int
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work      Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, workId])
+  @@index([workId])
+}
+
+model Bookmark {
+  userId    String
+  workId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work      Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, workId])
+  @@index([workId])
+}
+
+model ReadingProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  workId     String
+  chapterId  String
+  progress   Float?   // 0-1 (optional)
+  lastReadAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work       Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+  chapter    Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workId])
+  @@index([workId])
+  @@index([chapterId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  chapterId String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  // Moderation
+  isHidden   Boolean  @default(false)
+  hiddenAt   DateTime?
+  hiddenById String?
+
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hiddenBy  User?    @relation("HiddenComments", fields: [hiddenById], references: [id])
+
+  @@index([chapterId])
+  @@index([userId])
+}
+
+// --- Follow + Notifications ---
+model FollowUser {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower   User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following  User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
+
+enum NotificationType {
+  NEW_WORK
+  NEW_CHAPTER
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  href      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// --- Reports ---
+enum ReportTargetType {
+  COMMENT
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id         String          @id @default(cuid())
+  reporterId String
+  targetType ReportTargetType
+  targetId   String
+  reason     String
+  status     ReportStatus    @default(OPEN)
+  createdAt  DateTime        @default(now())
+
+  resolverId String?
+  resolvedAt DateTime?
+  note       String?
+
+  reporter   User            @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolver   User?           @relation("ReportsResolved", fields: [resolverId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}
+
+// NOVEL content
+model ChapterText {
+  id        String   @id @default(cuid())
+  chapterId String   @unique
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  content   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// COMIC pages
+model ComicPage {
+  id        String   @id @default(cuid())
+  chapterId String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  order     Int
+  imageUrl  String
+
+  createdAt DateTime @default(now())
+
+  @@unique([chapterId, order])
+  @@index([chapterId])
+}
