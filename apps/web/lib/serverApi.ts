@@ -16,6 +16,7 @@ function resolveOrigin(): string {
   // Fallback to request headers when running in a request context.
   try {
     const h = headers();
+    // NOTE: must use the headers() result (`h`) — avoid referencing any other variable here.
     const proto = h.get("x-forwarded-proto") || "http";
     const host = h.get("x-forwarded-host") || h.get("host") || "";
     if (host) return `${proto}://${host}`;
