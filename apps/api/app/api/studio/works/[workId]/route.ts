@@ -131,7 +131,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
       slug: true,
       coverImage: true,
       status: true,
-      publishedAt: true,
       publishType: true,
       originalAuthorCredit: true,
       sourceUrl: true,
@@ -164,9 +163,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
         where: { id: workId },
         data: {
           status: status as any,
-          publishedAt: status === "PUBLISHED" ? existing.publishedAt || new Date() : null,
         },
-        select: { id: true, slug: true, status: true, publishedAt: true },
+        select: { id: true, slug: true, status: true },
       });
 
       return NextResponse.json({ ok: true, work: updated });

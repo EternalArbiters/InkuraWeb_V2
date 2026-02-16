@@ -28,7 +28,7 @@ export default async function EditChapterPage({
 
   const warningsRes = await apiJson<{ warningTags: any[] }>("/api/warnings?take=200");
   const warningTags = warningsRes.ok
-    ? warningsRes.data.warningTags.map((w: any) => ({ id: w.id, label: w.name, description: w.slug }))
+    ? warningsRes.data.warningTags.map((w: any) => ({ id: String(w.id), name: String(w.name), slug: String(w.slug) }))
     : [];
 
   const workTitle = chapter.work?.title || "";
