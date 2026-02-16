@@ -1,88 +1,87 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import WorksGrid from "../components/WorksGrid";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
-export default async function AllPage() {
-  const session = await getServerSession(authOptions);
-  const user = session
-    ? await prisma.user.findUnique({ where: { id: session.user.id }, select: { matureOptIn: true } })
-    : null;
-  const canViewMature = !!user?.matureOptIn;
+export default async function AllWorksPage({
+  searchParams: searchParamsPromise,
+}: {
+  searchParams: Promise<{ sort?: string; publishType?: string; author?: string; translator?: string }>;
+}) {
+  const sp = await searchParamsPromise;
 
-  const works = await prisma.work.findMany({
-    where: { status: "PUBLISHED", ...(canViewMature ? {} : { isMature: false }) },
-    orderBy: { updatedAt: "desc" },
-    take: 24,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      coverImage: true,
-      type: true,
-      isMature: true,
-      likeCount: true,
-      ratingAvg: true,
-      ratingCount: true,
-      author: { select: { username: true, name: true } },
-    },
-  });
+  const sort = (sp.sort || "newest").toLowerCase();
+  const publishType = (sp.publishType || "").toUpperCase();
+  const author = (sp.author || "").trim();
+  const translator = (sp.translator || "").trim();
+
+  const qs = new URLSearchParams();
+  qs.set("take", "48");
+  if (sort && sort !== "newest") qs.set("sort", sort);
+  if (publishType === "ORIGINAL" || publishType === "TRANSLATION" || publishType === "REUPLOAD") qs.set("publishType", publishType);
+  if (author) qs.set("author", author);
+  if (translator) qs.set("translator", translator);
+
+  const res = await apiJson<{ works: any[] }>(`/api/works?${qs.toString()}`);
+  const works = res.ok ? res.data.works : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Explore</h1>
-
-        {!canViewMature ? (
-          <div className="mt-4 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-950/30 p-4 text-sm">
-            NSFW content will not be displayed to minors and those who do not want it.
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">All Works</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Filter: publish type, author, translator.</p>
           </div>
-        ) : null}
+          <Link href="/search" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+            Advanced search →
+          </Link>
+        </div>
 
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {works.map((w) => (
-            <Link
-              key={w.id}
-              href={`/w/${w.slug}`}
-              className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden hover:shadow-lg transition"
-            >
-              <div className="aspect-[3/4] bg-gray-100 dark:bg-gray-800 relative">
-                {w.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={w.coverImage} alt={w.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition" />
-                ) : null}
-                {w.isMature ? (
-                  <div className="absolute top-2 left-2 text-[11px] font-bold px-2 py-1 rounded-lg bg-black/70 text-white">
-                    18+
-                  </div>
-                ) : null}
-              </div>
-              <div className="p-3">
-                <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
-                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                  {w.type} • {w.author.name || w.author.username}
-                </div>
-                <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-3">
-                  <span> {w.likeCount}</span>
-                  <span>⭐ {(Math.round(w.ratingAvg * 10) / 10).toFixed(1)} ({w.ratingCount})</span>
-                </div>
-              </div>
-            </Link>
-          ))}
+        <form action="/all" method="get" className="mt-6 grid grid-cols-1 md:grid-cols-[160px_200px_1fr_1fr_140px] gap-3">
+          <select
+            name="sort"
+            defaultValue={sort}
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          >
+            <option value="newest">Newest</option>
+            <option value="liked">Most liked</option>
+            <option value="rated">Best rated</option>
+          </select>
 
-          {works.length === 0 ? (
-            <div className="col-span-2 md:col-span-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-              <div className="text-lg font-bold">There are no works yet</div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                Masuk dulu, lalu buat karya dari{" "}
-                <Link className="text-purple-600 dark:text-purple-400 font-semibold hover:underline" href="/studio">
-                  Studio
-                </Link>.
-              </p>
-            </div>
-          ) : null}
+          <select
+            name="publishType"
+            defaultValue={publishType}
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          >
+            <option value="">Any publish type</option>
+            <option value="ORIGINAL">Original</option>
+            <option value="TRANSLATION">Translation</option>
+            <option value="REUPLOAD">Reupload</option>
+          </select>
+
+          <input
+            name="author"
+            defaultValue={author}
+            placeholder="Author (username / name)"
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <input
+            name="translator"
+            defaultValue={translator}
+            placeholder="Translator (username / name)"
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <button className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110">
+            Apply
+          </button>
+        </form>
+
+        <div className="mt-8">
+          <WorksGrid works={works as any} />
         </div>
       </div>
     </main>

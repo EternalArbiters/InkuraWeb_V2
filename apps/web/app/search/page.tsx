@@ -1,11 +1,8 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 import GenreTriStatePicker from "@/components/GenreTriStatePicker";
 import SearchPresets from "@/components/SearchPresets";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
-import { parseJsonStringArray } from "@/lib/prefs";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +46,9 @@ export default async function SearchPage({
     lang?: string | string[];
     completion?: string;
     origin?: string;
+    publishType?: string;
+    author?: string;
+    translator?: string;
     minCh?: string;
     maxCh?: string;
     mature?: string;
@@ -63,6 +63,10 @@ export default async function SearchPage({
   const sort = (searchParams.sort || "newest").toLowerCase();
   const tag = (searchParams.tag || "").trim();
   const genre = (searchParams.genre || "").trim();
+
+  const publishType = (searchParams.publishType || "").toUpperCase();
+  const author = (searchParams.author || "").trim();
+  const translator = (searchParams.translator || "").trim();
 
   // Genre tri-state
   let includeGenres = splitList(searchParams.gi);
@@ -82,24 +86,20 @@ export default async function SearchPage({
   const ignoreBlocked = (searchParams.ignoreBlocked || "") === "1";
   const ignoreLang = (searchParams.ignoreLang || "") === "1";
 
-  // Session prefs (for default blocking & mature behavior)
-  const session = await getServerSession(authOptions);
-  const me = session?.user?.id
-    ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          matureOptIn: true,
-          preferredLanguagesJson: true,
-          blockedGenres: { select: { id: true, slug: true } },
-          blockedWarnings: { select: { id: true, slug: true } },
-        },
-      })
-    : null;
+  // User preferences (optional)
+  const prefsRes = await apiJson<{
+    prefs: {
+      adultConfirmed: boolean;
+      matureOptIn: boolean;
+      preferredLanguages: string[];
+      blockedGenreIds: string[];
+      blockedWarningIds: string[];
+    };
+  }>("/api/me/preferences");
 
-  const userMatureOptIn = !!me?.matureOptIn;
-  const preferredLangs = me ? parseJsonStringArray(me.preferredLanguagesJson) : [];
-  const blockedGenreIds = me ? me.blockedGenres.map((g) => g.id) : [];
-  const blockedWarningIds = me ? me.blockedWarnings.map((w) => w.id) : [];
+  const prefs = prefsRes.ok ? prefsRes.data.prefs : null;
+  const canViewMatureByPrefs = !!prefs?.adultConfirmed && !!prefs?.matureOptIn;
+  const showMatureFilter = !!prefs?.adultConfirmed;
 
   // Normalize include/exclude conflicts
   excludeGenres = excludeGenres.filter((g) => !includeGenres.includes(g));
@@ -111,172 +111,61 @@ export default async function SearchPage({
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
   langs = Array.from(new Set(langs));
-  if (!ignoreLang && langs.length === 0 && preferredLangs.length) {
-    langs = preferredLangs.map((s) => String(s).toLowerCase());
+
+  if (!ignoreLang && langs.length === 0 && prefs?.preferredLanguages?.length) {
+    langs = prefs.preferredLanguages.map((s) => String(s).toLowerCase());
   }
 
-  const genres = await prisma.genre.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, slug: true, name: true },
-  });
+  const [genresRes, warningsRes] = await Promise.all([
+    apiJson<{ genres: any[] }>("/api/genres?take=200"),
+    apiJson<{ warningTags: any[] }>("/api/warnings?take=100"),
+  ]);
+  const genres = genresRes.ok ? genresRes.data.genres : [];
+  const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
 
-  const warningTags = await prisma.warningTag.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, slug: true, name: true },
-  });
+  // Query API works
+  const qs = new URLSearchParams();
+  qs.set("take", "60");
+  if (q) qs.set("q", q);
+  if (kind === "novel") qs.set("type", "NOVEL");
+  if (kind === "comic") qs.set("type", "COMIC");
+  if (sort && sort !== "newest") qs.set("sort", sort);
+  if (tag) qs.set("tag", tag);
+  if (genre) qs.set("genre", genre);
 
-  const tagSlug = tag
-    ? tag
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-    : "";
+  if (publishType === "ORIGINAL" || publishType === "TRANSLATION" || publishType === "REUPLOAD") qs.set("publishType", publishType);
+  if (author) qs.set("author", author);
+  if (translator) qs.set("translator", translator);
 
-  const where: any = { status: "PUBLISHED" };
-  if (kind === "novel") where.type = "NOVEL";
-  if (kind === "comic") where.type = "COMIC";
+  if (includeGenres.length) qs.set("gi", includeGenres.join(","));
+  if (excludeGenres.length) qs.set("ge", excludeGenres.join(","));
+  if (includeMode === "and") qs.set("gmode", "and");
 
-  const AND: any[] = [];
+  if (includeWarnings.length) qs.set("wi", includeWarnings.join(","));
+  if (excludeWarnings.length) qs.set("we", excludeWarnings.join(","));
+  if (warningMode === "and") qs.set("wmode", "and");
 
-  // Basic genre dropdown (legacy)
-  if (genre) {
-    AND.push({ genres: { some: { slug: genre } } });
-  }
+  if (langs.length) qs.set("lang", langs.join(","));
+  if (completion) qs.set("completion", completion);
+  if (origin) qs.set("origin", origin);
+  if (minCh) qs.set("minCh", String(minCh));
+  if (maxCh) qs.set("maxCh", String(maxCh));
+  if (mature) qs.set("mature", mature);
+  if (ignoreBlocked) qs.set("ignoreBlocked", "1");
+  if (ignoreLang) qs.set("ignoreLang", "1");
 
-  // Genre tri-state include/exclude
-  if (includeGenres.length) {
-    if (includeMode === "and") {
-      AND.push(...includeGenres.map((slug) => ({ genres: { some: { slug } } })));
-    } else {
-      AND.push({ genres: { some: { slug: { in: includeGenres } } } });
-    }
-  }
-  if (excludeGenres.length) {
-    AND.push({ genres: { none: { slug: { in: excludeGenres } } } });
-  }
+  const worksRes = await apiJson<{ works: any[]; viewer: any }>(`/api/works?${qs.toString()}`);
+  const works = worksRes.ok ? worksRes.data.works : [];
 
-  // Warning tri-state include/exclude
-  if (includeWarnings.length) {
-    if (warningMode === "and") {
-      AND.push(...includeWarnings.map((slug) => ({ warningTags: { some: { slug } } })));
-    } else {
-      AND.push({ warningTags: { some: { slug: { in: includeWarnings } } } });
-    }
-  }
-  if (excludeWarnings.length) {
-    AND.push({ warningTags: { none: { slug: { in: excludeWarnings } } } });
-  }
-
-  // Completion/origin
-  if (completion) {
-    AND.push({ completion });
-  }
-  if (origin) {
-    AND.push({ origin });
-  }
-
-  // Chapter count range
-  if (minCh > 0) AND.push({ chapterCount: { gte: minCh } });
-  if (maxCh > 0) AND.push({ chapterCount: { lte: maxCh } });
-
-  // Mature filter (hide/include/only)
-  const defaultHideMature = !userMatureOptIn; // user hasn't opted in
-  const effectiveMature = mature || (defaultHideMature ? "hide" : "include");
-  if (effectiveMature === "hide") AND.push({ isMature: false });
-  if (effectiveMature === "only") AND.push({ isMature: true });
-
-  // Tag filter
-  if (tag) {
-    AND.push({
-      tags: {
-        some: {
-          OR: [
-            ...(tagSlug ? [{ slug: tagSlug }] : []),
-            { name: { contains: tag, mode: "insensitive" } },
-          ],
-        },
-      },
-    });
-  }
-
-  // Keyword
-  if (q) {
-    AND.push({
-      OR: [
-        { title: { contains: q, mode: "insensitive" } },
-        { description: { contains: q, mode: "insensitive" } },
-      ],
-    });
-  }
-
-  // Language filter
-  if (langs.length) {
-    AND.push({ language: { in: langs } });
-  }
-
-  // User blocking defaults
-  if (me && !ignoreBlocked) {
-    if (blockedGenreIds.length) AND.push({ genres: { none: { id: { in: blockedGenreIds } } } });
-    if (blockedWarningIds.length) AND.push({ warningTags: { none: { id: { in: blockedWarningIds } } } });
-  }
-
-  if (AND.length) where.AND = AND;
-
-  let orderBy: any = { updatedAt: "desc" };
-  if (sort === "liked") orderBy = { likeCount: "desc" };
-  if (sort === "rated") orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { updatedAt: "desc" }];
-
-  const works = await prisma.work.findMany({
-    where,
-    orderBy,
-    take: 60,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      coverImage: true,
-      type: true,
-      likeCount: true,
-      ratingAvg: true,
-      ratingCount: true,
-      isMature: true,
-      language: true,
-      completion: true,
-      chapterCount: true,
-      warningTags: { select: { name: true, slug: true } },
-      author: { select: { username: true, name: true } },
-    },
-  });
+  const viewer = worksRes.ok ? worksRes.data.viewer : null;
+  const canViewMature = !!viewer?.canViewMature || canViewMatureByPrefs;
+  const defaultHideMature = !canViewMature;
 
   const giStr = includeGenres.join(",");
   const geStr = excludeGenres.join(",");
   const wiStr = includeWarnings.join(",");
   const weStr = excludeWarnings.join(",");
 
-  const baseParams: Record<string, string> = {};
-  if (q) baseParams.q = q;
-  if (kind && kind !== "all") baseParams.kind = kind;
-  if (sort && sort !== "newest") baseParams.sort = sort;
-  if (tag) baseParams.tag = tag;
-  if (genre) baseParams.genre = genre;
-  if (giStr) baseParams.gi = giStr;
-  if (geStr) baseParams.ge = geStr;
-  if (includeMode === "and") baseParams.gmode = "and";
-  if (wiStr) baseParams.wi = wiStr;
-  if (weStr) baseParams.we = weStr;
-  if (warningMode === "and") baseParams.wmode = "and";
-  if (langs.length) baseParams.lang = langs.join(",");
-  if (completion) baseParams.completion = completion;
-  if (origin) baseParams.origin = origin;
-  if (minCh) baseParams.minCh = String(minCh);
-  if (maxCh) baseParams.maxCh = String(maxCh);
-  if (mature) baseParams.mature = mature;
-  if (ignoreBlocked) baseParams.ignoreBlocked = "1";
-  if (ignoreLang) baseParams.ignoreLang = "1";
-
-  const canViewMature = userMatureOptIn;
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -321,7 +210,7 @@ export default async function SearchPage({
             className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
           >
             <option value="">Any genre</option>
-            {genres.map((g) => (
+            {genres.map((g: any) => (
               <option key={g.slug} value={g.slug}>
                 {g.name}
               </option>
@@ -341,9 +230,7 @@ export default async function SearchPage({
 
           {/* Advanced filters */}
           <details className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 md:col-span-6">
-            <summary className="cursor-pointer select-none text-sm font-semibold">
-              Advanced Filters
-            </summary>
+            <summary className="cursor-pointer select-none text-sm font-semibold">Advanced Filters</summary>
 
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
@@ -351,12 +238,7 @@ export default async function SearchPage({
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {LANGUAGE_CATALOG.slice(0, 10).map((l) => (
                     <label key={l.code} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="lang"
-                        value={l.code}
-                        defaultChecked={langs.includes(l.code)}
-                      />
+                      <input type="checkbox" name="lang" value={l.code} defaultChecked={langs.includes(l.code)} />
                       {l.label}
                     </label>
                   ))}
@@ -368,7 +250,7 @@ export default async function SearchPage({
               </div>
 
               <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-                <div className="text-sm font-semibold">Status / Origin / Chapters / NSFW</div>
+                <div className="text-sm font-semibold">Status / Publish / Chapters</div>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <label className="text-xs text-gray-600 dark:text-gray-300">
                     Completion
@@ -384,6 +266,7 @@ export default async function SearchPage({
                       <option value="CANCELLED">Cancelled</option>
                     </select>
                   </label>
+
                   <label className="text-xs text-gray-600 dark:text-gray-300">
                     Origin
                     <select
@@ -398,6 +281,31 @@ export default async function SearchPage({
                       <option value="UNKNOWN">Unknown</option>
                     </select>
                   </label>
+
+                  <label className="text-xs text-gray-600 dark:text-gray-300">
+                    Publish type
+                    <select
+                      name="publishType"
+                      defaultValue={publishType || ""}
+                      className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                    >
+                      <option value="">Any</option>
+                      <option value="ORIGINAL">Original</option>
+                      <option value="TRANSLATION">Translation</option>
+                      <option value="REUPLOAD">Reupload</option>
+                    </select>
+                  </label>
+
+                  <label className="text-xs text-gray-600 dark:text-gray-300">
+                    Author
+                    <input
+                      name="author"
+                      defaultValue={author}
+                      placeholder="username / name"
+                      className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                    />
+                  </label>
+
                   <label className="text-xs text-gray-600 dark:text-gray-300">
                     Min chapters
                     <input
@@ -408,6 +316,7 @@ export default async function SearchPage({
                       className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
                     />
                   </label>
+
                   <label className="text-xs text-gray-600 dark:text-gray-300">
                     Max chapters
                     <input
@@ -418,23 +327,37 @@ export default async function SearchPage({
                       className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
                     />
                   </label>
+
                   <label className="text-xs text-gray-600 dark:text-gray-300 col-span-2">
-                    NSFW
-                    <select
-                      name="mature"
-                      defaultValue={mature || (defaultHideMature ? "hide" : "include")}
+                    Translator
+                    <input
+                      name="translator"
+                      defaultValue={translator}
+                      placeholder="username / name"
                       className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
-                    >
-                      <option value="hide">Hide (default)</option>
-                      <option value="include">Include</option>
-                      <option value="only">Only</option>
-                    </select>
-                    {!canViewMature ? (
-                      <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
-                        Hey, you! NSWF is not for minors. It's also haram.
-                      </div>
-                    ) : null}
+                    />
                   </label>
+
+                  {showMatureFilter ? (
+                    <label className="text-xs text-gray-600 dark:text-gray-300 col-span-2">
+                      Mature
+                      <select
+                        name="mature"
+                        defaultValue={mature || (defaultHideMature ? "hide" : "include")}
+                        disabled={!canViewMature}
+                        className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 disabled:opacity-60"
+                      >
+                        <option value="hide">Hide (default)</option>
+                        <option value="include">Include</option>
+                        <option value="only">Only</option>
+                      </select>
+                      {!canViewMature ? (
+                        <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
+                          Locked: enable it in Settings → Account.
+                        </div>
+                      ) : null}
+                    </label>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -484,16 +407,18 @@ export default async function SearchPage({
                 </label>
               </div>
             </div>
+
+            <label className="mt-4 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+              <input type="checkbox" name="ignoreBlocked" value="1" defaultChecked={ignoreBlocked} />
+              Ignore my blocked genres/warnings (settings)
+            </label>
           </details>
         </form>
 
         {(genre || tag || giStr || geStr || wiStr || weStr || langs.length || completion || origin || minCh || maxCh || mature) ? (
           <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
             <span className="text-gray-600 dark:text-gray-300">Active filters:</span>
-            <Link
-              href="/search"
-              className="ml-auto text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-            >
+            <Link href="/search" className="ml-auto text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
               Clear all
             </Link>
           </div>
@@ -515,8 +440,9 @@ export default async function SearchPage({
         </div>
 
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {works.map((w) => {
+          {works.map((w: any) => {
             const blur = w.isMature && !canViewMature;
+            const authorName = w.author?.name || w.author?.username || "Unknown";
             return (
               <Link
                 key={w.id}
@@ -539,19 +465,22 @@ export default async function SearchPage({
                 <div className="p-3">
                   <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
                   <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                    {w.type} • {w.author.name || w.author.username}
+                    {w.type} • {authorName}
                   </div>
                   <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
-                    {w.chapterCount} ch • {w.completion}
-                    {w.language ? ` • ${w.language.toUpperCase()}` : ""}
+                    {typeof w.chapterCount === "number" ? `${w.chapterCount} ch` : null}
+                    {w.completion ? ` • ${w.completion}` : ""}
+                    {w.language ? ` • ${String(w.language).toUpperCase()}` : ""}
                   </div>
                   <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-3">
-                    <span> {w.likeCount}</span>
-                    <span>⭐ {(Math.round(w.ratingAvg * 10) / 10).toFixed(1)} ({w.ratingCount})</span>
+                    <span>{w.likeCount ?? 0}</span>
+                    <span>
+                      ⭐ {(Math.round((w.ratingAvg ?? 0) * 10) / 10).toFixed(1)} ({w.ratingCount ?? 0})
+                    </span>
                   </div>
-                  {w.warningTags.length ? (
+                  {Array.isArray(w.warningTags) && w.warningTags.length ? (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {w.warningTags.slice(0, 3).map((t) => (
+                      {w.warningTags.slice(0, 3).map((t: any) => (
                         <span
                           key={t.slug}
                           className="text-[10px] px-2 py-1 rounded-full border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200"

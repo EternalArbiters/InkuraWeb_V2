@@ -1,19 +1,12 @@
 import Link from "next/link";
-import prisma from "@/lib/prisma";
 import PageScaffold from "../components/PageScaffold";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
 export default async function GenrePage() {
-  const genres = await prisma.genre.findMany({
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      _count: { select: { works: true } },
-    },
-  });
+  const res = await apiJson<{ genres: any[] }>("/api/genres");
+  const genres = res.ok ? res.data.genres : [];
 
   return (
     <PageScaffold
@@ -28,10 +21,7 @@ export default async function GenrePage() {
           <div>
             <h2 className="text-lg font-bold">Select a genre</h2>
           </div>
-          <Link
-            href="/search"
-            className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-          >
+          <Link href="/search" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
             Open Search
           </Link>
         </div>
@@ -47,7 +37,7 @@ export default async function GenrePage() {
                   className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <span className="font-semibold">{g.name}</span>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">{g._count.works}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-300">{g._count?.works ?? 0}</span>
                 </Link>
               </li>
             ))}

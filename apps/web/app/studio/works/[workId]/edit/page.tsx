@@ -1,52 +1,49 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import { apiJson } from "@/lib/serverApi";
 import WorkEditForm from "./WorkEditForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function WorkEditPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
+export default async function WorkEditPage({
+  params: paramsPromise,
+}: {
+  params: Promise<{ workId: string }>;
+}) {
   const params = await paramsPromise;
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  const workId = params.workId;
 
-  const [work, genres, warningTags] = await Promise.all([
-    prisma.work.findFirst({
-      where: { id: params.workId, authorId: session.user.id },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        type: true,
-        coverImage: true,
-        language: true,
-        origin: true,
-        completion: true,
-        isMature: true,
-        genres: { select: { id: true, name: true, slug: true } },
-        warningTags: { select: { id: true, name: true, slug: true } },
-        tags: { select: { id: true, name: true, slug: true } },
-      },
-    }),
-    prisma.genre.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
-    prisma.warningTag.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
+  const [workRes, genresRes, warningsRes] = await Promise.all([
+    apiJson<{ work: any }>(`/api/studio/works/${workId}`),
+    apiJson<{ genres: any[] }>("/api/genres?take=200"),
+    apiJson<{ warningTags: any[] }>("/api/warnings?take=100"),
   ]);
 
-  if (!work) redirect("/studio");
+  if (!workRes.ok) {
+    if (workRes.status === 401) {
+      redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/works/${workId}/edit`)}`);
+    }
+    redirect(`/studio/works/${workId}`);
+  }
+
+  const work = workRes.data.work;
+  const genres = genresRes.ok ? genresRes.data.genres : [];
+  const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
-      <div className="max-w-4xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit Work</h1>
-          <Link href={`/studio/works/${work.id}`} className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-            ← Back
+      <div className="max-w-3xl mx-auto px-4 py-10">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit work</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update metadata, tags, and credits.</p>
+          </div>
+          <Link href={`/studio/works/${workId}`} className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+            Back →
           </Link>
         </div>
 
-        <WorkEditForm work={work as any} genres={genres} warningTags={warningTags} />
+        <WorkEditForm work={work as any} genres={genres as any} warningTags={warningTags as any} />
       </div>
     </main>
   );

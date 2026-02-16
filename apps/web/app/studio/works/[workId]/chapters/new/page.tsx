@@ -1,34 +1,31 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 import ChapterCreateForm from "./ChapterCreateForm";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewChapterPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
+export default async function NewChapterPage({
+  params: paramsPromise,
+}: {
+  params: Promise<{ workId: string }>;
+}) {
   const params = await paramsPromise;
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  const workId = params.workId;
 
-  const [work, warningTags] = await Promise.all([
-    prisma.work.findFirst({
-      where: { id: params.workId, authorId: session.user.id },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        chapters: { select: { number: true }, orderBy: { number: "desc" }, take: 1 },
-      },
-    }),
-    prisma.warningTag.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
+  const [workRes, warningsRes] = await Promise.all([
+    apiJson<{ work: any }>(`/api/studio/works/${workId}`),
+    apiJson<{ warningTags: any[] }>("/api/warnings"),
   ]);
 
-  if (!work) redirect("/studio");
+  if (!workRes.ok) redirect("/studio");
 
-  const last = work.chapters[0]?.number || 0;
-  const nextNumber = last + 1;
+  const work = workRes.data.work;
+  const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
+
+  const chapters = Array.isArray(work.chapters) ? work.chapters : [];
+  const lastNum = chapters.length ? chapters[chapters.length - 1].number : 0;
+  const nextNumber = lastNum + 1;
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

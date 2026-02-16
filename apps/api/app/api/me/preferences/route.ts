@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { parseJsonStringArray, stringifyJsonStringArray } from "@/lib/prefs";
 
+export const runtime = "nodejs";
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -15,6 +17,8 @@ export async function GET() {
     select: {
       id: true,
       matureOptIn: true,
+      adultConfirmed: true,
+      creatorRole: true,
       preferredLanguagesJson: true,
       blockedGenres: { select: { id: true, name: true, slug: true } },
       blockedWarnings: { select: { id: true, name: true, slug: true } },
@@ -25,7 +29,9 @@ export async function GET() {
 
   return NextResponse.json({
     prefs: {
+      adultConfirmed: user.adultConfirmed,
       matureOptIn: user.matureOptIn,
+      creatorRole: user.creatorRole,
       preferredLanguages: parseJsonStringArray(user.preferredLanguagesJson),
       blockedGenreIds: user.blockedGenres.map((g) => g.id),
       blockedWarningIds: user.blockedWarnings.map((w) => w.id),
@@ -41,13 +47,42 @@ export async function PATCH(req: Request) {
 
   const body = await req.json().catch(() => ({} as any));
 
+  const adultConfirmed = typeof body.adultConfirmed === "boolean" ? body.adultConfirmed : undefined;
   const matureOptIn = typeof body.matureOptIn === "boolean" ? body.matureOptIn : undefined;
+  const creatorRole = typeof body.creatorRole === "string" ? body.creatorRole : undefined;
+
   const preferredLanguages = Array.isArray(body.preferredLanguages) ? body.preferredLanguages.map(String) : undefined;
   const blockedGenreIds = Array.isArray(body.blockedGenreIds) ? body.blockedGenreIds.map(String) : undefined;
   const blockedWarningIds = Array.isArray(body.blockedWarningIds) ? body.blockedWarningIds.map(String) : undefined;
 
+  // Enforce NSFW rule:
+  // - matureOptIn only meaningful if adultConfirmed=true
+  // - adultConfirmed can only be turned ON (not turned off) from UI flow
+  const current = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { adultConfirmed: true },
+  });
+
   const data: any = {};
-  if (matureOptIn !== undefined) data.matureOptIn = matureOptIn;
+
+  if (adultConfirmed !== undefined) {
+    // Only allow setting to true; ignore attempts to set false.
+    if (adultConfirmed === true && !current?.adultConfirmed) data.adultConfirmed = true;
+  }
+
+  if (matureOptIn !== undefined) {
+    // Only allow opt-in if adultConfirmed is (now) true.
+    const willBeAdult = (data.adultConfirmed ?? current?.adultConfirmed) === true;
+    data.matureOptIn = willBeAdult ? matureOptIn : false;
+  }
+
+  if (creatorRole) {
+    const upper = creatorRole.toUpperCase();
+    if (["READER", "AUTHOR", "TRANSLATOR", "UPLOADER"].includes(upper)) {
+      data.creatorRole = upper;
+    }
+  }
+
   if (preferredLanguages !== undefined) data.preferredLanguagesJson = stringifyJsonStringArray(preferredLanguages);
   if (blockedGenreIds !== undefined) data.blockedGenres = { set: blockedGenreIds.map((id: string) => ({ id })) };
   if (blockedWarningIds !== undefined) data.blockedWarnings = { set: blockedWarningIds.map((id: string) => ({ id })) };

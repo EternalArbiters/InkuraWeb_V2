@@ -1,51 +1,26 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 import AdminReportsClient from "./AdminReportsClient";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminReportsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
+  const res = await apiJson<{ reports: any[] }>("/api/admin/reports");
+  if (!res.ok) {
     redirect("/home");
   }
 
-  const reports = await prisma.report.findMany({
-    where: { status: "OPEN" },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    include: { reporter: { select: { id: true, username: true, name: true } } },
-  });
-
-  const commentIds = Array.from(new Set(reports.map((r) => r.targetId))).filter(Boolean);
-  const comments = commentIds.length
-    ? await prisma.comment.findMany({
-        where: { id: { in: commentIds } },
-        select: {
-          id: true,
-          body: true,
-          isHidden: true,
-          createdAt: true,
-          user: { select: { id: true, username: true, name: true } },
-          chapter: { select: { id: true, title: true, number: true, work: { select: { id: true, title: true, slug: true } } } },
-        },
-      })
-    : [];
-  const commentMap = new Map(comments.map((c) => [c.id, c]));
-
-  const initial = reports.map((r) => ({
+  const initial = (res.data.reports || []).map((r: any) => ({
     id: r.id,
-    createdAt: r.createdAt.toISOString(),
+    createdAt: r.createdAt,
     reason: r.reason,
     reporter: r.reporter,
     targetId: r.targetId,
-    comment: commentMap.get(r.targetId)
+    comment: r.comment
       ? {
-          ...commentMap.get(r.targetId)!,
-          createdAt: commentMap.get(r.targetId)!.createdAt.toISOString(),
+          ...r.comment,
+          createdAt: r.comment.createdAt,
         }
       : null,
   }));

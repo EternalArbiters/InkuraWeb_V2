@@ -1,57 +1,79 @@
 "use client";
 
-import * as React from "react";
 import { useRouter } from "next/navigation";
+import * as React from "react";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
-import TagMultiInput from "@/components/TagMultiInput";
-import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 
-type Props = {
+function roleToPublishType(role: string): "ORIGINAL" | "TRANSLATION" | "REUPLOAD" {
+  const r = (role || "").toUpperCase();
+  if (r === "TRANSLATOR") return "TRANSLATION";
+  if (r === "UPLOADER") return "REUPLOAD";
+  return "ORIGINAL";
+}
+
+export default function NewWorkForm({
+  genres,
+  warningTags,
+  creatorRole,
+}: {
   genres: PickerItem[];
   warningTags: PickerItem[];
-};
-
-export default function NewWorkForm({ genres, warningTags }: Props) {
+  creatorRole: string;
+}) {
   const router = useRouter();
+
+  const publishType = roleToPublishType(creatorRole);
+
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">("NOVEL");
-  const [language, setLanguage] = React.useState("id");
-  const [origin, setOrigin] = React.useState("ORIGINAL");
-  const [completion, setCompletion] = React.useState("ONGOING");
   const [isMature, setIsMature] = React.useState(false);
 
-  const [genreIds, setGenreIds] = React.useState<string[]>([]);
-  const [warningIds, setWarningIds] = React.useState<string[]>([]);
-  const [tags, setTags] = React.useState<string[]>([]);
-  const [coverFile, setCoverFile] = React.useState<File | null>(null);
+  const [selectedGenreIds, setSelectedGenreIds] = React.useState<string[]>([]);
+  const [selectedWarningIds, setSelectedWarningIds] = React.useState<string[]>([]);
+
+  const [originalAuthorCredit, setOriginalAuthorCredit] = React.useState("");
+  const [sourceUrl, setSourceUrl] = React.useState("");
+  const [uploaderNote, setUploaderNote] = React.useState("");
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!title.trim()) return setError("Title is required");
+    if (needsSource) {
+      if (!originalAuthorCredit.trim()) return setError("Original author credit is required");
+      if (!sourceUrl.trim()) return setError("Source URL is required");
+    }
+
     setLoading(true);
     try {
-      const fd = new FormData();
-      fd.append("title", title);
-      fd.append("description", description);
-      fd.append("type", type);
-      fd.append("language", language);
-      fd.append("origin", origin);
-      fd.append("completion", completion);
-      fd.append("isMature", String(isMature));
-      fd.append("genreIds", JSON.stringify(genreIds));
-      fd.append("warningTagIds", JSON.stringify(warningIds));
-      fd.append("tags", JSON.stringify(tags));
-      if (coverFile) fd.append("cover", coverFile);
+      const res = await fetch("/api/studio/works", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          type,
+          isMature,
+          genreIds: selectedGenreIds,
+          warningTagIds: selectedWarningIds,
+          publishType,
+          originalAuthorCredit: needsSource ? originalAuthorCredit : null,
+          sourceUrl: needsSource ? sourceUrl : null,
+          uploaderNote: publishType === "REUPLOAD" ? uploaderNote : null,
+        }),
+      });
 
-      const res = await fetch("/api/studio/works", { method: "POST", body: fd });
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Failed");
+      if (!res.ok) throw new Error(json?.error || "Failed to create work");
 
-      router.push(`/studio/works/${json.id}`);
+      router.push(`/studio/works/${json.work.id}`);
       router.refresh();
     } catch (err: any) {
       setError(err?.message || "Error");
@@ -63,142 +85,115 @@ export default function NewWorkForm({ genres, warningTags }: Props) {
   return (
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
       {error ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          {error}
-        </div>
+        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">{error}</div>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Title</span>
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+        <div className="text-sm font-semibold">Publish type</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">
+          Ditentukan oleh role kamu (<b>{creatorRole}</b>).
+        </div>
+        <div className="inline-flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-semibold bg-gray-50 dark:bg-gray-900">
+            {publishType}
+          </span>
+          {needsSource ? <span className="text-xs text-yellow-700 dark:text-yellow-300">Requires credit + source</span> : null}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+        <label className="text-sm font-semibold">
+          Title
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Judul karya..."
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-            required
+            className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Type</span>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as any)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          >
-            <option value="NOVEL">Novel</option>
-            <option value="COMIC">Comic</option>
-          </select>
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Language</span>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          >
-            {LANGUAGE_CATALOG.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Completion</span>
-          <select
-            value={completion}
-            onChange={(e) => setCompletion(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          >
-            <option value="ONGOING">Ongoing</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="HIATUS">Hiatus</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Origin</span>
-          <select
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          >
-            <option value="ORIGINAL">Original</option>
-            <option value="FANFIC">Fanfic</option>
-            <option value="ADAPTATION">Adaptation</option>
-            <option value="UNKNOWN">Unknown</option>
-          </select>
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Cover</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        <label className="text-sm font-semibold">
+          Description
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            Upload cover. Server akan auto-crop center + compress (WebP) untuk ukuran cover.
-          </span>
         </label>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-          <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
-          <div>
-            <div className="text-sm font-semibold">18+ / Mature</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Kalau aktif, viewer wajib opt-in 18+ di Settings sebelum bisa membaca.
-            </div>
-          </div>
-        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label className="text-sm font-semibold">
+            Type
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value as any)}
+              className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            >
+              <option value="NOVEL">Novel</option>
+              <option value="COMIC">Comic</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 text-sm font-semibold mt-8">
+            <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
+            Mature (18+)
+          </label>
+        </div>
       </div>
 
-      <label className="grid gap-2">
-        <span className="text-sm font-semibold">Description</span>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Sinopsis singkat..."
-          rows={5}
-          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-        />
-      </label>
+      {needsSource ? (
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+          <div className="text-sm font-semibold">Credit & source</div>
+          <label className="text-sm font-semibold">
+            Original author credit
+            <input
+              value={originalAuthorCredit}
+              onChange={(e) => setOriginalAuthorCredit(e.target.value)}
+              placeholder="Nama author asli"
+              className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            />
+          </label>
 
-      <MultiSelectPicker
-        title="Genres"
-        subtitle="Unlimited selection."
-        items={genres}
-        selectedIds={genreIds}
-        onChange={setGenreIds}
-      />
+          <label className="text-sm font-semibold">
+            Source URL
+            <input
+              value={sourceUrl}
+              onChange={(e) => setSourceUrl(e.target.value)}
+              placeholder="https://..."
+              className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            />
+          </label>
+
+          {publishType === "REUPLOAD" ? (
+            <label className="text-sm font-semibold">
+              Uploader note (optional)
+              <textarea
+                value={uploaderNote}
+                onChange={(e) => setUploaderNote(e.target.value)}
+                rows={3}
+                className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              />
+            </label>
+          ) : null}
+        </div>
+      ) : null}
+
+      <MultiSelectPicker title="Genres" subtitle="Pilih genre yang relevan" items={genres} selectedIds={selectedGenreIds} onChange={setSelectedGenreIds} />
 
       <MultiSelectPicker
         title="Warnings"
-        subtitle="Content warnings untuk karya (gore, sexual content, dll)."
+        subtitle="Pilih warning tags yang relevan"
         items={warningTags}
-        selectedIds={warningIds}
-        onChange={setWarningIds}
+        selectedIds={selectedWarningIds}
+        onChange={setSelectedWarningIds}
       />
 
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-        <TagMultiInput value={tags} onChange={setTags} placeholder="Tambah tag, enter untuk simpan..." />
-      </div>
-
-      <div className="flex items-center justify-end gap-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
-        >
-          {loading ? "Saving..." : "Create"}
-        </button>
-      </div>
+      <button
+        disabled={loading}
+        className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+      >
+        {loading ? "Creating..." : "Create"}
+      </button>
     </form>
   );
 }

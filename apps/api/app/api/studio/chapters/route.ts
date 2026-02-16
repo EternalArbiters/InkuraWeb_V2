@@ -6,6 +6,13 @@ import { savePublicUpload } from "@/lib/upload";
 
 export const runtime = "nodejs";
 
+async function getCreator(sessionUserId: string) {
+  return prisma.user.findUnique({
+    where: { id: sessionUserId },
+    select: { role: true, creatorRole: true },
+  });
+}
+
 function safeJsonArray(v: unknown): string[] {
   if (typeof v !== "string") return [];
   try {
@@ -41,6 +48,12 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const me = await getCreator(session.user.id);
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (me.role !== "ADMIN" && me.creatorRole === "READER") {
+    return NextResponse.json({ error: "Creator role required" }, { status: 403 });
   }
 
   try {

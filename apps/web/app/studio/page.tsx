@@ -1,98 +1,80 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent("/studio")}`);
+  const [prefsRes, worksRes] = await Promise.all([
+    apiJson<{ prefs: any }>("/api/me/preferences"),
+    apiJson<{ works: any[] }>("/api/studio/works"),
+  ]);
+
+  if (!prefsRes.ok) {
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio`)}`);
   }
 
-  const works = await prisma.work.findMany({
-    where: { authorId: session.user.id },
-    orderBy: { updatedAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      type: true,
-      status: true,
-      coverImage: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  const creatorRole = String(prefsRes.data.prefs.creatorRole || "READER").toUpperCase();
+  const canCreate = creatorRole !== "READER";
+
+  const works = worksRes.ok ? worksRes.data.works : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Creator Studio</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Studio</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Role: {creatorRole}</p>
           </div>
-
-          <Link
-            href="/studio/new"
-            className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110"
-          >
-            + Create New Work
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/settings/account"
+              className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+            >
+              Settings
+            </Link>
+            {canCreate ? (
+              <Link
+                href="/studio/new"
+                className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110"
+              >
+                Create new
+              </Link>
+            ) : null}
+          </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {!canCreate ? (
+          <div className="mt-6 rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/40 p-4 text-sm">
+            Kamu masih <b>Reader</b>. Untuk upload karya, pilih role (Author / Translator / Uploader) di Settings.
+          </div>
+        ) : null}
+
+        <div className="mt-8 grid gap-3">
           {works.length === 0 ? (
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-              <h2 className="text-xl font-bold">There are no works yet</h2>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                Click the <b>"Create New Work"</b> button to get started.
-              </p>
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
+              Belum ada karya.
             </div>
-          ) : null}
-
-          {works.map((w) => (
-            <div
-              key={w.id}
-              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 flex gap-4"
-            >
-              <div className="w-20 h-28 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 flex items-center justify-center">
-                {w.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={w.coverImage} alt={w.title} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs opacity-60">No Cover</span>
-                )}
-              </div>
-
-              <div className="flex-1">
-                <div className="flex items-start justify-between gap-3">
+          ) : (
+            works.map((w) => (
+              <Link
+                key={w.id}
+                href={`/studio/works/${w.id}`}
+                className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition"
+              >
+                <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-bold leading-snug">{w.title}</h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                      {w.type} • {w.status}
-                    </p>
+                    <div className="font-semibold">{w.title}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
+                      {w.type} • {w.publishType}
+                    </div>
                   </div>
-                  <Link
-                    href={`/studio/works/${w.id}`}
-                    className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-                  >
-                    Kelola
-                  </Link>
+                  <span className="text-sm text-purple-600 dark:text-purple-400">Open →</span>
                 </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href={`/work/${w.id}`}
-                    className="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    Lihat Detail
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
       </div>
     </main>

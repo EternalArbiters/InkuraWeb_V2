@@ -3,6 +3,15 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
+async function getCreator(sessionUserId: string) {
+  return prisma.user.findUnique({
+    where: { id: sessionUserId },
+    select: { role: true, creatorRole: true },
+  });
+}
+
 function badRequest(msg: string) {
   return NextResponse.json({ error: msg }, { status: 400 });
 }
@@ -33,7 +42,7 @@ async function loadOwnedChapter(userId: string, chapterId: string) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
     include: {
-      work: { select: { id: true, type: true, authorId: true } },
+      work: { select: { id: true, title: true, type: true, authorId: true } },
       text: true,
       warningTags: true,
       pages: { orderBy: { order: "asc" } },
@@ -52,6 +61,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const me = await getCreator(session.user.id);
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (me.role !== "ADMIN" && me.creatorRole === "READER") {
+    return NextResponse.json({ error: "Creator role required" }, { status: 403 });
+  }
+
   const res = await loadOwnedChapter(session.user.id, chapterId);
   if (res.kind === "not_found") return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (res.kind === "forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -63,6 +78,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const me = await getCreator(session.user.id);
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (me.role !== "ADMIN" && me.creatorRole === "READER") {
+    return NextResponse.json({ error: "Creator role required" }, { status: 403 });
   }
 
   const owned = await loadOwnedChapter(session.user.id, chapterId);

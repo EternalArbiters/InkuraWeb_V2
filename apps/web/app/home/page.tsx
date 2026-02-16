@@ -1,96 +1,60 @@
-'use client';
+import Link from "next/link";
+import { apiJson } from "@/lib/serverApi";
+import WorkRail from "./WorkRail";
 
-import HeroSpotlight from './HeroSpotlight';
-import PersonalizedSlider from './PersonalizedSlider';
-import GenreBrowseSection from './GenreBrowseSection';
-import TrendingSection from './TrendingSection';
-import RecentUpdatesList from './RecentUpdatesList';
-import CreatorSpotlight from './CreatorSpotlight';
-import CommunityPulse from './CommunityPulse';
-import CTAAppDownload from './CTAAppDownload';
-import Footer from './Footer';
-import { FaArrowUp, FaComments } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
-import SectionWrapper from '../components/SectionWrapper';
-import Link from 'next/link';
-import { BsHeartFill } from "react-icons/bs";
+export const dynamic = "force-dynamic";
 
+export default async function HomePage() {
+  const [trendingComicsRes, trendingNovelsRes, recentRes, originalsRes, translationsRes] = await Promise.all([
+    apiJson<{ works: any[] }>("/api/works?type=COMIC&sort=liked&take=20"),
+    apiJson<{ works: any[] }>("/api/works?type=NOVEL&sort=liked&take=20"),
+    apiJson<{ works: any[] }>("/api/works?sort=newest&take=20"),
+    apiJson<{ works: any[] }>("/api/works?publishType=ORIGINAL&sort=newest&take=20"),
+    apiJson<{ works: any[] }>("/api/works?publishType=TRANSLATION&sort=newest&take=20"),
+  ]);
 
-export default function HomePage() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  const trendingComics = trendingComicsRes.ok ? trendingComicsRes.data.works : [];
+  const trendingNovels = trendingNovelsRes.ok ? trendingNovelsRes.data.works : [];
+  const recent = recentRes.ok ? recentRes.data.works : [];
+  const originals = originalsRes.ok ? originalsRes.data.works : [];
+  const translations = translationsRes.ok ? translationsRes.data.works : [];
 
   return (
-    <main className="min-h-screen">
-      {scrollY > 300 && (
-        <div className="fixed right-4 bottom-4 z-50 flex flex-col items-end gap-4">
-          {/* Scroll to Top Button – SELALU muncul */}
-          <button
-            id="scrollToTop"
-            onClick={scrollToTop}
-            className="p-4 md:p-5 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg hover:scale-110 transition"
-            aria-label="Scroll to top"
-          >
-            <FaArrowUp size={18} className="md:size-5" />
-          </button>
+    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+        <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Home</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              Semua section pakai horizontal scroll biasa. Cari karya lewat Search kalau mau filter lengkap.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/search"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+            >
+              Search
+            </Link>
+            <Link
+              href="/library"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+            >
+              Library
+            </Link>
+          </div>
+        </header>
 
-          
-          <Link
-            href="/chat"
-            className="hidden md:flex p-4 md:p-5 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg hover:scale-110 transition items-center justify-center"
-            aria-label="Chat Elya"
-          >
-            <img
-              src="/images/chat-elie.png"
-              alt="Elya Icon"
-              className="w-4 h-4 md:w-5 md:h-5 object-contain scale-[1.2] md:scale-[1.8]"
-            />
-          </Link>
-        </div>
-      )}
+        <WorkRail title="Trending Comics" href="/comic?sort=liked" works={trendingComics} />
+        <WorkRail title="Trending Novels" href="/novel?sort=liked" works={trendingNovels} />
+        <WorkRail title="New Originals" href="/all?publishType=ORIGINAL&sort=newest" works={originals} />
+        <WorkRail title="Latest Translations" href="/all?publishType=TRANSLATION&sort=newest" works={translations} />
+        <WorkRail title="Recently Updated" href="/all?sort=newest" works={recent} />
 
-
-      {/* Main Sections with Alternating Backgrounds */}
-      <SectionWrapper index={0}>
-        <HeroSpotlight />
-      </SectionWrapper>
-
-      <SectionWrapper index={1}>
-        <PersonalizedSlider />
-      </SectionWrapper>
-
-      <SectionWrapper index={2}>
-        <GenreBrowseSection />
-      </SectionWrapper>
-
-      <SectionWrapper index={3}>
-        <TrendingSection />
-      </SectionWrapper>
-
-      <SectionWrapper index={4}>
-        <RecentUpdatesList />
-      </SectionWrapper>
-
-      <SectionWrapper index={5}>
-        <CreatorSpotlight />
-      </SectionWrapper>
-
-      <SectionWrapper index={6}>
-        <CommunityPulse />
-      </SectionWrapper>
-
-      <SectionWrapper index={7}>
-        <CTAAppDownload />
-      </SectionWrapper>
-
-      <Footer />
+        <footer className="pt-6 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-300">
+          Inkura v12
+        </footer>
+      </div>
     </main>
   );
 }

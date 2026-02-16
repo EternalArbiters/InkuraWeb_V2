@@ -3,6 +3,30 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const take = Math.min(100, Math.max(1, parseInt(searchParams.get("take") || "50", 10) || 50));
+
+  const progress = await prisma.readingProgress.findMany({
+    where: { userId: session.user.id },
+    orderBy: { updatedAt: "desc" },
+    take,
+    include: {
+      work: { select: { id: true, slug: true, title: true, type: true } },
+      chapter: { select: { id: true, number: true, title: true } },
+    },
+  });
+
+  return NextResponse.json({ progress });
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

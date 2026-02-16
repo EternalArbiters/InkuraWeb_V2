@@ -16,6 +16,10 @@ type Work = {
   origin: string;
   completion: string;
   isMature: boolean;
+  publishType?: "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
+  originalAuthorCredit?: string | null;
+  sourceUrl?: string | null;
+  uploaderNote?: string | null;
   genres: { id: string; name: string; slug: string }[];
   warningTags: { id: string; name: string; slug: string }[];
   tags: { id: string; name: string; slug: string }[];
@@ -29,6 +33,10 @@ type Props = {
 
 export default function WorkEditForm({ work, genres, warningTags }: Props) {
   const router = useRouter();
+
+  const publishType = (work.publishType || "ORIGINAL").toUpperCase() as Work["publishType"];
+  const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
+
   const [title, setTitle] = React.useState(work.title);
   const [description, setDescription] = React.useState(work.description || "");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">(work.type);
@@ -36,6 +44,10 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
   const [origin, setOrigin] = React.useState(work.origin || "UNKNOWN");
   const [completion, setCompletion] = React.useState(work.completion || "ONGOING");
   const [isMature, setIsMature] = React.useState(!!work.isMature);
+
+  const [originalAuthorCredit, setOriginalAuthorCredit] = React.useState(work.originalAuthorCredit || "");
+  const [sourceUrl, setSourceUrl] = React.useState(work.sourceUrl || "");
+  const [uploaderNote, setUploaderNote] = React.useState(work.uploaderNote || "");
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
@@ -50,6 +62,12 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (needsSource) {
+      if (!originalAuthorCredit.trim()) return setError("Original author credit is required");
+      if (!sourceUrl.trim()) return setError("Source URL is required");
+    }
+
     setLoading(true);
     try {
       const fd = new FormData();
@@ -64,6 +82,15 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
       fd.append("warningTagIds", JSON.stringify(warningIds));
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
+
+      if (needsSource) {
+        fd.append("originalAuthorCredit", originalAuthorCredit);
+        fd.append("sourceUrl", sourceUrl);
+      }
+      if (publishType === "REUPLOAD") {
+        fd.append("uploaderNote", uploaderNote);
+      }
+
       if (coverFile) fd.append("cover", coverFile);
 
       const res = await fetch(`/api/studio/works/${work.id}`, { method: "PATCH", body: fd });
@@ -84,6 +111,52 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
       {error ? (
         <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
           {error}
+        </div>
+      ) : null}
+
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
+        <div className="text-sm font-semibold">Publish type</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">
+          Publish type terkunci (ditentukan saat dibuat). Untuk Translation/Reupload, credit + source wajib.
+        </div>
+        <span className="inline-flex w-fit px-3 py-1 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-semibold bg-gray-50 dark:bg-gray-900">
+          {publishType}
+        </span>
+      </div>
+
+      {needsSource ? (
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+          <div className="text-sm font-semibold">Credit & source</div>
+
+          <label className="grid gap-2">
+            <span className="text-sm font-semibold">Original author credit</span>
+            <input
+              value={originalAuthorCredit}
+              onChange={(e) => setOriginalAuthorCredit(e.target.value)}
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            />
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-sm font-semibold">Source URL</span>
+            <input
+              value={sourceUrl}
+              onChange={(e) => setSourceUrl(e.target.value)}
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            />
+          </label>
+
+          {publishType === "REUPLOAD" ? (
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Uploader note (optional)</span>
+              <textarea
+                value={uploaderNote}
+                onChange={(e) => setUploaderNote(e.target.value)}
+                rows={3}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              />
+            </label>
+          ) : null}
         </div>
       ) : null}
 
@@ -167,9 +240,7 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
               Remove existing cover
             </label>
           ) : null}
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            Server akan auto-crop center + compress (WebP).
-          </span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">Server akan auto-crop center + compress (WebP).</span>
         </label>
 
         <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">

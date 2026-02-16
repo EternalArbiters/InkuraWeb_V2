@@ -1,78 +1,57 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
-import PageScaffold from "../../components/PageScaffold";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
-export default async function HistorySettingsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+export default async function ReadingHistoryPage() {
+  const res = await apiJson<{ progress: any[] }>("/api/progress?take=100");
+  if (!res.ok) {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/settings/history`)}`);
   }
 
-  const progress = await prisma.readingProgress.findMany({
-    where: { userId: session.user.id },
-    orderBy: { updatedAt: "desc" },
-    take: 50,
-    include: {
-      work: { select: { slug: true, title: true, type: true } },
-      chapter: { select: { id: true, number: true, title: true } },
-    },
-  });
+  const progress = res.data.progress || [];
 
   return (
-    <PageScaffold
-      title="History Reading"
-      crumbs={[
-        { label: "Home", href: "/home" },
-        { label: "History", href: "/settings/history" },
-      ]}
-    >
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-        {progress.length === 0 ? (
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            There's no history yet. Open one chapter first.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {progress.map((p) => (
-              <Link
-                key={p.workId}
-                href={`/w/${p.work.slug}/read/${p.chapterId}`}
-                className="block rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                <div className="font-semibold">{p.work.title}</div>
-                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                  {p.work.type} • Chapter {p.chapter?.number}: {p.chapter?.title}
-                </div>
-                {p.progress != null ? (
-                  <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300">
-                    Progress: <b>{Math.round(p.progress * 100)}%</b>
-                  </div>
-                ) : null}
-              </Link>
-            ))}
+    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <div className="max-w-4xl mx-auto px-4 py-10">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Reading History</h1>
           </div>
-        )}
-
-        <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href="/library"
-            className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110"
+            href="/settings/account"
+            className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
           >
-            Open Library
-          </Link>
-          <Link
-            href="/home"
-            className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Return to Home
+            Account Settings
           </Link>
         </div>
+
+        {progress.length === 0 ? (
+          <p className="mt-6 text-sm text-gray-600 dark:text-gray-300">No history yet.</p>
+        ) : (
+          <ul className="mt-6 grid gap-3">
+            {progress.map((p) => (
+              <li key={p.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-semibold">{p.work?.title}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      Chapter {p.chapter?.number}: {p.chapter?.title}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/w/${p.work?.slug}/read/${p.chapter?.id}`}
+                    className="rounded-full px-4 py-2 text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700"
+                  >
+                    Open
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-    </PageScaffold>
+    </main>
   );
 }

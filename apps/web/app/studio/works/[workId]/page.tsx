@@ -1,126 +1,131 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { apiJson } from "@/lib/serverApi";
 import PublishToggle from "./PublishToggle";
 
 export const dynamic = "force-dynamic";
 
-export default async function StudioWorkPage({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
+export default async function StudioWorkPage({
+  params: paramsPromise,
+}: {
+  params: Promise<{ workId: string }>;
+}) {
   const params = await paramsPromise;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/works/${params.workId}`)}`);
-  }
+  const workId = params.workId;
 
-  const work = await prisma.work.findUnique({
-    where: { id: params.workId },
-    include: {
-      chapters: {
-        orderBy: { number: "asc" },
-        include: { pages: true, text: true },
-      },
-    },
-  });
-
-  if (!work) return notFound();
-  if (work.authorId !== session.user.id) {
+  const res = await apiJson<{ work: any }>(`/api/studio/works/${workId}`);
+  if (!res.ok) {
     redirect("/studio");
   }
 
+  const work = res.data.work;
+  const publishType = String(work.publishType || "ORIGINAL").toUpperCase();
+  const isComic = work.type === "COMIC";
+
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <main className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight"> {work.title}</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              {work.type} • {work.status} • id: <span className="font-mono text-xs">{work.id}</span>
-            </p>
+            <div className="text-3xl font-extrabold tracking-tight">{work.title}</div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+              <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
+              <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{publishType}</span>
+              <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.status}</span>
+              <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">slug: {work.slug}</span>
+            </div>
+
+            {publishType !== "ORIGINAL" ? (
+              <div className="mt-3 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                {work.originalAuthorCredit ? (
+                  <div>
+                    Original credit: <b>{work.originalAuthorCredit}</b>
+                  </div>
+                ) : null}
+                {work.sourceUrl ? (
+                  <div>
+                    Source:{" "}
+                    <a
+                      className="text-purple-600 dark:text-purple-400 hover:underline break-all"
+                      href={work.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {work.sourceUrl}
+                    </a>
+                  </div>
+                ) : null}
+                {publishType === "REUPLOAD" && work.uploaderNote ? (
+                  <div className="italic">{work.uploaderNote}</div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2">
+            <PublishToggle workId={work.id} currentStatus={work.status} />
             <Link
               href={`/studio/works/${work.id}/edit`}
-              className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold text-center"
             >
-              Edit Work
+              Edit metadata
             </Link>
-            <PublishToggle workId={work.id} status={work.status as any} />
             <Link
               href={`/studio/works/${work.id}/chapters/new`}
-              className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110"
+              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center"
             >
-              + Buat Chapter
+              New chapter
             </Link>
             <Link
               href={`/w/${work.slug}`}
-              className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center"
             >
-              Lihat Publik
+              View public page
             </Link>
           </div>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-          <h2 className="text-xl font-bold">Chapters</h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            Minimal MVP: buat chapter → upload teks (novel) atau upload pages (comic) → buka reader.
-          </p>
+        <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-800">
+            <div className="text-sm font-semibold">Chapters</div>
+          </div>
 
-          {work.chapters.length === 0 ? (
-            <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">Belum ada chapter.</div>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {work.chapters.map((c) => {
-                const hasText = !!c.text?.content;
-                const pageCount = c.pages?.length || 0;
-                const readerHref =
-                  `/w/${work.slug}/read/${c.id}`;
-
-                return (
-                  <div
-                    key={c.id}
-                    className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-                  >
-                    <div>
-                      <div className="font-bold">
-                        Chapter {c.number}: {c.title}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                        {work.type === "NOVEL" ? (hasText ? "Text: OK" : "Text: kosong") : `Pages: ${pageCount}`} • id: {c.id}
-                      </div>
+          <div className="divide-y divide-gray-200 dark:divide-gray-800">
+            {(work.chapters || []).length === 0 ? (
+              <div className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">Belum ada chapter.</div>
+            ) : (
+              (work.chapters || []).map((ch: any) => (
+                <div key={ch.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold truncate">
+                      #{ch.number} — {ch.title}
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Link
-                        href={readerHref}
-                        className="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        Buka Reader
-                      </Link>
-
-                      <Link
-                        href={`/studio/works/${work.id}/chapters/${c.id}/edit`}
-                        className="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        Edit Chapter
-                      </Link>
-
-                      {work.type === "COMIC" ? (
-                        <Link
-                          href={`/studio/works/${work.id}/chapters/${c.id}/pages`}
-                          className="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                        >
-                          Manage Pages
-                        </Link>
-                      ) : null}
+                    <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
+                      {ch.status === "PUBLISHED" ? "Published" : "Draft"}
+                      {ch.isMature ? " • Mature" : ""}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+
+                  <div className="flex gap-2 shrink-0">
+                    <Link
+                      href={`/studio/works/${work.id}/chapters/${ch.id}/edit`}
+                      className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
+                    >
+                      Edit
+                    </Link>
+                    {isComic ? (
+                      <Link
+                        href={`/studio/works/${work.id}/chapters/${ch.id}/pages`}
+                        className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
+                      >
+                        Pages
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </main>

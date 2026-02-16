@@ -1,23 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 import NotificationsClient from "./NotificationsClient";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/notifications`)}`);
-  }
-
-  const notifications = await prisma.notification.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  const res = await apiJson<{ notifications: any[] }>("/api/notifications");
+  const notifications = res.ok ? res.data.notifications : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -34,10 +23,7 @@ export default async function NotificationsPage() {
           </Link>
         </div>
 
-        <NotificationsClient initial={notifications.map((n) => ({
-          ...n,
-          createdAt: n.createdAt.toISOString(),
-        })) as any} />
+        <NotificationsClient initial={notifications as any} />
       </div>
     </main>
   );

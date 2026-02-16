@@ -1,12 +1,12 @@
 import { notFound, redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
+import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
 // Legacy route: /work/[workId] -> /w/[slug]
 export default async function WorkLegacyRedirect({ params: paramsPromise }: { params: Promise<{ workId: string }> }) {
   const params = await paramsPromise;
-  const work = await prisma.work.findUnique({ where: { id: params.workId }, select: { slug: true } });
-  if (!work) return notFound();
-  redirect(`/w/${work.slug}`);
+  const res = await apiJson<{ work: { id: string; slug: string } }>(`/api/works/${params.workId}`);
+  if (!res.ok || !res.data.work?.slug) return notFound();
+  redirect(`/w/${res.data.work.slug}`);
 }
