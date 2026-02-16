@@ -63,7 +63,7 @@ export default async function StudioWorkPage({
           </div>
 
           <div className="flex flex-col gap-2">
-            <PublishToggle workId={work.id} currentStatus={work.status} />
+            <PublishToggle workId={String(work.id)} status={work.status} />
             <Link
               href={`/studio/works/${work.id}/edit`}
               className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold text-center"
