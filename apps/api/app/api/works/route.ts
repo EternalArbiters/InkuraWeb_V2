@@ -82,8 +82,8 @@ export async function GET(req: Request) {
   const excludeGenres = splitCsv(searchParams.get("ge"));
   const gmode = (searchParams.get("gmode") || "or").toLowerCase() === "and" ? "and" : "or";
 
-  const includeWarnings = splitCsv(searchParams.get("wi"));
-  const excludeWarnings = splitCsv(searchParams.get("we"));
+  let includeWarnings = splitCsv(searchParams.get("wi"));
+  let excludeWarnings = splitCsv(searchParams.get("we"));
   const wmode = (searchParams.get("wmode") || "or").toLowerCase() === "and" ? "and" : "or";
 
   // Advanced
@@ -116,6 +116,14 @@ export async function GET(req: Request) {
 
   const viewer = await getViewerWithPrefs();
   const canViewMature = !!viewer && (viewer.role === "ADMIN" || (viewer.adultConfirmed && viewer.matureOptIn));
+
+  // NSFW tag filters are age-locked. If the viewer isn't 18+ confirmed (or not logged in),
+  // ignore wi/we completely so it can't be used via URL tricks.
+  const canUseNsfwTags = !!viewer && (viewer.role === "ADMIN" || viewer.adultConfirmed === true);
+  if (!canUseNsfwTags) {
+    includeWarnings = [];
+    excludeWarnings = [];
+  }
 
   // Language default from prefs
   if (!ignoreLang && langs.length === 0 && viewer?.preferredLanguages?.length) {

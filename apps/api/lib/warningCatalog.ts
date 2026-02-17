@@ -1,6 +1,26 @@
-// Content warning catalog (work-level and/or chapter-level).
+// NSFW / 18+ tags (moved from Genre catalog).
+// These are treated as "warningTags" so they can be locked behind age-confirmation.
+export const NSFW_TAG_CATALOG: string[] = [
+  "NSFW",
+  "Adult",
+  "Mature",
+  "Ecchi",
+  "Smut",
+  "Nudity",
+  "Yuri (GL)",
+  "Yaoi (BL)",
+  "Bara (ML)",
+  "LGBTQ+",
+  "Omegaverse",
+  "Alpha/Beta/Omega",
+  "Alcohol",
+];
 
+// Content warning catalog (work-level and/or chapter-level).
 export const WARNING_CATALOG: string[] = [
+  // NSFW tags first
+  ...NSFW_TAG_CATALOG,
+
   // Sexual content
   "Sexual Content",
   "Nudity",
@@ -61,6 +81,19 @@ export const WARNING_CATALOG: string[] = [
   "Death",
   "Animal Death",
 ];
+
+// Keep slugify consistent with seed + API routes.
+export function slugifyTag(input: string) {
+  return String(input || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+export function nsfwTagSlugs() {
+  return NSFW_TAG_CATALOG.map((n) => slugifyTag(n));
+}
 
 export function uniqueWarningCatalog() {
   const seen = new Set<string>();

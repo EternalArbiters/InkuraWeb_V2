@@ -98,7 +98,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
                 {combinedWarnings.length ? (
                   <div className="mt-3">
-                    <div className="text-xs font-semibold text-amber-800 dark:text-amber-200">Warnings</div>
+                    <div className="text-xs font-semibold text-amber-800 dark:text-amber-200">NSFW</div>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {combinedWarnings.map((t: any) => (
                         <span

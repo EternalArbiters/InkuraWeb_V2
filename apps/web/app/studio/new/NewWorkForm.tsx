@@ -181,8 +181,8 @@ export default function NewWorkForm({
       <MultiSelectPicker title="Genres" subtitle="Pilih genre yang relevan" items={genres} selectedIds={selectedGenreIds} onChange={setSelectedGenreIds} />
 
       <MultiSelectPicker
-        title="Warnings"
-        subtitle="Pilih warning tags yang relevan"
+        title="NSFW"
+        subtitle="Pilih NSFW tags yang relevan (18+ / sensitive)"
         items={warningTags}
         selectedIds={selectedWarningIds}
         onChange={setSelectedWarningIds}

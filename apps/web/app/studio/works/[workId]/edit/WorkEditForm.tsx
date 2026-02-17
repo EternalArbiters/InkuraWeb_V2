@@ -267,8 +267,8 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
       <MultiSelectPicker title="Genres" subtitle="Unlimited selection." items={genres} selectedIds={genreIds} onChange={setGenreIds} />
 
       <MultiSelectPicker
-        title="Warnings"
-        subtitle="Content warnings untuk karya (gore, sexual content, dll)."
+        title="NSFW"
+        subtitle="NSFW / sensitive tags untuk karya (sexual content, gore, dll)."
         items={warningTags}
         selectedIds={warningIds}
         onChange={setWarningIds}

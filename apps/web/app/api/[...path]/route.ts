@@ -19,10 +19,11 @@ const API_BASE =
   // last-resort fallback (safe default for this project)
   "https://inkura-api.vercel.app";
 
-// Next.js 15+ type-gen expects `context.params` to be Promise-like for app route handlers
-// in some configurations. Runtime may still provide a plain object; `await` works for both.
-async function proxy(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
-  const { path } = await ctx.params;
+// Keep the route handler signature loose to satisfy Next.js route type-gen across versions.
+// Runtime provides `ctx.params.path` as string[]. Some type-gen variants model it differently.
+async function proxy(req: NextRequest, ctx: any) {
+  const resolved = await Promise.resolve(ctx);
+  const path: string[] = (resolved?.params?.path || ctx?.params?.path || []) as string[];
   const incomingUrl = new URL(req.url);
 
   // Normalize base so it works whether the env contains just the origin

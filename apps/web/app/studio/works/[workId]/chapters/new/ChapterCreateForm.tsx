@@ -122,8 +122,8 @@ export default function ChapterCreateForm({
       </div>
 
       <MultiSelectPicker
-        title="Warnings (Chapter)"
-        subtitle="Content warnings khusus chapter ini."
+        title="NSFW (Chapter)"
+        subtitle="NSFW / sensitive tags khusus chapter ini."
         items={warningTags}
         selectedIds={warningIds}
         onChange={setWarningIds}

@@ -100,6 +100,13 @@ export default async function SearchPage({
   const prefs = prefsRes.ok ? prefsRes.data.prefs : null;
   const canViewMatureByPrefs = !!prefs?.adultConfirmed && !!prefs?.matureOptIn;
   const showMatureFilter = !!prefs?.adultConfirmed;
+  const canUseNsfwTags = !!prefs?.adultConfirmed;
+
+  // NSFW filters are age-locked
+  if (!canUseNsfwTags) {
+    includeWarnings = [];
+    excludeWarnings = [];
+  }
 
   // Normalize include/exclude conflicts
   excludeGenres = excludeGenres.filter((g) => !includeGenres.includes(g));
@@ -141,9 +148,11 @@ export default async function SearchPage({
   if (excludeGenres.length) qs.set("ge", excludeGenres.join(","));
   if (includeMode === "and") qs.set("gmode", "and");
 
-  if (includeWarnings.length) qs.set("wi", includeWarnings.join(","));
-  if (excludeWarnings.length) qs.set("we", excludeWarnings.join(","));
-  if (warningMode === "and") qs.set("wmode", "and");
+  if (canUseNsfwTags) {
+    if (includeWarnings.length) qs.set("wi", includeWarnings.join(","));
+    if (excludeWarnings.length) qs.set("we", excludeWarnings.join(","));
+    if (warningMode === "and") qs.set("wmode", "and");
+  }
 
   if (langs.length) qs.set("lang", langs.join(","));
   if (completion) qs.set("completion", completion);
@@ -389,34 +398,50 @@ export default async function SearchPage({
             </div>
 
             <div className="mt-4">
-              <GenreTriStatePicker
-                genres={warningTags}
-                initialInclude={includeWarnings}
-                initialExclude={excludeWarnings}
-                nameInclude="wi"
-                nameExclude="we"
-                title="Warnings"
-                placeholder="Search for warning..."
-                fallbackFetch="warnings"
-              />
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <label className="flex items-center gap-2">
-                  <span className="text-gray-600 dark:text-gray-300">Warning include mode:</span>
-                  <select
-                    name="wmode"
-                    defaultValue={warningMode === "and" ? "and" : "or"}
-                    className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
-                  >
-                    <option value="or">OR (any included)</option>
-                    <option value="and">AND (all included)</option>
-                  </select>
-                </label>
-              </div>
+              {canUseNsfwTags ? (
+                <>
+                  <GenreTriStatePicker
+                    genres={warningTags}
+                    initialInclude={includeWarnings}
+                    initialExclude={excludeWarnings}
+                    nameInclude="wi"
+                    nameExclude="we"
+                    title="NSFW"
+                    placeholder="Search for NSFW tag..."
+                    fallbackFetch="warnings"
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <label className="flex items-center gap-2">
+                      <span className="text-gray-600 dark:text-gray-300">NSFW include mode:</span>
+                      <select
+                        name="wmode"
+                        defaultValue={warningMode === "and" ? "and" : "or"}
+                        className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
+                      >
+                        <option value="or">OR (any included)</option>
+                        <option value="and">AND (all included)</option>
+                      </select>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/30 p-4">
+                  <div className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">NSFW (Locked)</div>
+                  <div className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-100/80">
+                    Unlock di <b>Settings → Account</b> (confirm 18+).
+                  </div>
+                  <div className="mt-3">
+                    <Link href="/settings/account" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                      Open Settings →
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
 
             <label className="mt-4 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input type="checkbox" name="ignoreBlocked" value="1" defaultChecked={ignoreBlocked} />
-              Ignore my blocked genres/warnings (settings)
+              Ignore my blocked genres/NSFW (settings)
             </label>
           </details>
         </form>

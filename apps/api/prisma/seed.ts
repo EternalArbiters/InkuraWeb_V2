@@ -196,10 +196,11 @@ async function main() {
       isMature: true,
 
       genres: {
-        connect: [{ id: pickGenre("Romance").id }, { id: pickGenre("Mature").id }, { id: pickGenre("Drama").id }],
+        // "Mature" is now treated as an NSFW tag (warningTag) so it can be age-locked.
+        connect: [{ id: pickGenre("Romance").id }, { id: pickGenre("Drama").id }],
       },
       warningTags: {
-        connect: [{ id: pickWarning("Sexual Content").id }, { id: pickWarning("Nudity").id }],
+        connect: [{ id: pickWarning("NSFW").id }, { id: pickWarning("Sexual Content").id }, { id: pickWarning("Nudity").id }],
       },
 
       chapterCount: 1,

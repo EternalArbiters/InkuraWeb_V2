@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { nsfwTagSlugs } from "@/lib/warningCatalog";
 
 export const runtime = "nodejs";
 
@@ -8,14 +9,23 @@ export async function GET(req: Request) {
   const q = (searchParams.get("q") || "").trim();
   const take = Math.min(200, Math.max(1, parseInt(searchParams.get("take") || "200", 10) || 200));
 
-  const where = q
+  // Genres should not include NSFW/18+ tags (they live in warningTags so they can be age-locked).
+  const NSFW_SLUGS = nsfwTagSlugs();
+  const baseFilter: any = { slug: { notIn: NSFW_SLUGS } };
+
+  const where: any = q
     ? {
-        OR: [
-          { name: { contains: q, mode: "insensitive" as const } },
-          { slug: { contains: q.toLowerCase(), mode: "insensitive" as const } },
+        AND: [
+          baseFilter,
+          {
+            OR: [
+              { name: { contains: q, mode: "insensitive" as const } },
+              { slug: { contains: q.toLowerCase(), mode: "insensitive" as const } },
+            ],
+          },
         ],
       }
-    : undefined;
+    : baseFilter;
 
   const genres = await prisma.genre.findMany({
     where,

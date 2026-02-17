@@ -44,16 +44,8 @@ export const GENRE_CATALOG: string[] = [
   "Marriage",
   "Contract Relationship",
   "Age Gap",
-  "Yuri (GL)",
-  "Yaoi (BL)",
-  "Bara (ML)",
-  "LGBTQ+",
-  "Ecchi",
-  "Smut",
-  "Mature",
-  "Adult",
-  "NSFW",
-  "Nudity",
+  // NOTE: NSFW/18+ tags such as Yuri/Yaoi/LGBTQ+/Adult/NSFW are now in WARNING_CATALOG
+  // (as "warningTags") so they can be locked behind age-confirmation.
 
   // --- Core Genres ---
   "Action",
@@ -190,7 +182,7 @@ export const GENRE_CATALOG: string[] = [
   "Self-Harm",
   "Suicide",
   "Drug Use",
-  "Alcohol",
+  // "Alcohol" moved to warnings
   "Gambling",
   "Kidnapping",
   "Torture",
@@ -259,8 +251,7 @@ export const GENRE_CATALOG: string[] = [
   "Transgender",
 
   // --- Omegaverse etc ---
-  "Omegaverse",
-  "Alpha/Beta/Omega",
+  // moved to warnings
 
   // --- Fetish-ish (still as tags) ---
   "SM/BDSM/SUB-DOM",

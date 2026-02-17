@@ -172,8 +172,8 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
       />
 
       <MultiSelectPicker
-        title="Blocked warnings"
-        subtitle="Works with this warning will be automatically hidden (unless you click 'Ignore my blocking' in Search)."
+        title="Blocked NSFW tags"
+        subtitle="Works with this NSFW/sensitive tag will be automatically hidden (unless you click 'Ignore my blocking' in Search)."
         items={warnings}
         selectedIds={blockedWarningIds}
         onChange={setBlockedWarningIds}
