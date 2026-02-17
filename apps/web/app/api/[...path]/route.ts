@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 
+export const runtime = "nodejs";
+
 /**
  * Robust API proxy for the web app.
  *
@@ -19,11 +21,13 @@ const API_BASE =
   // last-resort fallback (safe default for this project)
   "https://inkura-api.vercel.app";
 
-// Next.js 15+ route type-gen expects the second arg to be a Promise in some builds.
-// Runtime still passes a plain object, so we normalize with Promise.resolve.
-async function proxy(req: NextRequest, ctx: Promise<any>) {
-  const resolved: any = await Promise.resolve(ctx as any);
-  const path: string[] = (resolved?.params?.path || []) as string[];
+// Next.js 15.5.x type-gen in this project expects `context.params` to be awaitable.
+// Runtime may pass a plain object; `await` works for both values and Promises.
+type RouteCtx = { params: Promise<{ path: string[] }> };
+
+async function proxy(req: NextRequest, { params }: RouteCtx) {
+  const resolved: any = await params;
+  const path: string[] = (resolved?.path || []) as string[];
   const incomingUrl = new URL(req.url);
 
   // Normalize base so it works whether the env contains just the origin
