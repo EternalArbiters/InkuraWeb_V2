@@ -369,6 +369,9 @@ export default async function SearchPage({
                 initialExclude={excludeGenres}
                 nameInclude="gi"
                 nameExclude="ge"
+                title="Genres"
+                placeholder="Search for genre..."
+                fallbackFetch="genres"
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 <label className="flex items-center gap-2">
@@ -392,6 +395,9 @@ export default async function SearchPage({
                 initialExclude={excludeWarnings}
                 nameInclude="wi"
                 nameExclude="we"
+                title="Warnings"
+                placeholder="Search for warning..."
+                fallbackFetch="warnings"
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 <label className="flex items-center gap-2">
