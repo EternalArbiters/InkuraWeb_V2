@@ -19,14 +19,19 @@ const API_BASE =
   // last-resort fallback (safe default for this project)
   "https://inkura-api.vercel.app";
 
-async function proxy(
-  req: NextRequest,
-  ctx: { params: { path: string[] } | Promise<{ path: string[] }> },
-) {
-  const { path } = await ctx.params;
+// NOTE: In Next.js App Router route handlers, `context.params` is **not** a Promise.
+// (The Promise-shaped `params` issue applies to `page.tsx`/`layout.tsx` in some setups,
+// but route handlers expect the plain object type.)
+async function proxy(req: NextRequest, ctx: { params: { path: string[] } }) {
+  const { path } = ctx.params;
   const incomingUrl = new URL(req.url);
 
-  const target = new URL(`/api/${path.join("/")}`, API_BASE.replace(/\/$/, ""));
+  // Normalize base so it works whether the env contains just the origin
+  // ("https://inkura-api.vercel.app") or already includes "/api".
+  const base = API_BASE.replace(/\/$/, "");
+  const normalizedBase = base.endsWith("/api") ? base.slice(0, -4) : base;
+
+  const target = new URL(`/api/${path.join("/")}`, normalizedBase);
   target.search = incomingUrl.search;
 
   // Prevent accidental proxy loops if someone misconfigures API_BASE.
