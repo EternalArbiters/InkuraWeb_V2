@@ -5,7 +5,7 @@ export type ApiResult<T> =
   | { ok: true; status: number; data: T }
   | { ok: false; status: number; data: any };
 
-function resolveOrigin(): string {
+async function resolveOrigin(): Promise<string> {
   // Prefer explicit envs (stable in Vercel & local).
   const envUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -15,7 +15,8 @@ function resolveOrigin(): string {
 
   // Fallback to request headers when running in a request context.
   try {
-    const h = headers();
+    // Next.js 15 request APIs are async.
+    const h = await headers();
     // NOTE: must use the headers() result (`h`) — avoid referencing any other variable here.
     const proto = h.get("x-forwarded-proto") || "http";
     const host = h.get("x-forwarded-host") || h.get("host") || "";
@@ -34,9 +35,10 @@ function resolveOrigin(): string {
  * - Forces no-store to avoid stale auth-dependent cache.
  */
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {
+  const origin = await resolveOrigin();
   const url = path.startsWith("http")
     ? path
-    : new URL(path.startsWith("/") ? path : `/${path}`, resolveOrigin()).toString();
+    : new URL(path.startsWith("/") ? path : `/${path}`, origin).toString();
 
   const res = await fetch(url, {
     ...init,
