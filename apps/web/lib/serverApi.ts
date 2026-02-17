@@ -7,9 +7,12 @@ export type ApiResult<T> =
 
 async function resolveOrigin(): Promise<string> {
   // Prefer explicit envs (stable in Vercel & local).
+  // IMPORTANT:
+  // - In this monorepo, NextAuth runs in apps/api and the web app proxies /api/*.
+  // - Using NEXTAUTH_URL here can accidentally point server fetches to the API origin,
+  //   which breaks auth because cookies are set on the web origin.
   const envUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXTAUTH_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
   if (envUrl) return envUrl.replace(/\/$/, "");
 
@@ -40,12 +43,25 @@ export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<
     ? path
     : new URL(path.startsWith("/") ? path : `/${path}`, origin).toString();
 
+  // Forward incoming request cookies so server components can access authenticated endpoints.
+  // Without this, any server-rendered page that calls /api/me/* will behave as logged-out.
+  let cookieHeader = "";
+  try {
+    const h = await headers();
+    cookieHeader = h.get("cookie") || "";
+  } catch {
+    // ignore (e.g. build-time)
+  }
+
+  const mergedHeaders = new Headers(init.headers || {});
+  if (cookieHeader && !mergedHeaders.has("cookie")) {
+    mergedHeaders.set("cookie", cookieHeader);
+  }
+
   const res = await fetch(url, {
     ...init,
     cache: "no-store",
-    headers: {
-      ...(init.headers || {}),
-    },
+    headers: mergedHeaders,
   });
 
   let data: any = null;

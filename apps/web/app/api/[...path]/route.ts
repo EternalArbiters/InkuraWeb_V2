@@ -51,6 +51,9 @@ async function proxy(req: NextRequest, { params }: RouteCtx) {
   headers.delete("host");
   headers.delete("connection");
   headers.delete("content-length");
+  // Help upstream (NextAuth) reconstruct the correct public URL when behind a proxy.
+  headers.set("x-forwarded-host", incomingUrl.host);
+  headers.set("x-forwarded-proto", incomingUrl.protocol.replace(":", ""));
 
   const method = req.method.toUpperCase();
   const body = method === "GET" || method === "HEAD" ? undefined : await req.arrayBuffer();
@@ -64,6 +67,15 @@ async function proxy(req: NextRequest, { params }: RouteCtx) {
   });
 
   const outHeaders = new Headers(upstream.headers);
+
+  // IMPORTANT: preserve multiple Set-Cookie headers.
+  // Default Headers cloning can merge them, which breaks auth cookies (NextAuth).
+  const getSetCookie = (upstream.headers as any).getSetCookie as undefined | (() => string[]);
+  if (getSetCookie) {
+    outHeaders.delete("set-cookie");
+    for (const c of getSetCookie()) outHeaders.append("set-cookie", c);
+  }
+
   // ensure responses aren't cached by accident (auth-dependent)
   outHeaders.set("cache-control", "no-store");
   // content-length can be wrong if streaming/decompressed
