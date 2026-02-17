@@ -2,9 +2,6 @@
 
 export const GENRE_CATALOG: string[] = [
   // --- Format / Origin ---
-  "Manga",
-  "Manhwa",
-  "Manhua",
   "Webtoon",
   "Webcomic",
   "Comic",

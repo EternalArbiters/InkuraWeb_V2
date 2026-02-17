@@ -45,6 +45,12 @@ function safeStatus(v: unknown): "DRAFT" | "PUBLISHED" {
   return s === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
 }
 
+function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER" {
+  const s = String(v || "UNKNOWN").toUpperCase().trim();
+  if (s === "MANGA" || s === "MANHWA" || s === "MANHUA" || s === "WEBTOON" || s === "WESTERN" || s === "OTHER") return s;
+  return "UNKNOWN";
+}
+
 async function ensureUniqueSlug(base: string, workId: string) {
   let candidate = base;
   let i = 0;
@@ -179,6 +185,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     const typeRaw = String(fd.get("type") || "").toUpperCase().trim();
     const type = typeRaw === "COMIC" || typeRaw === "NOVEL" ? (typeRaw as any) : undefined;
 
+    const comicTypeRaw = fd.get("comicType");
+    const hasComicType = comicTypeRaw != null;
+    const comicType = safeComicType(comicTypeRaw);
+
     const language = String(fd.get("language") || "").toLowerCase().trim() || undefined;
     const origin = String(fd.get("origin") || "").toUpperCase().trim() || undefined;
     const completion = String(fd.get("completion") || "").toUpperCase().trim() || undefined;
@@ -248,6 +258,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
         slug: nextSlug,
         description: description || null,
         ...(type ? { type } : {}),
+        ...(type
+          ? { comicType: type === "COMIC" ? comicType : "UNKNOWN" }
+          : hasComicType
+          ? { comicType }
+          : {}),
         ...(coverImage !== undefined ? { coverImage } : {}),
 
         ...(language ? { language } : {}),

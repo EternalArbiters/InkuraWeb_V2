@@ -32,6 +32,12 @@ function safeBool(v: unknown) {
   return false;
 }
 
+function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER" {
+  const s = String(v || "UNKNOWN").toUpperCase().trim();
+  if (s === "MANGA" || s === "MANHWA" || s === "MANHUA" || s === "WEBTOON" || s === "WESTERN" || s === "OTHER") return s;
+  return "UNKNOWN";
+}
+
 function roleToPublishType(creatorRole: string): "ORIGINAL" | "TRANSLATION" | "REUPLOAD" {
   const r = (creatorRole || "").toUpperCase();
   if (r === "TRANSLATOR") return "TRANSLATION";
@@ -85,6 +91,7 @@ export async function POST(req: Request) {
     let title = "";
     let description = "";
     let type = "NOVEL";
+    let comicType: any = "UNKNOWN";
 
     let language = "unknown";
     let origin = "UNKNOWN";
@@ -107,6 +114,7 @@ export async function POST(req: Request) {
       title = String(body?.title || "").trim();
       description = String(body?.description || "").trim();
       type = String(body?.type || "NOVEL").toUpperCase();
+      comicType = safeComicType(body?.comicType);
 
       language = String(body?.language || "unknown").toLowerCase().trim() || "unknown";
       origin = String(body?.origin || "UNKNOWN").toUpperCase().trim() || "UNKNOWN";
@@ -130,6 +138,7 @@ export async function POST(req: Request) {
       title = String(fd.get("title") || "").trim();
       description = String(fd.get("description") || "").trim();
       type = String(fd.get("type") || "NOVEL").toUpperCase();
+      comicType = safeComicType(fd.get("comicType"));
 
       language = String(fd.get("language") || "unknown").toLowerCase().trim() || "unknown";
       origin = String(fd.get("origin") || "UNKNOWN").toUpperCase().trim() || "UNKNOWN";
@@ -186,6 +195,7 @@ export async function POST(req: Request) {
         title,
         description: description || null,
         type: type === "COMIC" ? "COMIC" : "NOVEL",
+        comicType: type === "COMIC" ? comicType : "UNKNOWN",
         status: "DRAFT",
         coverImage,
         authorId: session.user.id,

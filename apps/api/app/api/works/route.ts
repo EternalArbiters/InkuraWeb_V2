@@ -106,6 +106,7 @@ export async function GET(req: Request) {
   const author = (searchParams.get("author") || "").trim();
   const translator = (searchParams.get("translator") || "").trim();
   const publishType = upperEnum(searchParams.get("publishType")); // ORIGINAL | TRANSLATION | REUPLOAD
+  const comicType = upperEnum(searchParams.get("comicType")); // MANGA | MANHWA | MANHUA | WEBTOON | ...
 
   // Pagination
   const take = numParam(searchParams.get("take"), 24, 1, 60);
@@ -139,6 +140,19 @@ export async function GET(req: Request) {
   const where: any = { status: "PUBLISHED" };
 
   if (type === "NOVEL" || type === "COMIC") where.type = type;
+
+  if (
+    comicType === "MANGA" ||
+    comicType === "MANHWA" ||
+    comicType === "MANHUA" ||
+    comicType === "WEBTOON" ||
+    comicType === "WESTERN" ||
+    comicType === "OTHER" ||
+    comicType === "UNKNOWN"
+  ) {
+    // UI should omit this param for "Any".
+    where.comicType = comicType;
+  }
 
   // Mature enforcement
   if (!canViewMature) {
@@ -266,6 +280,7 @@ export async function GET(req: Request) {
       title: true,
       coverImage: true,
       type: true,
+      comicType: true,
       likeCount: true,
       ratingAvg: true,
       ratingCount: true,

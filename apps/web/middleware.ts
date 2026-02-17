@@ -28,8 +28,10 @@ export async function middleware(req: NextRequest) {
 
   if (!token) {
     const url = req.nextUrl.clone();
-    url.pathname = "/auth/signin";
-    url.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
+    // UX: if user isn't logged in, send them to landing page first (not straight to login).
+    // Landing page will offer Login/Signup, and can optionally continue to `next` after auth.
+    url.pathname = "/";
+    url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
     return NextResponse.redirect(url);
   }
 

@@ -10,7 +10,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function AuthModal() {
-  const { isOpen, onClose, onOpen, type } = useAuthModal();
+  const { isOpen, onClose, onOpen, type, callbackUrl } = useAuthModal();
   const isLogin = type === "login";
   const router = useRouter();
 
@@ -23,18 +23,21 @@ export default function AuthModal() {
   const handleSubmit = async () => {
     setError(null);
 
+    const next = (callbackUrl && callbackUrl.startsWith("/")) ? callbackUrl : "/home";
+
     if (isLogin) {
       const res = await signIn("credentials", {
         redirect: false,
         email: identifier,
         password,
+        callbackUrl: next,
       });
 
       if (res?.error) {
         setError(res.error);
       } else {
         onClose();
-        router.push("/home");
+        router.push(res?.url || next);
       }
 
       return;
@@ -62,13 +65,14 @@ export default function AuthModal() {
         redirect: false,
         email: signupEmail,
         password,
+        callbackUrl: next,
       });
 
       if (res?.error) {
         setError(res.error);
       } else {
         onClose();
-        router.push("/home");
+        router.push(res?.url || next);
       }
     } catch (e) {
       console.error(e);
@@ -77,7 +81,8 @@ export default function AuthModal() {
   };
 
   const handleGoogleLogin = async () => {
-    await signIn("google", { callbackUrl: "/home" });
+    const next = (callbackUrl && callbackUrl.startsWith("/")) ? callbackUrl : "/home";
+    await signIn("google", { callbackUrl: next });
   };
 
   return (
@@ -126,7 +131,10 @@ export default function AuthModal() {
                 Continue with Google
               </button>
               <button
-                onClick={() => signIn("discord", { callbackUrl: "/home" })}
+                onClick={() => {
+                  const next = (callbackUrl && callbackUrl.startsWith("/")) ? callbackUrl : "/home";
+                  return signIn("discord", { callbackUrl: next });
+                }}
                 className="w-full flex items-center justify-center gap-2 whitespace-nowrap bg-[#5865F2] text-white px-5 py-2 rounded-lg shadow hover:bg-[#4752c4] transition"
               >
                 <FaDiscord />

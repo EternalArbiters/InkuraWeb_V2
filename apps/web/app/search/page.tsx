@@ -2,6 +2,7 @@ import Link from "next/link";
 import GenreTriStatePicker from "@/components/GenreTriStatePicker";
 import SearchPresets from "@/components/SearchPresets";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
+import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export default async function SearchPage({
     completion?: string;
     origin?: string;
     publishType?: string;
+    comicType?: string;
     author?: string;
     translator?: string;
     minCh?: string;
@@ -67,6 +69,7 @@ export default async function SearchPage({
   const publishType = (searchParams.publishType || "").toUpperCase();
   const author = (searchParams.author || "").trim();
   const translator = (searchParams.translator || "").trim();
+  const comicType = (searchParams.comicType || "").toUpperCase();
 
   // Genre tri-state
   let includeGenres = splitList(searchParams.gi);
@@ -143,6 +146,7 @@ export default async function SearchPage({
   if (publishType === "ORIGINAL" || publishType === "TRANSLATION" || publishType === "REUPLOAD") qs.set("publishType", publishType);
   if (author) qs.set("author", author);
   if (translator) qs.set("translator", translator);
+  if (comicType) qs.set("comicType", comicType);
 
   if (includeGenres.length) qs.set("gi", includeGenres.join(","));
   if (excludeGenres.length) qs.set("ge", excludeGenres.join(","));
@@ -302,6 +306,23 @@ export default async function SearchPage({
                       <option value="ORIGINAL">Original</option>
                       <option value="TRANSLATION">Translation</option>
                       <option value="REUPLOAD">Reupload</option>
+                    </select>
+                  </label>
+
+                  <label className="text-xs text-gray-600 dark:text-gray-300">
+                    Comic type
+                    <select
+                      name="comicType"
+                      defaultValue={comicType || ""}
+                      className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                    >
+                      <option value="">Any</option>
+                      {COMIC_TYPE_CATALOG.filter((x) => x.value !== "UNKNOWN").map((x) => (
+                        <option key={x.value} value={x.value}>
+                          {x.label}
+                        </option>
+                      ))}
+                      <option value="UNKNOWN">Unknown</option>
                     </select>
                   </label>
 

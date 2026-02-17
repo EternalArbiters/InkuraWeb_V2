@@ -7,14 +7,14 @@ type ReportItem = {
   id: string;
   createdAt: string;
   reason: string;
-  reporter: { id: string; username: string; name: string | null };
+  reporter: { id: string; username: string | null; name: string | null };
   targetId: string;
   comment: {
     id: string;
     body: string;
     isHidden: boolean;
     createdAt: string;
-    user: { id: string; username: string; name: string | null };
+    user: { id: string; username: string | null; name: string | null };
     chapter: { id: string; title: string; number: number; work: { id: string; title: string; slug: string } };
   } | null;
 };

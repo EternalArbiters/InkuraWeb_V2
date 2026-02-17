@@ -8,7 +8,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const name = (body?.name ?? "").trim();
-    const username = (body?.username ?? "").trim();
+    const usernameRaw = (body?.username ?? "").trim();
+    const username = usernameRaw.toLowerCase();
     const email = (body?.email ?? "").trim().toLowerCase();
     const password = body?.password as string;
 
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
 
     const existing = await prisma.user.findFirst({
       where: {
-        OR: [{ email }, { username }],
+        OR: [{ email }, { username: { equals: username, mode: "insensitive" as const } }],
       },
       select: { id: true },
     });

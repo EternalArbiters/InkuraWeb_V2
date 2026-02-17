@@ -11,7 +11,10 @@ export async function GET(req: Request) {
 
   // Genres should not include NSFW/18+ tags (they live in warningTags so they can be age-locked).
   const NSFW_SLUGS = nsfwTagSlugs();
-  const baseFilter: any = { slug: { notIn: NSFW_SLUGS } };
+  // Also exclude comic-type labels (Manga/Manhwa/Manhua) from Genres.
+  // They live in a separate ComicType filter.
+  const COMIC_TYPE_SLUGS = ["manga", "manhwa", "manhua"];
+  const baseFilter: any = { slug: { notIn: [...NSFW_SLUGS, ...COMIC_TYPE_SLUGS] } };
 
   const where: any = q
     ? {

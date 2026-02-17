@@ -26,6 +26,7 @@ import { Menu, X } from "lucide-react";
 import { FaArrowUp } from "react-icons/fa";
 import { useAuthModal } from "@/hooks/useAuthModal";
 import AuthModal from "@/hooks/AuthModal";
+import { useSearchParams } from "next/navigation";
 
 const Features = [
   {
@@ -76,6 +77,8 @@ export default function LandingPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { onOpen } = useAuthModal(); // cukup ambil onOpen, karena isOpen dipakai di AuthModal
+  const params = useSearchParams();
+  const next = params?.get("next") || "";
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -137,13 +140,13 @@ export default function LandingPage() {
             </button>
 
             <button
-              onClick={() => onOpen("login")}
+              onClick={() => onOpen("login", next || null)}
               className="px-4 py-2 border dark:border-gray-600 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
               Login
             </button>
             <button
-              onClick={() => onOpen("signup")}
+              onClick={() => onOpen("signup", next || null)}
               className="px-4 py-2 text-sm bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:brightness-110 transition"
             >
               Signup
@@ -181,13 +184,13 @@ export default function LandingPage() {
               <br />
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => onOpen("login")}
+                  onClick={() => onOpen("login", next || null)}
                   className="w-full border px-4 py-2 rounded-md text-sm dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => onOpen("signup")}
+                  onClick={() => onOpen("signup", next || null)}
                   className="w-full px-4 py-2 text-sm bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:brightness-110 transition"
                 >
                   Signup
@@ -217,6 +220,30 @@ export default function LandingPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
+        {next ? (
+          <div className="max-w-7xl mx-auto px-6 lg:px-12 -mt-24 mb-8">
+            <div className="rounded-2xl border border-purple-200/40 dark:border-purple-500/20 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl shadow-lg px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="text-sm text-gray-800 dark:text-gray-100">
+                Kamu perlu login untuk mengakses <span className="font-semibold">{next}</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onOpen("login", next)}
+                  className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => onOpen("signup", next)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-300 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800"
+                >
+                  Signup
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-16">
 
           {/* LEFT - Text Content */}

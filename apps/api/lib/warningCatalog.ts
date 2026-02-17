@@ -7,6 +7,8 @@ export const NSFW_TAG_CATALOG: string[] = [
   "Ecchi",
   "Smut",
   "Nudity",
+  "BDSM",
+  "Gore",
   "Yuri (GL)",
   "Yaoi (BL)",
   "Bara (ML)",

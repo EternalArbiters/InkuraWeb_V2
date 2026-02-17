@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 import TagMultiInput from "@/components/TagMultiInput";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
+import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 
 type Work = {
   id: string;
   title: string;
   description: string | null;
   type: "NOVEL" | "COMIC";
+  comicType?: string;
   coverImage: string | null;
   language: string;
   origin: string;
@@ -40,6 +42,7 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
   const [title, setTitle] = React.useState(work.title);
   const [description, setDescription] = React.useState(work.description || "");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">(work.type);
+  const [comicType, setComicType] = React.useState<string>(work.comicType || "UNKNOWN");
   const [language, setLanguage] = React.useState(work.language || "id");
   const [origin, setOrigin] = React.useState(work.origin || "UNKNOWN");
   const [completion, setCompletion] = React.useState(work.completion || "ONGOING");
@@ -74,6 +77,7 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
       fd.append("title", title);
       fd.append("description", description);
       fd.append("type", type);
+      fd.append("comicType", type === "COMIC" ? comicType : "UNKNOWN");
       fd.append("language", language);
       fd.append("origin", origin);
       fd.append("completion", completion);
@@ -175,13 +179,34 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
           <span className="text-sm font-semibold">Type</span>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as any)}
+            onChange={(e) => {
+              const next = e.target.value as any;
+              setType(next);
+              if (next !== "COMIC") setComicType("UNKNOWN");
+            }}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
           >
             <option value="NOVEL">Novel</option>
             <option value="COMIC">Comic</option>
           </select>
         </label>
+
+        {type === "COMIC" ? (
+          <label className="grid gap-2">
+            <span className="text-sm font-semibold">Comic type</span>
+            <select
+              value={comicType}
+              onChange={(e) => setComicType(e.target.value)}
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            >
+              {COMIC_TYPE_CATALOG.map((x) => (
+                <option key={x.value} value={x.value}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
 
         <label className="grid gap-2">
           <span className="text-sm font-semibold">Language</span>

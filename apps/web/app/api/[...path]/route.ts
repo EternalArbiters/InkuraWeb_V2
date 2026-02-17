@@ -19,11 +19,11 @@ const API_BASE =
   // last-resort fallback (safe default for this project)
   "https://inkura-api.vercel.app";
 
-// Keep the route handler signature loose to satisfy Next.js route type-gen across versions.
-// Runtime provides `ctx.params.path` as string[]. Some type-gen variants model it differently.
-async function proxy(req: NextRequest, ctx: any) {
-  const resolved = await Promise.resolve(ctx);
-  const path: string[] = (resolved?.params?.path || ctx?.params?.path || []) as string[];
+// Next.js 15+ route type-gen expects the second arg to be a Promise in some builds.
+// Runtime still passes a plain object, so we normalize with Promise.resolve.
+async function proxy(req: NextRequest, ctx: Promise<any>) {
+  const resolved: any = await Promise.resolve(ctx as any);
+  const path: string[] = (resolved?.params?.path || []) as string[];
   const incomingUrl = new URL(req.url);
 
   // Normalize base so it works whether the env contains just the origin

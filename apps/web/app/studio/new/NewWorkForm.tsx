@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 
 function roleToPublishType(role: string): "ORIGINAL" | "TRANSLATION" | "REUPLOAD" {
   const r = (role || "").toUpperCase();
@@ -27,6 +28,7 @@ export default function NewWorkForm({
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">("NOVEL");
+  const [comicType, setComicType] = React.useState<string>("UNKNOWN");
   const [isMature, setIsMature] = React.useState(false);
 
   const [selectedGenreIds, setSelectedGenreIds] = React.useState<string[]>([]);
@@ -60,6 +62,7 @@ export default function NewWorkForm({
           title,
           description,
           type,
+          comicType: type === "COMIC" ? comicType : "UNKNOWN",
           isMature,
           genreIds: selectedGenreIds,
           warningTagIds: selectedWarningIds,
@@ -121,18 +124,39 @@ export default function NewWorkForm({
           />
         </label>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <label className="text-sm font-semibold">
             Type
             <select
               value={type}
-              onChange={(e) => setType(e.target.value as any)}
+              onChange={(e) => {
+                const next = e.target.value as any;
+                setType(next);
+                if (next !== "COMIC") setComicType("UNKNOWN");
+              }}
               className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
             >
               <option value="NOVEL">Novel</option>
               <option value="COMIC">Comic</option>
             </select>
           </label>
+
+          {type === "COMIC" ? (
+            <label className="text-sm font-semibold">
+              Comic type
+              <select
+                value={comicType}
+                onChange={(e) => setComicType(e.target.value)}
+                className="mt-2 w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              >
+                {COMIC_TYPE_CATALOG.map((x) => (
+                  <option key={x.value} value={x.value}>
+                    {x.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           <label className="flex items-center gap-2 text-sm font-semibold mt-8">
             <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />

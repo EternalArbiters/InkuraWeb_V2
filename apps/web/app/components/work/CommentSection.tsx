@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 type CommentUser = {
   id: string;
-  username: string;
+  username: string | null;
   name: string | null;
   image: string | null;
 };
@@ -63,7 +63,7 @@ export default function CommentSection({ chapterId }: { chapterId: string }) {
     return comments.map((c) => ({
       ...c,
       createdAtLabel: new Date(c.createdAt).toLocaleString(),
-      displayName: c.user.name || c.user.username,
+      displayName: c.user.name || c.user.username || "Unknown",
     }));
   }, [comments]);
 
