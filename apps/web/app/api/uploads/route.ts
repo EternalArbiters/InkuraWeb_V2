@@ -50,6 +50,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "workId/chapterId required (or admin)" }, { status: 400 });
   }
 
-  await deleteObject(key);
+  await deleteObject({ key });
   return NextResponse.json({ ok: true });
 }
