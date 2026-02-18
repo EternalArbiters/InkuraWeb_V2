@@ -62,7 +62,7 @@ Tujuan: saat delete/replace asset, server bisa delete object R2 dengan aman.
 > Ini sengaja ditulis sebagai checklist biar kamu bisa lanjut bertahap tanpa ngulang desain.
 
 ### Resend (email) — opsional
-- [x] Forgot password + reset token (endpoint + UI + Resend best-effort)
+- [ ] Forgot password + reset token
 - [ ] Verify email (kalau perlu)
 
 ### Optimasi biaya & kuota (recommended)

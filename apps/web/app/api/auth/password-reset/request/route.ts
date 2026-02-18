@@ -1,18 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
-import { sendPasswordResetEmail } from "@/server/mail/resend";
 
 export const runtime = "nodejs";
-
-function baseUrl() {
-  return (
-    process.env.RESET_PASSWORD_URL_BASE ||
-    process.env.APP_BASE_URL ||
-    process.env.NEXTAUTH_URL ||
-    "http://localhost:3000"
-  ).replace(/\/$/, "");
-}
 
 export async function POST(req: Request) {
   try {
@@ -31,7 +21,7 @@ export async function POST(req: Request) {
           { username: { equals: identifier, mode: "insensitive" as const } },
         ],
       },
-      select: { id: true, email: true },
+      select: { id: true },
     });
 
     if (!user) return NextResponse.json({ ok: true });
@@ -46,14 +36,11 @@ export async function POST(req: Request) {
       data: { token, userId: user.id, expiresAt },
     });
 
-    // Send email (best-effort; if Resend env not set, it's skipped)
-    const resetUrl = `${baseUrl()}/reset-password?token=${encodeURIComponent(token)}`;
-    await sendPasswordResetEmail({ to: user.email, resetUrl });
-
     const expose = process.env.SHOW_RESET_TOKEN === "1" || process.env.NODE_ENV !== "production";
+
     return NextResponse.json({
       ok: true,
-      ...(expose ? { resetToken: token, expiresAt, resetUrl } : {}),
+      ...(expose ? { resetToken: token, expiresAt } : {}),
     });
   } catch (e) {
     console.error(e);

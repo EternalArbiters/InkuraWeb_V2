@@ -15,35 +15,6 @@ function safeScope(v: unknown): Scope {
   return "files";
 }
 
-function guessContentType(filename: string) {
-  const n = filename.toLowerCase();
-  if (n.endsWith(".webp")) return "image/webp";
-  if (n.endsWith(".png")) return "image/png";
-  if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
-  if (n.endsWith(".pdf")) return "application/pdf";
-  return "application/octet-stream";
-}
-
-function normalizeContentType(filename: string, ct: string) {
-  const v = (ct || "").trim();
-  return v ? v : guessContentType(filename);
-}
-
-function isAllowedContentType(scope: Scope, ct: string) {
-  const c = ct.toLowerCase();
-  if (scope === "covers" || scope === "pages") {
-    return c === "image/webp" || c === "image/png" || c === "image/jpeg";
-  }
-  // files scope: allow pdf for now (expand later if needed)
-  return c === "application/pdf" || c === "application/octet-stream";
-}
-
-function maxBytesForScope(scope: Scope) {
-  if (scope === "covers") return 2 * 1024 * 1024; // 2MB
-  if (scope === "pages") return 5 * 1024 * 1024; // 5MB
-  return 20 * 1024 * 1024; // 20MB
-}
-
 async function canEditWork(userId: string, role: string, workId: string) {
   if (role === "ADMIN") return true;
   const w = await prisma.work.findUnique({ where: { id: workId }, select: { authorId: true } });
@@ -77,21 +48,11 @@ export async function POST(req: Request) {
 
   const scope = safeScope(body?.scope ?? body?.kind);
   const filename = String(body?.filename || "upload").trim();
-  const contentType = normalizeContentType(filename, String(body?.contentType || body?.type || "").trim());
-  const size = Number(body?.size ?? 0);
+  const contentType = String(body?.contentType || body?.type || "application/octet-stream").trim();
   const workId = body?.workId ? String(body.workId) : undefined;
   const chapterId = body?.chapterId ? String(body.chapterId) : undefined;
 
   if (!filename) return NextResponse.json({ error: "filename is required" }, { status: 400 });
-
-  // Guardrails (cost & abuse prevention)
-  if (!isAllowedContentType(scope, contentType)) {
-    return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
-  }
-  const maxBytes = maxBytesForScope(scope);
-  if (size && size > maxBytes) {
-    return NextResponse.json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
-  }
 
   if (scope === "covers") {
     if (!workId) return NextResponse.json({ error: "workId is required for covers" }, { status: 400 });
@@ -120,14 +81,11 @@ export async function POST(req: Request) {
     filename,
   });
 
-  const uploadUrl = await presignPutObject({
-    key,
-    contentType,
-  });
-
-  const publicUrl = process.env.R2_PUBLIC_BASE_URL
-    ? `${process.env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`
-    : key;
-
-  return NextResponse.json({ ok: true, uploadUrl, key, publicUrl });
+  try {
+    const signed = await presignPutObject({ key, contentType });
+    return NextResponse.json({ ok: true, ...signed });
+  } catch (e: any) {
+    console.error(e);
+    return NextResponse.json({ error: e?.message || "Presign failed" }, { status: 500 });
+  }
 }
