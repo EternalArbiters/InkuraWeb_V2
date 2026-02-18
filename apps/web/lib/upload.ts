@@ -1,36 +1,53 @@
-import fs from "fs/promises";
-import path from "path";
+import "server-only";
+
 import crypto from "crypto";
+import { makeObjectKey, putBuffer, deleteObject, tryExtractKeyFromUrl, publicUrlForKey, safeFilename } from "@/server/storage/r2";
 
-function safeFilename(name: string) {
-  return String(name || "file")
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/(^-|-$)+/g, "");
+function guessContentTypeFromName(name: string) {
+  const n = name.toLowerCase();
+  if (n.endsWith(".webp")) return "image/webp";
+  if (n.endsWith(".png")) return "image/png";
+  if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+  if (n.endsWith(".gif")) return "image/gif";
+  if (n.endsWith(".pdf")) return "application/pdf";
+  return "application/octet-stream";
 }
 
-async function writePublicFile(buffer: Buffer, subdir: string, filename: string) {
-  const uploadDir = path.join(process.cwd(), "public", "uploads", subdir);
-  await fs.mkdir(uploadDir, { recursive: true });
-  const filepath = path.join(uploadDir, filename);
-  await fs.writeFile(filepath, buffer);
-  const url = `/uploads/${subdir}/${filename}`;
-  return { url, filename };
-}
+export type SavedUpload = { url: string; key: string; filename: string };
 
 /**
  * Generic upload (no processing). Good for comic pages and other raw assets.
+ *
+ * NOTE:
+ * - In v13 we upload to Cloudflare R2.
+ * - For best cost/perf, prefer the presign flow (/api/uploads/presign) from the client.
  */
-export async function savePublicUpload(file: File, subdir: string) {
+export async function savePublicUpload(
+  file: File,
+  subdir: string,
+  opts?: {
+    userId?: string;
+    workId?: string;
+    chapterId?: string;
+    scope?: "covers" | "pages" | "files";
+  }
+): Promise<SavedUpload> {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const safeName = safeFilename(file.name);
-  const id = crypto.randomUUID();
-  const filename = `${id}-${safeName || "upload"}`;
+  const scope = opts?.scope || (subdir === "covers" ? "covers" : subdir === "pages" ? "pages" : "files");
+  const userId = opts?.userId || "anonymous";
+  const key = makeObjectKey({
+    userId,
+    workId: opts?.workId,
+    chapterId: opts?.chapterId,
+    scope,
+    filename: file.name,
+  });
 
-  return writePublicFile(buffer, subdir, filename);
+  const contentType = file.type || guessContentTypeFromName(file.name);
+  const saved = await putBuffer({ key, buffer, contentType });
+  return { url: saved.publicUrl, key, filename: safeFilename(file.name) };
 }
 
 /**
@@ -38,44 +55,58 @@ export async function savePublicUpload(file: File, subdir: string) {
  * - center-crop to 3:4
  * - resize to 900x1200
  * - convert to WEBP (quality 80)
- *
- * If processing fails (e.g., sharp not available), it falls back to raw upload.
  */
-export async function saveCoverUpload(file: File, subdir = "covers") {
+export async function saveCoverUpload(
+  file: File,
+  subdir = "covers",
+  opts?: { userId?: string; workId?: string }
+): Promise<SavedUpload> {
   const bytes = await file.arrayBuffer();
   let buffer = Buffer.from(bytes);
 
-  const safeName = safeFilename(file.name);
-  const id = crypto.randomUUID();
-
-  // Best-effort image processing
+  // Best-effort image processing.
+  let contentType = "image/webp";
+  let outExt = "webp";
   try {
-    // dynamic import keeps dev startup lighter
     const sharpMod: any = await import("sharp");
     const sharp = sharpMod.default || sharpMod;
-
     buffer = await sharp(buffer)
       .resize(900, 1200, { fit: "cover", position: "centre" })
       .webp({ quality: 80 })
       .toBuffer();
-
-    const filename = `${id}-${(safeName || "cover").replace(/\.(png|jpe?g|gif|webp|bmp|tiff?)$/i, "")}.webp`;
-    return writePublicFile(buffer, subdir, filename);
   } catch {
-    const filename = `${id}-${safeName || "cover"}`;
-    return writePublicFile(buffer, subdir, filename);
+    // fallback: raw upload
+    contentType = file.type || guessContentTypeFromName(file.name);
+    const n = file.name.toLowerCase();
+    if (n.endsWith(".png")) outExt = "png";
+    else if (n.endsWith(".jpg") || n.endsWith(".jpeg")) outExt = "jpg";
+    else if (n.endsWith(".webp")) outExt = "webp";
+    else outExt = "bin";
   }
+
+  const userId = opts?.userId || "anonymous";
+  const safeName = safeFilename(file.name).replace(/\.(png|jpe?g|gif|webp|bmp|tiff?)$/i, "");
+  const id = crypto.randomUUID();
+  const filename = `${id}-${safeName || "cover"}.${outExt}`;
+
+  // For covers we keep a predictable key name under the covers scope.
+  const key = opts?.workId
+    ? `users/${userId}/works/${opts.workId}/covers/${filename}`
+    : `users/${userId}/${subdir}/${filename}`;
+
+  const saved = await putBuffer({ key, buffer, contentType });
+  return { url: saved.publicUrl, key, filename };
 }
 
-export async function deletePublicUpload(url: string) {
-  // Best-effort cleanup for local dev. In serverless environments this may no-op.
+export async function deletePublicUpload(urlOrKey: string) {
   try {
-    if (!url || !url.startsWith("/uploads/")) return false;
-    const rel = url.replace(/^\/uploads\//, "");
-    const filepath = path.join(process.cwd(), "public", "uploads", rel);
-    await fs.unlink(filepath);
+    const key = tryExtractKeyFromUrl(urlOrKey);
+    if (!key) return false;
+    await deleteObject(key);
     return true;
   } catch {
     return false;
   }
 }
+
+export { publicUrlForKey };

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { presignAndUpload } from "@/lib/r2UploadClient";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 
 type Props = {
@@ -12,14 +13,13 @@ type Props = {
   warningTags: PickerItem[];
 };
 
-export default function ChapterCreateForm({
-  workId,
-    workTitle,
-  workType,
-  nextNumber,
-  warningTags,
-}: Props) {
+type CreatedChapter = { id: string };
+
+type PageCommit = { url: string; key?: string | null; order?: number };
+
+export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags }: Props) {
   const router = useRouter();
+
   const [title, setTitle] = React.useState("");
   const [number, setNumber] = React.useState(nextNumber);
   const [status, setStatus] = React.useState("DRAFT");
@@ -31,29 +31,71 @@ export default function ChapterCreateForm({
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [note, setNote] = React.useState<string | null>(null);
+  const [createdChapterId, setCreatedChapterId] = React.useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setNote(null);
+    setCreatedChapterId(null);
+
+    if (workType === "NOVEL" && !content.trim()) {
+      setError("Content wajib diisi untuk NOVEL");
+      return;
+    }
+
     setLoading(true);
     try {
-      const fd = new FormData();
-      fd.append("workId", workId);
-      fd.append("number", String(number));
-      fd.append("title", title || `Chapter ${number}`);
-      fd.append("status", status);
-      fd.append("isMature", String(isMature));
-      fd.append("warningTagIds", JSON.stringify(warningIds));
-      if (workType === "NOVEL") {
-        fd.append("content", content);
-      } else {
-        pages.forEach((f) => fd.append("pages", f));
-      }
+      // Step 1: create chapter (metadata + novel content only)
+      setNote("Membuat chapter...");
 
-      const res = await fetch("/api/studio/chapters", { method: "POST", body: fd });
+      const payload: any = {
+        workId,
+        number,
+        title: (title || `Chapter ${number}`).trim(),
+        status,
+        isMature,
+        warningTagIds: warningIds,
+      };
+      if (workType === "NOVEL") payload.content = content;
+
+      const res = await fetch("/api/studio/chapters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Failed");
 
+      const chapter: CreatedChapter | undefined = json?.chapter;
+      const chapterId = chapter?.id || json?.chapterId || json?.id;
+      if (!chapterId) throw new Error("Chapter created but id is missing");
+      setCreatedChapterId(chapterId);
+
+      // Step 2: if comic + pages selected, upload directly to R2 (presigned), then commit.
+      if (workType === "COMIC" && pages.length) {
+        const uploads: PageCommit[] = [];
+        for (let i = 0; i < pages.length; i += 1) {
+          const file = pages[i];
+          setNote(`Upload halaman ${i + 1}/${pages.length}...`);
+          const up = await presignAndUpload({ scope: "pages", file, workId, chapterId });
+          uploads.push({ url: up.url, key: up.key, order: i + 1 });
+        }
+
+        setNote("Menyimpan daftar halaman...");
+        const commitRes = await fetch(`/api/studio/chapters/${chapterId}/pages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pages: uploads }),
+        });
+        const commitJson = await commitRes.json();
+        if (!commitRes.ok) {
+          throw new Error(commitJson?.error || "Gagal menyimpan halaman. Chapter sudah dibuat; coba upload ulang di Manage Pages.");
+        }
+      }
+
+      setNote(null);
       router.push(`/studio/works/${workId}`);
       router.refresh();
     } catch (err: any) {
@@ -67,7 +109,24 @@ export default function ChapterCreateForm({
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
       {error ? (
         <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          {error}
+          <div className="font-semibold">Error</div>
+          <div className="mt-1">{error}</div>
+          {createdChapterId ? (
+            <div className="mt-3">
+              <a
+                href={`/studio/works/${workId}/chapters/${createdChapterId}/pages`}
+                className="inline-flex items-center px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold bg-white/60 dark:bg-gray-900/40 hover:brightness-110"
+              >
+                Buka Manage Pages
+              </a>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {note ? (
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4 text-sm">
+          {note}
         </div>
       ) : null}
 
@@ -151,7 +210,7 @@ export default function ChapterCreateForm({
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
           />
           <span className="text-xs text-gray-600 dark:text-gray-300">
-            Bisa upload sekarang atau nanti via "Manage Pages".
+            Kalau kamu pilih file di sini, v13 akan upload langsung ke R2 (presigned) saat kamu klik Create.
           </span>
         </label>
       )}

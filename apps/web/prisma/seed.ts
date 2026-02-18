@@ -24,15 +24,15 @@ async function main() {
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: "noelephgoddess.game@gmail.com" },
+    where: { email: "admin@inkura.local" },
     update: {
       matureOptIn: true,
       preferredLanguagesJson: JSON.stringify(["id", "en"]),
     },
     create: {
-      name: "Eternal Arbiters",
-      username: "noelephgoddess",
-      email: "noelephgoddess.game@gmail.com",
+      name: "Inkura Admin",
+      username: "admin",
+      email: "admin@inkura.local",
       password: hashedPassword,
       role: "ADMIN",
       image: "/images/default-avatar.png",
@@ -196,10 +196,11 @@ async function main() {
       isMature: true,
 
       genres: {
-        connect: [{ id: pickGenre("Romance").id }, { id: pickGenre("Mature").id }, { id: pickGenre("Drama").id }],
+        // "Mature" is now treated as an NSFW tag (warningTag) so it can be age-locked.
+        connect: [{ id: pickGenre("Romance").id }, { id: pickGenre("Drama").id }],
       },
       warningTags: {
-        connect: [{ id: pickWarning("Sexual Content").id }, { id: pickWarning("Nudity").id }],
+        connect: [{ id: pickWarning("NSFW").id }, { id: pickWarning("Sexual Content").id }, { id: pickWarning("Nudity").id }],
       },
 
       chapterCount: 1,

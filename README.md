@@ -1,97 +1,158 @@
-# Inkura v11 (Monorepo)
+# Inkura v13 (Vercel + Neon + Cloudflare R2 + optional Resend)
 
-Struktur:
-- `apps/web` → Frontend (Next.js App Router)
-- `apps/api` → Backend API (Next.js App Router + Prisma + NextAuth)
+Target stack & biaya (umumnya):
+- **Vercel Hobby**: $0 (ada limit ketat)
+- **Neon Free (Postgres)**: $0
+- **Cloudflare R2**: bisa $0 kalau masih dalam free quota
+- **Resend Free (email)**: $0 (opsional)
+- **Total**: seringnya **$0 – $5**
 
-Web melakukan proxy:
-- `/api/*` → `apps/api`
-- `/uploads/*` → `apps/api`
-
-> Target deploy yang disiapkan: **Vercel 2 project** (web + api), **Neon Postgres**, dan (opsional) **Cloudflare R2** untuk file/halaman komik.
-
----
-
-## 1) Setup Database (Neon Postgres)
-
-1. Buat project di Neon (region Singapore recommended).
-2. Buka **Connect** di Neon.
-3. Copy **dua URL**:
-   - **Pooled** (Connection pooling = ON) → untuk runtime
-   - **Direct** (Connection pooling = OFF) → untuk Prisma (db push/migrate/seed)
-
-Gunakan format env ini:
-- `DATABASE_URL` = pooled URL
-- `DIRECT_URL` = direct URL
+> v13 fokus: **Auth stabil** + **1 deployment saja** (web + API + NextAuth dalam satu Next.js app) + **upload file langsung ke R2** (hemat Vercel).
 
 ---
 
-## 2) Setup ENV (lokal)
+## Perubahan utama v13 (dibanding v11/v12 monorepo 2-backend)
 
-Salin file contoh:
-- `apps/api/.env.example` → `apps/api/.env`
-- `apps/web/.env.example` → `apps/web/.env`
+### 1) Single deployment (FIX: login sering "logout" / session nggak kebaca)
+- **Semua API route dipindah ke `apps/web/app/api/*`**
+- **Hapus proxy rewrite `/api/*` ke backend lain**
+- NextAuth + middleware + API sekarang **satu origin** → cookie/session jauh lebih stabil
 
-Isi minimal:
-- `DATABASE_URL`
-- `DIRECT_URL`
-- `NEXTAUTH_SECRET`
-- `INTERNAL_API_BASE` (untuk web)
+### 2) "Server-only" dipisah jelas
+- Semua yang rahasia (DB, R2 keys, admin actions) ada di sisi server:
+  - `apps/web/server/*` dan `apps/web/app/api/*`
+- Modul server diberi `import "server-only"` supaya kalau ke-import client langsung error.
 
-Generate `NEXTAUTH_SECRET` (PowerShell):
-```powershell
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
+### 3) Upload production-ready (tanpa filesystem Vercel)
+- Upload **tidak lagi** ke `public/uploads`.
+- Upload memakai **Cloudflare R2**:
+  - **Presigned URL**: client upload langsung ke R2
+  - Server hanya membuat presign + validasi ownership
 
-> Pastikan `NEXTAUTH_SECRET` di `apps/web` **sama** dengan di `apps/api`.
+### 4) RBAC + Ownership (Batoto-like)
+- **USER**: create/edit/delete **punya sendiri**
+- **ADMIN**: bisa edit/delete **semua**
+- Enforcement ada di endpoint mutasi (server), bukan cuma di UI.
+
+### 5) DB tambahan untuk R2 keys
+- `Work.coverKey` (opsional)
+- `ComicPage.imageKey` (opsional)
+
+Tujuan: saat delete/replace asset, server bisa delete object R2 dengan aman.
 
 ---
 
-## 3) Init database schema + seed (lokal)
+## Status implementasi (DONE)
+
+- [x] NextAuth handler di `apps/web/app/api/auth/[...nextauth]`
+- [x] Hapus proxy `/api/*` (single-origin)
+- [x] Cloudflare R2 adapter (`apps/web/server/storage/r2.ts`)
+- [x] Endpoint presign: `POST /api/uploads/presign`
+- [x] Frontend cover edit menggunakan presign upload (WorkEditForm)
+- [x] Frontend comic pages manager menggunakan presign upload (ComicPagesManager)
+- [x] **Create chapter** (COMIC) bisa upload pages saat create (flow 2-step: create chapter → presign upload → commit pages)
+- [x] Endpoint commit pages: `POST /api/studio/chapters/[chapterId]/pages`
+- [x] Endpoint delete page: delete DB + best-effort delete object R2 via `imageKey`
+- [x] Permission checks (owner/admin) untuk route studio penting
+
+---
+
+## TODO / opsional (disiapkan di README, bisa dilanjutkan)
+
+> Ini sengaja ditulis sebagai checklist biar kamu bisa lanjut bertahap tanpa ngulang desain.
+
+### Resend (email) — opsional
+- [x] Forgot password + reset token (endpoint + UI + Resend best-effort)
+- [ ] Verify email (kalau perlu)
+
+### Optimasi biaya & kuota (recommended)
+- [ ] Batasi ukuran upload (cover ~2MB, page ~5MB)
+- [ ] Kompres cover/pages (client-side) sebelum upload
+- [ ] Pagination untuk list (works/chapters/comments) biar query Neon ringan
+- [ ] Pakai custom domain / CDN untuk R2 (supaya bandwidth nggak lewat Vercel)
+
+### Moderation/Audit (opsional)
+- [ ] AuditLog untuk aksi admin
+- [ ] Report queue (minimal)
+
+---
+
+## Struktur repo (yang dipakai v13)
+
+- `apps/web` → **utama** (deploy ke Vercel)
+  - `app/` → pages + API routes
+  - `server/` → server-only services (R2, dll)
+  - `prisma/` → schema + migrations + seed
+
+> Folder `apps/api` masih ada sebagai **legacy** (bisa dihapus kalau sudah yakin). v13 **tidak membutuhkan** deploy `apps/api`.
+
+---
+
+## Setup lokal
+
+### 1) Install
 
 ```bash
 npm install
-npm run db:init
 ```
 
-Script ini menjalankan Prisma generate + reset schema + seed dari workspace `apps/api`.
+### 2) ENV
 
----
+Copy:
+- `apps/web/.env.example` → `apps/web/.env`
 
-## 4) Jalankan dev server
+Isi minimal:
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+- `DATABASE_URL` (Neon pooled)
+- `DIRECT_URL` (Neon direct)
+- `R2_*`
+
+### 3) Init DB
+
+```bash
+npm --workspace apps/web run db:init
+```
+
+### 4) Run dev
 
 ```bash
 npm run dev
 ```
 
-- Web: http://localhost:3000
-- API: http://localhost:3001
+Web: http://localhost:3000
+
+**Seed default admin (dev):**
+- Email: `admin@inkura.local`
+- Password: `admin123`
 
 ---
 
-## 5) Deploy ke Vercel (2 project)
+## Deploy ke Vercel (Hobby)
 
-### A. Project API
-- Root Directory: `apps/api`
-- Env (Production + Preview):
-  - `DATABASE_URL` (pooled)
-  - `DIRECT_URL` (direct)
-  - `NEXTAUTH_SECRET`
-  - (opsional) OAuth provider keys
-
-### B. Project WEB
+Buat **1 project**:
 - Root Directory: `apps/web`
-- Env (Production + Preview):
-  - `INTERNAL_API_BASE` = URL project API (contoh: `https://<api>.vercel.app`)
-  - `DATABASE_URL` (pooled)
-  - `DIRECT_URL` (direct)
-  - `NEXTAUTH_SECRET` (sama dengan API)
+- Install Command: `npm install`
+- Build Command: `npm run build`
+- Output: default Next.js
+
+Set Env Vars (Production + Preview):
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `R2_ENDPOINT`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET`
+- `R2_PUBLIC_BASE_URL`
 
 ---
 
-## Catatan penting
+## Catatan penting keamanan
 
-### Upload masih lokal (belum R2)
-Saat ini upload masih ke filesystem `public/uploads` di `apps/api`.
-Di Vercel, filesystem **tidak persisten** (file bisa hilang).
-Kalau mau production-ready, versi berikutnya akan memindahkan upload ke **Cloudflare R2**.
+- UI boleh menyembunyikan tombol, tapi **keamanan wajib** di server.
+- Semua endpoint mutasi harus cek:
+  - `ADMIN` **atau** owner (authorId)
+- Presign upload juga harus cek ownership work/chapter.
+

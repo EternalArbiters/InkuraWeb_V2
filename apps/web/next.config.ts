@@ -1,13 +1,14 @@
 import type { NextConfig } from "next";
 
-const API_ORIGIN = process.env.INTERNAL_API_BASE || "http://localhost:3001";
+// Inkura v13:
+// - Web + API + NextAuth are hosted in the SAME Next.js app (apps/web).
+// - No cross-origin /api rewrites (fixes session/cookie issues).
+// - Uploads are served from Cloudflare R2 (no /uploads rewrite).
+// - IMPORTANT (cost): disable Next.js image optimizer so images are fetched directly from R2/CDN.
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      { source: "/api/:path*", destination: `${API_ORIGIN}/api/:path*` },
-      { source: "/uploads/:path*", destination: `${API_ORIGIN}/uploads/:path*` },
-    ];
+  images: {
+    unoptimized: true,
   },
 };
 

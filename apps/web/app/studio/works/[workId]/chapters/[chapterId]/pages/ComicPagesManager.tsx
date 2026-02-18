@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Page = { id: string; imageUrl: string; order: number };
 
@@ -23,11 +23,24 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
     setErr(null);
     setLoading(true);
     try {
-      const fd = new FormData();
-      files.forEach((f) => fd.append("pages", f));
-      const res = await fetch(`/api/studio/chapters/${chapterId}/pages`, { method: "POST", body: fd });
+      const startOrder = pages.length;
+      const uploaded = [] as { url: string; key: string; order: number }[];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const up = await presignAndUpload({ scope: "pages", file, workId, chapterId });
+        uploaded.push({ url: up.url, key: up.key, order: startOrder + i + 1 });
+      }
+
+      const res = await fetch(`/api/studio/chapters/${chapterId}/pages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pages: uploaded }),
+      });
+
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Upload failed");
+      if (!res.ok) throw new Error(json?.error || "Commit failed");
+
       setFiles([]);
       router.refresh();
     } catch (e: any) {
@@ -56,9 +69,7 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
   return (
     <div className="grid gap-4">
       {err ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          {err}
-        </div>
+        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">{err}</div>
       ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
@@ -80,6 +91,7 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
             {loading ? "Working..." : "Upload"}
           </button>
         </div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">Tip: upload large chapters in batches (e.g. 10–20 pages).</div>
       </div>
 
       <div className="grid gap-2">
@@ -91,15 +103,21 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
         </div>
 
         {pages.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-            No pages yet.
-          </div>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">No pages yet.</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pages.map((p) => (
-              <div key={p.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/40">
-                <div className="relative aspect-[3/4]">
-                  <Image src={p.imageUrl} alt={`Page ${p.order}`} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
+              <div
+                key={p.id}
+                className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/40"
+              >
+                <div className="relative aspect-[3/4] bg-black/5 dark:bg-white/5">
+                  <img
+                    src={p.imageUrl}
+                    alt={`Page ${p.order}`}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
                 <div className="p-2 flex items-center justify-between gap-2">
                   <div className="text-xs text-gray-600 dark:text-gray-300">#{p.order}</div>

@@ -18,12 +18,18 @@ model User {
   image     String?
   role      Role     @default(USER)
 
+  // Creator profile
+  creatorRole    CreatorRole @default(READER)
+  adultConfirmed Boolean     @default(false)
+
+
   // Preferences
   matureOptIn            Boolean @default(false)
   preferredLanguagesJson String  @default("[]")
 
   // Content
   works      Work[]
+  translatedWorks Work[] @relation("WorkTranslator")
   likes      WorkLike[]
   ratings    WorkRating[]
   bookmarks  Bookmark[]
@@ -56,6 +62,19 @@ model User {
 enum Role {
   ADMIN
   USER
+}
+
+enum CreatorRole {
+  READER
+  AUTHOR
+  TRANSLATOR
+  UPLOADER
+}
+
+enum WorkPublishType {
+  ORIGINAL
+  TRANSLATION
+  REUPLOAD
 }
 
 // --- Content ---
@@ -114,6 +133,15 @@ model Work {
   origin      WorkOrigin     @default(UNKNOWN)
   completion  WorkCompletion @default(ONGOING)
 
+  // Publish meta (v12)
+  publishType WorkPublishType @default(ORIGINAL)
+  originalAuthorCredit String?
+  sourceUrl String?
+  uploaderNote String?
+
+  translatorId String?
+  translator   User? @relation("WorkTranslator", fields: [translatorId], references: [id])
+
   // Cached counters (updated by API routes)
   likeCount   Int        @default(0)
   ratingAvg   Float      @default(0)
@@ -123,6 +151,8 @@ model Work {
   chapterCount Int       @default(0)
 
   coverImage  String?
+  // v13 (R2): store object key for deletes / audit
+  coverKey    String?
 
   // Taxonomy
   genres      Genre[]      @relation("WorkGenres")
@@ -146,6 +176,8 @@ model Work {
   @@index([type, status])
   @@index([status, isMature])
   @@index([language])
+  @@index([publishType])
+  @@index([translatorId])
 }
 
 model Chapter {
@@ -371,6 +403,8 @@ model ComicPage {
 
   order     Int
   imageUrl  String
+  // v13 (R2): store object key for deletes / audit
+  imageKey  String?
 
   createdAt DateTime @default(now())
 
@@ -383,10 +417,11 @@ model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])

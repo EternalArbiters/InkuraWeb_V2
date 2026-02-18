@@ -1,11 +1,15 @@
 {
   "name": "inkura",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "npx concurrently -n api,web \"npm --workspace apps/api run dev\" \"npm --workspace apps/web run dev\"",
-    "db:init": "npm --workspace apps/api run db:init",
-    "build": "npm --workspace apps/api run build && npm --workspace apps/web run build"
+    "dev": "npm --workspace apps/web run dev",
+    "db:init": "npm --workspace apps/web run db:init",
+    "build": "npm --workspace apps/web run build",
+    "dev:legacy": "npx concurrently -n api,web \"npm --workspace apps/api run dev\" \"npm --workspace apps/web run dev\"",
+    "build:legacy": "npm --workspace apps/api run build && npm --workspace apps/web run build"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

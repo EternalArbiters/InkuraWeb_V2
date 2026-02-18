@@ -6,6 +6,7 @@ import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 import TagMultiInput from "@/components/TagMultiInput";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
+import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Work = {
   id: string;
@@ -95,7 +96,11 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
         fd.append("uploaderNote", uploaderNote);
       }
 
-      if (coverFile) fd.append("cover", coverFile);
+      if (coverFile && !removeCover) {
+        const up = await presignAndUpload({ scope: "covers", file: coverFile, workId: work.id });
+        fd.append("coverUrl", up.url);
+        fd.append("coverKey", up.key);
+      }
 
       const res = await fetch(`/api/studio/works/${work.id}`, { method: "PATCH", body: fd });
       const json = await res.json();
