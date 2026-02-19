@@ -5,12 +5,13 @@ export type ApiResult<T> =
   | { ok: true; status: number; data: T }
   | { ok: false; status: number; data: any };
 
-function resolveOrigin(): string {
+async function resolveOrigin(): Promise<string> {
   // IMPORTANT: for auth stability we must fetch against the *current* web origin.
   //
   // 1) Prefer request headers (works for both Vercel + local).
   try {
-    const h = headers();
+    // Next.js 15: headers() is async.
+    const h = await headers();
     const proto = h.get("x-forwarded-proto") || "http";
     const host = h.get("x-forwarded-host") || h.get("host") || "";
     if (host) return `${proto}://${host}`;
@@ -28,11 +29,12 @@ function resolveOrigin(): string {
   return "http://localhost:3000";
 }
 
-function getCookieHeader(): string {
+async function getCookieHeader(): Promise<string> {
   // In App Router, `cookies()` is the reliable way to access incoming cookies.
   // (Some environments strip the raw `cookie` header from `headers()`.)
   try {
-    const c = cookies();
+    // Next.js 15: cookies() is async.
+    const c = await cookies();
     const all = c.getAll();
     if (!all.length) return "";
     return all.map(({ name, value }) => `${name}=${value}`).join("; ");
@@ -47,14 +49,14 @@ function getCookieHeader(): string {
  * - Forces no-store to avoid stale auth-dependent cache.
  */
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {
-  const origin = resolveOrigin();
+  const origin = await resolveOrigin();
   const url = path.startsWith("http")
     ? path
     : new URL(path.startsWith("/") ? path : `/${path}`, origin).toString();
 
   // Forward incoming cookies so server components can access authenticated endpoints.
   // Without this, pages like /studio (server-rendered) can incorrectly redirect to /auth/signin.
-  const cookieHeader = getCookieHeader();
+  const cookieHeader = await getCookieHeader();
 
   const mergedHeaders = new Headers(init.headers || {});
   if (cookieHeader && !mergedHeaders.has("cookie")) {
