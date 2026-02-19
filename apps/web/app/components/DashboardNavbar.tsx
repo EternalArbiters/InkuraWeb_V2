@@ -20,6 +20,10 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
+      // Disable prefetch for stability with auth-gated routes.
+      // Prefetch can cache an unauthenticated server response (redirect to /auth/signin)
+      // which then persists even after the user logs in.
+      prefetch={false}
       className={`text-sm font-medium px-3 py-1 rounded transition-all ${isActive
         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
         : "hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white text-gray-800 dark:text-gray-200"

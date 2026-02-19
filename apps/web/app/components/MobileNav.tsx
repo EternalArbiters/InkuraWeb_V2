@@ -73,6 +73,7 @@ export default function MobileNav({
           <div className="mb-6">
             <Link
               href="/chat"
+              prefetch={false}
               onClick={onClose}
               className="block w-full text-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white shadow-md hover:brightness-110 transition transform hover:scale-105"
             >
@@ -86,6 +87,7 @@ export default function MobileNav({
               <Link
                 key={href}
                 href={href}
+                prefetch={false}
                 onClick={onClose}
                 className={`block px-4 py-2 rounded text-sm transition ${isActive(href)
                   ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
@@ -110,6 +112,7 @@ export default function MobileNav({
                     <Link
                       key={href}
                       href={href}
+                      prefetch={false}
                       onClick={onClose}
                       className={`block px-3 py-1 rounded text-sm transition ${isActive(href)
                         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
@@ -150,6 +153,7 @@ export default function MobileNav({
           ) : (
             <Link
               href="/auth/signin"
+              prefetch={false}
               onClick={onClose}
               className="block w-full text-left px-4 py-2 rounded text-purple-600 dark:text-purple-400 font-semibold hover:bg-white/10"
             >
