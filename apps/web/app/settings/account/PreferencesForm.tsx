@@ -25,8 +25,6 @@ type Props = {
 };
 
 export default function PreferencesForm({ genres, warnings, initial }: Props) {
-  const adultAlreadyConfirmed = !!initial.adultConfirmed;
-
   const [adultConfirmed, setAdultConfirmed] = React.useState(!!initial.adultConfirmed);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
 
@@ -88,26 +86,28 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
           Default terkunci. Kalau kamu aktifkan, konten 18+ (NSFW) bisa muncul di Inkura.
         </div>
 
-        <label className={`flex items-center gap-2 ${adultAlreadyConfirmed ? "opacity-80" : ""}`}>
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={adultConfirmed}
-            disabled={adultAlreadyConfirmed}
             onChange={(e) => {
               const next = e.target.checked;
-              if (!next) return; // adultConfirmed tidak bisa dimatikan
-              if (adultAlreadyConfirmed) return;
+              if (!next) {
+                // lock again (allowed). No confirmation needed.
+                setAdultConfirmed(false);
+                void save(false);
+                return;
+              }
+              // unlocking always requires confirmation (every time)
               setConfirmOpen(true);
             }}
           />
           <span className="text-sm font-semibold">Saya 18+ (unlock)</span>
         </label>
 
-        {adultAlreadyConfirmed ? (
-          <div className="text-[11px] text-gray-600 dark:text-gray-300">Sudah di-unlock dan tidak bisa dimatikan lagi.</div>
-        ) : (
-          <div className="text-[11px] text-gray-600 dark:text-gray-300">Akan muncul konfirmasi peringatan sebelum diaktifkan.</div>
-        )}
+        <div className="text-[11px] text-gray-600 dark:text-gray-300">
+          Kamu bisa mengunci lagi kapan pun. Kalau kamu unlock lagi, peringatannya akan muncul lagi.
+        </div>
       </div>
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
