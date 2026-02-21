@@ -17,7 +17,8 @@
     "db:reset": "prisma db push --force-reset",
     "db:seed": "prisma db seed",
     "db:init": "npm run db:generate && npm run db:reset && npm run db:seed",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "db:cleanup-taxonomy": "tsx prisma/cleanupTaxonomy.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

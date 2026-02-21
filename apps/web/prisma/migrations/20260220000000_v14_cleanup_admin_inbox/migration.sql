@@ -27,5 +27,5 @@ CREATE TABLE IF NOT EXISTS "AdminInboxReport" (
 CREATE INDEX IF NOT EXISTS "AdminInboxReport_status_createdAt_idx" ON "AdminInboxReport"("status", "createdAt");
 CREATE INDEX IF NOT EXISTS "AdminInboxReport_reporterId_createdAt_idx" ON "AdminInboxReport"("reporterId", "createdAt");
 
-ALTER TABLE "AdminInboxReport" ADD CONSTRAINT IF NOT EXISTS "AdminInboxReport_reporterId_fkey" FOREIGN KEY ("reporterId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "AdminInboxReport" ADD CONSTRAINT IF NOT EXISTS "AdminInboxReport_resolverId_fkey" FOREIGN KEY ("resolverId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AdminInboxReport" ADD CONSTRAINT "AdminInboxReport_reporterId_fkey" FOREIGN KEY ("reporterId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AdminInboxReport" ADD CONSTRAINT "AdminInboxReport_resolverId_fkey" FOREIGN KEY ("resolverId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
