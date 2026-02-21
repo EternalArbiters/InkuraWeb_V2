@@ -29,7 +29,6 @@ export default async function StudioNewWorkPage() {
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Create new work</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Cover wajib (max 2MB). Pilih publish type per karya.</p>
           </div>
           <Link href="/studio" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
             Back →

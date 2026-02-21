@@ -19,8 +19,8 @@ export default async function AdminReportPage() {
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Admin Report</h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
             {initialIsAdmin
-              ? "Inbox laporan dari user."
-              : "Kirim laporan/masalah ke admin. (Bukan untuk request ilegal ya 😅)"}
+              ? "Inbox reports from users."
+              : "Send a report/issue to the admin. (Not for illegal requests, okay? 😅)"}
           </p>
         </div>
 

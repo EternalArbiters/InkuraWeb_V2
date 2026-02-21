@@ -99,9 +99,7 @@ export default function PreferencesForm({ genres, warnings, deviantLoveTags, ini
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
         <div className="text-sm font-semibold">Mature / 18+</div>
-        <div className="text-xs text-gray-600 dark:text-gray-300">
-          Default terkunci. Kalau kamu aktifkan, konten 18+ (NSFW) bisa muncul di Inkura.
-        </div>
+
 
         <label className="flex items-center gap-2">
           <input
@@ -124,16 +122,12 @@ export default function PreferencesForm({ genres, warnings, deviantLoveTags, ini
           <span className="text-sm font-semibold">Saya 18+ (unlock)</span>
         </label>
 
-        <div className="text-[11px] text-gray-600 dark:text-gray-300">
-          Kamu bisa mengunci lagi kapan pun. Kalau kamu unlock lagi, peringatannya akan muncul lagi.
-        </div>
+
       </div>
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
-        <div className="text-sm font-semibold">Deviant Love (Locked)</div>
-        <div className="text-xs text-gray-600 dark:text-gray-300">
-          Default terkunci. Kalau kamu aktifkan, kamu bisa melihat dan memfilter tag Deviant Love.
-        </div>
+        <div className="text-sm font-semibold">Deviant Love</div>
+
 
         <label className="flex items-center gap-2">
           <input
@@ -151,24 +145,14 @@ export default function PreferencesForm({ genres, warnings, deviantLoveTags, ini
               setConfirmDeviantOpen(true);
             }}
           />
-          <span className={"text-sm font-semibold " + (!adultConfirmed ? "text-gray-400" : "")}>Saya paham (unlock Deviant Love)</span>
+          <span className={"text-sm font-semibold " + (!adultConfirmed ? "text-gray-400" : "")}>Unlock it</span>
         </label>
-
-        {!adultConfirmed ? (
-          <div className="text-[11px] text-gray-600 dark:text-gray-300">
-            Kamu harus unlock 18+ dulu sebelum bisa membuka Deviant Love.
-          </div>
-        ) : (
-          <div className="text-[11px] text-gray-600 dark:text-gray-300">
-            Kamu bisa mengunci lagi kapan pun. Kalau kamu unlock lagi, peringatannya akan muncul lagi.
-          </div>
-        )}
       </div>
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
         <div>
           <div className="text-sm font-semibold">Preferred languages</div>
-          <div className="text-xs text-gray-600 dark:text-gray-300">Dipakai sebagai default filter di Search (bisa override per search).</div>
+
         </div>
         <div className="flex flex-wrap gap-2">
           {LANGUAGE_CATALOG.map((l) => {
@@ -255,7 +239,8 @@ export default function PreferencesForm({ genres, warnings, deviantLoveTags, ini
             <DialogTitle>Peringatan Deviant Love</DialogTitle>
             <DialogDescription>
               Dengan membuka Deviant Love, kamu menyatakan sudah cukup umur dan siap menanggung konsekuensi dari konten bertema
-              hubungan menyimpang. Developer tidak bertanggung jawab atas apa pun yang kamu baca. Ini adalah peringatan terakhir.
+              hubungan menyimpang. Anda sudah setuju bahwa dosa anda ditanggung sendiri. Developer tidak bertanggung jawab atas apa pun yang kamu baca. Ini adalah peringatan terakhir. Bacaan anda selanjutnya penuh dosa~
+              kami tidak akan ikut bertanggung jawab.
             </DialogDescription>
           </DialogHeader>
 

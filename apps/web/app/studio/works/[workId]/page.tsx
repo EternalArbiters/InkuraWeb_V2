@@ -68,7 +68,7 @@ export default async function StudioWorkPage({
               href={`/studio/works/${work.id}/edit`}
               className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold text-center"
             >
-              Edit metadata
+              Edit Info
             </Link>
             <Link
               href={`/studio/works/${work.id}/chapters/new`}

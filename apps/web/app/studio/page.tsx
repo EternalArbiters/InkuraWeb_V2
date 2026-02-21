@@ -21,8 +21,7 @@ export default async function StudioPage() {
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Studio</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Bikin & kelola karya kamu sendiri.</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Upload</h1>
           </div>
           <div className="flex items-center gap-2">
             <Link

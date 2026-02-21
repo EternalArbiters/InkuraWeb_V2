@@ -147,7 +147,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
-        <div className="text-sm font-semibold">Cover (wajib)</div>
+        <div className="text-sm font-semibold">Cover</div>
         <div className="text-xs text-gray-600 dark:text-gray-300">Max 2MB. Format: JPG/PNG/WebP.</div>
         <div className="grid md:grid-cols-[180px,1fr] gap-4 items-start">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden aspect-[2/3]">
@@ -165,7 +165,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
                 {coverFile.name} • {(coverFile.size / 1024 / 1024).toFixed(2)} MB
               </div>
             ) : (
-              <div className="text-[11px] text-gray-600 dark:text-gray-300">Belum ada cover.</div>
+              <div className="text-[11px] text-gray-600 dark:text-gray-300">No cover yet.</div>
             )}
           </div>
         </div>
@@ -173,8 +173,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
         <div className="grid gap-1">
-          <div className="text-sm font-semibold">Publish type (per karya)</div>
-          <div className="text-xs text-gray-600 dark:text-gray-300">Pilih tiap kali kamu post karya (bukan role akun).</div>
+          <div className="text-sm font-semibold">Publish type</div>
         </div>
 
         <select
@@ -242,7 +241,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
-              placeholder="Judul karya"
+              placeholder="Work Title"
             />
           </div>
           <div className="grid gap-1">
@@ -283,7 +282,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm min-h-[92px]"
-            placeholder="Sinopsis / ringkasan"
+            placeholder="Synopsis / Summary"
           />
         </div>
 
@@ -330,7 +329,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
-          <span className="text-sm font-semibold">18+ / NSFW (mature)</span>
+          <span className="text-sm font-semibold">18+ / NSFW </span>
         </label>
 
         <div className="grid gap-1">
@@ -345,10 +344,9 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         </div>
       </div>
 
-      <MultiSelectPicker title="Genres" subtitle="Pilih genre yang cocok." items={genres} selectedIds={genreIds} onChange={setGenreIds} />
+      <MultiSelectPicker title="Genres" items={genres} selectedIds={genreIds} onChange={setGenreIds} />
       <MultiSelectPicker
         title="NSFW tags"
-        subtitle="Tag sensitif/NSFW. (Konten mature akan disembunyikan untuk user yang belum unlock 18+.)"
         items={warningTags}
         selectedIds={warningTagIds}
         onChange={setWarningTagIds}
@@ -356,7 +354,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
       <MultiSelectPicker
         title="Deviant Love tags"
-        subtitle="Tag Deviant Love (locked by default for readers; requires 18+ + Deviant Love unlock)."
         items={deviantLoveTags}
         selectedIds={deviantLoveTagIds}
         onChange={setDeviantLoveTagIds}
