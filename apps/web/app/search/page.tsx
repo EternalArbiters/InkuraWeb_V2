@@ -43,6 +43,11 @@ export default async function SearchPage({
     we?: string;
     wmode?: string;
 
+    // deviant love tri-state
+    di?: string;
+    de?: string;
+    dmode?: string;
+
     // advanced
     lang?: string | string[];
     completion?: string;
@@ -81,6 +86,11 @@ export default async function SearchPage({
   let excludeWarnings = splitList(searchParams.we);
   const warningMode = (searchParams.wmode || "or").toLowerCase() === "and" ? "and" : "or";
 
+  // Deviant Love tri-state
+  let includeDeviant = splitList(searchParams.di);
+  let excludeDeviant = splitList(searchParams.de);
+  const deviantMode = (searchParams.dmode || "or").toLowerCase() === "and" ? "and" : "or";
+
   const completion = (searchParams.completion || "").toUpperCase();
   const origin = (searchParams.origin || "").toUpperCase();
   const minCh = Math.max(0, parseInt(toStr(searchParams.minCh), 10) || 0);
@@ -93,9 +103,11 @@ export default async function SearchPage({
   const prefsRes = await apiJson<{
     prefs: {
       adultConfirmed: boolean;
+      deviantLoveConfirmed: boolean;
       preferredLanguages: string[];
       blockedGenreIds: string[];
       blockedWarningIds: string[];
+      blockedDeviantLoveIds: string[];
     };
   }>("/api/me/preferences");
 
@@ -104,6 +116,7 @@ export default async function SearchPage({
   const canViewMatureByPrefs = !!prefs?.adultConfirmed;
   const showMatureFilter = !!prefs?.adultConfirmed;
   const canUseNsfwTags = !!prefs?.adultConfirmed;
+  const canUseDeviantLoveTags = !!prefs?.adultConfirmed && !!prefs?.deviantLoveConfirmed;
 
   // NSFW filters are age-locked
   if (!canUseNsfwTags) {
@@ -111,9 +124,16 @@ export default async function SearchPage({
     excludeWarnings = [];
   }
 
+  // Deviant Love filters are locked
+  if (!canUseDeviantLoveTags) {
+    includeDeviant = [];
+    excludeDeviant = [];
+  }
+
   // Normalize include/exclude conflicts
   excludeGenres = excludeGenres.filter((g) => !includeGenres.includes(g));
   excludeWarnings = excludeWarnings.filter((w) => !includeWarnings.includes(w));
+  excludeDeviant = excludeDeviant.filter((d) => !includeDeviant.includes(d));
 
   // Languages from query OR user prefs
   let langs = toStrArr(searchParams.lang)
@@ -126,12 +146,14 @@ export default async function SearchPage({
     langs = prefs.preferredLanguages.map((s) => String(s).toLowerCase());
   }
 
-  const [genresRes, warningsRes] = await Promise.all([
+  const [genresRes, warningsRes, deviantRes] = await Promise.all([
     apiJson<{ genres: any[] }>("/api/genres?take=200"),
     apiJson<{ warningTags: any[] }>("/api/warnings?take=100"),
+    apiJson<{ deviantLoveTags: any[] }>("/api/deviant-love?take=200"),
   ]);
   const genres = genresRes.ok ? genresRes.data.genres : [];
   const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
+  const deviantLoveTags = deviantRes.ok ? deviantRes.data.deviantLoveTags : [];
 
   // Query API works
   const qs = new URLSearchParams();
@@ -158,6 +180,12 @@ export default async function SearchPage({
     if (warningMode === "and") qs.set("wmode", "and");
   }
 
+  if (canUseDeviantLoveTags) {
+    if (includeDeviant.length) qs.set("di", includeDeviant.join(","));
+    if (excludeDeviant.length) qs.set("de", excludeDeviant.join(","));
+    if (deviantMode === "and") qs.set("dmode", "and");
+  }
+
   if (langs.length) qs.set("lang", langs.join(","));
   if (completion) qs.set("completion", completion);
   if (origin) qs.set("origin", origin);
@@ -178,6 +206,8 @@ export default async function SearchPage({
   const geStr = excludeGenres.join(",");
   const wiStr = includeWarnings.join(",");
   const weStr = excludeWarnings.join(",");
+  const diStr = includeDeviant.join(",");
+  const deStr = excludeDeviant.join(",");
 
 
   return (
@@ -419,6 +449,48 @@ export default async function SearchPage({
             </div>
 
             <div className="mt-4">
+              {canUseDeviantLoveTags ? (
+                <>
+                  <GenreTriStatePicker
+                    genres={deviantLoveTags}
+                    initialInclude={includeDeviant}
+                    initialExclude={excludeDeviant}
+                    nameInclude="di"
+                    nameExclude="de"
+                    title="Deviant Love"
+                    placeholder="Search for deviant love tag..."
+                    fallbackFetch="deviantLove"
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <label className="flex items-center gap-2">
+                      <span className="text-gray-600 dark:text-gray-300">Deviant include mode:</span>
+                      <select
+                        name="dmode"
+                        defaultValue={deviantMode === "and" ? "and" : "or"}
+                        className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
+                      >
+                        <option value="or">OR (any included)</option>
+                        <option value="and">AND (all included)</option>
+                      </select>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/30 p-4">
+                  <div className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">Deviant Love (Locked)</div>
+                  <div className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-100/80">
+                    Unlock di <b>Settings → Account</b> (confirm 18+ + Deviant Love).
+                  </div>
+                  <div className="mt-3">
+                    <Link href="/settings/account" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                      Open Settings →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4">
               {canUseNsfwTags ? (
                 <>
                   <GenreTriStatePicker
@@ -467,7 +539,7 @@ export default async function SearchPage({
           </details>
         </form>
 
-        {(genre || tag || giStr || geStr || wiStr || weStr || langs.length || completion || origin || minCh || maxCh || mature) ? (
+        {(genre || tag || giStr || geStr || wiStr || weStr || diStr || deStr || langs.length || completion || origin || minCh || maxCh || mature) ? (
           <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
             <span className="text-gray-600 dark:text-gray-300">Active filters:</span>
             <Link href="/search" className="ml-auto text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">

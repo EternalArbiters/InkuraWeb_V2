@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 
 export const runtime = "nodejs";
 
@@ -10,7 +11,7 @@ async function getViewer() {
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, adultConfirmed: true },
+    select: { id: true, role: true, adultConfirmed: true, deviantLoveConfirmed: true },
   });
   return user;
 }
@@ -39,6 +40,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       uploaderNote: true,
       chapterCount: true,
       warningTags: { select: { name: true, slug: true } },
+      deviantLoveTags: { select: { name: true, slug: true } },
       genres: { select: { name: true, slug: true } },
       tags: { select: { name: true, slug: true } },
       authorId: true,
@@ -67,16 +69,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   const isOwner = !!viewer?.id && viewer.id === work.authorId;
   // v14: adultConfirmed alone unlocks mature content.
   const canViewMature = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed);
+  const canViewDeviantLove =
+    isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
 
-  // If mature and viewer can't access, return only limited metadata.
-  if (work.isMature && !canViewMature) {
+  const requiresMatureGate = work.isMature && !canViewMature;
+  const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
+  const hasLegacyDeviantGenre = Array.isArray(work.genres) && work.genres.some((g: any) => legacyDeviant.has(String(g.slug || "")));
+  const hasDeviantTags = Array.isArray(work.deviantLoveTags) && work.deviantLoveTags.length > 0;
+  const requiresDeviantGate = (hasDeviantTags || hasLegacyDeviantGenre) && !canViewDeviantLove;
+
+  // If gated and viewer can't access, return only limited metadata.
+  if (requiresMatureGate || requiresDeviantGate) {
     return NextResponse.json({
       gated: true,
+      gateReason: requiresMatureGate && requiresDeviantGate ? "BOTH" : requiresDeviantGate ? "DEVIANT_LOVE" : "MATURE",
       viewer: viewer
         ? {
             role: viewer.role,
             adultConfirmed: viewer.adultConfirmed,
+            deviantLoveConfirmed: viewer.deviantLoveConfirmed,
             canViewMature,
+            canViewDeviantLove,
             isOwner,
           }
         : null,
@@ -100,7 +113,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       ? {
           role: viewer.role,
           adultConfirmed: viewer.adultConfirmed,
+          deviantLoveConfirmed: viewer.deviantLoveConfirmed,
           canViewMature,
+          canViewDeviantLove,
           isOwner,
         }
       : null,

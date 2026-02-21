@@ -20,6 +20,8 @@ model User {
 
   // Preferences
   adultConfirmed         Boolean @default(false)
+  // Deviant Love (separate gate, locked by default)
+  deviantLoveConfirmed   Boolean @default(false)
   preferredLanguagesJson String  @default("[]")
 
   // Content
@@ -50,6 +52,7 @@ model User {
   // Preference blocks
   blockedGenres    Genre[]      @relation("UserBlockedGenres")
   blockedWarnings  WarningTag[] @relation("UserBlockedWarnings")
+  blockedDeviantLove DeviantLoveTag[] @relation("UserBlockedDeviantLove")
 
   // Auth
   passwordResetTokens PasswordResetToken[]
@@ -150,6 +153,7 @@ model Work {
   genres      Genre[]      @relation("WorkGenres")
   tags        Tag[]        @relation("WorkTags")
   warningTags WarningTag[] @relation("WorkWarnings")
+  deviantLoveTags DeviantLoveTag[] @relation("WorkDeviantLove")
 
   authorId    String
   author      User       @relation(fields: [authorId], references: [id])
@@ -233,6 +237,19 @@ model WarningTag {
   chapters  Chapter[] @relation("ChapterWarnings")
 
   blockedByUsers User[] @relation("UserBlockedWarnings")
+
+  @@index([slug])
+}
+
+// --- Deviant Love (locked taxonomy) ---
+model DeviantLoveTag {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  works     Work[]   @relation("WorkDeviantLove")
+  blockedByUsers User[] @relation("UserBlockedDeviantLove")
 
   @@index([slug])
 }

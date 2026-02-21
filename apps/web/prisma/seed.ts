@@ -9,6 +9,7 @@ import {
 import bcrypt from "bcryptjs";
 import { uniqueGenreCatalog } from "../lib/genreCatalog";
 import { uniqueWarningCatalog } from "../lib/warningCatalog";
+import { uniqueDeviantLoveCatalog } from "../lib/deviantLoveCatalog";
 
 const prisma = new PrismaClient();
 
@@ -65,8 +66,20 @@ async function main() {
     )
   );
 
+  const deviantNames = uniqueDeviantLoveCatalog();
+  const deviantLoveTags = await Promise.all(
+    deviantNames.map((name) =>
+      prisma.deviantLoveTag.upsert({
+        where: { slug: slugify(name) },
+        update: { name },
+        create: { name, slug: slugify(name) },
+      })
+    )
+  );
+
   const pickGenre = (name: string) => genres.find((g) => g.slug === slugify(name))!;
   const pickWarning = (name: string) => warnings.find((w) => w.slug === slugify(name))!;
+  const pickDeviant = (name: string) => deviantLoveTags.find((d) => d.slug === slugify(name))!;
 
   // Sample NOVEL work
   const novelTitle = "Benara: Dosa Besar InSys Lab";
@@ -204,6 +217,8 @@ async function main() {
         connect: [{ id: pickWarning("NSFW").id }, { id: pickWarning("Sexual Content").id }, { id: pickWarning("Nudity").id }],
       },
 
+      // Example: no deviant love tags here.
+
       chapterCount: 1,
       chapters: {
         create: [
@@ -217,6 +232,58 @@ async function main() {
             text: {
               create: {
                 content: "Ini chapter demo Mature.\n\nKalau kamu belum opt-in di Settings, halaman ini bakal kegate.",
+              },
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  // Optional sample Deviant Love work (hidden unless user opts-in Deviant Love)
+  const deviantTitle = "Forbidden Knot (Deviant Love Demo)";
+  const deviantSlug = `${slugify(deviantTitle)}-${admin.id.slice(-6)}`;
+
+  await prisma.work.upsert({
+    where: { slug: deviantSlug },
+    update: {},
+    create: {
+      slug: deviantSlug,
+      title: deviantTitle,
+      description: "Demo karya yang ditandai Deviant Love tags (untuk ngetes gating).",
+      type: WorkType.NOVEL,
+      status: WorkStatus.PUBLISHED,
+      coverImage: "/images/novel3.png",
+      authorId: admin.id,
+
+      language: "en",
+      origin: WorkOrigin.ORIGINAL,
+      completion: WorkCompletion.ONGOING,
+      isMature: true,
+
+      genres: {
+        connect: [{ id: pickGenre("Romance").id }, { id: pickGenre("Drama").id }],
+      },
+      warningTags: {
+        connect: [{ id: pickWarning("NSFW").id }, { id: pickWarning("Mature").id }],
+      },
+      deviantLoveTags: {
+        connect: [{ id: pickDeviant("Omegaverse").id }],
+      },
+
+      chapterCount: 1,
+      chapters: {
+        create: [
+          {
+            number: 1,
+            title: "Chapter 1",
+            status: ChapterStatus.PUBLISHED,
+            publishedAt: new Date(),
+            isMature: true,
+            text: {
+              create: {
+                content:
+                  "Ini chapter demo Deviant Love.\n\nKalau kamu belum unlock di Settings, halaman ini bakal kegate.",
               },
             },
           },

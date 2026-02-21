@@ -75,6 +75,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ workId:
       genres: true,
       tags: true,
       warningTags: true,
+      deviantLoveTags: true,
       chapters: {
         orderBy: { number: "asc" },
         select: {
@@ -164,6 +165,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
 
     const genreIds = safeJsonArray(fd.get("genreIds"));
     const warningTagIds = safeJsonArray(fd.get("warningTagIds"));
+    const deviantLoveTagIds = safeJsonArray(fd.get("deviantLoveTagIds"));
     const tagNames = safeJsonArray(fd.get("tags"));
 
     const originalAuthorCreditRaw = String(fd.get("originalAuthorCredit") || "").trim();
@@ -273,6 +275,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
 
         genres: { set: genreIds.map((id) => ({ id })) },
         warningTags: { set: warningTagIds.map((id) => ({ id })) },
+        deviantLoveTags: { set: deviantLoveTagIds.map((id) => ({ id })) },
         tags: tagNames.length
           ? {
               set: [],

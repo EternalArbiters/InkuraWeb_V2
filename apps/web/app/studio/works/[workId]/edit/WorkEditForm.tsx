@@ -25,6 +25,7 @@ type Work = {
   uploaderNote?: string | null;
   genres: { id: string; name: string; slug: string }[];
   warningTags: { id: string; name: string; slug: string }[];
+  deviantLoveTags?: { id: string; name: string; slug: string }[];
   tags: { id: string; name: string; slug: string }[];
 };
 
@@ -32,9 +33,10 @@ type Props = {
   work: Work;
   genres: PickerItem[];
   warningTags: PickerItem[];
+  deviantLoveTags: PickerItem[];
 };
 
-export default function WorkEditForm({ work, genres, warningTags }: Props) {
+export default function WorkEditForm({ work, genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
 
   const publishType = (work.publishType || "ORIGINAL").toUpperCase() as Work["publishType"];
@@ -55,6 +57,9 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
+  const [deviantLoveTagIds, setDeviantLoveTagIds] = React.useState<string[]>(
+    Array.isArray(work.deviantLoveTags) ? work.deviantLoveTags.map((d) => d.id) : []
+  );
   const [tags, setTags] = React.useState<string[]>(work.tags.map((t) => t.name));
 
   const [coverFile, setCoverFile] = React.useState<File | null>(null);
@@ -85,6 +90,7 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
       fd.append("isMature", String(isMature));
       fd.append("genreIds", JSON.stringify(genreIds));
       fd.append("warningTagIds", JSON.stringify(warningIds));
+      fd.append("deviantLoveTagIds", JSON.stringify(deviantLoveTagIds));
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
 
@@ -302,6 +308,14 @@ export default function WorkEditForm({ work, genres, warningTags }: Props) {
         items={warningTags}
         selectedIds={warningIds}
         onChange={setWarningIds}
+      />
+
+      <MultiSelectPicker
+        title="Deviant Love"
+        subtitle="Deviant Love tags (locked by default for readers; requires 18+ + Deviant Love unlock)."
+        items={deviantLoveTags}
+        selectedIds={deviantLoveTagIds}
+        onChange={setDeviantLoveTagIds}
       />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">

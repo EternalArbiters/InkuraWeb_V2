@@ -8,8 +8,27 @@
 import { slugify } from "@/lib/slugify";
 
 // "NSFW gate" tags (used for age-locking and filtering).
-// Keep this list conservative; the broader sensitive tags belong to WARNING_CATALOG.
-export const NSFW_TAG_CATALOG: string[] = ["NSFW", "Mature", "Adult", "Smut", "Ecchi", "Nudity"];
+// These tags are considered 18+ / sensitive and are locked behind adultConfirmed.
+export const NSFW_TAG_CATALOG: string[] = [
+  "NSFW",
+  "Mature",
+  "Adult",
+  "Smut",
+  "Ecchi",
+  "Nudity",
+  // Requested: move from Genre -> NSFW taxonomy
+  "Abuse",
+  "Alcohol",
+  "Domestic Violence",
+  "Drug Use",
+  "Fetish",
+  "Gore",
+  "Graphic Violence",
+  "Harassment",
+  "Non-Consensual",
+  "SM/BDSM/SUB-DOM",
+  "Self-Harm",
+];
 
 export function slugifyTag(name: string) {
   return slugify(String(name || "").trim());
@@ -37,7 +56,7 @@ export const WARNING_CATALOG: string[] = [
 
   // Abuse / coercion
   "Abuse",
-  "Domestic Abuse",
+  "Domestic Violence",
   "Child Abuse",
   "Bullying",
   "Gaslighting",
@@ -46,9 +65,8 @@ export const WARNING_CATALOG: string[] = [
   "Kidnapping",
 
   // Consent / taboo
-  "Non-Consent",
+  "Non-Consensual",
   "Dubious Consent",
-  "Incest",
   "Age Gap",
   "Underage",
   "Cheating/Infidelity",
@@ -62,7 +80,7 @@ export const WARNING_CATALOG: string[] = [
 
   // Substance
   "Drug Use",
-  "Alcohol Use",
+  "Alcohol",
   "Smoking",
 
   // Sensitive topics

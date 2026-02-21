@@ -15,19 +15,24 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
   const gated = !!res.data.gated;
   const viewer = res.data.viewer;
   const canViewMature = !!viewer?.canViewMature;
+  const canViewDeviantLove = !!viewer?.canViewDeviantLove;
+  const gateReason = (res.data as any).gateReason as string | undefined;
 
   if (gated) {
+    const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden">
             <div className="p-6">
               <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
-                18+ Mature Content
+                {isDeviant ? "Deviant Love (Locked)" : "18+ Mature Content"}
               </div>
               <h1 className="mt-3 text-2xl md:text-3xl font-extrabold tracking-tight">{work.title}</h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                Karya ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings.
+                {isDeviant
+                  ? "Karya ini ditandai Deviant Love. Untuk membaca, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
+                  : "Karya ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings."}
               </p>
 
               <div className="mt-4 flex flex-col sm:flex-row gap-2">
@@ -35,7 +40,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                   href="/settings/account"
                   className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110"
                 >
-                  Buka Settings (unlock + opt-in 18+)
+                  {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
                 </Link>
                 <Link
                   href="/search"
@@ -54,9 +59,11 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 />
               ) : null}
 
-              {viewer && !canViewMature ? (
+              {viewer && (isDeviant ? !canViewDeviantLove : !canViewMature) ? (
                 <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-                  NSFW locked. Pastikan kamu sudah centang "I am 18+" dan aktifkan "Include mature content".
+                  {isDeviant
+                    ? "Deviant Love locked. Pastikan kamu sudah centang 18+ lalu unlock Deviant Love."
+                    : "NSFW locked. Pastikan kamu sudah centang \"I am 18+\" dan aktifkan \"Include mature content\"."}
                 </div>
               ) : null}
             </div>

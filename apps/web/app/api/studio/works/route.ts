@@ -97,6 +97,7 @@ export async function POST(req: Request) {
 
     let genreIds: string[] = [];
     let warningTagIds: string[] = [];
+    let deviantLoveTagIds: string[] = [];
     let tagNames: string[] = [];
 
     let publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD" = "ORIGINAL";
@@ -121,6 +122,7 @@ export async function POST(req: Request) {
 
       genreIds = toStringArray(fd.get("genreIds"));
       warningTagIds = toStringArray(fd.get("warningTagIds"));
+      deviantLoveTagIds = toStringArray(fd.get("deviantLoveTagIds"));
       tagNames = toStringArray(fd.get("tags"));
 
       const pt = String(fd.get("publishType") || "ORIGINAL").toUpperCase();
@@ -186,6 +188,7 @@ export async function POST(req: Request) {
 
         genres: genreIds.length ? { connect: genreIds.map((id) => ({ id })) } : undefined,
         warningTags: warningTagIds.length ? { connect: warningTagIds.map((id) => ({ id })) } : undefined,
+        deviantLoveTags: deviantLoveTagIds.length ? { connect: deviantLoveTagIds.map((id) => ({ id })) } : undefined,
         tags: tagNames.length
           ? {
               connectOrCreate: tagNames.slice(0, 50).map((name) => {

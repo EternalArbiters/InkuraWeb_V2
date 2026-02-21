@@ -7,13 +7,11 @@ export const GENRE_CATALOG: string[] = [
   "Manhua",
   "Webtoon",
   "Webcomic",
-  "Comic",
   "Cartoon",
   "Western",
   "Indie",
   "Doujinshi",
   "Fan Comic",
-  "Light Novel",
   "Web Novel",
   "Visual Novel",
   "4-Koma",
@@ -44,16 +42,7 @@ export const GENRE_CATALOG: string[] = [
   "Marriage",
   "Contract Relationship",
   "Age Gap",
-  "Yuri (GL)",
-  "Yaoi (BL)",
-  "Bara (ML)",
-  "LGBTQ+",
-  "Ecchi",
-  "Smut",
-  "Mature",
-  "Adult",
-  "NSFW",
-  "Nudity",
+  // NOTE: GL/BL/Yaoi/Yuri, Omegaverse, etc are in Deviant Love. NSFW terms are in WarningTag.
 
   // --- Core Genres ---
   "Action",
@@ -179,23 +168,15 @@ export const GENRE_CATALOG: string[] = [
   "Friendship",
 
   // --- Dark / Sensitive ---
-  "Gore",
   "Violence",
-  "Graphic Violence",
-  "Abuse",
-  "Domestic Violence",
   "Bullying",
-  "Harassment",
   "Trauma",
-  "Self-Harm",
   "Suicide",
-  "Drug Use",
-  "Alcohol",
   "Gambling",
   "Kidnapping",
   "Torture",
-  "Non-Consensual",
-  "Incest",
+  // NOTE: Abuse, alcohol, drug use, gore, graphic violence, harassment, non-consensual, self-harm are WarningTag (NSFW).
+  // NOTE: Incest is Deviant Love.
 
   // --- Settings ---
   "Urban",
@@ -258,13 +239,7 @@ export const GENRE_CATALOG: string[] = [
   "Crossdressing",
   "Transgender",
 
-  // --- Omegaverse etc ---
-  "Omegaverse",
-  "Alpha/Beta/Omega",
-
-  // --- Fetish-ish (still as tags) ---
-  "SM/BDSM/SUB-DOM",
-  "Fetish",
+  // NOTE: Omegaverse / A-B-O / BDSM / Fetish are NOT regular genres.
 
   // --- Aesthetics / vibes ---
   "Dark Academia",

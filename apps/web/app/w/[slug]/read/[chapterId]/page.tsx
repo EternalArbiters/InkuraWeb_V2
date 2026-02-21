@@ -17,10 +17,11 @@ export default async function ReadChapterPage({
 }) {
   const params = await paramsPromise;
 
-  const res = await apiJson<{ gated: boolean; chapter: any; work: any; viewer: any }>(`/api/chapters/${params.chapterId}`);
+  const res = await apiJson<{ gated: boolean; chapter: any; work: any; viewer: any; gateReason?: string }>(`/api/chapters/${params.chapterId}`);
   if (!res.ok) return notFound();
 
   const { gated, chapter, work } = res.data;
+  const gateReason = (res.data as any).gateReason as string | undefined;
 
   if (!work || !chapter) return notFound();
 
@@ -29,18 +30,23 @@ export default async function ReadChapterPage({
   }
 
   if (gated) {
+    const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-            <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">18+ Mature Content</div>
+            <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
+              {isDeviant ? "Deviant Love (Locked)" : "18+ Mature Content"}
+            </div>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{work.title}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Chapter ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings.
+              {isDeviant
+                ? "Chapter ini ditandai Deviant Love. Untuk membaca, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
+                : "Chapter ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings."}
             </p>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Link href="/settings/account" className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110">
-                Buka Settings (unlock + opt-in 18+)
+                {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
               </Link>
               <Link href={`/w/${work.slug}`} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
                 Kembali ke Detail

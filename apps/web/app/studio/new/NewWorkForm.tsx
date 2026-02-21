@@ -7,11 +7,12 @@ import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 type Props = {
   genres: PickerItem[];
   warningTags: PickerItem[];
+  deviantLoveTags: PickerItem[];
 };
 
 const MAX_COVER_BYTES = 2 * 1024 * 1024;
 
-export default function NewWorkForm({ genres, warningTags }: Props) {
+export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
 
   const [loading, setLoading] = React.useState(false);
@@ -33,6 +34,7 @@ export default function NewWorkForm({ genres, warningTags }: Props) {
   const [isMature, setIsMature] = React.useState(false);
   const [genreIds, setGenreIds] = React.useState<string[]>([]);
   const [warningTagIds, setWarningTagIds] = React.useState<string[]>([]);
+  const [deviantLoveTagIds, setDeviantLoveTagIds] = React.useState<string[]>([]);
   const [tags, setTags] = React.useState<string[]>([]);
   const [tagsRaw, setTagsRaw] = React.useState("");
 
@@ -111,6 +113,7 @@ export default function NewWorkForm({ genres, warningTags }: Props) {
       fd.set("isMature", isMature ? "true" : "false");
       fd.set("genreIds", JSON.stringify(genreIds));
       fd.set("warningTagIds", JSON.stringify(warningTagIds));
+      fd.set("deviantLoveTagIds", JSON.stringify(deviantLoveTagIds));
       fd.set("tags", JSON.stringify(tags));
 
       if (publishType !== "ORIGINAL") {
@@ -349,6 +352,14 @@ export default function NewWorkForm({ genres, warningTags }: Props) {
         items={warningTags}
         selectedIds={warningTagIds}
         onChange={setWarningTagIds}
+      />
+
+      <MultiSelectPicker
+        title="Deviant Love tags"
+        subtitle="Tag Deviant Love (locked by default for readers; requires 18+ + Deviant Love unlock)."
+        items={deviantLoveTags}
+        selectedIds={deviantLoveTagIds}
+        onChange={setDeviantLoveTagIds}
       />
 
       <div className="flex items-center justify-end">

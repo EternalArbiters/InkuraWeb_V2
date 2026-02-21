@@ -16,7 +16,7 @@ type Props = {
    * If the server passes an empty list, the component will fetch tags on the client
    * via the web rewrite (/api/*) to avoid an empty UI on Vercel.
    */
-  fallbackFetch?: "genres" | "warnings";
+  fallbackFetch?: "genres" | "warnings" | "deviantLove";
 };
 
 // Tri-state per genre:
@@ -58,8 +58,12 @@ export default function GenreTriStatePicker({
       setIsLoading(true);
       try {
         const url = fallbackFetch === "warnings" ? "/api/warnings?take=100" : "/api/genres?take=200";
+        const finalUrl =
+          fallbackFetch === "deviantLove"
+            ? "/api/deviant-love?take=200"
+            : url;
 
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetch(finalUrl, { cache: "no-store" });
         const data = await res.json().catch(() => null);
         if (!res.ok) {
           const msg = (data && (data.error || data.message)) || `Failed to fetch ${fallbackFetch} (${res.status})`;
@@ -69,7 +73,9 @@ export default function GenreTriStatePicker({
         const list =
           fallbackFetch === "warnings"
             ? (data?.warningTags as Genre[] | undefined)
-            : (data?.genres as Genre[] | undefined);
+            : fallbackFetch === "deviantLove"
+              ? (data?.deviantLoveTags as Genre[] | undefined)
+              : (data?.genres as Genre[] | undefined);
 
         if (alive) {
           setItems(Array.isArray(list) ? list : []);
@@ -165,7 +171,7 @@ export default function GenreTriStatePicker({
       <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
         {filtered.map((g) => {
           const s = stateOf(g.slug);
-          const badge = s === "include" ? "+" : s === "exclude" ? "−" : "";
+          const badge = s === "include" ? "✓" : s === "exclude" ? "✕" : "";
           const cls =
             s === "include"
               ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"

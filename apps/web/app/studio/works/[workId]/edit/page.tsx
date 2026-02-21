@@ -13,10 +13,11 @@ export default async function WorkEditPage({
   const params = await paramsPromise;
   const workId = params.workId;
 
-  const [workRes, genresRes, warningsRes] = await Promise.all([
+  const [workRes, genresRes, warningsRes, deviantRes] = await Promise.all([
     apiJson<{ work: any }>(`/api/studio/works/${workId}`),
     apiJson<{ genres: any[] }>("/api/genres?take=200"),
     apiJson<{ warningTags: any[] }>("/api/warnings?take=100"),
+    apiJson<{ deviantLoveTags: any[] }>("/api/deviant-love?take=200"),
   ]);
 
   if (!workRes.ok) {
@@ -29,6 +30,7 @@ export default async function WorkEditPage({
   const work = workRes.data.work;
   const genres = genresRes.ok ? genresRes.data.genres : [];
   const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
+  const deviantLoveTags = deviantRes.ok ? deviantRes.data.deviantLoveTags : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -43,7 +45,7 @@ export default async function WorkEditPage({
           </Link>
         </div>
 
-        <WorkEditForm work={work as any} genres={genres as any} warningTags={warningTags as any} />
+        <WorkEditForm work={work as any} genres={genres as any} warningTags={warningTags as any} deviantLoveTags={deviantLoveTags as any} />
       </div>
     </main>
   );

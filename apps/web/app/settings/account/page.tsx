@@ -6,10 +6,11 @@ import { apiJson } from "@/lib/serverApi";
 export const dynamic = "force-dynamic";
 
 export default async function AccountSettingsPage() {
-  const [prefsRes, genresRes, warningsRes] = await Promise.all([
+  const [prefsRes, genresRes, warningsRes, deviantRes] = await Promise.all([
     apiJson<{ prefs: any }>("/api/me/preferences"),
     apiJson<{ genres: any[] }>("/api/genres"),
     apiJson<{ warningTags: any[] }>("/api/warnings"),
+    apiJson<{ deviantLoveTags: any[] }>("/api/deviant-love"),
   ]);
 
   if (!prefsRes.ok) {
@@ -18,6 +19,7 @@ export default async function AccountSettingsPage() {
 
   const genres = genresRes.ok ? genresRes.data.genres : [];
   const warnings = warningsRes.ok ? warningsRes.data.warningTags : [];
+  const deviantLoveTags = deviantRes.ok ? deviantRes.data.deviantLoveTags : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -38,11 +40,14 @@ export default async function AccountSettingsPage() {
         <PreferencesForm
           genres={genres as any}
           warnings={warnings as any}
+          deviantLoveTags={deviantLoveTags as any}
           initial={{
             adultConfirmed: prefsRes.data.prefs.adultConfirmed,
+            deviantLoveConfirmed: prefsRes.data.prefs.deviantLoveConfirmed,
             preferredLanguages: prefsRes.data.prefs.preferredLanguages,
             blockedGenreIds: prefsRes.data.prefs.blockedGenreIds,
             blockedWarningIds: prefsRes.data.prefs.blockedWarningIds,
+            blockedDeviantLoveIds: prefsRes.data.prefs.blockedDeviantLoveIds,
           }}
         />
       </div>

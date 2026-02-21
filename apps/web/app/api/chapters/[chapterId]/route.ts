@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 
 export const runtime = "nodejs";
 
@@ -10,7 +11,7 @@ async function getViewer() {
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, adultConfirmed: true },
+    select: { id: true, role: true, adultConfirmed: true, deviantLoveConfirmed: true },
   });
   return user;
 }
@@ -40,6 +41,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
           isMature: true,
           authorId: true,
           warningTags: { select: { name: true, slug: true } },
+          deviantLoveTags: { select: { name: true, slug: true } },
+          genres: { select: { slug: true } },
           chapters: {
             where: { status: "PUBLISHED" },
             orderBy: [{ number: "asc" }, { createdAt: "asc" }],
@@ -58,17 +61,26 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
   const isOwner = !!viewer?.id && viewer.id === chapter.work.authorId;
   // v14: adultConfirmed alone unlocks mature content.
   const canViewMature = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed);
+  const canViewDeviantLove =
+    isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
 
   const requiresMature = (chapter.work.isMature || chapter.isMature) && !canViewMature;
+  const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
+  const hasLegacyDeviantGenre = Array.isArray((chapter.work as any).genres) && (chapter.work as any).genres.some((g: any) => legacyDeviant.has(String(g.slug || "")));
+  const hasDeviantTags = Array.isArray(chapter.work.deviantLoveTags) && chapter.work.deviantLoveTags.length > 0;
+  const requiresDeviant = (hasDeviantTags || hasLegacyDeviantGenre) && !canViewDeviantLove;
 
-  if (requiresMature) {
+  if (requiresMature || requiresDeviant) {
     return NextResponse.json({
       gated: true,
+      gateReason: requiresMature && requiresDeviant ? "BOTH" : requiresDeviant ? "DEVIANT_LOVE" : "MATURE",
       viewer: viewer
         ? {
             role: viewer.role,
             adultConfirmed: viewer.adultConfirmed,
+            deviantLoveConfirmed: viewer.deviantLoveConfirmed,
             canViewMature,
+            canViewDeviantLove,
             isOwner,
           }
         : null,
@@ -94,7 +106,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       ? {
           role: viewer.role,
           adultConfirmed: viewer.adultConfirmed,
+          deviantLoveConfirmed: viewer.deviantLoveConfirmed,
           canViewMature,
+          canViewDeviantLove,
           isOwner,
         }
       : null,
@@ -114,6 +128,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       type: chapter.work.type,
       isMature: chapter.work.isMature,
       warningTags: chapter.work.warningTags,
+      deviantLoveTags: chapter.work.deviantLoveTags,
       chapters: chapter.work.chapters,
     },
   });

@@ -16,21 +16,28 @@ import {
 type Props = {
   genres: PickerItem[];
   warnings: PickerItem[];
+  deviantLoveTags: PickerItem[];
   initial: {
     adultConfirmed?: boolean;
+    deviantLoveConfirmed?: boolean;
     preferredLanguages: string[];
     blockedGenreIds: string[];
     blockedWarningIds: string[];
+    blockedDeviantLoveIds: string[];
   };
 };
 
-export default function PreferencesForm({ genres, warnings, initial }: Props) {
+export default function PreferencesForm({ genres, warnings, deviantLoveTags, initial }: Props) {
   const [adultConfirmed, setAdultConfirmed] = React.useState(!!initial.adultConfirmed);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+
+  const [deviantLoveConfirmed, setDeviantLoveConfirmed] = React.useState(!!initial.deviantLoveConfirmed);
+  const [confirmDeviantOpen, setConfirmDeviantOpen] = React.useState(false);
 
   const [preferredLanguages, setPreferredLanguages] = React.useState<string[]>(initial.preferredLanguages || []);
   const [blockedGenreIds, setBlockedGenreIds] = React.useState<string[]>(initial.blockedGenreIds || []);
   const [blockedWarningIds, setBlockedWarningIds] = React.useState<string[]>(initial.blockedWarningIds || []);
+  const [blockedDeviantLoveIds, setBlockedDeviantLoveIds] = React.useState<string[]>(initial.blockedDeviantLoveIds || []);
 
   const [loading, setLoading] = React.useState(false);
   const [msg, setMsg] = React.useState<string | null>(null);
@@ -40,7 +47,9 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
     setPreferredLanguages((prev) => (prev.includes(code) ? prev.filter((x) => x !== code) : [...prev, code]));
   }
 
-  async function save(nextAdultConfirmed = adultConfirmed) {
+  async function save(next?: { adultConfirmed?: boolean; deviantLoveConfirmed?: boolean }) {
+    const nextAdultConfirmed = typeof next?.adultConfirmed === "boolean" ? next.adultConfirmed : adultConfirmed;
+    const nextDeviantConfirmed = typeof next?.deviantLoveConfirmed === "boolean" ? next.deviantLoveConfirmed : deviantLoveConfirmed;
     setErr(null);
     setMsg(null);
     setLoading(true);
@@ -50,9 +59,11 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           adultConfirmed: nextAdultConfirmed,
+          deviantLoveConfirmed: nextDeviantConfirmed,
           preferredLanguages,
           blockedGenreIds,
           blockedWarningIds,
+          blockedDeviantLoveIds,
         }),
       });
       const json = await res.json();
@@ -68,7 +79,13 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
   async function confirmAdult() {
     setConfirmOpen(false);
     setAdultConfirmed(true);
-    await save(true);
+    await save({ adultConfirmed: true });
+  }
+
+  async function confirmDeviantLove() {
+    setConfirmDeviantOpen(false);
+    setDeviantLoveConfirmed(true);
+    await save({ adultConfirmed, deviantLoveConfirmed: true });
   }
 
   return (
@@ -95,7 +112,9 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
               if (!next) {
                 // lock again (allowed). No confirmation needed.
                 setAdultConfirmed(false);
-                void save(false);
+                // deviant love must lock too
+                setDeviantLoveConfirmed(false);
+                void save({ adultConfirmed: false, deviantLoveConfirmed: false });
                 return;
               }
               // unlocking always requires confirmation (every time)
@@ -108,6 +127,42 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
         <div className="text-[11px] text-gray-600 dark:text-gray-300">
           Kamu bisa mengunci lagi kapan pun. Kalau kamu unlock lagi, peringatannya akan muncul lagi.
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+        <div className="text-sm font-semibold">Deviant Love (Locked)</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">
+          Default terkunci. Kalau kamu aktifkan, kamu bisa melihat dan memfilter tag Deviant Love.
+        </div>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={deviantLoveConfirmed}
+            disabled={!adultConfirmed}
+            onChange={(e) => {
+              const next = e.target.checked;
+              if (!adultConfirmed) return;
+              if (!next) {
+                setDeviantLoveConfirmed(false);
+                void save({ adultConfirmed, deviantLoveConfirmed: false });
+                return;
+              }
+              setConfirmDeviantOpen(true);
+            }}
+          />
+          <span className={"text-sm font-semibold " + (!adultConfirmed ? "text-gray-400" : "")}>Saya paham (unlock Deviant Love)</span>
+        </label>
+
+        {!adultConfirmed ? (
+          <div className="text-[11px] text-gray-600 dark:text-gray-300">
+            Kamu harus unlock 18+ dulu sebelum bisa membuka Deviant Love.
+          </div>
+        ) : (
+          <div className="text-[11px] text-gray-600 dark:text-gray-300">
+            Kamu bisa mengunci lagi kapan pun. Kalau kamu unlock lagi, peringatannya akan muncul lagi.
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
@@ -153,6 +208,14 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
         onChange={setBlockedWarningIds}
       />
 
+      <MultiSelectPicker
+        title="Blocked Deviant Love tags"
+        subtitle="Works with this Deviant Love tag will be automatically hidden (unless you click 'Ignore my blocking' in Search). (Deviant Love tags are locked unless you unlock Deviant Love.)"
+        items={deviantLoveTags}
+        selectedIds={blockedDeviantLoveIds}
+        onChange={setBlockedDeviantLoveIds}
+      />
+
       <div className="flex items-center justify-end">
         <button
           type="button"
@@ -181,6 +244,27 @@ export default function PreferencesForm({ genres, warnings, initial }: Props) {
             </Button>
             <Button type="button" onClick={confirmAdult}>
               Ya, saya tau itu.
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmDeviantOpen} onOpenChange={setConfirmDeviantOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Peringatan Deviant Love</DialogTitle>
+            <DialogDescription>
+              Dengan membuka Deviant Love, kamu menyatakan sudah cukup umur dan siap menanggung konsekuensi dari konten bertema
+              hubungan menyimpang. Developer tidak bertanggung jawab atas apa pun yang kamu baca. Ini adalah peringatan terakhir.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={() => setConfirmDeviantOpen(false)}>
+              Tidak, saya tidak mau.
+            </Button>
+            <Button type="button" onClick={confirmDeviantLove}>
+              Ya, saya mengerti.
             </Button>
           </DialogFooter>
         </DialogContent>

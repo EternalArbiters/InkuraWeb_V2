@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { parseJsonStringArray } from "@/lib/prefs";
+import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,12 @@ function tagToSlug(tag: string) {
     .replace(/-+/g, "-");
 }
 
+function legacyDeviantGenreSlugs() {
+  // Older DBs may have these as Genre rows. Treat them as Deviant Love for gating.
+  const base = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
+  return Array.from(base);
+}
+
 async function getViewerWithPrefs() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
@@ -48,9 +55,11 @@ async function getViewerWithPrefs() {
       id: true,
       role: true,
       adultConfirmed: true,
+      deviantLoveConfirmed: true,
       preferredLanguagesJson: true,
       blockedGenres: { select: { id: true } },
       blockedWarnings: { select: { id: true } },
+      blockedDeviantLove: { select: { id: true } },
     },
   });
 
@@ -60,9 +69,11 @@ async function getViewerWithPrefs() {
     id: user.id,
     role: user.role,
     adultConfirmed: user.adultConfirmed,
+    deviantLoveConfirmed: user.deviantLoveConfirmed,
     preferredLanguages: parseJsonStringArray(user.preferredLanguagesJson).map((s) => String(s).toLowerCase()),
     blockedGenreIds: user.blockedGenres.map((g) => g.id),
     blockedWarningIds: user.blockedWarnings.map((w) => w.id),
+    blockedDeviantLoveIds: user.blockedDeviantLove.map((d) => d.id),
   };
 }
 
@@ -83,6 +94,11 @@ export async function GET(req: Request) {
   let includeWarnings = splitCsv(searchParams.get("wi"));
   let excludeWarnings = splitCsv(searchParams.get("we"));
   const wmode = (searchParams.get("wmode") || "or").toLowerCase() === "and" ? "and" : "or";
+
+  // Deviant Love tri-state (csv slugs)
+  let includeDeviant = splitCsv(searchParams.get("di"));
+  let excludeDeviant = splitCsv(searchParams.get("de"));
+  const dmode = (searchParams.get("dmode") || "or").toLowerCase() === "and" ? "and" : "or";
 
   // Advanced
   const completion = upperEnum(searchParams.get("completion"));
@@ -117,12 +133,20 @@ export async function GET(req: Request) {
   // v14: adultConfirmed alone unlocks mature content.
   const canViewMature = !!viewer && (viewer.role === "ADMIN" || viewer.adultConfirmed);
 
+  const canViewDeviantLove = !!viewer && (viewer.role === "ADMIN" || (viewer.adultConfirmed && viewer.deviantLoveConfirmed));
+
   // NSFW tag filters are age-locked. If the viewer isn't 18+ confirmed (or not logged in),
   // ignore wi/we completely so it can't be used via URL tricks.
   const canUseNsfwTags = !!viewer && (viewer.role === "ADMIN" || viewer.adultConfirmed === true);
   if (!canUseNsfwTags) {
     includeWarnings = [];
     excludeWarnings = [];
+  }
+
+  // Deviant Love filters are locked. Ignore di/de if not unlocked.
+  if (!canViewDeviantLove) {
+    includeDeviant = [];
+    excludeDeviant = [];
   }
 
   // Language default from prefs
@@ -133,8 +157,10 @@ export async function GET(req: Request) {
   // Normalize include/exclude conflicts
   const includeGenresSet = new Set(includeGenres);
   const includeWarningsSet = new Set(includeWarnings);
+  const includeDeviantSet = new Set(includeDeviant);
   const effectiveExcludeGenres = excludeGenres.filter((g) => !includeGenresSet.has(g));
   const effectiveExcludeWarnings = excludeWarnings.filter((w) => !includeWarningsSet.has(w));
+  const effectiveExcludeDeviant = excludeDeviant.filter((d) => !includeDeviantSet.has(d));
 
   const where: any = { status: "PUBLISHED" };
 
@@ -191,6 +217,36 @@ export async function GET(req: Request) {
   }
   if (effectiveExcludeWarnings.length) {
     AND.push({ warningTags: { none: { slug: { in: effectiveExcludeWarnings } } } });
+  }
+
+  // Deviant Love gating + tri-state
+  if (!canViewDeviantLove) {
+    // Hide any work that has at least 1 deviantLoveTag.
+    AND.push({ deviantLoveTags: { none: {} } });
+    // Also hide legacy deviant genres (older DBs).
+    const legacy = legacyDeviantGenreSlugs();
+    if (legacy.length) AND.push({ genres: { none: { slug: { in: legacy } } } });
+  } else {
+    if (includeDeviant.length) {
+      if (dmode === "and") {
+        AND.push(
+          ...includeDeviant.map((slug) => ({
+            OR: [{ deviantLoveTags: { some: { slug } } }, { genres: { some: { slug } } }],
+          }))
+        );
+      } else {
+        AND.push({
+          OR: [
+            { deviantLoveTags: { some: { slug: { in: includeDeviant } } } },
+            { genres: { some: { slug: { in: includeDeviant } } } },
+          ],
+        });
+      }
+    }
+    if (effectiveExcludeDeviant.length) {
+      AND.push({ deviantLoveTags: { none: { slug: { in: effectiveExcludeDeviant } } } });
+      AND.push({ genres: { none: { slug: { in: effectiveExcludeDeviant } } } });
+    }
   }
 
   // Completion/origin
@@ -260,6 +316,7 @@ export async function GET(req: Request) {
   if (viewer && !ignoreBlocked) {
     if (viewer.blockedGenreIds.length) AND.push({ genres: { none: { id: { in: viewer.blockedGenreIds } } } });
     if (viewer.blockedWarningIds.length) AND.push({ warningTags: { none: { id: { in: viewer.blockedWarningIds } } } });
+    if (viewer.blockedDeviantLoveIds.length) AND.push({ deviantLoveTags: { none: { id: { in: viewer.blockedDeviantLoveIds } } } });
   }
 
   if (AND.length) where.AND = AND;
@@ -299,7 +356,9 @@ export async function GET(req: Request) {
     viewer: viewer
       ? {
           adultConfirmed: viewer.adultConfirmed,
+          deviantLoveConfirmed: viewer.deviantLoveConfirmed,
           canViewMature,
+          canViewDeviantLove,
           role: viewer.role,
         }
       : null,
