@@ -44,38 +44,68 @@ async function main() {
   });
 
   // --- Taxonomy seed ---
+  // V15: taxonomy seed is additive and must NOT override admin changes.
+  // - We create missing system items with sortOrder.
+  // - We DO NOT re-activate or rename existing rows.
   const genreNames = uniqueGenreCatalog();
   const genres = await Promise.all(
-    genreNames.map((name) =>
-      prisma.genre.upsert({
-        where: { slug: slugify(name) },
-        update: { name },
-        create: { name, slug: slugify(name) },
-      })
-    )
+    genreNames.map((name, idx) => {
+      const slug = slugify(name);
+      return prisma.genre.upsert({
+        where: { slug },
+        update: { isSystem: true },
+        create: { name, slug, isSystem: true, isActive: true, sortOrder: idx * 10 },
+      });
+    })
   );
 
   const warningNames = uniqueWarningCatalog();
   const warnings = await Promise.all(
-    warningNames.map((name) =>
-      prisma.warningTag.upsert({
-        where: { slug: slugify(name) },
-        update: { name },
-        create: { name, slug: slugify(name) },
-      })
-    )
+    warningNames.map((name, idx) => {
+      const slug = slugify(name);
+      return prisma.warningTag.upsert({
+        where: { slug },
+        update: { isSystem: true },
+        create: { name, slug, isSystem: true, isActive: true, sortOrder: idx * 10 },
+      });
+    })
   );
 
   const deviantNames = uniqueDeviantLoveCatalog();
   const deviantLoveTags = await Promise.all(
-    deviantNames.map((name) =>
-      prisma.deviantLoveTag.upsert({
-        where: { slug: slugify(name) },
-        update: { name },
-        create: { name, slug: slugify(name) },
-      })
-    )
+    deviantNames.map((name, idx) => {
+      const slug = slugify(name);
+      return prisma.deviantLoveTag.upsert({
+        where: { slug },
+        update: { isSystem: true },
+        create: { name, slug, isSystem: true, isActive: true, sortOrder: idx * 10 },
+      });
+    })
   );
+
+  // Backfill sortOrder for existing rows that still have the default 0.
+  // This keeps ordering stable without overriding admin re-orders (non-zero values are preserved).
+  for (let i = 0; i < genreNames.length; i++) {
+    const slug = slugify(genreNames[i]);
+    await prisma.genre.updateMany({
+      where: { slug, sortOrder: 0 },
+      data: { sortOrder: i * 10, isSystem: true },
+    });
+  }
+  for (let i = 0; i < warningNames.length; i++) {
+    const slug = slugify(warningNames[i]);
+    await prisma.warningTag.updateMany({
+      where: { slug, sortOrder: 0 },
+      data: { sortOrder: i * 10, isSystem: true },
+    });
+  }
+  for (let i = 0; i < deviantNames.length; i++) {
+    const slug = slugify(deviantNames[i]);
+    await prisma.deviantLoveTag.updateMany({
+      where: { slug, sortOrder: 0 },
+      data: { sortOrder: i * 10, isSystem: true },
+    });
+  }
 
   const pickGenre = (name: string) => genres.find((g) => g.slug === slugify(name))!;
   const pickWarning = (name: string) => warnings.find((w) => w.slug === slugify(name))!;

@@ -32,12 +32,20 @@ export default async function AdminReportsPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Admin Reports</h1>
           </div>
-          <Link
-            href="/home"
-            className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Back
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/taxonomy"
+              className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Taxonomy
+            </Link>
+            <Link
+              href="/home"
+              className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Back
+            </Link>
+          </div>
         </div>
 
         <AdminReportsClient initial={initial as any} />

@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { NSFW_TAG_CATALOG, slugifyTag } from "@/lib/warningCatalog";
+import { getActiveWarningTagsBase } from "@/server/cache/taxonomy";
+
+export const dynamic = "force-dynamic";
 
 let ensured = false;
 
 async function ensureNsfwTagsExist() {
   if (ensured) return;
-  const wanted = NSFW_TAG_CATALOG.map((name) => ({ name, slug: slugifyTag(name) })).filter((x) => x.slug);
+  const wanted = NSFW_TAG_CATALOG.map((name, idx) => ({ name, slug: slugifyTag(name), sortOrder: idx * 10 })).filter((x) => x.slug);
   const slugs = wanted.map((x) => x.slug);
   if (!slugs.length) {
     ensured = true;
@@ -22,7 +25,7 @@ async function ensureNsfwTagsExist() {
     const missing = wanted.filter((x) => !have.has(x.slug));
     if (missing.length) {
       await prisma.warningTag.createMany({
-        data: missing.map((x) => ({ name: x.name, slug: x.slug })),
+        data: missing.map((x) => ({ name: x.name, slug: x.slug, isSystem: true, isActive: true, sortOrder: x.sortOrder })),
         skipDuplicates: true,
       });
     }
@@ -40,21 +43,20 @@ export async function GET(req: Request) {
   const q = (searchParams.get("q") || "").trim();
   const take = Math.min(100, Math.max(1, parseInt(searchParams.get("take") || "100", 10) || 100));
 
-  const where = q
-    ? {
-        OR: [
-          { name: { contains: q, mode: "insensitive" as const } },
-          { slug: { contains: q.toLowerCase(), mode: "insensitive" as const } },
-        ],
-      }
-    : undefined;
+  const base = await getActiveWarningTagsBase();
+  const qLower = q.toLowerCase();
+  const filtered = q
+    ? base.filter((t) => t.name.toLowerCase().includes(qLower) || t.slug.toLowerCase().includes(qLower))
+    : base;
 
-  const warningTags = await prisma.warningTag.findMany({
-    where,
-    orderBy: { name: "asc" },
-    take,
-    select: { id: true, name: true, slug: true },
-  });
+  const warningTags = filtered.slice(0, take).map((t) => ({ id: t.id, name: t.name, slug: t.slug }));
 
-  return NextResponse.json({ warningTags });
+  return NextResponse.json(
+    { warningTags },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 }

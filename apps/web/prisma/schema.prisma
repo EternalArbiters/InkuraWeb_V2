@@ -49,6 +49,9 @@ model User {
   adminInboxReportsMade     AdminInboxReport[] @relation("AdminInboxReportsMade")
   adminInboxReportsResolved AdminInboxReport[] @relation("AdminInboxReportsResolved")
 
+  // v15: admin audit logs
+  adminAuditLogs AdminAuditLog[]
+
   // Preference blocks
   blockedGenres    Genre[]      @relation("UserBlockedGenres")
   blockedWarnings  WarningTag[] @relation("UserBlockedWarnings")
@@ -207,31 +210,54 @@ model Genre {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+
+  // v15: admin-manageable taxonomy
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(true)
+  isLocked  Boolean  @default(false)
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   works     Work[]   @relation("WorkGenres")
 
   blockedByUsers User[] @relation("UserBlockedGenres")
 
   @@index([slug])
+  @@index([isActive, sortOrder])
 }
 
 model Tag {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+
+  // v15: admin-manageable taxonomy
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(true)
+  isLocked  Boolean  @default(false)
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   works     Work[]   @relation("WorkTags")
 
   @@index([slug])
+  @@index([isActive, sortOrder])
 }
 
 model WarningTag {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+
+  // v15: admin-manageable taxonomy
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(true)
+  isLocked  Boolean  @default(false)
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   works     Work[]    @relation("WorkWarnings")
   chapters  Chapter[] @relation("ChapterWarnings")
@@ -239,6 +265,7 @@ model WarningTag {
   blockedByUsers User[] @relation("UserBlockedWarnings")
 
   @@index([slug])
+  @@index([isActive, sortOrder])
 }
 
 // --- Deviant Love (locked taxonomy) ---
@@ -246,12 +273,45 @@ model DeviantLoveTag {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+
+  // v15: admin-manageable taxonomy
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(true)
+  isLocked  Boolean  @default(false)
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   works     Work[]   @relation("WorkDeviantLove")
   blockedByUsers User[] @relation("UserBlockedDeviantLove")
 
   @@index([slug])
+  @@index([isActive, sortOrder])
+}
+
+// v15: audit log for admin actions (taxonomy CRUD, etc.)
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+
+  // e.g. CREATE / UPDATE / DEACTIVATE / REACTIVATE / REORDER
+  action    String
+  // e.g. Genre / Tag / WarningTag / DeviantLoveTag
+  entity    String
+  entityId  String
+
+  beforeJson Json?
+  afterJson  Json?
+
+  ip        String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  admin     User @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  @@index([adminId, createdAt])
+  @@index([entity, entityId, createdAt])
 }
 
 // --- Social ---

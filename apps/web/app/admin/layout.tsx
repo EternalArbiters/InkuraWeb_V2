@@ -1,19 +1,14 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-
-import { authOptions } from "@/lib/auth";
+import { requireAdmin } from "@/server/auth/requireUser";
 
 export const runtime = "nodejs";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/admin");
-  }
-
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN") {
+  try {
+    await requireAdmin();
+  } catch (e: any) {
+    const msg = String(e?.message || "");
+    if (msg === "UNAUTHORIZED") redirect("/auth/signin?callbackUrl=/admin");
     redirect("/home");
   }
 

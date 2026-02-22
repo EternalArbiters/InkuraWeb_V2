@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { uniqueDeviantLoveCatalog } from "@/lib/deviantLoveCatalog";
 import { slugify } from "@/lib/slugify";
+import { getActiveDeviantLoveTagsBase } from "@/server/cache/taxonomy";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 let ensured = false;
 
@@ -11,7 +13,7 @@ async function ensureDeviantLoveTagsExist() {
   if (ensured) return;
   try {
     const names = uniqueDeviantLoveCatalog();
-    const wanted = names.map((name) => ({ name, slug: slugify(name) })).filter((x) => x.slug);
+    const wanted = names.map((name, idx) => ({ name, slug: slugify(name), sortOrder: idx * 10 })).filter((x) => x.slug);
     const slugs = wanted.map((x) => x.slug);
     if (!slugs.length) return;
 
@@ -20,7 +22,7 @@ async function ensureDeviantLoveTagsExist() {
     const missing = wanted.filter((x) => !have.has(x.slug));
     if (missing.length) {
       await prisma.deviantLoveTag.createMany({
-        data: missing.map((x) => ({ name: x.name, slug: x.slug })),
+        data: missing.map((x) => ({ name: x.name, slug: x.slug, isSystem: true, isActive: true, sortOrder: x.sortOrder })),
         skipDuplicates: true,
       });
     }
@@ -37,21 +39,20 @@ export async function GET(req: Request) {
   const q = (searchParams.get("q") || "").trim();
   const take = Math.min(200, Math.max(1, parseInt(searchParams.get("take") || "200", 10) || 200));
 
-  const where = q
-    ? {
-        OR: [
-          { name: { contains: q, mode: "insensitive" as const } },
-          { slug: { contains: q.toLowerCase(), mode: "insensitive" as const } },
-        ],
-      }
-    : undefined;
+  const base = await getActiveDeviantLoveTagsBase();
+  const qLower = q.toLowerCase();
+  const filtered = q
+    ? base.filter((t) => t.name.toLowerCase().includes(qLower) || t.slug.toLowerCase().includes(qLower))
+    : base;
 
-  const deviantLoveTags = await prisma.deviantLoveTag.findMany({
-    where,
-    orderBy: { name: "asc" },
-    take,
-    select: { id: true, name: true, slug: true },
-  });
+  const deviantLoveTags = filtered.slice(0, take).map((t) => ({ id: t.id, name: t.name, slug: t.slug }));
 
-  return NextResponse.json({ deviantLoveTags });
+  return NextResponse.json(
+    { deviantLoveTags },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 }
