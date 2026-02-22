@@ -265,6 +265,11 @@ export default function DashboardNavbar() {
                         Content Reports
                       </Link>
                     ) : null}
+                    {session?.user?.role === "ADMIN" ? (
+                      <Link href="/admin/taxonomy" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">
+                        Taxonomy
+                      </Link>
+                    ) : null}
                     <div className="px-4 py-2">
                       <button
                         onClick={toggleDarkMode}
@@ -312,6 +317,7 @@ export default function DashboardNavbar() {
         handleLogout={handleLogout}
         isDarkMode={isDarkMode}
         isAuthed={isAuthed}
+        isAdmin={session?.user?.role === "ADMIN"}
       />
 
       <AnimatePresence>

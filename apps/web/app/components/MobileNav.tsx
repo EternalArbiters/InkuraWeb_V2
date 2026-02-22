@@ -14,6 +14,7 @@ interface MobileNavProps {
   handleLogout: () => void;
   isDarkMode: boolean;
   isAuthed: boolean;
+  isAdmin?: boolean;
 }
 
 export default function MobileNav({
@@ -25,6 +26,7 @@ export default function MobileNav({
   handleLogout,
   isDarkMode,
   isAuthed,
+  isAdmin,
 }: MobileNavProps) {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -44,6 +46,14 @@ export default function MobileNav({
     ["Account", "/settings/account"],
     ["History", "/settings/history"],
   ];
+
+  // Admin-only quick links (keeps user navigation unchanged)
+  const adminItems: [string, string][] = isAdmin
+    ? [
+        ["Content Reports", "/admin/reports"],
+        ["Taxonomy", "/admin/taxonomy"],
+      ]
+    : [];
 
   const categoryItems = [
     ["Genres", "/genre"],
@@ -97,6 +107,25 @@ export default function MobileNav({
                 {label}
               </Link>
             ))}
+
+            {adminItems.length ? (
+              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
+                {adminItems.map(([label, href]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    prefetch={false}
+                    onClick={onClose}
+                    className={`block px-4 py-2 rounded text-sm transition ${isActive(href)
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                      : "hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white text-gray-700 dark:text-white/80"
+                      }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
 
             {/* Dropdown */}
             <div className="mt-2">
