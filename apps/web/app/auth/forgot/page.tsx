@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ActionLink from "@/app/components/ActionLink";
 import { useState } from "react";
 
 export default function ForgotPasswordPage() {
@@ -72,12 +73,9 @@ export default function ForgotPasswordPage() {
           <div className="mt-4 rounded-xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/70 dark:bg-yellow-950/30 p-3">
             <div className="text-xs font-semibold text-yellow-800 dark:text-yellow-200">Reset token (debug)</div>
             <div className="mt-1 text-xs break-all font-mono text-yellow-900 dark:text-yellow-100">{token}</div>
-            <Link
-              href={`/auth/reset?token=${encodeURIComponent(token)}`}
-              className="mt-2 inline-block text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-            >
-              Lanjut reset password →
-            </Link>
+            <div className="mt-2">
+              <ActionLink href={`/auth/reset?token=${encodeURIComponent(token)}`}>Lanjut reset password</ActionLink>
+            </div>
           </div>
         ) : null}
 

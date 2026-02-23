@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import ActionLink from "@/app/components/ActionLink";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -66,12 +66,9 @@ export default function LatestUpdates() {
             </div>
 
             {/* Aksi */}
-            <Link
-              href={`/content/${novel.slug}`}
-              className="text-pink-500 text-xs font-semibold hover:underline whitespace-nowrap"
-            >
-              Baca →
-            </Link>
+            <ActionLink href={`/content/${novel.slug}`} className="text-pink-500 text-xs font-semibold whitespace-nowrap">
+              Baca
+            </ActionLink>
           </motion.div>
         ))}
       </div>

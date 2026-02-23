@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ActionLink from "@/app/components/ActionLink";
 import { redirect } from "next/navigation";
 import { apiJson } from "@/lib/serverApi";
 import WorkEditForm from "./WorkEditForm";
@@ -40,9 +40,7 @@ export default async function WorkEditPage({
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit work</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update metadata, tags, and credits.</p>
           </div>
-          <Link href={`/studio/works/${workId}`} className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-            Back →
-          </Link>
+          <ActionLink href={`/studio/works/${workId}`}>Back</ActionLink>
         </div>
 
         <WorkEditForm work={work as any} genres={genres as any} warningTags={warningTags as any} deviantLoveTags={deviantLoveTags as any} />

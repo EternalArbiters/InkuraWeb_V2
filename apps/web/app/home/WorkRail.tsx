@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ActionLink from "@/app/components/ActionLink";
 import HorizontalRail from "./HorizontalRail";
 import WorkCardSquare from "./WorkCardSquare";
 
@@ -14,9 +14,7 @@ export default function WorkRail({ title, href, works, emptyText }: Props) {
     <section>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-lg md:text-xl font-extrabold tracking-tight">{title}</h2>
-        <Link href={href} className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-          See all →
-        </Link>
+        <ActionLink href={href}>See all</ActionLink>
       </div>
 
       <div className="mt-3">

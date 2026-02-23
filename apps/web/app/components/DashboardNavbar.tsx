@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Menu, X, Search, Upload, Settings, LogOut, Users, History, ListOrdered, Bookmark,
   Bell,
+  Sun,
+  Moon,
 } from "lucide-react";
 import IconButton from "./IconButton";
 import MobileNav from "./MobileNav";
@@ -48,6 +50,8 @@ export default function DashboardNavbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [scrollY, setScrollY] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navFallbackTimer = useRef<number | null>(null);
 
   const displayName = session?.user?.name || session?.user?.email?.split("@")[0] || (isAuthed ? "User" : "Guest");
   const userImage = session?.user?.image || "/images/default-avatar.png";
@@ -150,6 +154,7 @@ export default function DashboardNavbar() {
     (e: React.FormEvent) => {
       e.preventDefault();
       if (searchQuery.trim()) {
+        setIsNavigating(true);
         router.push(`/search?type=${searchType}&q=${encodeURIComponent(searchQuery.trim())}`);
       }
     },
@@ -159,6 +164,58 @@ export default function DashboardNavbar() {
   const handleLogout = useCallback(() => {
     signOut();
   }, []);
+
+  // Make the navbar divider glow only during navigation.
+  useEffect(() => {
+    const clearFallback = () => {
+      if (navFallbackTimer.current) {
+        window.clearTimeout(navFallbackTimer.current);
+        navFallbackTimer.current = null;
+      }
+    };
+
+    const onClickCapture = (e: MouseEvent) => {
+      if (e.defaultPrevented) return;
+      // only primary clicks
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      const target = e.target as HTMLElement | null;
+      const a = target?.closest?.("a") as HTMLAnchorElement | null;
+      if (!a) return;
+      const rawHref = a.getAttribute("href") || "";
+      if (!rawHref || rawHref.startsWith("#")) return;
+      if (a.hasAttribute("download")) return;
+      if (a.target && a.target !== "_self") return;
+
+      // internal only
+      try {
+        const url = new URL(a.href, window.location.href);
+        if (url.origin !== window.location.origin) return;
+        if (url.href === window.location.href) return;
+      } catch {
+        return;
+      }
+
+      setIsNavigating(true);
+      clearFallback();
+      // fallback stop (in case navigation fails)
+      navFallbackTimer.current = window.setTimeout(() => setIsNavigating(false), 3500);
+    };
+
+    document.addEventListener("click", onClickCapture, true);
+    return () => {
+      document.removeEventListener("click", onClickCapture, true);
+      clearFallback();
+    };
+  }, []);
+
+  useEffect(() => {
+    // When route changes, stop the glow shortly after paint.
+    if (!isNavigating) return;
+    const t = window.setTimeout(() => setIsNavigating(false), 450);
+    return () => window.clearTimeout(t);
+  }, [pathname, isNavigating]);
 
   return (
     <>
@@ -254,6 +311,15 @@ export default function DashboardNavbar() {
                 <IconButton icon={<Settings size={22} />} label="Settings" onClick={() => toggleDropdown("settings")} />
                 {dropdown === "settings" && (
                   <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg w-48">
+                    {isAuthed ? (
+                      <Link
+                        href="/settings/profile"
+                        prefetch={false}
+                        className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white"
+                      >
+                        Edit Profile
+                      </Link>
+                    ) : null}
                     <Link href="/settings/account" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">Account</Link>
                     {isAuthed ? (
                       <Link href="/admin-report" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">
@@ -277,7 +343,7 @@ export default function DashboardNavbar() {
                           }`}
                       >
                         <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
-                          {isDarkMode ? "" : ""}
+                          {isDarkMode ? <Moon size={14} className="text-indigo-700" /> : <Sun size={14} className="text-yellow-600" />}
                         </div>
                       </button>
                     </div>
@@ -295,16 +361,39 @@ export default function DashboardNavbar() {
               </div>
 
               {/* Profile Info (Desktop Only) */}
-              <div className="ml-4 hidden md:flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
-                <Image src={userImage} alt="pp" width={32} height={32} className="rounded-full border border-gray-300 dark:border-gray-600" />
-              </div>
+              {isAuthed ? (
+                <Link href="/settings/profile" prefetch={false} className="ml-4 hidden md:flex items-center gap-2 group">
+                  <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">
+                    {displayName}
+                  </span>
+                  <Image
+                    src={userImage}
+                    alt="pp"
+                    width={32}
+                    height={32}
+                    className="rounded-full border border-gray-300 dark:border-gray-600"
+                  />
+                </Link>
+              ) : (
+                <div className="ml-4 hidden md:flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
+                  <Image
+                    src={userImage}
+                    alt="pp"
+                    width={32}
+                    height={32}
+                    className="rounded-full border border-gray-300 dark:border-gray-600"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {!isMenuOpen && (
-          <div className="h-1 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 animate-pulse" />
+          <div
+            className={`h-1 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 transition-opacity ${isNavigating ? "opacity-100 animate-pulse" : "opacity-40"}`}
+          />
         )}
       </header>
 

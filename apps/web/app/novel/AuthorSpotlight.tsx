@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
+import ActionLink from "@/app/components/ActionLink";
 
 const authors = [
   {
@@ -62,12 +62,11 @@ export default function AuthorSpotlight() {
               </div>
             </div>
             <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">{author.bio}</p>
-            <Link
-              href={`/creator/${author.slug}`}
-              className="inline-block mt-3 text-pink-500 text-xs font-medium hover:underline"
-            >
-              Lihat Profil →
-            </Link>
+            <div className="mt-3">
+              <ActionLink href={`/creator/${author.slug}`} className="text-pink-500 text-xs font-medium">
+                Lihat Profil
+              </ActionLink>
+            </div>
           </motion.div>
         ))}
       </div>

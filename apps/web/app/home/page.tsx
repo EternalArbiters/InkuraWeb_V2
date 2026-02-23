@@ -32,13 +32,13 @@ export default async function HomePage() {
           <div className="flex items-center gap-2">
             <Link
               href="/search"
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 shadow-md hover:brightness-110 transition"
             >
               Search
             </Link>
             <Link
               href="/library"
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 shadow-md hover:brightness-110 transition"
             >
               Library
             </Link>

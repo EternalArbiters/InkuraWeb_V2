@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import ActionLink from "@/app/components/ActionLink";
 
 interface PulseItem {
   id: number;
@@ -75,12 +75,11 @@ export default function CommunityPulse() {
               <span>by <strong>@{item.author}</strong></span>
               <span>{item.timestamp}</span>
             </div>
-            <Link
-              href={item.link}
-              className="block mt-2 text-pink-400 text-sm hover:underline"
-            >
-              View →
-            </Link>
+            <div className="mt-2">
+              <ActionLink href={item.link} className="text-pink-400 hover:text-pink-300">
+                View
+              </ActionLink>
+            </div>
           </motion.div>
         ))}
       </div>

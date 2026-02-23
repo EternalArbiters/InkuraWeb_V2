@@ -46,7 +46,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [description, setDescription] = React.useState(work.description || "");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">(work.type);
   const [comicType, setComicType] = React.useState<string>(work.comicType || "UNKNOWN");
-  const [language, setLanguage] = React.useState(work.language || "id");
+  const [language, setLanguage] = React.useState((work.language || "other").toLowerCase() === "unknown" ? "other" : (work.language || "other"));
   const [origin, setOrigin] = React.useState(work.origin || "UNKNOWN");
   const [completion, setCompletion] = React.useState(work.completion || "ONGOING");
   const [isMature, setIsMature] = React.useState(!!work.isMature);
@@ -57,9 +57,9 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
-  const [deviantLoveTagIds, setDeviantLoveTagIds] = React.useState<string[]>(
-    Array.isArray(work.deviantLoveTags) ? work.deviantLoveTags.map((d) => d.id) : []
-  );
+  const initialDeviantLoveIds = Array.isArray(work.deviantLoveTags) ? work.deviantLoveTags.map((d) => d.id) : [];
+  const [deviantLoveTagIds, setDeviantLoveTagIds] = React.useState<string[]>(initialDeviantLoveIds);
+  const [isDeviantLove, setIsDeviantLove] = React.useState<boolean>(initialDeviantLoveIds.length > 0);
   const [tags, setTags] = React.useState<string[]>(work.tags.map((t) => t.name));
 
   const [coverFile, setCoverFile] = React.useState<File | null>(null);
@@ -90,7 +90,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       fd.append("isMature", String(isMature));
       fd.append("genreIds", JSON.stringify(genreIds));
       fd.append("warningTagIds", JSON.stringify(warningIds));
-      fd.append("deviantLoveTagIds", JSON.stringify(deviantLoveTagIds));
+      fd.append("deviantLoveTagIds", JSON.stringify(isDeviantLove ? deviantLoveTagIds : []));
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
 
@@ -288,6 +288,24 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
             </div>
           </div>
         </label>
+
+        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+          <input
+            type="checkbox"
+            checked={isDeviantLove}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setIsDeviantLove(next);
+              if (!next) setDeviantLoveTagIds([]);
+            }}
+          />
+          <div>
+            <div className="text-sm font-semibold">Deviant Love</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">
+              Jika dicentang, reader perlu unlock Deviant Love (selain 18+) untuk melihat karya ini.
+            </div>
+          </div>
+        </label>
       </div>
 
       <label className="grid gap-2">
@@ -310,13 +328,15 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         onChange={setWarningIds}
       />
 
-      <MultiSelectPicker
-        title="Deviant Love"
-        subtitle="Deviant Love tags (locked by default for readers; requires 18+ + Deviant Love unlock)."
-        items={deviantLoveTags}
-        selectedIds={deviantLoveTagIds}
-        onChange={setDeviantLoveTagIds}
-      />
+      {isDeviantLove ? (
+        <MultiSelectPicker
+          title="Deviant Love"
+          subtitle="Deviant Love tags (locked by default for readers; requires 18+ + Deviant Love unlock)."
+          items={deviantLoveTags}
+          selectedIds={deviantLoveTagIds}
+          onChange={setDeviantLoveTagIds}
+        />
+      ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
         <TagMultiInput value={tags} onChange={setTags} placeholder="Tambah tag, enter untuk simpan..." />

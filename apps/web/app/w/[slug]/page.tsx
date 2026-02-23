@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 import { apiJson } from "@/lib/serverApi";
+import WorkCoverBadges from "../../components/WorkCoverBadges";
 
 export const dynamic = "force-dynamic";
 
@@ -82,11 +83,21 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
           <div>
             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/50">
-              <div className="aspect-[3/4] bg-gray-100 dark:bg-gray-800">
+              <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
                 {work.coverImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={work.coverImage} alt={work.title} className="w-full h-full object-cover" />
                 ) : null}
+
+                <WorkCoverBadges
+                  work={{
+                    type: work.type,
+                    publishType: work.publishType,
+                    isMature: !!work.isMature,
+                    language: work.language,
+                    comicType: work.comicType,
+                  }}
+                />
               </div>
               <div className="p-4">
                 <div className="text-sm text-gray-600 dark:text-gray-300">

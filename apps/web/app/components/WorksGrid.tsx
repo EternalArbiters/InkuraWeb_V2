@@ -1,4 +1,5 @@
 import Link from "next/link";
+import WorkCoverBadges from "./WorkCoverBadges";
 
 type Work = {
   id: string;
@@ -6,7 +7,10 @@ type Work = {
   title: string;
   coverImage?: string | null;
   type?: string;
+  publishType?: string | null;
   isMature?: boolean;
+  language?: string | null;
+  comicType?: string | null;
   likeCount?: number;
   ratingAvg?: number;
   ratingCount?: number;
@@ -29,7 +33,16 @@ export default function WorksGrid({ works }: { works: Work[] }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={w.coverImage} alt={w.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition" />
               ) : null}
-              {w.isMature ? <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded-full bg-black/60 text-white">18+</div> : null}
+
+              <WorkCoverBadges
+                work={{
+                  type: w.type,
+                  publishType: w.publishType,
+                  isMature: !!w.isMature,
+                  language: w.language,
+                  comicType: w.comicType,
+                }}
+              />
             </div>
             <div className="p-3">
               <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>

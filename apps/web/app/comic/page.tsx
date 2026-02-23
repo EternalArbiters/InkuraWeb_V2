@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ActionLink from "@/app/components/ActionLink";
 import WorksGrid from "../components/WorksGrid";
 import { apiJson } from "@/lib/serverApi";
 
@@ -35,9 +35,7 @@ export default async function ComicPage({
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Comics</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Filter: publish type, author, translator.</p>
           </div>
-          <Link href="/search?kind=comic" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-            Advanced search →
-          </Link>
+          <ActionLink href="/search?kind=comic">Advanced search</ActionLink>
         </div>
 
         <form action="/comic" method="get" className="mt-6 grid grid-cols-1 md:grid-cols-[160px_200px_1fr_1fr_140px] gap-3">

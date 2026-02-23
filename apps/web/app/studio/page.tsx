@@ -58,7 +58,7 @@ export default async function StudioPage() {
                       {w.type} • {w.publishType}
                     </div>
                   </div>
-                  <span className="text-sm text-purple-600 dark:text-purple-400">Open →</span>
+                  <span className="text-sm text-purple-600 dark:text-purple-400">Open ▶</span>
                 </div>
               </Link>
             ))

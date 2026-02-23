@@ -1,24 +1,8 @@
 import Link from "next/link";
-
-function typeBadgeClass(type?: string) {
-  const t = (type || "").toUpperCase();
-  if (t === "NOVEL") return "bg-blue-600 text-white";
-  if (t === "COMIC") return "bg-red-600 text-white";
-  return "bg-gray-700 text-white";
-}
-
-function publishTypeLabel(publishType?: string) {
-  const p = (publishType || "").toUpperCase();
-  if (p === "ORIGINAL") return "Original";
-  if (p === "TRANSLATION") return "Translation";
-  if (p === "REUPLOAD") return "Reupload";
-  return null;
-}
+import WorkCoverBadges from "../components/WorkCoverBadges";
 
 export default function WorkCardSquare({ work }: { work: any }) {
   const href = work?.slug ? `/w/${work.slug}` : work?.id ? `/work/${work.id}` : "#";
-  const type = String(work?.type || "");
-  const publishType = publishTypeLabel(work?.publishType);
 
   return (
     <Link
@@ -33,11 +17,15 @@ export default function WorkCardSquare({ work }: { work: any }) {
           <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">No cover</div>
         )}
 
-        <div className="absolute left-2 top-2 flex flex-col gap-1">
-          <span className={`text-[10px] px-2 py-1 ${typeBadgeClass(type)}`}>{type || "WORK"}</span>
-          {publishType ? <span className="text-[10px] px-2 py-1 bg-black/70 text-white">{publishType}</span> : null}
-          {work?.isMature ? <span className="text-[10px] px-2 py-1 bg-black text-white">18+</span> : null}
-        </div>
+        <WorkCoverBadges
+          work={{
+            type: work?.type,
+            publishType: work?.publishType,
+            isMature: !!work?.isMature,
+            language: work?.language,
+            comicType: work?.comicType,
+          }}
+        />
       </div>
 
       <div className="p-3">

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 
 type Props = {
   genres: PickerItem[];
@@ -22,8 +23,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
   const [description, setDescription] = React.useState("");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">("NOVEL");
   const [comicType, setComicType] = React.useState<"UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER">("UNKNOWN");
-  const [language, setLanguage] = React.useState("unknown");
-  const [origin, setOrigin] = React.useState("UNKNOWN");
+  const [language, setLanguage] = React.useState("other");
+  const [origin, setOrigin] = React.useState<"UNKNOWN" | "ORIGINAL" | "FANFIC" | "ADAPTATION">("UNKNOWN");
   const [completion, setCompletion] = React.useState("ONGOING");
 
   const [publishType, setPublishType] = React.useState<"ORIGINAL" | "TRANSLATION" | "REUPLOAD">("ORIGINAL");
@@ -32,6 +33,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
   const [uploaderNote, setUploaderNote] = React.useState("");
 
   const [isMature, setIsMature] = React.useState(false);
+  const [isDeviantLove, setIsDeviantLove] = React.useState(false);
   const [genreIds, setGenreIds] = React.useState<string[]>([]);
   const [warningTagIds, setWarningTagIds] = React.useState<string[]>([]);
   const [deviantLoveTagIds, setDeviantLoveTagIds] = React.useState<string[]>([]);
@@ -106,14 +108,14 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       fd.set("description", description.trim());
       fd.set("type", type);
       fd.set("comicType", comicType);
-      fd.set("language", language.trim().toLowerCase() || "unknown");
+      fd.set("language", (language || "other").trim().toLowerCase());
       fd.set("origin", origin);
       fd.set("completion", completion);
       fd.set("publishType", publishType);
       fd.set("isMature", isMature ? "true" : "false");
       fd.set("genreIds", JSON.stringify(genreIds));
       fd.set("warningTagIds", JSON.stringify(warningTagIds));
-      fd.set("deviantLoveTagIds", JSON.stringify(deviantLoveTagIds));
+      fd.set("deviantLoveTagIds", JSON.stringify(isDeviantLove ? deviantLoveTagIds : []));
       fd.set("tags", JSON.stringify(tags));
 
       if (publishType !== "ORIGINAL") {
@@ -149,7 +151,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
         <div className="text-sm font-semibold">Cover</div>
         <div className="text-xs text-gray-600 dark:text-gray-300">Max 2MB. Format: JPG/PNG/WebP.</div>
-        <div className="grid md:grid-cols-[180px,1fr] gap-4 items-start">
+        <div className="grid md:grid-cols-[140px,1fr] gap-4 items-start">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden aspect-[2/3]">
             {coverPreview ? <img src={coverPreview} alt="cover preview" className="w-full h-full object-cover" /> : null}
           </div>
@@ -289,27 +291,29 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         <div className="grid md:grid-cols-3 gap-3">
           <div className="grid gap-1">
             <label className="text-sm font-semibold">Language</label>
-            <input
+            <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
-              placeholder="en / id / jp / ..."
-            />
+            >
+              {LANGUAGE_CATALOG.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="grid gap-1">
             <label className="text-sm font-semibold">Origin</label>
             <select
               value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
+              onChange={(e) => setOrigin(e.target.value as any)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
             >
+              <option value="ORIGINAL">Original</option>
+              <option value="FANFIC">Fanfic</option>
+              <option value="ADAPTATION">Adaptation</option>
               <option value="UNKNOWN">Unknown</option>
-              <option value="JP">JP</option>
-              <option value="KR">KR</option>
-              <option value="CN">CN</option>
-              <option value="ID">ID</option>
-              <option value="US">US</option>
-              <option value="OTHER">Other</option>
             </select>
           </div>
           <div className="grid gap-1">
@@ -332,6 +336,22 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
           <span className="text-sm font-semibold">18+ / NSFW </span>
         </label>
 
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={isDeviantLove}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setIsDeviantLove(next);
+              if (!next) setDeviantLoveTagIds([]);
+            }}
+          />
+          <span className="text-sm font-semibold">Deviant Love</span>
+        </label>
+        <div className="text-[11px] text-gray-600 dark:text-gray-300 -mt-2">
+          Jika dicentang, karya akan terkunci oleh "Deviant Love unlock" untuk reader (selain 18+).
+        </div>
+
         <div className="grid gap-1">
           <label className="text-sm font-semibold">Tags (comma separated)</label>
           <input
@@ -352,12 +372,14 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         onChange={setWarningTagIds}
       />
 
-      <MultiSelectPicker
-        title="Deviant Love tags"
-        items={deviantLoveTags}
-        selectedIds={deviantLoveTagIds}
-        onChange={setDeviantLoveTagIds}
-      />
+      {isDeviantLove ? (
+        <MultiSelectPicker
+          title="Deviant Love tags"
+          items={deviantLoveTags}
+          selectedIds={deviantLoveTagIds}
+          onChange={setDeviantLoveTagIds}
+        />
+      ) : null}
 
       <div className="flex items-center justify-end">
         <button

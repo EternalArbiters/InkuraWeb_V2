@@ -148,7 +148,24 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
 
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
+      // If the client calls `useSession().update()`, refresh name/image from DB.
+      if (trigger === "update" && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: String(token.id) },
+          select: { name: true, image: true, email: true },
+        });
+        if (dbUser) {
+          token.name = dbUser.name ?? null;
+          token.picture = dbUser.image ?? null;
+          if (dbUser.email) {
+            token.email = dbUser.email;
+            token.role = enforcedRoleFromEmail(String(dbUser.email));
+          }
+        }
+        return token;
+      }
+
       if (user && account?.provider === "credentials") {
         token.id = (user as any).id;
         token.role = enforcedRoleFromEmail((user as any).email);

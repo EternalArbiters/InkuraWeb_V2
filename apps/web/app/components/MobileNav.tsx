@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -75,8 +76,17 @@ export default function MobileNav({
         <div>
           {/* User Info */}
           <div className="flex items-center space-x-4 mb-6">
-            <Image src={userImage} alt="User" width={36} height={36} className="rounded-full border border-gray-400" />
-            <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
+            {isAuthed ? (
+              <Link href="/settings/profile" prefetch={false} onClick={onClose} className="flex items-center space-x-4 group">
+                <Image src={userImage} alt="User" width={36} height={36} className="rounded-full border border-gray-400" />
+                <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">{displayName}</span>
+              </Link>
+            ) : (
+              <>
+                <Image src={userImage} alt="User" width={36} height={36} className="rounded-full border border-gray-400" />
+                <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
+              </>
+            )}
           </div>
 
           
@@ -170,7 +180,7 @@ export default function MobileNav({
                 }`}
             >
               <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
-                {isDarkMode ? "" : ""}
+                {isDarkMode ? <Moon size={14} className="text-indigo-700" /> : <Sun size={14} className="text-yellow-600" />}
               </div>
             </button>
           </div>

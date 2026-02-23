@@ -1,6 +1,8 @@
 import Link from "next/link";
+import ActionLink from "@/app/components/ActionLink";
 import GenreTriStatePicker from "@/components/GenreTriStatePicker";
 import SearchPresets from "@/components/SearchPresets";
+import WorkCoverBadges from "../components/WorkCoverBadges";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 import { apiJson } from "@/lib/serverApi";
@@ -482,9 +484,7 @@ export default async function SearchPage({
                     Unlock di <b>Settings → Account</b> (confirm 18+ + Deviant Love).
                   </div>
                   <div className="mt-3">
-                    <Link href="/settings/account" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-                      Open Settings →
-                    </Link>
+                    <ActionLink href="/settings/account">Open Settings</ActionLink>
                   </div>
                 </div>
               )}
@@ -524,9 +524,7 @@ export default async function SearchPage({
                     Unlock di <b>Settings → Account</b> (confirm 18+).
                   </div>
                   <div className="mt-3">
-                    <Link href="/settings/account" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-                      Open Settings →
-                    </Link>
+                    <ActionLink href="/settings/account">Open Settings</ActionLink>
                   </div>
                 </div>
               )}
@@ -582,9 +580,15 @@ export default async function SearchPage({
                       className={`w-full h-full object-cover group-hover:scale-[1.02] transition ${blur ? "blur-md" : ""}`}
                     />
                   ) : null}
-                  {w.isMature ? (
-                    <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded-full bg-black/60 text-white">18+</div>
-                  ) : null}
+                  <WorkCoverBadges
+                    work={{
+                      type: w.type,
+                      publishType: w.publishType,
+                      isMature: !!w.isMature,
+                      language: w.language,
+                      comicType: w.comicType,
+                    }}
+                  />
                 </div>
                 <div className="p-3">
                   <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
