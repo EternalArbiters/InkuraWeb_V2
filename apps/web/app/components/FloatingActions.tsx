@@ -116,8 +116,10 @@ export default function FloatingActions() {
 
   const opacityClass = isReader ? "opacity-45 hover:opacity-80" : "opacity-95 hover:opacity-100";
 
+  const containerClass = isReader ? "fixed bottom-24 right-6 z-[60] flex flex-col items-end gap-3" : "fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3";
+
   return (
-    <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3">
+    <div className={containerClass}>
       {/* Scroll to top (all devices) */}
       <CircleButton
         ariaLabel="Scroll to top"

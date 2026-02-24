@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import PageScaffold from "../../components/PageScaffold";
 
 export default async function EventPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
@@ -16,12 +16,7 @@ export default async function EventPage({ params: paramsPromise }: { params: Pro
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Nanti: detail event, rules, submission, leaderboard, dan diskusi.
         </p>
-        <Link
-          href="/community"
-          className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110"
-        >
-          Kembali ke Community
-        </Link>
+        <BackButton href="/community" />
       </div>
     </PageScaffold>
   );

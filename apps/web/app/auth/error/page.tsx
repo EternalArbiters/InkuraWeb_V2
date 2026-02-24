@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 
 type Props = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -31,12 +31,7 @@ export default async function AuthErrorPage({ searchParams }: Props) {
       <div className="bg-gray-800 p-6 rounded-2xl shadow-xl text-center max-w-md">
         <h1 className="text-3xl font-bold mb-4">Gagal Masuk</h1>
         <p className="text-white/80">{message}</p>
-        <Link
-          href="/auth/signin"
-          className="mt-6 inline-block px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition"
-        >
-          Kembali ke Halaman Masuk
-        </Link>
+        <BackButton href="/auth/signin" className="mt-6" />
       </div>
     </main>
   );

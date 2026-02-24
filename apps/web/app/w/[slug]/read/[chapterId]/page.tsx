@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 import { apiJson } from "@/lib/serverApi";
+import BackButton from "@/app/components/BackButton";
+import LockLabel from "@/app/components/LockLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +38,7 @@ export default async function ReadChapterPage({
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
             <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
-              {isDeviant ? "Deviant Love (Locked)" : "18+ Mature Content"}
+              {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
             </div>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{work.title}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -48,9 +50,7 @@ export default async function ReadChapterPage({
               <Link href="/settings/account" className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110">
                 {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
               </Link>
-              <Link href={`/w/${work.slug}`} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
-                Kembali ke Detail
-              </Link>
+              <BackButton href={`/w/${work.slug}`} />
             </div>
           </div>
         </div>
@@ -71,13 +71,12 @@ export default async function ReadChapterPage({
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <Link href={`/w/${work.slug}`} className="text-sm text-purple-600 dark:text-purple-400 hover:underline">
-              ← {work.title}
-            </Link>
-            <h1 className="mt-2 text-2xl md:text-3xl font-extrabold tracking-tight">{chapterLabel(chapter.number, chapter.title)}</h1>
+          <div className="grid gap-2">
+            <BackButton href={`/w/${work.slug}`} className="w-fit" />
+            <div className="text-sm text-gray-600 dark:text-gray-300 font-semibold">{work.title}</div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">{chapterLabel(chapter.number, chapter.title)}</h1>
           </div>
           <div className="flex items-center gap-2">
             {prev ? (
@@ -106,7 +105,7 @@ export default async function ReadChapterPage({
             warnings={allWarnings}
           >
             {isComic ? (
-              <div className="grid gap-3">
+              <div className="flex flex-col gap-0">
                 {Array.isArray(chapter.pages)
                   ? chapter.pages.map((p: any) => (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -114,7 +113,7 @@ export default async function ReadChapterPage({
                         key={p.id}
                         src={p.imageUrl}
                         alt={`Page ${p.order}`}
-                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-800"
+                        className="w-full block"
                       />
                     ))
                   : null}
@@ -141,27 +140,40 @@ export default async function ReadChapterPage({
           </ContentWarningsGate>
         </div>
 
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <Link href={`/w/${work.slug}`} className="text-sm text-purple-600 dark:text-purple-400 hover:underline">
-            ← Back to detail
-          </Link>
-          <div className="flex items-center gap-2">
+                <div className="mt-10">
+          <div className="grid grid-cols-3 gap-2">
             {prev ? (
               <Link
                 href={`/w/${work.slug}/read/${prev.id}`}
-                className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm"
+                className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold text-center"
               >
-                ← Prev
+                Previous
               </Link>
-            ) : null}
+            ) : (
+              <span className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 text-sm font-semibold text-center opacity-50">
+                Previous
+              </span>
+            )}
+
+            <Link
+              href={`/w/${work.slug}`}
+              className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold text-center"
+            >
+              Menu
+            </Link>
+
             {next ? (
               <Link
                 href={`/w/${work.slug}/read/${next.id}`}
-                className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm"
+                className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold text-center"
               >
-                Next →
+                Next
               </Link>
-            ) : null}
+            ) : (
+              <span className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 text-sm font-semibold text-center opacity-50">
+                Next
+              </span>
+            )}
           </div>
         </div>
       </div>

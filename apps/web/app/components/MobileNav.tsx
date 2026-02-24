@@ -158,6 +158,19 @@ export default function MobileNav({
             </Link>
           </div>
 
+
+
+          {/* Donate CTA */}
+          <div className="mb-6">
+            <Link
+              href="/donate"
+              prefetch={false}
+              onClick={onClose}
+              className="block w-full text-center px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-white/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            >
+              Donate For Inkura
+            </Link>
+          </div>
           {/* Navigation */}
           <nav className="space-y-2">
             {navItems.map((item) => (

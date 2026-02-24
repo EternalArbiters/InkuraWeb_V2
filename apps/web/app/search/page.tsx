@@ -3,6 +3,7 @@ import ActionLink from "@/app/components/ActionLink";
 import GenreTriStatePicker from "@/components/GenreTriStatePicker";
 import SearchPresets from "@/components/SearchPresets";
 import WorkCoverBadges from "../components/WorkCoverBadges";
+import LockLabel from "@/app/components/LockLabel";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 import { apiJson } from "@/lib/serverApi";
@@ -415,7 +416,7 @@ export default async function SearchPage({
                       </select>
                       {!canViewMature ? (
                         <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
-                          Locked: enable it in Settings → Account.
+                          <span className="inline-flex items-center gap-2"><LockLabel text="Mature" /><span>Enable it in Settings → Account.</span></span>
                         </div>
                       ) : null}
                     </label>
@@ -479,7 +480,7 @@ export default async function SearchPage({
                 </>
               ) : (
                 <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/30 p-4">
-                  <div className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">Deviant Love (Locked)</div>
+                  <div className="text-sm font-semibold text-yellow-900 dark:text-yellow-100"><LockLabel text="Deviant Love" /></div>
                   <div className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-100/80">
                     Unlock di <b>Settings → Account</b> (confirm 18+ + Deviant Love).
                   </div>
@@ -519,7 +520,7 @@ export default async function SearchPage({
                 </>
               ) : (
                 <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/30 p-4">
-                  <div className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">NSFW (Locked)</div>
+                  <div className="text-sm font-semibold text-yellow-900 dark:text-yellow-100"><LockLabel text="NSFW" /></div>
                   <div className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-100/80">
                     Unlock di <b>Settings → Account</b> (confirm 18+).
                   </div>
@@ -569,7 +570,7 @@ export default async function SearchPage({
               <Link
                 key={w.id}
                 href={`/w/${w.slug}`}
-                className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden hover:shadow-lg transition"
+                className="group border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden hover:shadow-lg transition"
               >
                 <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
                   {w.coverImage ? (

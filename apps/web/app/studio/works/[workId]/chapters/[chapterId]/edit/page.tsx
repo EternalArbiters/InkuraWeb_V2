@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ChapterEditForm from "./ChapterEditForm";
 import { apiJson } from "@/lib/serverApi";
+import BackButton from "@/app/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +37,7 @@ export default async function EditChapterPage({
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-4xl mx-auto px-4 py-10">
-        <Link href={`/studio/works/${params.workId}`} className="text-sm text-purple-600 dark:text-purple-400 hover:underline">
-          ← Back to Work
-        </Link>
+        <BackButton href={`/studio/works/${params.workId}`} />
         <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight">Edit Chapter</h1>
 
         <ChapterEditForm

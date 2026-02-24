@@ -152,7 +152,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         <div className="text-sm font-semibold">Cover</div>
         <div className="text-xs text-gray-600 dark:text-gray-300">Max 2MB. Format: JPG/PNG/WebP.</div>
         <div className="grid md:grid-cols-[140px,1fr] gap-4 items-start">
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden aspect-[2/3]">
+          <div className="border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden aspect-[2/3]">
             {coverPreview ? <img src={coverPreview} alt="cover preview" className="w-full h-full object-cover" /> : null}
           </div>
           <div className="grid gap-2">

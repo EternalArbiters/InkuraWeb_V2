@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Page = { id: string; imageUrl: string; order: number };
@@ -97,9 +98,7 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
           <div className="font-semibold">Pages ({pages.length})</div>
-          <a href={`/studio/works/${workId}`} className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-            Back to Work
-          </a>
+          <BackButton href={`/studio/works/${workId}`} />
         </div>
 
         {pages.length === 0 ? (
@@ -109,7 +108,7 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
             {pages.map((p) => (
               <div
                 key={p.id}
-                className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/40"
+                className="border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/40"
               >
                 <div className="relative aspect-[3/4] bg-black/5 dark:bg-white/5">
                   <img

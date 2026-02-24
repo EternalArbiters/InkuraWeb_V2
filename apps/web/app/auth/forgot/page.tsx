@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import ActionLink from "@/app/components/ActionLink";
 import { useState } from "react";
 
@@ -79,10 +79,8 @@ export default function ForgotPasswordPage() {
           </div>
         ) : null}
 
-        <div className="mt-4 text-sm text-gray-700 dark:text-gray-200">
-          <Link href="/auth/signin" className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
-            Kembali ke login
-          </Link>
+        <div className="mt-4">
+          <BackButton href="/auth/signin" />
         </div>
       </div>
     </main>

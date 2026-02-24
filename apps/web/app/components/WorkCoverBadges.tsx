@@ -1,3 +1,5 @@
+import OriginFlag from "./OriginFlag";
+
 /**
  * WorkCoverBadges
  * Reusable cover overlay badges used across Home cards, grids, search results, and work pages.
@@ -92,7 +94,7 @@ export default function WorkCoverBadges({ work }: { work: WorkBadgeInput }) {
           title="Origin"
           aria-label="Origin"
         >
-          {flag}
+          <OriginFlag emoji={flag} />
         </div>
       ) : null}
 

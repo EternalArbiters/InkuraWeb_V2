@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 import { apiJson } from "@/lib/serverApi";
 import WorkCoverBadges from "../../components/WorkCoverBadges";
+import BackButton from "@/app/components/BackButton";
+import LockLabel from "@/app/components/LockLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden">
             <div className="p-6">
               <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
-                {isDeviant ? "Deviant Love (Locked)" : "18+ Mature Content"}
+                {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
               </div>
               <h1 className="mt-3 text-2xl md:text-3xl font-extrabold tracking-tight">{work.title}</h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -43,12 +45,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 >
                   {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
                 </Link>
-                <Link
-                  href="/search"
-                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
-                >
-                  Kembali ke Search
-                </Link>
+                <BackButton href="/search" />
               </div>
 
               {work.coverImage ? (
@@ -56,7 +53,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 <img
                   src={work.coverImage}
                   alt={work.title}
-                  className="mt-6 w-full max-w-sm rounded-2xl border border-gray-200 dark:border-gray-800 blur-md"
+                  className="mt-6 w-full max-w-sm border border-gray-200 dark:border-gray-800 blur-md"
                 />
               ) : null}
 
@@ -82,7 +79,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
           <div>
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/50">
+            <div className="border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/50">
               <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
                 {work.coverImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -218,10 +215,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               </ContentWarningsGate>
             </div>
 
-            <div className="mt-6 text-sm">
-              <Link href="/search" className="text-purple-600 dark:text-purple-400 hover:underline">
-                ← Back to search
-              </Link>
+            <div className="mt-6">
+              <BackButton href="/search" />
             </div>
           </div>
         </div>

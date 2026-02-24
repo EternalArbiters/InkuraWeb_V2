@@ -47,7 +47,7 @@ async function main() {
   // V15: taxonomy seed is additive and must NOT override admin changes.
   // - We create missing system items with sortOrder.
   // - We DO NOT re-activate or rename existing rows.
-  const genreNames = uniqueGenreCatalog();
+  const genreNames = uniqueGenreCatalog().slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   const genres = await Promise.all(
     genreNames.map((name, idx) => {
       const slug = slugify(name);
@@ -59,7 +59,7 @@ async function main() {
     })
   );
 
-  const warningNames = uniqueWarningCatalog();
+  const warningNames = uniqueWarningCatalog().slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   const warnings = await Promise.all(
     warningNames.map((name, idx) => {
       const slug = slugify(name);
@@ -71,7 +71,7 @@ async function main() {
     })
   );
 
-  const deviantNames = uniqueDeviantLoveCatalog();
+  const deviantNames = uniqueDeviantLoveCatalog().slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   const deviantLoveTags = await Promise.all(
     deviantNames.map((name, idx) => {
       const slug = slugify(name);

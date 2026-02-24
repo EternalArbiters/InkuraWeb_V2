@@ -35,7 +35,7 @@ export default function ContentCard({ item }: Props) {
       {/* Cover */}
       <div
         className={clsx(
-          'relative rounded-lg overflow-hidden shadow group transition-all duration-200 hover:shadow-lg hover:scale-[1.02] bg-white/5 dark:bg-white/10 backdrop-blur-sm border border-white/10',
+          'relative overflow-hidden shadow group transition-all duration-200 hover:shadow-lg hover:scale-[1.02] bg-white/5 dark:bg-white/10 backdrop-blur-sm border border-white/10',
           aspectClass
         )}
       >
@@ -53,7 +53,7 @@ export default function ContentCard({ item }: Props) {
             src={`/images/flags/${item.countryCode}.png`}
             alt={item.countryCode}
             fill
-            className="rounded-sm border border-white/30 object-cover"
+            className="border border-white/30 object-cover"
           />
         </div>
       </div>

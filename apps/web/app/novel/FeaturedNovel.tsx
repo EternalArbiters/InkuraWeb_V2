@@ -20,7 +20,7 @@ export default function FeaturedNovel() {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true }}
-      className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-md border border-gray-200 dark:border-white/10 flex flex-col md:flex-row"
+      className="relative overflow-hidden bg-white dark:bg-gray-900 shadow-md border border-gray-200 dark:border-white/10 flex flex-col md:flex-row"
     >
       {/* Cover */}
       <div className="relative w-full md:w-1/3 aspect-[3/4] md:aspect-auto">
@@ -28,7 +28,7 @@ export default function FeaturedNovel() {
           src={featured.cover}
           alt={featured.title}
           fill
-          className="object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none"
+          className="object-cover"
         />
       </div>
 

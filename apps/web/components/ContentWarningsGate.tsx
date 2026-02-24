@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import BackButton from "@/app/components/BackButton";
+
 type Warning = { id?: string; name: string; slug?: string };
 
 type Props = {
@@ -56,12 +58,10 @@ export default function ContentWarningsGate({ storageKey, title, warnings, child
         >
           Saya Mengerti, Lanjut
         </button>
-        <a
+        <BackButton
           href="/search"
-          className="px-4 py-2 rounded-xl border border-amber-200 dark:border-amber-900 hover:bg-white/60 dark:hover:bg-black/10 text-sm text-amber-900 dark:text-amber-100"
-        >
-          Kembali ke Search
-        </a>
+          className="border-amber-200 dark:border-amber-900 hover:bg-white/60 dark:hover:bg-black/10 text-amber-900 dark:text-amber-100"
+        />
       </div>
 
       <div className="mt-3 text-xs text-amber-900/70 dark:text-amber-100/70">

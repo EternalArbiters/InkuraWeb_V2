@@ -52,7 +52,7 @@ export default function LatestUpdates() {
                 src={novel.cover}
                 alt={novel.title}
                 fill
-                className="object-cover rounded-md"
+                className="object-cover"
               />
             </div>
 

@@ -1,4 +1,4 @@
-import ActionLink from "@/app/components/ActionLink";
+import BackButton from "@/app/components/BackButton";
 import { redirect } from "next/navigation";
 import { apiJson } from "@/lib/serverApi";
 import NewWorkForm from "./NewWorkForm";
@@ -30,7 +30,7 @@ export default async function StudioNewWorkPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Create new work</h1>
           </div>
-          <ActionLink href="/studio">Back</ActionLink>
+          <BackButton href="/studio" />
         </div>
 
         <NewWorkForm genres={genres as any} warningTags={warningTags as any} deviantLoveTags={deviantLoveTags as any} />

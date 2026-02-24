@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ComicPagesManager from "./ComicPagesManager";
 import { apiJson } from "@/lib/serverApi";
+import BackButton from "@/app/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -36,9 +36,7 @@ export default async function ChapterPagesPage({
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <Link href={`/studio/works/${params.workId}`} className="text-sm text-purple-600 dark:text-purple-400 hover:underline">
-          ← Back to Work
-        </Link>
+        <BackButton href={`/studio/works/${params.workId}`} />
         <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight">Manage Pages</h1>
 
         <div className="mt-6">

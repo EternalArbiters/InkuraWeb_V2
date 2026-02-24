@@ -25,7 +25,8 @@
     "verify": "npm run prisma:validate && npm run db:generate && npm run typecheck && npm run build",
     "db:migrate:deploy": "prisma migrate deploy",
     "deploy:check-env": "node scripts/check-env.js",
-    "vercel-build": "node scripts/vercel-build.js"
+    "vercel-build": "node scripts/vercel-build.js",
+    "db:taxonomy-alpha": "tsx prisma/reorderTaxonomyAlphabetical.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
