@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import DashboardNavbar from "./DashboardNavbar";
+import FloatingActions from "./FloatingActions";
 
 export default function LayoutClientWrapper({
   children,
@@ -22,6 +23,10 @@ export default function LayoutClientWrapper({
   return (
     <>
       {showNavbar && <DashboardNavbar />}
+
+      {/* Floating quick actions (scroll-top, chat) */}
+      {showNavbar && <FloatingActions />}
+
       {/* Offset page content from the fixed navbar */}
       <div
         className={
