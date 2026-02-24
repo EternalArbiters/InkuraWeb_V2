@@ -18,11 +18,11 @@ function CircleButton({
   className?: string;
 }) {
   const base =
-    "h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg ring-1 ring-white/10 " +
+    "inline-grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg ring-1 ring-white/10 " +
     "transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400";
 
   const inner = (
-    <span className="grid h-full w-full place-items-center text-white">{children}</span>
+    <span className="text-white">{children}</span>
   );
 
   if (href) {
