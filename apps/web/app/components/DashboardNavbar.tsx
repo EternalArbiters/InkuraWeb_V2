@@ -322,7 +322,7 @@ export default function DashboardNavbar() {
 
             {/* Icons */}
             <div className="flex items-center gap-0 pl-6 h-10">
-              <IconButton icon={<Upload size={22} />} label="Studio" href="/studio" />
+              <IconButton icon={<Upload size={22} />} label="Upload" href="/studio" />
               <div className="relative">
                 <IconButton icon={<ListOrdered size={22} />} label="Category" onClick={() => toggleDropdown("category")} />
                 {dropdown === "category" && (

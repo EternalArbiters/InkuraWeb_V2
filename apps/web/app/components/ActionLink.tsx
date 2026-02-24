@@ -9,8 +9,8 @@ type Props = {
 };
 
 /**
- * Minimal inline action link: text + sharp triangle (▶) on the right.
- * Use this to replace "... →" style links for consistent aesthetics.
+ * Minimal inline action link: text + sharp triangle on the right.
+ * Triangle color: black on light mode, white on dark mode.
  */
 export default function ActionLink({ href, children, className, prefetch = false }: Props) {
   return (
@@ -23,12 +23,13 @@ export default function ActionLink({ href, children, className, prefetch = false
       )}
     >
       <span>{children}</span>
-      <span
+      <svg
         aria-hidden
-        className="ml-1 text-[10px] leading-none opacity-80 transition-transform duration-200 group-hover:translate-x-0.5"
+        viewBox="0 0 10 10"
+        className="ml-2 h-3 w-3 text-black dark:text-white opacity-80 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100"
       >
-        ▶
-      </span>
+        <path d="M3 1.5L8.5 5 3 8.5V1.5Z" fill="currentColor" />
+      </svg>
     </Link>
   );
 }

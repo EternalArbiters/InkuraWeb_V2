@@ -4,7 +4,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import {
+  BookOpen,
+  Moon,
+  Sun,
+  Home,
+  LayoutGrid,
+  BookText,
+  PanelsTopLeft,
+  Clapperboard,
+  Bookmark,
+  Bell,
+  Upload,
+  Users,
+  User,
+  History,
+  Tags,
+  Map,
+  Languages,
+  ShieldAlert,
+  ListTree,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -16,6 +39,29 @@ interface MobileNavProps {
   isDarkMode: boolean;
   isAuthed: boolean;
   isAdmin?: boolean;
+}
+
+type NavItem = { label: string; href: string; Icon: LucideIcon };
+
+function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onClick: () => void }) {
+  const Icon = item.Icon;
+  return (
+    <Link
+      key={item.href}
+      href={item.href}
+      prefetch={false}
+      onClick={onClick}
+      className={
+        `flex items-center gap-2 px-4 py-2 rounded text-sm transition ` +
+        (active
+          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+          : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-700 dark:text-white/80")
+      }
+    >
+      <Icon className="w-4 h-4 shrink-0 opacity-90" aria-hidden />
+      <span className="truncate">{item.label}</span>
+    </Link>
+  );
 }
 
 export default function MobileNav({
@@ -31,35 +77,36 @@ export default function MobileNav({
 }: MobileNavProps) {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [brandLogoError, setBrandLogoError] = useState(false);
 
   if (!isOpen) return null;
 
-  const navItems = [
-    ["Home", "/home"],
-    ["All", "/all"],
-    ["Novel", "/novel"],
-    ["Comic", "/comic"],
-    ["Film", "/film"],
-    ["Library", "/library"],
-    ["Notifications", "/notifications"],
-    ["Studio", "/studio"],
-    ["Community", "/community"],
-    ["Account", "/settings/account"],
-    ["History", "/settings/history"],
+  const navItems: NavItem[] = [
+    { label: "Home", href: "/home", Icon: Home },
+    { label: "All", href: "/all", Icon: LayoutGrid },
+    { label: "Novel", href: "/novel", Icon: BookText },
+    { label: "Comic", href: "/comic", Icon: PanelsTopLeft },
+    { label: "Film", href: "/film", Icon: Clapperboard },
+    { label: "Library", href: "/library", Icon: Bookmark },
+    { label: "Notifications", href: "/notifications", Icon: Bell },
+    { label: "Studio", href: "/studio", Icon: Upload },
+    { label: "Community", href: "/community", Icon: Users },
+    { label: "Account", href: "/settings/account", Icon: User },
+    { label: "History", href: "/settings/history", Icon: History },
   ];
 
   // Admin-only quick links (keeps user navigation unchanged)
-  const adminItems: [string, string][] = isAdmin
+  const adminItems: NavItem[] = isAdmin
     ? [
-        ["Content Reports", "/admin/reports"],
-        ["Taxonomy", "/admin/taxonomy"],
+        { label: "Content Reports", href: "/admin/reports", Icon: ShieldAlert },
+        { label: "Taxonomy", href: "/admin/taxonomy", Icon: ListTree },
       ]
     : [];
 
-  const categoryItems = [
-    ["Genres", "/genre"],
-    ["Regions", "/region"],
-    ["Translated", "/translated"],
+  const categoryItems: NavItem[] = [
+    { label: "Genres", href: "/genre", Icon: Tags },
+    { label: "Regions", href: "/region", Icon: Map },
+    { label: "Translated", href: "/translated", Icon: Languages },
   ];
 
   const isActive = (path: string) => pathname === path;
@@ -74,6 +121,16 @@ export default function MobileNav({
       {/* Sidebar */}
       <aside className="fixed top-0 right-0 z-50 w-[60%] h-full px-6 py-6 overflow-y-auto transition bg-white dark:bg-gray-900 shadow-xl flex flex-col justify-between">
         <div>
+          {/* Brand */}
+          <Link href="/home" prefetch={false} onClick={onClose} className="inline-flex items-center gap-2 mb-4">
+            {!brandLogoError ? (
+              <img src="/logo-inkura.png" alt="Inkura" className="w-5 h-5" onError={() => setBrandLogoError(true)} />
+            ) : (
+              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" aria-hidden />
+            )}
+            <span className="text-base font-bold text-gray-800 dark:text-white">INKURA</span>
+          </Link>
+
           {/* User Info */}
           <div className="flex items-center space-x-4 mb-6">
             {isAuthed ? (
@@ -89,7 +146,7 @@ export default function MobileNav({
             )}
           </div>
 
-          
+          {/* Chat CTA */}
           <div className="mb-6">
             <Link
               href="/chat"
@@ -103,36 +160,14 @@ export default function MobileNav({
 
           {/* Navigation */}
           <nav className="space-y-2">
-            {navItems.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                prefetch={false}
-                onClick={onClose}
-                className={`block px-4 py-2 rounded text-sm transition ${isActive(href)
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                  : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-700 dark:text-white/80"
-                  }`}
-              >
-                {label}
-              </Link>
+            {navItems.map((item) => (
+              <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
             ))}
 
             {adminItems.length ? (
               <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
-                {adminItems.map(([label, href]) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    prefetch={false}
-                    onClick={onClose}
-                    className={`block px-4 py-2 rounded text-sm transition ${isActive(href)
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                      : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-700 dark:text-white/80"
-                      }`}
-                  >
-                    {label}
-                  </Link>
+                {adminItems.map((item) => (
+                  <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
                 ))}
               </div>
             ) : null}
@@ -141,24 +176,31 @@ export default function MobileNav({
             <div className="mt-2">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-full text-left px-4 py-2 rounded text-sm text-gray-700 dark:text-white/80 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
+                className="w-full flex items-center justify-between px-4 py-2 rounded text-sm text-gray-700 dark:text-white/80 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Categories
+                <span className="inline-flex items-center gap-2">
+                  <Tags className="w-4 h-4 opacity-90" aria-hidden />
+                  Categories
+                </span>
+                {showDropdown ? <ChevronUp className="w-4 h-4 opacity-90" aria-hidden /> : <ChevronDown className="w-4 h-4 opacity-90" aria-hidden />}
               </button>
               {showDropdown && (
                 <div className="ml-4 mt-1 space-y-1">
-                  {categoryItems.map(([label, href]) => (
+                  {categoryItems.map((item) => (
                     <Link
-                      key={href}
-                      href={href}
+                      key={item.href}
+                      href={item.href}
                       prefetch={false}
                       onClick={onClose}
-                      className={`block px-3 py-1 rounded text-sm transition ${isActive(href)
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                        : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-600 dark:text-white/70"
-                        }`}
+                      className={
+                        `flex items-center gap-2 px-3 py-1 rounded text-sm transition ` +
+                        (isActive(item.href)
+                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                          : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-600 dark:text-white/70")
+                      }
                     >
-                      {label}
+                      <item.Icon className="w-4 h-4 shrink-0 opacity-90" aria-hidden />
+                      <span className="truncate">{item.label}</span>
                     </Link>
                   ))}
                 </div>
@@ -174,10 +216,10 @@ export default function MobileNav({
             <button
               onClick={toggleDarkMode}
               aria-label="Toggle Theme"
-              className={`w-14 h-8 rounded-full flex items-center px-1 transition shadow-inner ${isDarkMode
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end"
-                : "bg-gray-300 justify-start"
-                }`}
+              className={
+                `w-14 h-8 rounded-full flex items-center px-1 transition shadow-inner ` +
+                (isDarkMode ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end" : "bg-gray-300 justify-start")
+              }
             >
               <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
                 {isDarkMode ? <Moon size={14} className="text-indigo-700" /> : <Sun size={14} className="text-yellow-600" />}

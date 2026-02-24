@@ -33,7 +33,6 @@ export default async function NovelPage({
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Novels</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Filter: publish type, author, translator.</p>
           </div>
           <ActionLink href="/search?kind=novel">Advanced search</ActionLink>
         </div>

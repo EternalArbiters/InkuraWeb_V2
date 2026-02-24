@@ -25,9 +25,6 @@ export default async function HomePage() {
         <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Home</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Semua section pakai horizontal scroll biasa. Cari karya lewat Search kalau mau filter lengkap.
-            </p>
           </div>
           <div className="flex items-center gap-2">
             <Link
