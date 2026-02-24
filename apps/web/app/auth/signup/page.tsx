@@ -112,7 +112,7 @@ export default function SignUpPage() {
 
           <button
             disabled={loading}
-            className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+            className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
           >
             {loading ? "Memproses..." : "Daftar"}
           </button>

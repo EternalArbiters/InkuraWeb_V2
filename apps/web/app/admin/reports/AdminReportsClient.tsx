@@ -63,7 +63,7 @@ export default function AdminReportsClient({ initial }: { initial: ReportItem[] 
                 <button
                   disabled={isPending}
                   onClick={() => act(r.id, { status: "RESOLVED", note: "Resolved" })}
-                  className="rounded-full px-3 py-2 text-xs font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                  className="rounded-full px-3 py-2 text-xs font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
                 >
                   Resolve
                 </button>

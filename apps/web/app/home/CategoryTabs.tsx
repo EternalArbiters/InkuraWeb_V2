@@ -31,7 +31,7 @@ export default function CategoryTabs({ items }: CategoryTabsProps) {
             className={clsx(
               'px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition',
               activeCategory === cat
-                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow'
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow'
                 : 'bg-white/10 text-gray-300 hover:bg-white/20'
             )}
           >

@@ -183,7 +183,7 @@ export default function CommentSection({ chapterId }: { chapterId: string }) {
               type="button"
               disabled={isPending || !text.trim()}
               onClick={submit}
-              className="rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+              className="rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
             >
               {isPending ? "Sending..." : "Send"}
             </button>
@@ -265,7 +265,7 @@ export default function CommentSection({ chapterId }: { chapterId: string }) {
                         type="button"
                         disabled={isPending || !reportReason.trim()}
                         onClick={() => submitReport(c.id)}
-                        className="rounded-full px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                        className="rounded-full px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
                       >
                         {isPending ? "Sending..." : "Submit"}
                       </button>

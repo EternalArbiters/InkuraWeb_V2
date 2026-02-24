@@ -18,7 +18,7 @@ export default async function ForumThreadPage({ params: paramsPromise }: { param
         </p>
         <Link
           href="/community"
-          className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110"
+          className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110"
         >
           Kembali ke Community
         </Link>

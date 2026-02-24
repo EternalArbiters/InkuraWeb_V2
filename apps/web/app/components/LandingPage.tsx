@@ -130,7 +130,7 @@ export default function LandingPage() {
               onClick={toggleDarkMode}
               aria-label="Toggle Theme"
               className={`w-14 h-8 rounded-full flex items-center px-1 transition focus:outline-none shadow-inner ${isDarkMode
-                ? "bg-gradient-to-r from-indigo-600 to-purple-600 justify-end"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end"
                 : "bg-gray-300 justify-start"
                 }`}
             >
@@ -147,7 +147,7 @@ export default function LandingPage() {
             </button>
             <button
               onClick={() => onOpen("signup", next || null)}
-              className="px-4 py-2 text-sm bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:brightness-110 transition"
+              className="px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-md hover:brightness-110 transition"
             >
               Signup
             </button>
@@ -175,7 +175,7 @@ export default function LandingPage() {
               <button
                 onClick={toggleDarkMode}
                 aria-label="Toggle Theme"
-                className={`w-14 h-8 rounded-full flex items-center px-1 transition focus:outline-none shadow-inner ${isDarkMode ? "bg-gradient-to-r from-indigo-600 to-purple-600 justify-end" : "bg-gray-300 justify-start"}`}
+                className={`w-14 h-8 rounded-full flex items-center px-1 transition focus:outline-none shadow-inner ${isDarkMode ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end" : "bg-gray-300 justify-start"}`}
               >
                 <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
                   {isDarkMode ? "" : ""}
@@ -191,7 +191,7 @@ export default function LandingPage() {
                 </button>
                 <button
                   onClick={() => onOpen("signup", next || null)}
-                  className="w-full px-4 py-2 text-sm bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:brightness-110 transition"
+                  className="w-full px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-md hover:brightness-110 transition"
                 >
                   Signup
                 </button>
@@ -201,7 +201,7 @@ export default function LandingPage() {
         )}
 
         {/* Animated Neon Divider */}
-        <div className="h-1 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 animate-pulse"></div>
+        <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse"></div>
       </header>
 
       {/* Tombol Scroll ke Atas */}
@@ -229,7 +229,7 @@ export default function LandingPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => onOpen("login", next)}
-                  className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110"
+                  className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
                 >
                   Login
                 </button>
@@ -320,7 +320,7 @@ export default function LandingPage() {
               />
             </div>
             {/* Neon Line */}
-            <div className="w-3/4 h-[5px] mt-0 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 shadow-lg drop-shadow-[0_0_10px_rgba(236,72,153,0.6)] animate-pulse" />
+            <div className="w-3/4 h-[5px] mt-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg drop-shadow-[0_0_10px_rgba(236,72,153,0.6)] animate-pulse" />
           </motion.div>
         </div>
       </motion.section>
@@ -343,7 +343,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
           >
 
-            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Inkura
             </span> {" "}
             Featured Features
@@ -389,7 +389,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-16">
             Why{" "}
-            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Inkura
             </span>
             ?
@@ -480,7 +480,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-16">
             What Can You Discover on{" "}
-            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Inkura
             </span>
             ?
@@ -552,14 +552,14 @@ export default function LandingPage() {
       >
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-16">
-            How <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">Inkura</span> Works
+            How <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Inkura</span> Works
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8 text-left">
             {[
               {
                 icon: faUserPlus,
-                bg: "from-pink-500 to-purple-500",
+                bg: "from-blue-500 to-purple-600",
                 title: "Sign Up",
                 desc: "Create your free Inkura account as a reader or creator to get started.",
               },
@@ -637,7 +637,7 @@ export default function LandingPage() {
       <div className="absolute inset-0 flex items-end justify-center pb-16">
         <button
           onClick={() => onOpen("login")}
-          className="bg-gradient-to-r from-yellow-400 via-pink-500 via-50% to-indigo-600 text-white text-3xl md:text-4xl font-extrabold px-12 md:px-20 py-6 md:py-7 rounded-full shadow-2xl hover:scale-105 hover:brightness-110 transition-all duration-300 ease-in-out"
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-3xl md:text-4xl font-extrabold px-12 md:px-20 py-6 md:py-7 rounded-full shadow-2xl hover:scale-105 hover:brightness-110 transition-all duration-300 ease-in-out"
         >
           Join Us
         </button>

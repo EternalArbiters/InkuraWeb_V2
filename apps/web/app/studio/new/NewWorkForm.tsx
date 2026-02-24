@@ -385,7 +385,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         <button
           type="submit"
           disabled={loading}
-          className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+          className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
           {loading ? "Creating..." : "Create"}
         </button>

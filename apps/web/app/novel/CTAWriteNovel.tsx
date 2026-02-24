@@ -21,7 +21,7 @@ export default function CTAWriteNovel() {
         </p>
         <Link
           href="/upload"
-          className="inline-block mt-4 px-6 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-105 transition"
+          className="inline-block mt-4 px-6 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105 transition"
         >
            Mulai Tulis Novelmu
         </Link>

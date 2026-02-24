@@ -70,7 +70,7 @@ export default function FilterBar() {
           placeholder="Search for title, author, translator..."
           className="px-4 py-2 text-sm rounded border dark:border-gray-600 bg-white dark:bg-gray-700 w-full md:w-60"
         />
-        <button className="px-4 py-2 text-sm rounded bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:brightness-110 transition">
+        <button className="px-4 py-2 text-sm rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition">
           <FaFilter className="inline mr-2" />
           Filter
         </button>

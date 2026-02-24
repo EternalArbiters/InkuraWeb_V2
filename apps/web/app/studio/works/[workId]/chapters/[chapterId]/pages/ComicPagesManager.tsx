@@ -86,7 +86,7 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
             type="button"
             onClick={upload}
             disabled={loading || files.length === 0}
-            className="px-4 py-2 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+            className="px-4 py-2 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
           >
             {loading ? "Working..." : "Upload"}
           </button>

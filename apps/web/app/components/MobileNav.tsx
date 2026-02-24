@@ -95,7 +95,7 @@ export default function MobileNav({
               href="/chat"
               prefetch={false}
               onClick={onClose}
-              className="block w-full text-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white shadow-md hover:brightness-110 transition transform hover:scale-105"
+              className="block w-full text-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md hover:brightness-110 transition transform hover:scale-105"
             >
               Chat Elya~
             </Link>
@@ -111,7 +111,7 @@ export default function MobileNav({
                 onClick={onClose}
                 className={`block px-4 py-2 rounded text-sm transition ${isActive(href)
                   ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                  : "hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white text-gray-700 dark:text-white/80"
+                  : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-700 dark:text-white/80"
                   }`}
               >
                 {label}
@@ -128,7 +128,7 @@ export default function MobileNav({
                     onClick={onClose}
                     className={`block px-4 py-2 rounded text-sm transition ${isActive(href)
                       ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                      : "hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white text-gray-700 dark:text-white/80"
+                      : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-700 dark:text-white/80"
                       }`}
                   >
                     {label}
@@ -141,7 +141,7 @@ export default function MobileNav({
             <div className="mt-2">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-full text-left px-4 py-2 rounded text-sm text-gray-700 dark:text-white/80 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white"
+                className="w-full text-left px-4 py-2 rounded text-sm text-gray-700 dark:text-white/80 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
                 Categories
               </button>
@@ -155,7 +155,7 @@ export default function MobileNav({
                       onClick={onClose}
                       className={`block px-3 py-1 rounded text-sm transition ${isActive(href)
                         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                        : "hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white text-gray-600 dark:text-white/70"
+                        : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-600 dark:text-white/70"
                         }`}
                     >
                       {label}
@@ -175,7 +175,7 @@ export default function MobileNav({
               onClick={toggleDarkMode}
               aria-label="Toggle Theme"
               className={`w-14 h-8 rounded-full flex items-center px-1 transition shadow-inner ${isDarkMode
-                ? "bg-gradient-to-r from-indigo-600 to-purple-600 justify-end"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end"
                 : "bg-gray-300 justify-start"
                 }`}
             >

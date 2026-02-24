@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 
 type Profile = {
@@ -21,17 +21,94 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const avatar = useMemo(() => {
+    if (localPreview) return localPreview;
     const v = (image || initial.image || "").trim();
     return v || "/images/default-avatar.png";
-  }, [image, initial.image]);
+  }, [image, initial.image, localPreview]);
 
   useEffect(() => {
     setName(initial.name ?? "");
     setUsername(initial.username ?? "");
     setImage(initial.image ?? "");
+    setLocalPreview(null);
   }, [initial]);
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const uploadAvatarFile = async (file: File) => {
+    setError(null);
+    setOk(null);
+
+    // Basic client guards
+    if (!file.type || !file.type.startsWith("image/")) {
+      setError("Please choose an image file (PNG/JPG/WebP)." );
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Avatar too large. Max 2MB.");
+      return;
+    }
+
+    // Local preview while uploading
+    const previewUrl = URL.createObjectURL(file);
+    setLocalPreview(previewUrl);
+    setAvatarUploading(true);
+
+    try {
+      const presignRes = await fetch("/api/me/avatar/presign", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
+      });
+
+      const presignData = await presignRes.json().catch(() => ({} as any));
+      if (!presignRes.ok) {
+        throw new Error(String(presignData?.error || "Failed to prepare upload"));
+      }
+
+      const putUrl = presignData?.uploadUrl?.uploadUrl || presignData?.uploadUrl || "";
+      const publicUrl = presignData?.publicUrl || presignData?.uploadUrl?.publicUrl || "";
+      if (!putUrl || !publicUrl) throw new Error("Upload URL missing");
+
+      const putRes = await fetch(putUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error("Upload failed");
+
+      setImage(publicUrl);
+      setOk("Avatar uploaded. Click 'Save changes' to apply.");
+    } catch (e: any) {
+      setError(e?.message || "Failed to upload avatar");
+      setLocalPreview(null);
+    } finally {
+      setAvatarUploading(false);
+      // Revoke preview URL after a short delay (allow Image to render)
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(previewUrl);
+        } catch {
+          // ignore
+        }
+      }, 1500);
+    }
+  };
+
+  const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // reset input so selecting same file again still triggers change
+    e.target.value = "";
+    await uploadAvatarFile(file);
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +156,25 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
           <div className="text-sm text-gray-500 dark:text-gray-400">Signed in as</div>
           <div className="font-semibold text-gray-900 dark:text-white truncate">{initial.email}</div>
         </div>
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="hidden"
+          onChange={onAvatarChange}
+        />
+        <button
+          type="button"
+          onClick={openFilePicker}
+          disabled={avatarUploading}
+          className="rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+        >
+          {avatarUploading ? "Uploading..." : "Change photo"}
+        </button>
+        <span className="text-xs text-gray-500 dark:text-gray-400">PNG/JPG/WebP • max 2MB</span>
       </div>
 
       {error ? (
@@ -132,7 +228,7 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+          className="rounded-full px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>

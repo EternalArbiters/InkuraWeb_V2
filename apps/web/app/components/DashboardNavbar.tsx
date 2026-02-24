@@ -28,7 +28,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
       prefetch={false}
       className={`text-sm font-medium px-3 py-1 rounded transition-all ${isActive
         ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-        : "hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white text-gray-800 dark:text-gray-200"
+        : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-800 dark:text-gray-200"
         }`}
     >
       {children}
@@ -51,7 +51,9 @@ export default function DashboardNavbar() {
   const [scrollY, setScrollY] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [navProgress, setNavProgress] = useState(0);
   const navFallbackTimer = useRef<number | null>(null);
+  const navProgressTimer = useRef<number | null>(null);
 
   const displayName = session?.user?.name || session?.user?.email?.split("@")[0] || (isAuthed ? "User" : "Guest");
   const userImage = session?.user?.image || "/images/default-avatar.png";
@@ -154,7 +156,7 @@ export default function DashboardNavbar() {
     (e: React.FormEvent) => {
       e.preventDefault();
       if (searchQuery.trim()) {
-        setIsNavigating(true);
+        startNavigation();
         router.push(`/search?type=${searchType}&q=${encodeURIComponent(searchQuery.trim())}`);
       }
     },
@@ -165,15 +167,43 @@ export default function DashboardNavbar() {
     signOut();
   }, []);
 
-  // Make the navbar divider glow only during navigation.
-  useEffect(() => {
-    const clearFallback = () => {
-      if (navFallbackTimer.current) {
-        window.clearTimeout(navFallbackTimer.current);
-        navFallbackTimer.current = null;
-      }
-    };
+  const clearNavTimers = useCallback(() => {
+    if (navFallbackTimer.current) {
+      window.clearTimeout(navFallbackTimer.current);
+      navFallbackTimer.current = null;
+    }
+    if (navProgressTimer.current) {
+      window.clearInterval(navProgressTimer.current);
+      navProgressTimer.current = null;
+    }
+  }, []);
 
+  const startNavigation = useCallback(() => {
+    setIsNavigating(true);
+    setNavProgress((p) => (p > 0 ? p : 12));
+
+    // Clear any previous timers
+    clearNavTimers();
+
+    // Simulated loading: ease towards 80% while waiting for the new route to paint
+    navProgressTimer.current = window.setInterval(() => {
+      setNavProgress((p) => {
+        if (p >= 80) return p;
+        const inc = Math.max(1, (80 - p) * 0.08);
+        return Math.min(80, p + inc);
+      });
+    }, 120);
+
+    // Fallback stop (in case navigation fails)
+    navFallbackTimer.current = window.setTimeout(() => {
+      clearNavTimers();
+      setIsNavigating(false);
+      setNavProgress(0);
+    }, 6000);
+  }, [clearNavTimers]);
+
+  // Make the navbar divider show a loading-like progress during navigation.
+  useEffect(() => {
     const onClickCapture = (e: MouseEvent) => {
       if (e.defaultPrevented) return;
       // only primary clicks
@@ -197,24 +227,37 @@ export default function DashboardNavbar() {
         return;
       }
 
-      setIsNavigating(true);
-      clearFallback();
-      // fallback stop (in case navigation fails)
-      navFallbackTimer.current = window.setTimeout(() => setIsNavigating(false), 3500);
+      startNavigation();
     };
 
     document.addEventListener("click", onClickCapture, true);
     return () => {
       document.removeEventListener("click", onClickCapture, true);
-      clearFallback();
+      clearNavTimers();
     };
-  }, []);
+  }, [startNavigation, clearNavTimers]);
 
   useEffect(() => {
-    // When route changes, stop the glow shortly after paint.
+    // When route changes, complete the loading bar, then fade back to dim.
     if (!isNavigating) return;
-    const t = window.setTimeout(() => setIsNavigating(false), 450);
-    return () => window.clearTimeout(t);
+
+    // Stop the simulated progress timer and clear fallback
+    if (navProgressTimer.current) {
+      window.clearInterval(navProgressTimer.current);
+      navProgressTimer.current = null;
+    }
+    if (navFallbackTimer.current) {
+      window.clearTimeout(navFallbackTimer.current);
+      navFallbackTimer.current = null;
+    }
+
+    setNavProgress(100);
+    const t1 = window.setTimeout(() => setIsNavigating(false), 220);
+    const t2 = window.setTimeout(() => setNavProgress(0), 650);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
   }, [pathname, isNavigating]);
 
   return (
@@ -270,7 +313,7 @@ export default function DashboardNavbar() {
                 />
                 <button
                   type="submit"
-                  className="px-4 bg-gradient-to-r from-blue-500 via-pink-500 to-purple-500 text-white"
+                  className="px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
                 >
                   <Search size={18} strokeWidth={2.5} />
                 </button>
@@ -288,7 +331,7 @@ export default function DashboardNavbar() {
                       <Link
                         key={path}
                         href={`/${path}`}
-                        className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white"
+                        className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
                       >
                         {path[0].toUpperCase() + path.slice(1)}
                       </Link>
@@ -315,31 +358,31 @@ export default function DashboardNavbar() {
                       <Link
                         href="/settings/profile"
                         prefetch={false}
-                        className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white"
+                        className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
                       >
                         Edit Profile
                       </Link>
                     ) : null}
-                    <Link href="/settings/account" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">Account</Link>
+                    <Link href="/settings/account" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">Account</Link>
                     {isAuthed ? (
-                      <Link href="/admin-report" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">
+                      <Link href="/admin-report" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
                         Admin Report
                       </Link>
                     ) : null}
                     {session?.user?.role === "ADMIN" ? (
-                      <Link href="/admin/reports" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">
+                      <Link href="/admin/reports" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
                         Content Reports
                       </Link>
                     ) : null}
                     {session?.user?.role === "ADMIN" ? (
-                      <Link href="/admin/taxonomy" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">
+                      <Link href="/admin/taxonomy" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
                         Taxonomy
                       </Link>
                     ) : null}
                     <div className="px-4 py-2">
                       <button
                         onClick={toggleDarkMode}
-                        className={`w-14 h-8 rounded-full flex items-center px-1 shadow-inner ${isDarkMode ? "bg-gradient-to-r from-indigo-600 to-purple-600 justify-end" : "bg-gray-300 justify-start"
+                        className={`w-14 h-8 rounded-full flex items-center px-1 shadow-inner ${isDarkMode ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end" : "bg-gray-300 justify-start"
                           }`}
                       >
                         <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
@@ -352,7 +395,7 @@ export default function DashboardNavbar() {
                         <LogOut size={16} /> Logout
                       </button>
                     ) : (
-                      <Link href="/auth/signin" className="block px-4 py-2 hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white">
+                      <Link href="/auth/signin" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
                         Sign In
                       </Link>
                     )}
@@ -391,9 +434,16 @@ export default function DashboardNavbar() {
         </div>
 
         {!isMenuOpen && (
-          <div
-            className={`h-1 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 transition-opacity ${isNavigating ? "opacity-100 animate-pulse" : "opacity-40"}`}
-          />
+          <div className="relative h-1 w-full">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-25" />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 origin-left transition-opacity duration-200 shadow-[0_0_12px_rgba(59,130,246,0.25)]"
+              style={{
+                transform: `scaleX(${Math.max(0.06, navProgress / 100)})`,
+                opacity: isNavigating ? 1 : 0,
+              }}
+            />
+          </div>
         )}
       </header>
 
@@ -449,7 +499,7 @@ export default function DashboardNavbar() {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-r-full bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 text-white hover:brightness-110 transition"
+                  className="px-4 py-2 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition"
                 >
                   <Search size={16} />
                 </button>

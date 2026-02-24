@@ -32,7 +32,7 @@ export default async function StudioPage() {
             </Link>
             <Link
               href="/studio/new"
-              className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 hover:brightness-110"
+              className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
             >
               Create new
             </Link>

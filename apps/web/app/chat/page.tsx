@@ -79,7 +79,7 @@ export default function ChatElyaPage() {
         text-black dark:text-white"
     >
       {/* Header */}
-      <header className="px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md flex items-center justify-between fixed top-0 left-0 right-0 z-30">
+      <header className="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md flex items-center justify-between fixed top-0 left-0 right-0 z-30">
         <h1 className="text-lg font-bold">Chat Elya~</h1>
         <span className="text-xs bg-white/20 px-2 py-1 rounded-full">Online</span>
       </header>
@@ -156,7 +156,7 @@ export default function ChatElyaPage() {
           />
           <button
             onClick={handleSend}
-            className="p-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-110 transition shadow"
+            className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-110 transition shadow"
             aria-label="Kirim pesan"
           >
             <FaPaperPlane size={14} />
