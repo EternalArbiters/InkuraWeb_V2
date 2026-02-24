@@ -390,6 +390,15 @@ export default function DashboardNavbar() {
                         </div>
                       </button>
                     </div>
+                    <div className="px-4 pb-2">
+                      <Link
+                        href="/donate"
+                        prefetch={false}
+                        className="block w-full text-center px-3 py-2 rounded-full text-sm font-semibold bg-red-600 text-white shadow-md hover:bg-red-700 transition"
+                      >
+                        Donate For Inkura
+                      </Link>
+                    </div>
                     {isAuthed ? (
                       <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
                         <LogOut size={16} /> Logout

@@ -86,6 +86,7 @@ export default function TaxonomyManager({ kind, title }: { kind: Kind; title: st
 
   const base = `/api/admin/taxonomy/${kind}`;
   const reorderDisabled = Boolean(qDebounced);
+  const sortDisabled = Boolean(qDebounced);
 
   const fetchList = React.useCallback(async () => {
     setLoading(true);
@@ -226,6 +227,26 @@ export default function TaxonomyManager({ kind, title }: { kind: Kind; title: st
     }
   }
 
+  async function applySort(by: "alpha" | "count", dir: "asc" | "desc") {
+    if (sortDisabled) return;
+    setSaving(true);
+    setErr(null);
+    try {
+      const res = await fetch(`${base}/sort`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ by, dir }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to sort");
+      await fetchList();
+    } catch (e: any) {
+      setErr(String(e?.message || e || "Failed to sort"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <Card className="p-4">
@@ -238,6 +259,39 @@ export default function TaxonomyManager({ kind, title }: { kind: Kind; title: st
             <Button onClick={openCreate}>Add</Button>
             <Button variant="outline" onClick={fetchList} disabled={loading || saving}>
               Refresh
+            </Button>
+            <div className="h-6 w-px bg-neutral-200 dark:bg-neutral-800" />
+            <Button
+              variant="outline"
+              onClick={() => applySort("alpha", "asc")}
+              disabled={sortDisabled || loading || saving}
+              title={sortDisabled ? "Clear search to sort" : "Sort A→Z"}
+            >
+              A→Z
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => applySort("alpha", "desc")}
+              disabled={sortDisabled || loading || saving}
+              title={sortDisabled ? "Clear search to sort" : "Sort Z→A"}
+            >
+              Z→A
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => applySort("count", "desc")}
+              disabled={sortDisabled || loading || saving}
+              title={sortDisabled ? "Clear search to sort" : "Sort by count (high→low)"}
+            >
+              Count ↓
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => applySort("count", "asc")}
+              disabled={sortDisabled || loading || saving}
+              title={sortDisabled ? "Clear search to sort" : "Sort by count (low→high)"}
+            >
+              Count ↑
             </Button>
           </div>
         </div>

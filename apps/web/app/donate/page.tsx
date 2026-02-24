@@ -13,7 +13,7 @@ export default function DonatePage() {
         <div className="border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/donate-qr.jpeg"
+            src="/images/donate-qr.png"
             alt="Donate QR"
             className="w-full h-auto"
           />

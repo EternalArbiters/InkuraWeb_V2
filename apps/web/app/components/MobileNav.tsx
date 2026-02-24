@@ -166,7 +166,7 @@ export default function MobileNav({
               href="/donate"
               prefetch={false}
               onClick={onClose}
-              className="block w-full text-center px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-white/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              className="block w-full text-center px-4 py-2 rounded-full text-sm font-semibold bg-red-600 text-white shadow-md hover:bg-red-700 transition"
             >
               Donate For Inkura
             </Link>
