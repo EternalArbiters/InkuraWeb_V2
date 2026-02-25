@@ -3,6 +3,19 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
+type TargetType = "WORK" | "CHAPTER";
+
+async function isWorkOwner(userId: string, targetType: TargetType, targetId: string) {
+  if (targetType === "WORK") {
+    const w = await prisma.work.findUnique({ where: { id: targetId }, select: { authorId: true } });
+    return !!w && w.authorId === userId;
+  }
+  const ch = await prisma.chapter.findUnique({ where: { id: targetId }, select: { work: { select: { authorId: true } } } });
+  return !!ch && ch.work.authorId === userId;
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ commentId: string }> }) {
   const { commentId } = await params;
   const session = await getServerSession(authOptions);
@@ -12,17 +25,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ comment
 
   const body = await req.json().catch(() => ({} as any));
   const hide = body?.hide !== undefined ? !!body.hide : true;
-  const note = String(body?.reason || "").trim().slice(0, 200);
 
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
-    select: { id: true, isHidden: true, chapter: { select: { work: { select: { authorId: true } } } } },
+    select: { id: true, isHidden: true, targetType: true, targetId: true },
   });
   if (!comment) return NextResponse.json({ error: "Comment not found" }, { status: 404 });
 
-  const isOwner = comment.chapter.work.authorId === session.user.id;
   const isAdmin = session.user.role === "ADMIN";
-  if (!isOwner && !isAdmin) {
+  const owner = await isWorkOwner(session.user.id, comment.targetType as TargetType, comment.targetId);
+  if (!owner && !isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -32,9 +44,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ comment
       isHidden: hide,
       hiddenAt: hide ? new Date() : null,
       hiddenById: hide ? session.user.id : null,
-      // store moderation note in the related reports using resolver note; keep minimal here
     },
   });
 
-  return NextResponse.json({ ok: true, isHidden: updated.isHidden, note });
+  return NextResponse.json({ ok: true, isHidden: updated.isHidden });
 }

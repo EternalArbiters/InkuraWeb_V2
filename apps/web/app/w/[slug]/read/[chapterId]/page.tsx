@@ -4,6 +4,7 @@ import ContentWarningsGate from "@/components/ContentWarningsGate";
 import { apiJson } from "@/lib/serverApi";
 import BackButton from "@/app/components/BackButton";
 import LockLabel from "@/app/components/LockLabel";
+import CommentSection from "@/app/components/work/CommentSection";
 
 export const dynamic = "force-dynamic";
 
@@ -177,6 +178,8 @@ export default async function ReadChapterPage({
             )}
           </div>
         </div>
+        <CommentSection targetType="CHAPTER" targetId={chapter.id} title="Comments" />
+
       </div>
     </main>
   );

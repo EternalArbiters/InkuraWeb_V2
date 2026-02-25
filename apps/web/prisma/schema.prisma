@@ -195,7 +195,6 @@ model Chapter {
 
   text        ChapterText?
   pages       ComicPage[]
-  comments    Comment[]
   readingProgresses ReadingProgress[]
 
   createdAt   DateTime @default(now())
@@ -368,25 +367,54 @@ model ReadingProgress {
   @@index([chapterId])
 }
 
+enum CommentTargetType {
+  WORK
+  CHAPTER
+}
+
+enum CommentAttachmentType {
+  IMAGE
+  GIF
+}
+
 model Comment {
-  id        String   @id @default(cuid())
-  chapterId String
-  userId    String
-  body      String
-  createdAt DateTime @default(now())
+  id         String            @id @default(cuid())
+  targetType CommentTargetType
+  targetId   String
+  userId     String
+  body       String
+  isSpoiler  Boolean           @default(false)
+  editedAt   DateTime?
+  createdAt  DateTime          @default(now())
 
   // Moderation
-  isHidden   Boolean  @default(false)
+  isHidden   Boolean           @default(false)
   hiddenAt   DateTime?
   hiddenById String?
 
-  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hiddenBy  User?    @relation("HiddenComments", fields: [hiddenById], references: [id])
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hiddenBy  User?             @relation("HiddenComments", fields: [hiddenById], references: [id])
+  attachments CommentAttachment[]
 
-  @@index([chapterId])
-  @@index([userId])
+  @@index([targetType, targetId, createdAt])
+  @@index([userId, createdAt])
 }
+
+model CommentAttachment {
+  id        String                @id @default(cuid())
+  commentId String
+  mediaId   String
+  type      CommentAttachmentType
+  createdAt DateTime              @default(now())
+
+  comment   Comment               @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  media     MediaObject           @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@unique([commentId, mediaId])
+  @@index([commentId])
+  @@index([mediaId])
+}
+
 
 // --- Follow + Notifications ---
 model FollowUser {
@@ -504,6 +532,26 @@ model ComicPage {
   @@unique([chapterId, order])
   @@index([chapterId])
 }
+
+enum MediaObjectType {
+  COMMENT_IMAGE
+  COMMENT_GIF
+}
+
+// v16: de-duplicated media objects (by sha256). Used for comment attachments (image/gif).
+model MediaObject {
+  id          String         @id @default(cuid())
+  sha256      String         @unique
+  type        MediaObjectType
+  contentType String
+  sizeBytes   Int
+  key         String
+  url         String
+  createdAt   DateTime       @default(now())
+
+  @@index([type, createdAt])
+}
+
 
 // For "Forgot password" flow (Credentials users).
 model PasswordResetToken {

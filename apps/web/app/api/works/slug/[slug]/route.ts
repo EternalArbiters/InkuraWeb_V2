@@ -38,7 +38,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       originalAuthorCredit: true,
       sourceUrl: true,
       uploaderNote: true,
+      likeCount: true,
+      ratingAvg: true,
+      ratingCount: true,
       chapterCount: true,
+      createdAt: true,
+      updatedAt: true,
       warningTags: { select: { name: true, slug: true } },
       deviantLoveTags: { select: { name: true, slug: true } },
       genres: { select: { name: true, slug: true } },
@@ -107,6 +112,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     });
   }
 
+  // Viewer interactions (like/bookmark/rating)
+  let viewerLiked = false;
+  let viewerBookmarked = false;
+  let viewerRating: number | null = null;
+  if (viewer?.id) {
+    const [like, bookmark, rating] = await Promise.all([
+      prisma.workLike.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { userId: true } }),
+      prisma.bookmark.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { userId: true } }),
+      prisma.workRating.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { value: true } }),
+    ]);
+    viewerLiked = !!like;
+    viewerBookmarked = !!bookmark;
+    viewerRating = rating?.value ?? null;
+  }
+
   return NextResponse.json({
     gated: false,
     viewer: viewer
@@ -119,6 +139,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
           isOwner,
         }
       : null,
+    interactions: {
+      liked: viewerLiked,
+      bookmarked: viewerBookmarked,
+      myRating: viewerRating,
+    },
     work,
   });
 }

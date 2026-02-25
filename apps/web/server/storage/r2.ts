@@ -1,7 +1,7 @@
 import "server-only";
 
 import crypto from "crypto";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 function required(name: string, v: string | undefined) {
@@ -127,6 +127,23 @@ export async function deleteObject(key: string) {
   const client = getR2Client();
   await client.send(new DeleteObjectCommand({ Bucket: env.bucket, Key: key }));
   return true;
+}
+
+
+export async function headObject(key: string): Promise<{ exists: boolean; contentLength?: number; contentType?: string }> {
+  const env = getR2Env();
+  const client = getR2Client();
+  try {
+    const res = await client.send(new HeadObjectCommand({ Bucket: env.bucket, Key: key }));
+    return { exists: true, contentLength: res.ContentLength ?? undefined, contentType: res.ContentType ?? undefined };
+  } catch (e: any) {
+    const code = e?.$metadata?.httpStatusCode;
+    const name = String(e?.name || "").toLowerCase();
+    if (code === 404 || name === "nosuchkey" || name === "notfound") {
+      return { exists: false };
+    }
+    throw e;
+  }
 }
 
 export function tryExtractKeyFromUrl(urlOrKey: string | null | undefined): string | null {

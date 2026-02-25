@@ -9,15 +9,22 @@ type ReportItem = {
   reason: string;
   reporter: { id: string; username: string | null; name: string | null };
   targetId: string;
-  comment: {
-    id: string;
-    body: string;
-    isHidden: boolean;
-    createdAt: string;
-    user: { id: string; username: string | null; name: string | null };
-    chapter: { id: string; title: string; number: number; work: { id: string; title: string; slug: string } };
-  } | null;
+  comment:
+    | {
+        id: string;
+        body: string;
+        isHidden: boolean;
+        createdAt: string;
+        targetType: "WORK" | "CHAPTER";
+        targetId: string;
+        user: { id: string; username: string | null; name: string | null };
+        target:
+          | { type: "WORK"; work: { id: string; title: string; slug: string } | null }
+          | { type: "CHAPTER"; chapter: { id: string; title: string; number: number; work: { id: string; title: string; slug: string } } | null };
+      }
+    | null;
 };
+
 
 export default function AdminReportsClient({ initial }: { initial: ReportItem[] }) {
   const [items, setItems] = useState(initial);
@@ -76,29 +83,64 @@ export default function AdminReportsClient({ initial }: { initial: ReportItem[] 
                   Comment by @{r.comment.user.username} • {new Date(r.comment.createdAt).toLocaleString()}
                 </div>
                 <div className="mt-2 text-sm whitespace-pre-wrap">{r.comment.body}</div>
-                <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-                  In: <b>{r.comment.chapter.work.title}</b> • Chapter {r.comment.chapter.number}: {r.comment.chapter.title}
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Link
-                    href={`/w/${r.comment.chapter.work.slug}/read/${r.comment.chapter.id}`}
-                    className="rounded-full px-3 py-2 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    Open reader
-                  </Link>
-                  <button
-                    disabled={isPending}
-                    onClick={() => act(r.id, { status: "RESOLVED", hideComment: true, note: "Hidden comment" })}
-                    className="rounded-full px-3 py-2 text-xs font-semibold bg-red-600 text-white hover:brightness-110 disabled:opacity-60"
-                  >
-                    Hide comment + Resolve
-                  </button>
-                  {r.comment.isHidden ? (
-                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                      already hidden
-                    </span>
-                  ) : null}
-                </div>
+
+                {(() => {
+                  const t = r.comment.target;
+
+                  const href =
+                    t.type === "CHAPTER" && t.chapter
+                      ? `/w/${t.chapter.work.slug}/read/${t.chapter.id}`
+                      : t.type === "WORK" && t.work
+                      ? `/w/${t.work.slug}`
+                      : null;
+
+                  const locationLabel =
+                    t.type === "CHAPTER" && t.chapter
+                      ? (
+                          <>
+                            In: <b>{t.chapter.work.title}</b> • Chapter {t.chapter.number}: {t.chapter.title}
+                          </>
+                        )
+                      : t.type === "WORK" && t.work
+                      ? (
+                          <>
+                            In: <b>{t.work.title}</b>
+                          </>
+                        )
+                      : (
+                          <>In: (unknown target)</>
+                        );
+
+                  return (
+                    <>
+                      <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">{locationLabel}</div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {href ? (
+                          <Link
+                            href={href}
+                            className="rounded-full px-3 py-2 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          >
+                            Open
+                          </Link>
+                        ) : null}
+
+                        <button
+                          disabled={isPending}
+                          onClick={() => act(r.id, { status: "RESOLVED", hideComment: true, note: "Hidden comment" })}
+                          className="rounded-full px-3 py-2 text-xs font-semibold bg-red-600 text-white hover:brightness-110 disabled:opacity-60"
+                        >
+                          Hide comment + Resolve
+                        </button>
+
+                        {r.comment.isHidden ? (
+                          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            already hidden
+                          </span>
+                        ) : null}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             ) : (
               <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">Comment not found (maybe deleted).</div>

@@ -335,6 +335,7 @@ export async function GET(req: Request) {
       slug: true,
       title: true,
       coverImage: true,
+      updatedAt: true,
       type: true,
       comicType: true,
       likeCount: true,

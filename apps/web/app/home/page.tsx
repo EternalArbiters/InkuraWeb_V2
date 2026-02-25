@@ -42,14 +42,14 @@ export default async function HomePage() {
           </div>
         </header>
 
-        <WorkRail title="Trending Comics" href="/comic?sort=liked" works={trendingComics} />
-        <WorkRail title="Trending Novels" href="/novel?sort=liked" works={trendingNovels} />
-        <WorkRail title="New Originals" href="/all?publishType=ORIGINAL&sort=newest" works={originals} />
-        <WorkRail title="Latest Translations" href="/all?publishType=TRANSLATION&sort=newest" works={translations} />
-        <WorkRail title="Recently Updated" href="/all?sort=newest" works={recent} />
+        <WorkRail title="Trending Comics" href="/browse/trending-comics" works={trendingComics} />
+        <WorkRail title="Trending Novels" href="/browse/trending-novels" works={trendingNovels} />
+        <WorkRail title="New Originals" href="/browse/new-originals" works={originals} />
+        <WorkRail title="Latest Translations" href="/browse/latest-translations" works={translations} />
+        <WorkRail title="Recently Updated" href="/browse/recent-updates" works={recent} />
 
         <footer className="pt-6 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-300">
-          Inkura v12
+          Inkura v16
         </footer>
       </div>
     </main>

@@ -5,18 +5,24 @@ import { apiJson } from "@/lib/serverApi";
 import WorkCoverBadges from "../../components/WorkCoverBadges";
 import BackButton from "@/app/components/BackButton";
 import LockLabel from "@/app/components/LockLabel";
+import CommentSection from "@/app/components/work/CommentSection";
+import LikeButton from "@/app/components/work/LikeButton";
+import RatingStars from "@/app/components/work/RatingStars";
+import ShareButton from "@/app/components/work/ShareButton";
+import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function WorkPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
 
-  const res = await apiJson<{ work: any; gated: boolean; viewer: any }>(`/api/works/slug/${params.slug}`);
+  const res = await apiJson<{ work: any; gated: boolean; viewer: any; interactions?: any }>(`/api/works/slug/${params.slug}`);
   if (!res.ok) return notFound();
 
   const work = res.data.work;
   const gated = !!res.data.gated;
   const viewer = res.data.viewer;
+  const interactions = (res.data as any).interactions || { liked: false, bookmarked: false, myRating: null };
   const canViewMature = !!viewer?.canViewMature;
   const canViewDeviantLove = !!viewer?.canViewDeviantLove;
   const gateReason = (res.data as any).gateReason as string | undefined;
@@ -166,9 +172,25 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{work.title}</h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
+              <ShareButton title={work.title} />
+              <RatingStars
+                workId={work.id}
+                initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                ratingAvg={Number(work.ratingAvg ?? 0)}
+                ratingCount={Number(work.ratingCount ?? 0)}
+              />
+            </div>
+
             {work.description ? (
               <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{work.description}</p>
             ) : null}
+
+            <div className="mt-6">
+              <WorkInfoPanel work={work} />
+            </div>
 
             <div className="mt-6">
               <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
@@ -214,6 +236,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 </div>
               </ContentWarningsGate>
             </div>
+
+            <CommentSection targetType="WORK" targetId={work.id} title="Comments" />
 
             <div className="mt-6">
               <BackButton href="/search" />

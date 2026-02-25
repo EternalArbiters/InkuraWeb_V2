@@ -2,16 +2,30 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import { makeObjectKey, presignPutObject } from "@/server/storage/r2";
+import { headObject, makeObjectKey, presignPutObject, publicUrlForKey, safeFilename } from "@/server/storage/r2";
 
 export const runtime = "nodejs";
 
-type Scope = "covers" | "pages" | "files";
+// NOTE (v16 prep): comment media presign supports SHA-256 de-dup keys.
+// - comment_images: image/webp|png|jpeg (2MB)
+// - comment_gifs: image/gif (5MB)
+// If the object already exists in R2 (same sha256), we return exists=true and NO uploadUrl.
+
+type Scope = "covers" | "pages" | "files" | "comment_images" | "comment_gifs";
 
 function safeScope(v: unknown): Scope {
-  const s = String(v || "files").toLowerCase();
+  const s = String(v || "files").toLowerCase().replace(/\s+/g, "");
   if (s === "covers" || s === "cover") return "covers";
   if (s === "pages" || s === "page") return "pages";
+
+  // Comment media (v16)
+  if (s === "comment_images" || s === "commentimage" || s === "commentimages" || s === "comment-image" || s === "comment-images") {
+    return "comment_images";
+  }
+  if (s === "comment_gifs" || s === "commentgif" || s === "commentgifs" || s === "comment-gif" || s === "comment-gifs") {
+    return "comment_gifs";
+  }
+
   return "files";
 }
 
@@ -20,6 +34,7 @@ function guessContentType(filename: string) {
   if (n.endsWith(".webp")) return "image/webp";
   if (n.endsWith(".png")) return "image/png";
   if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+  if (n.endsWith(".gif")) return "image/gif";
   if (n.endsWith(".pdf")) return "application/pdf";
   return "application/octet-stream";
 }
@@ -31,8 +46,11 @@ function normalizeContentType(filename: string, ct: string) {
 
 function isAllowedContentType(scope: Scope, ct: string) {
   const c = ct.toLowerCase();
-  if (scope === "covers" || scope === "pages") {
+  if (scope === "covers" || scope === "pages" || scope === "comment_images") {
     return c === "image/webp" || c === "image/png" || c === "image/jpeg";
+  }
+  if (scope === "comment_gifs") {
+    return c === "image/gif";
   }
   // files scope: allow pdf for now (expand later if needed)
   return c === "application/pdf" || c === "application/octet-stream";
@@ -41,7 +59,34 @@ function isAllowedContentType(scope: Scope, ct: string) {
 function maxBytesForScope(scope: Scope) {
   if (scope === "covers") return 2 * 1024 * 1024; // 2MB
   if (scope === "pages") return 5 * 1024 * 1024; // 5MB
+  if (scope === "comment_images") return 2 * 1024 * 1024; // 2MB
+  if (scope === "comment_gifs") return 5 * 1024 * 1024; // 5MB (requested)
   return 20 * 1024 * 1024; // 20MB
+}
+
+function normalizeSha256(v: unknown): string | null {
+  const s = String(v || "").trim().toLowerCase();
+  if (!s) return null;
+  if (!/^[a-f0-9]{64}$/.test(s)) return null;
+  return s;
+}
+
+function extFromContentType(ct: string, filename: string) {
+  const c = ct.toLowerCase();
+  if (c === "image/gif") return "gif";
+  if (c === "image/png") return "png";
+  if (c === "image/webp") return "webp";
+  if (c === "image/jpeg") return "jpg";
+  // fallback: from filename
+  const safe = safeFilename(filename);
+  const parts = safe.split(".");
+  const last = parts.length > 1 ? parts[parts.length - 1] : "bin";
+  return last || "bin";
+}
+
+function makeCommentMediaKey(params: { sha256: string; scope: "comment_images" | "comment_gifs"; ext: string }) {
+  if (params.scope === "comment_gifs") return `media/comment/gif/${params.sha256}.gif`;
+  return `media/comment/image/${params.sha256}.${params.ext}`;
 }
 
 async function canEditWork(userId: string, role: string, workId: string) {
@@ -93,6 +138,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
   }
 
+  // Ownership checks (covers/pages)
   if (scope === "covers") {
     if (!workId) return NextResponse.json({ error: "workId is required for covers" }, { status: 400 });
     const ok = await canEditWork(session.user.id, me.role, workId);
@@ -112,22 +158,34 @@ export async function POST(req: Request) {
     }
   }
 
-  const key = makeObjectKey({
-    userId: session.user.id,
-    workId,
-    chapterId,
-    scope,
-    filename,
+  const isCommentMedia = scope === "comment_images" || scope === "comment_gifs";
+
+  let key: string;
+  let sha256: string | null = null;
+
+  if (isCommentMedia) {
+    sha256 = normalizeSha256(body?.sha256 ?? body?.hash);
+    if (!sha256) return NextResponse.json({ error: "sha256 is required for comment media" }, { status: 400 });
+    const ext = extFromContentType(contentType, filename);
+    key = makeCommentMediaKey({ sha256, scope: scope as any, ext });
+
+    // De-dup: if already exists in R2, do NOT issue a new presign.
+    const exists = await headObject(key);
+    if (exists.exists) {
+      return NextResponse.json({ ok: true, exists: true, sha256, key, publicUrl: publicUrlForKey(key) });
+    }
+  } else {
+    key = makeObjectKey({ userId: session.user.id, workId, chapterId, scope: scope as any, filename });
+  }
+
+  const signed = await presignPutObject({ key, contentType });
+
+  return NextResponse.json({
+    ok: true,
+    exists: false,
+    sha256,
+    uploadUrl: signed.uploadUrl,
+    key: signed.key,
+    publicUrl: signed.publicUrl,
   });
-
-  const uploadUrl = await presignPutObject({
-    key,
-    contentType,
-  });
-
-  const publicUrl = process.env.R2_PUBLIC_BASE_URL
-    ? `${process.env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`
-    : key;
-
-  return NextResponse.json({ ok: true, uploadUrl, key, publicUrl });
 }
