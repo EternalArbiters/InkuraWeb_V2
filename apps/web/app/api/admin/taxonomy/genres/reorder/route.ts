@@ -25,10 +25,12 @@ export async function POST(req: Request) {
       });
       const beforeMap = Object.fromEntries(beforeRows.map((r) => [r.id, r.sortOrder]));
 
-      const updates = ids.map((id: string, idx: number) =>
-        tx.genre.update({ where: { id }, data: { sortOrder: (idx + 1) * 10 } })
-      );
-      await Promise.all(updates);
+      // IMPORTANT: Avoid massive parallel queries inside a transaction (can fail on serverless).
+      for (let idx = 0; idx < ids.length; idx++) {
+        const id = ids[idx];
+        // eslint-disable-next-line no-await-in-loop
+        await tx.genre.update({ where: { id }, data: { sortOrder: (idx + 1) * 10 } });
+      }
 
       const afterRows = await tx.genre.findMany({
         where: { id: { in: ids } },

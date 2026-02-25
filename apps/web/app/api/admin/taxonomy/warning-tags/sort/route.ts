@@ -62,11 +62,12 @@ export async function POST(req: Request) {
       const inactive = rows.filter((r) => !r.isActive).sort(cmp);
       const ordered = [...active, ...inactive];
 
-      await Promise.all(
-        ordered.map((r, idx) =>
-          tx.warningTag.update({ where: { id: r.id }, data: { sortOrder: (idx + 1) * 10 } })
-        )
-      );
+      // IMPORTANT: Avoid massive parallel queries inside a transaction (can fail on serverless).
+      for (let idx = 0; idx < ordered.length; idx++) {
+        const r = ordered[idx];
+        // eslint-disable-next-line no-await-in-loop
+        await tx.warningTag.update({ where: { id: r.id }, data: { sortOrder: (idx + 1) * 10 } });
+      }
 
       const afterRows = await tx.warningTag.findMany({
         where: { id: { in: ordered.map((r) => r.id) } },
@@ -92,7 +93,9 @@ export async function POST(req: Request) {
 
     revalidateTag("taxonomy");
     return NextResponse.json({ ok: true, ...result });
-  } catch {
-    return NextResponse.json({ error: "Failed to sort" }, { status: 500 });
+  } catch (e: any) {
+    console.error("[taxonomy][warning-tags][sort] failed", e);
+    const msg = String(e?.message || "").trim();
+    return NextResponse.json({ error: msg ? `Failed to sort: ${msg}` : "Failed to sort" }, { status: 500 });
   }
 }

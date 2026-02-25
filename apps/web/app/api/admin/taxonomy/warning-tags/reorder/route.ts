@@ -22,7 +22,12 @@ export async function POST(req: Request) {
       const beforeRows = await tx.warningTag.findMany({ where: { id: { in: ids } }, select: { id: true, sortOrder: true } });
       const beforeMap = Object.fromEntries(beforeRows.map((r) => [r.id, r.sortOrder]));
 
-      await Promise.all(ids.map((id: string, idx: number) => tx.warningTag.update({ where: { id }, data: { sortOrder: (idx + 1) * 10 } })));
+      // IMPORTANT: Avoid massive parallel queries inside a transaction (can fail on serverless).
+      for (let idx = 0; idx < ids.length; idx++) {
+        const id = ids[idx];
+        // eslint-disable-next-line no-await-in-loop
+        await tx.warningTag.update({ where: { id }, data: { sortOrder: (idx + 1) * 10 } });
+      }
 
       const afterRows = await tx.warningTag.findMany({ where: { id: { in: ids } }, select: { id: true, sortOrder: true } });
       const afterMap = Object.fromEntries(afterRows.map((r) => [r.id, r.sortOrder]));

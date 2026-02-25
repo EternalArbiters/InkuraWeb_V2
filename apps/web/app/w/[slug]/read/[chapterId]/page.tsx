@@ -105,7 +105,8 @@ export default async function ReadChapterPage({
             warnings={allWarnings}
           >
             {isComic ? (
-              <div className="flex flex-col gap-0">
+              // Full-bleed on mobile (no left/right gutters), while keeping desktop readable.
+              <div className="-mx-4 sm:mx-0 flex flex-col gap-0">
                 {Array.isArray(chapter.pages)
                   ? chapter.pages.map((p: any) => (
                       // eslint-disable-next-line @next/next/no-img-element
