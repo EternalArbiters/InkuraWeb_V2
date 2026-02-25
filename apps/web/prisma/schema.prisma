@@ -549,6 +549,9 @@ model MediaObject {
   url         String
   createdAt   DateTime       @default(now())
 
+  // Opposite relation for CommentAttachment.media
+  commentAttachments CommentAttachment[]
+
   @@index([type, createdAt])
 }
 
