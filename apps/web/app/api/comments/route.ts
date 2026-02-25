@@ -101,9 +101,9 @@ export async function POST(req: Request) {
   const rawAttachments = Array.isArray(body?.attachments) ? body.attachments : [];
   const mediaIds = rawAttachments
     .map((a: any) => String(a?.mediaId || a?.id || "").trim())
-    .filter(Boolean);
+    .filter((v): v is string => Boolean(v));
 
-  const uniqueMediaIds = Array.from(new Set(mediaIds)).slice(0, 3);
+  const uniqueMediaIds: string[] = Array.from(new Set<string>(mediaIds)).slice(0, 3);
 
   const mediaRows = uniqueMediaIds.length
     ? await prisma.mediaObject.findMany({

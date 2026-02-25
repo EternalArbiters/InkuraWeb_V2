@@ -53,10 +53,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
   const ch = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { id: true } });
   if (!ch) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
-  const mediaIds = attachments
+  const mediaIds: string[] = attachments
     .map((a: any) => String(a?.mediaId || a?.id || "").trim())
-    .filter(Boolean);
-  const uniqueMediaIds = Array.from(new Set(mediaIds)).slice(0, 3);
+    .filter((v): v is string => Boolean(v));
+  const uniqueMediaIds: string[] = Array.from(new Set<string>(mediaIds)).slice(0, 3);
   const mediaRows = uniqueMediaIds.length
     ? await prisma.mediaObject.findMany({ where: { id: { in: uniqueMediaIds } }, select: { id: true, type: true } })
     : [];
