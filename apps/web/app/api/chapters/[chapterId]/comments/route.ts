@@ -45,7 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
   const body = await req.json().catch(() => ({} as any));
   const text = String(body?.body || "").trim();
   const isSpoiler = !!body?.isSpoiler;
-  const attachments = Array.isArray(body?.attachments) ? body.attachments : [];
+  const attachments: unknown[] = Array.isArray(body?.attachments) ? (body.attachments as unknown[]) : [];
 
   if (!text) return NextResponse.json({ error: "Comment body is required" }, { status: 400 });
   if (text.length > 2000) return NextResponse.json({ error: "Comment too long" }, { status: 400 });
@@ -54,8 +54,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
   if (!ch) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
   const mediaIds: string[] = attachments
-    .map((a: any) => String(a?.mediaId || a?.id || "").trim())
-    .filter((v): v is string => Boolean(v));
+    .map((a) => String((a as any)?.mediaId || (a as any)?.id || "").trim())
+    .filter((v) => v.length > 0);
   const uniqueMediaIds: string[] = Array.from(new Set<string>(mediaIds)).slice(0, 3);
   const mediaRows = uniqueMediaIds.length
     ? await prisma.mediaObject.findMany({ where: { id: { in: uniqueMediaIds } }, select: { id: true, type: true } })

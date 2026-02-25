@@ -98,10 +98,10 @@ export async function POST(req: Request) {
     if (!ch) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
   }
 
-  const rawAttachments = Array.isArray(body?.attachments) ? body.attachments : [];
-  const mediaIds = rawAttachments
-    .map((a: any) => String(a?.mediaId || a?.id || "").trim())
-    .filter((v): v is string => Boolean(v));
+  const rawAttachments: unknown[] = Array.isArray(body?.attachments) ? (body.attachments as unknown[]) : [];
+  const mediaIds: string[] = rawAttachments
+    .map((a) => String((a as any)?.mediaId || (a as any)?.id || "").trim())
+    .filter((v) => v.length > 0);
 
   const uniqueMediaIds: string[] = Array.from(new Set<string>(mediaIds)).slice(0, 3);
 
