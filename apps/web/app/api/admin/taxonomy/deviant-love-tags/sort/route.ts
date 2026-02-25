@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { adminGuard, getClientMeta, safeJson } from "../../_shared";
+import { adminGuard, bulkSortOrderUpdateSql, getClientMeta, safeJson } from "../../_shared";
 import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
@@ -31,8 +31,8 @@ export async function POST(req: Request) {
   const { ip, userAgent } = getClientMeta(req);
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      const rows = await tx.deviantLoveTag.findMany({
+    // NOTE: Avoid interactive transactions here; they can time out on serverless.
+    const rows = await prisma.deviantLoveTag.findMany({
         select: {
           id: true,
           name: true,
@@ -43,8 +43,8 @@ export async function POST(req: Request) {
         take: 5000,
       });
 
-      const beforeMap = Object.fromEntries(rows.map((r) => [r.id, r.sortOrder]));
-      const score = (r: (typeof rows)[number]) => (by === "count" ? r._count.works : 0);
+    const beforeMap = Object.fromEntries(rows.map((r) => [r.id, r.sortOrder]));
+    const score = (r: (typeof rows)[number]) => (by === "count" ? r._count.works : 0);
 
       const cmp = (a: (typeof rows)[number], b: (typeof rows)[number]) => {
         if (by === "count") {
@@ -57,24 +57,16 @@ export async function POST(req: Request) {
         return dir === "asc" ? n : -n;
       };
 
-      const active = rows.filter((r) => r.isActive).sort(cmp);
-      const inactive = rows.filter((r) => !r.isActive).sort(cmp);
-      const ordered = [...active, ...inactive];
+    const active = rows.filter((r) => r.isActive).sort(cmp);
+    const inactive = rows.filter((r) => !r.isActive).sort(cmp);
+    const ordered = [...active, ...inactive];
 
-      // IMPORTANT: Avoid massive parallel queries inside a transaction (can fail on serverless).
-      for (let idx = 0; idx < ordered.length; idx++) {
-        const r = ordered[idx];
-        // eslint-disable-next-line no-await-in-loop
-        await tx.deviantLoveTag.update({ where: { id: r.id }, data: { sortOrder: (idx + 1) * 10 } });
-      }
+    const pairs = ordered.map((r, idx) => ({ id: r.id, sortOrder: (idx + 1) * 10 }));
+    const afterMap = Object.fromEntries(pairs.map((p) => [p.id, p.sortOrder]));
 
-      const afterRows = await tx.deviantLoveTag.findMany({
-        where: { id: { in: ordered.map((r) => r.id) } },
-        select: { id: true, sortOrder: true },
-      });
-      const afterMap = Object.fromEntries(afterRows.map((r) => [r.id, r.sortOrder]));
-
-      await tx.adminAuditLog.create({
+    await prisma.$transaction([
+      prisma.$executeRaw(bulkSortOrderUpdateSql('"DeviantLoveTag"', pairs)),
+      prisma.adminAuditLog.create({
         data: {
           adminId,
           action: `SORT_${by.toUpperCase()}_${dir.toUpperCase()}`,
@@ -85,10 +77,10 @@ export async function POST(req: Request) {
           ip,
           userAgent,
         },
-      });
+      }),
+    ]);
 
-      return { by, dir, count: ordered.length };
-    });
+    const result = { by, dir, count: ordered.length };
 
     revalidateTag("taxonomy");
     return NextResponse.json({ ok: true, ...result });

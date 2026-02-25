@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { adminGuard, getClientMeta, safeJson } from "../../_shared";
+import { adminGuard, bulkSortOrderUpdateSql, getClientMeta, safeJson } from "../../_shared";
 import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
@@ -18,21 +18,14 @@ export async function POST(req: Request) {
   const { ip, userAgent } = getClientMeta(req);
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      const beforeRows = await tx.tag.findMany({ where: { id: { in: ids } }, select: { id: true, sortOrder: true } });
-      const beforeMap = Object.fromEntries(beforeRows.map((r) => [r.id, r.sortOrder]));
+    const beforeRows = await prisma.tag.findMany({ where: { id: { in: ids } }, select: { id: true, sortOrder: true } });
+    const beforeMap = Object.fromEntries(beforeRows.map((r) => [r.id, r.sortOrder]));
+    const pairs = ids.map((id, idx) => ({ id, sortOrder: (idx + 1) * 10 }));
+    const afterMap = Object.fromEntries(pairs.map((p) => [p.id, p.sortOrder]));
 
-      // IMPORTANT: Avoid massive parallel queries inside a transaction (can fail on serverless).
-      for (let idx = 0; idx < ids.length; idx++) {
-        const id = ids[idx];
-        // eslint-disable-next-line no-await-in-loop
-        await tx.tag.update({ where: { id }, data: { sortOrder: (idx + 1) * 10 } });
-      }
-
-      const afterRows = await tx.tag.findMany({ where: { id: { in: ids } }, select: { id: true, sortOrder: true } });
-      const afterMap = Object.fromEntries(afterRows.map((r) => [r.id, r.sortOrder]));
-
-      await tx.adminAuditLog.create({
+    await prisma.$transaction([
+      prisma.$executeRaw(bulkSortOrderUpdateSql('"Tag"', pairs)),
+      prisma.adminAuditLog.create({
         data: {
           adminId,
           action: "REORDER",
@@ -43,14 +36,16 @@ export async function POST(req: Request) {
           ip,
           userAgent,
         },
-      });
+      }),
+    ]);
 
-      return afterRows;
-    });
+    const result = pairs;
 
     revalidateTag("taxonomy");
     return NextResponse.json({ ok: true, items: result });
-  } catch {
-    return NextResponse.json({ error: "Failed to reorder" }, { status: 500 });
+  } catch (e: any) {
+    console.error("[taxonomy][tags][reorder] failed", e);
+    const msg = String(e?.message || "").trim();
+    return NextResponse.json({ error: msg ? `Failed to reorder: ${msg}` : "Failed to reorder" }, { status: 500 });
   }
 }

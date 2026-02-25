@@ -59,3 +59,28 @@ export function toJsonSafe(value: any) {
     return null;
   }
 }
+
+/**
+ * Build a single Postgres UPDATE statement that assigns per-row sortOrder values.
+ *
+ * Why: interactive transactions can time out on serverless when doing many updates.
+ * This packs all changes into 1 query.
+ */
+export function bulkSortOrderUpdateSql(
+  tableQuoted: '"Genre"' | '"Tag"' | '"WarningTag"' | '"DeviantLoveTag"',
+  pairs: Array<{ id: string; sortOrder: number }>,
+) {
+  const table = Prisma.raw(tableQuoted);
+  if (!pairs.length) {
+    // Return a harmless statement; caller should generally guard against empty pairs.
+    return Prisma.sql`SELECT 1`;
+  }
+  const values = pairs.map((p) => Prisma.sql`(${p.id}, ${p.sortOrder})`);
+  return Prisma.sql`
+    UPDATE ${table} AS t
+    SET "sortOrder" = v.sortOrder,
+        "updatedAt" = NOW()
+    FROM (VALUES ${Prisma.join(values)}) AS v(id, sortOrder)
+    WHERE t.id = v.id
+  `;
+}

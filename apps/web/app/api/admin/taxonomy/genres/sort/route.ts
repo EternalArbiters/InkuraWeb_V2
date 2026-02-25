@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { adminGuard, getClientMeta, safeJson } from "../../_shared";
+import { adminGuard, bulkSortOrderUpdateSql, getClientMeta, safeJson } from "../../_shared";
 import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
@@ -31,51 +31,43 @@ export async function POST(req: Request) {
   const { ip, userAgent } = getClientMeta(req);
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      const rows = await tx.genre.findMany({
-        select: {
-          id: true,
-          name: true,
-          isActive: true,
-          sortOrder: true,
-          _count: { select: { works: true } },
-        },
-        take: 5000,
-      });
+    // NOTE: Avoid interactive transactions here; they can time out on serverless.
+    const rows = await prisma.genre.findMany({
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+        sortOrder: true,
+        _count: { select: { works: true } },
+      },
+      take: 5000,
+    });
 
-      const beforeMap = Object.fromEntries(rows.map((r) => [r.id, r.sortOrder]));
+    const beforeMap = Object.fromEntries(rows.map((r) => [r.id, r.sortOrder]));
 
-      const score = (r: (typeof rows)[number]) => (by === "count" ? r._count.works : 0);
+    const score = (r: (typeof rows)[number]) => (by === "count" ? r._count.works : 0);
 
-      const cmp = (a: (typeof rows)[number], b: (typeof rows)[number]) => {
-        if (by === "count") {
-          const d = score(a) - score(b);
-          if (d !== 0) return dir === "asc" ? d : -d;
-          const n = alphaCmp(a.name, b.name);
-          return dir === "asc" ? n : -n;
-        }
+    const cmp = (a: (typeof rows)[number], b: (typeof rows)[number]) => {
+      if (by === "count") {
+        const d = score(a) - score(b);
+        if (d !== 0) return dir === "asc" ? d : -d;
         const n = alphaCmp(a.name, b.name);
         return dir === "asc" ? n : -n;
-      };
-
-      const active = rows.filter((r) => r.isActive).sort(cmp);
-      const inactive = rows.filter((r) => !r.isActive).sort(cmp);
-      const ordered = [...active, ...inactive];
-
-      // IMPORTANT: Avoid massive parallel queries inside a transaction (can fail on serverless).
-      for (let idx = 0; idx < ordered.length; idx++) {
-        const r = ordered[idx];
-        // eslint-disable-next-line no-await-in-loop
-        await tx.genre.update({ where: { id: r.id }, data: { sortOrder: (idx + 1) * 10 } });
       }
+      const n = alphaCmp(a.name, b.name);
+      return dir === "asc" ? n : -n;
+    };
 
-      const afterRows = await tx.genre.findMany({
-        where: { id: { in: ordered.map((r) => r.id) } },
-        select: { id: true, sortOrder: true },
-      });
-      const afterMap = Object.fromEntries(afterRows.map((r) => [r.id, r.sortOrder]));
+    const active = rows.filter((r) => r.isActive).sort(cmp);
+    const inactive = rows.filter((r) => !r.isActive).sort(cmp);
+    const ordered = [...active, ...inactive];
 
-      await tx.adminAuditLog.create({
+    const pairs = ordered.map((r, idx) => ({ id: r.id, sortOrder: (idx + 1) * 10 }));
+    const afterMap = Object.fromEntries(pairs.map((p) => [p.id, p.sortOrder]));
+
+    await prisma.$transaction([
+      prisma.$executeRaw(bulkSortOrderUpdateSql('"Genre"', pairs)),
+      prisma.adminAuditLog.create({
         data: {
           adminId,
           action: `SORT_${by.toUpperCase()}_${dir.toUpperCase()}`,
@@ -86,10 +78,10 @@ export async function POST(req: Request) {
           ip,
           userAgent,
         },
-      });
+      }),
+    ]);
 
-      return { by, dir, count: ordered.length };
-    });
+    const result = { by, dir, count: ordered.length };
 
     revalidateTag("taxonomy");
     return NextResponse.json({ ok: true, ...result });
