@@ -89,7 +89,7 @@ export default function MobileNav({
     { label: "Film", href: "/film", Icon: Clapperboard },
     { label: "Library", href: "/library", Icon: Bookmark },
     { label: "Notifications", href: "/notifications", Icon: Bell },
-    { label: "Studio", href: "/studio", Icon: Upload },
+    { label: "Upload", href: "/studio", Icon: Upload },
     { label: "Community", href: "/community", Icon: Users },
     { label: "Account", href: "/settings/account", Icon: User },
     { label: "History", href: "/settings/history", Icon: History },
@@ -121,16 +121,6 @@ export default function MobileNav({
       {/* Sidebar */}
       <aside className="fixed top-0 right-0 z-50 w-[60%] h-full px-6 py-6 overflow-y-auto transition bg-white dark:bg-gray-900 shadow-xl flex flex-col justify-between">
         <div>
-          {/* Brand */}
-          <Link href="/home" prefetch={false} onClick={onClose} className="inline-flex items-center gap-2 mb-4">
-            {!brandLogoError ? (
-              <img src="/logo-inkura.png" alt="Inkura" className="w-5 h-5" onError={() => setBrandLogoError(true)} />
-            ) : (
-              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" aria-hidden />
-            )}
-            <span className="text-base font-bold text-gray-800 dark:text-white">INKURA</span>
-          </Link>
-
           {/* User Info */}
           <div className="flex items-center space-x-4 mb-6">
             {isAuthed ? (
