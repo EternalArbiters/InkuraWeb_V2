@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   if (guard instanceof NextResponse) return guard;
   const { adminId } = guard;
   const body = await safeJson(req);
-  const ids = Array.isArray(body?.ids) ? body.ids.map((x: any) => String(x)) : [];
+  const ids: string[] = Array.isArray(body?.ids) ? body.ids.map((x: any) => String(x)) : [];
   if (!ids.length) return NextResponse.json({ error: "ids is required" }, { status: 400 });
 
   const uniq = new Set(ids);
