@@ -561,8 +561,7 @@ export default function CommentSection({
             ) : null}
             {info ? <span className="text-emerald-700 dark:text-emerald-400">{info}</span> : null}
             {error ? <span className="text-red-600 dark:text-red-400">{error}</span> : null}
-          </div>
-        </div>
+      </div>
 
         <hr className="my-5 border-gray-200 dark:border-gray-800" />
 
