@@ -7,10 +7,17 @@ export const runtime = "nodejs";
 
 type TargetType = "WORK" | "CHAPTER";
 
+type SortMode = "new" | "top";
+
 function safeTargetType(v: unknown): TargetType | null {
   const s = String(v || "").toUpperCase().trim();
   if (s === "WORK" || s === "CHAPTER") return s;
   return null;
+}
+
+function safeSort(v: unknown): SortMode {
+  const s = String(v || "").toLowerCase().trim();
+  return s === "top" ? "top" : "new";
 }
 
 function clampInt(v: unknown, def: number, min: number, max: number) {
@@ -41,6 +48,7 @@ export async function GET(req: Request) {
   const targetId = String(url.searchParams.get("targetId") || "").trim();
   const cursor = String(url.searchParams.get("cursor") || "").trim() || null;
   const take = clampInt(url.searchParams.get("take"), 40, 1, 100);
+  const sort = safeSort(url.searchParams.get("sort"));
 
   if (!targetType || !targetId) {
     return NextResponse.json({ error: "targetType and targetId are required" }, { status: 400 });
@@ -55,13 +63,22 @@ export async function GET(req: Request) {
     ...(canModerate ? {} : { isHidden: false }),
   };
 
+  const orderBy: any =
+    sort === "top"
+      ? [{ likeCount: "desc" as const }, { createdAt: "desc" as const }, { id: "desc" as const }]
+      : [{ createdAt: "desc" as const }, { id: "desc" as const }];
+
   const query: any = {
     where,
-    orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }],
+    orderBy,
     take,
     include: {
       user: { select: { id: true, username: true, name: true, image: true } },
-      attachments: { include: { media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } } } },
+      attachments: {
+        include: {
+          media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } },
+        },
+      },
     },
   };
 
@@ -72,7 +89,19 @@ export async function GET(req: Request) {
 
   const comments = await prisma.comment.findMany(query);
 
-  return NextResponse.json({ ok: true, canModerate, comments });
+  // Viewer liked flags
+  let out: any[] = comments as any;
+  if (session?.user?.id && comments.length) {
+    const ids = comments.map((c) => c.id);
+    const likes = await prisma.commentLike.findMany({
+      where: { userId: session.user.id, commentId: { in: ids } },
+      select: { commentId: true },
+    });
+    const likedSet = new Set(likes.map((x) => x.commentId));
+    out = comments.map((c: any) => ({ ...c, viewerLiked: likedSet.has(c.id) }));
+  }
+
+  return NextResponse.json({ ok: true, canModerate, comments: out });
 }
 
 export async function POST(req: Request) {
@@ -148,7 +177,11 @@ export async function POST(req: Request) {
       where: { id: comment.id },
       include: {
         user: { select: { id: true, username: true, name: true, image: true } },
-        attachments: { include: { media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } } } },
+        attachments: {
+          include: {
+            media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } },
+          },
+        },
       },
     });
   });

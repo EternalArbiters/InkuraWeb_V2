@@ -28,6 +28,8 @@ model User {
   works      Work[]
   translatedWorks Work[] @relation("WorkTranslator")
   likes      WorkLike[]
+  chapterLikes ChapterLike[]
+  commentLikes CommentLike[]
   ratings    WorkRating[]
   bookmarks  Bookmark[]
   progress   ReadingProgress[]
@@ -195,6 +197,8 @@ model Chapter {
 
   text        ChapterText?
   pages       ComicPage[]
+  likeCount   Int @default(0)
+  likes       ChapterLike[]
   readingProgresses ReadingProgress[]
 
   createdAt   DateTime @default(now())
@@ -325,6 +329,17 @@ model WorkLike {
   @@index([workId])
 }
 
+model ChapterLike {
+  userId    String
+  chapterId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, chapterId])
+  @@index([chapterId])
+}
+
 model WorkRating {
   userId    String
   workId    String
@@ -386,15 +401,17 @@ model Comment {
   isSpoiler  Boolean           @default(false)
   editedAt   DateTime?
   createdAt  DateTime          @default(now())
+  likeCount  Int               @default(0)
 
   // Moderation
   isHidden   Boolean           @default(false)
   hiddenAt   DateTime?
   hiddenById String?
 
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hiddenBy  User?             @relation("HiddenComments", fields: [hiddenById], references: [id])
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hiddenBy    User?             @relation("HiddenComments", fields: [hiddenById], references: [id])
   attachments CommentAttachment[]
+  likes       CommentLike[]
 
   @@index([targetType, targetId, createdAt])
   @@index([userId, createdAt])
@@ -415,6 +432,17 @@ model CommentAttachment {
   @@index([mediaId])
 }
 
+model CommentLike {
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
+}
 
 // --- Follow + Notifications ---
 model FollowUser {

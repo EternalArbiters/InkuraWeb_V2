@@ -1,5 +1,8 @@
 import Link from "next/link";
-import WorkCoverBadges from "@/app/components/WorkCoverBadges";
+import OriginFlag from "@/app/components/OriginFlag";
+import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
+import FavoriteIconButton from "@/app/components/work/FavoriteIconButton";
+import { formatUpdatedAt } from "@/lib/time";
 
 type WorkLite = {
   id: string;
@@ -13,20 +16,78 @@ type WorkLite = {
   language?: string | null;
   completion?: string | null;
   chapterCount?: number | null;
-  likeCount?: number | null;
+  likeCount?: number | null; // kept for API compatibility (sorting), not shown in row
   ratingAvg?: number | null;
   ratingCount?: number | null;
   updatedAt?: string | Date | null;
   author?: { username?: string | null; name?: string | null } | null;
   translator?: { username?: string | null; name?: string | null } | null;
+  // viewer interactions (from /api/works)
+  viewerBookmarked?: boolean | null;
+  viewerFavorited?: boolean | null;
 };
 
-function fmtDate(v: WorkLite["updatedAt"]) {
-  if (!v) return "";
-  const d = typeof v === "string" ? new Date(v) : v;
-  if (Number.isNaN(d.getTime())) return "";
-  // Compact yyyy-mm-dd
-  return d.toISOString().slice(0, 10);
+function normalize(v?: string | null) {
+  return String(v || "").trim().toUpperCase();
+}
+
+function publishTypeLabel(publishType?: string | null) {
+  const p = normalize(publishType);
+  if (p === "ORIGINAL") return "Original";
+  if (p === "TRANSLATION") return "Translation";
+  if (p === "REUPLOAD") return "Reupload";
+  return null;
+}
+
+function typeBadgeClass(type?: string | null) {
+  const t = normalize(type);
+  if (t === "NOVEL") return "bg-blue-600/90 text-white";
+  if (t === "COMIC") return "bg-pink-600/90 text-white";
+  return "bg-gray-700/80 text-white";
+}
+
+function originFlagEmoji(input: Pick<WorkLite, "type" | "comicType" | "language">) {
+  const type = normalize(input.type);
+  const comicType = normalize(input.comicType);
+  const lang = String(input.language || "")
+    .trim()
+    .toLowerCase()
+    .split("-")[0];
+
+  // Comics: prefer comicType (MANGA/MANHWA/MANHUA)
+  if (type === "COMIC") {
+    if (comicType === "MANGA") return "🇯🇵";
+    if (comicType === "MANHWA") return "🇰🇷";
+    if (comicType === "MANHUA") return "🇨🇳";
+    if (comicType === "WESTERN") return "🌍";
+    if (comicType === "OTHER") return "🏳️";
+  }
+
+  // Novels (and fallback): map language to flag
+  const map: Record<string, string> = {
+    ja: "🇯🇵",
+    jp: "🇯🇵",
+    ko: "🇰🇷",
+    kr: "🇰🇷",
+    zh: "🇨🇳",
+    cn: "🇨🇳",
+    id: "🇮🇩",
+    en: "🇺🇸",
+    fr: "🇫🇷",
+    de: "🇩🇪",
+    es: "🇪🇸",
+    it: "🇮🇹",
+    ru: "🇷🇺",
+    pt: "🇵🇹",
+    tr: "🇹🇷",
+    vi: "🇻🇳",
+    th: "🇹🇭",
+    hi: "🇮🇳",
+    ar: "🇸🇦",
+    ms: "🇲🇾",
+  };
+
+  return map[lang] || null;
 }
 
 export default function WorkRowCard({ work }: { work: WorkLite }) {
@@ -34,7 +95,11 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
 
   const author = work?.author?.name || work?.author?.username || "";
   const translator = work?.translator?.name || work?.translator?.username || "";
-  const updated = fmtDate(work?.updatedAt);
+  const updatedLabel = formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 });
+
+  const flag = originFlagEmoji({ type: work?.type, comicType: work?.comicType, language: work?.language });
+  const type = normalize(work?.type) || "WORK";
+  const publishLabel = publishTypeLabel(work?.publishType);
 
   const ratingText =
     typeof work?.ratingAvg === "number" && typeof work?.ratingCount === "number"
@@ -42,51 +107,69 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
       : "";
 
   return (
-    <Link
-      href={href}
-      className="group flex gap-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition p-3"
-    >
-      <div className="relative w-[92px] sm:w-[108px] shrink-0">
-        <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800 overflow-hidden">
-          {work?.coverImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={work.coverImage} alt={work?.title || "cover"} className="w-full h-full object-cover block" loading="lazy" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">No cover</div>
+    <div className="group flex gap-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition p-3">
+      <Link href={href} className="flex gap-4 min-w-0 flex-1">
+        <div className="relative w-[92px] sm:w-[108px] shrink-0">
+          <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+            {work?.coverImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={work.coverImage} alt={work?.title || "cover"} className="w-full h-full object-cover block" loading="lazy" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">No cover</div>
+            )}
+
+            {flag ? (
+              <div
+                className="absolute top-2 right-2 z-10 text-[12px] leading-none px-2 py-1 rounded-full bg-black/40 text-white backdrop-blur"
+                title="Origin"
+                aria-label="Origin"
+              >
+                <OriginFlag emoji={flag} />
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="text-base sm:text-lg font-extrabold tracking-tight leading-snug line-clamp-2">
+            {work?.title || "Untitled"}
+          </div>
+
+          {(author || translator) && (
+            <div className="mt-1 text-xs sm:text-sm text-gray-700 dark:text-gray-200 line-clamp-1">
+              {author}
+              {translator ? <span className="opacity-80"> • TL: {translator}</span> : null}
+            </div>
           )}
 
-          <WorkCoverBadges
-            work={{
-              type: work?.type,
-              publishType: work?.publishType,
-              isMature: !!work?.isMature,
-              language: work?.language,
-              comicType: work?.comicType,
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="text-base sm:text-lg font-extrabold tracking-tight leading-snug line-clamp-2">
-          {work?.title || "Untitled"}
-        </div>
-
-        {(author || translator) && (
-          <div className="mt-1 text-xs sm:text-sm text-gray-700 dark:text-gray-200 line-clamp-1">
-            {author}
-            {translator ? <span className="opacity-80"> • TL: {translator}</span> : null}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
+            {typeof work?.chapterCount === "number" ? <span>Ch: {work.chapterCount}</span> : null}
+            {work?.completion ? <span>{String(work.completion)}</span> : null}
+            {ratingText ? <span>★ {ratingText}</span> : null}
           </div>
-        )}
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
-          {typeof work?.chapterCount === "number" ? <span>Ch: {work.chapterCount}</span> : null}
-          {work?.completion ? <span>{String(work.completion)}</span> : null}
-          {typeof work?.likeCount === "number" ? <span>❤ {work.likeCount}</span> : null}
-          {ratingText ? <span>★ {ratingText}</span> : null}
-          {updated ? <span className="opacity-80">Updated {updated}</span> : null}
+          {updatedLabel ? <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 opacity-80">{updatedLabel}</div> : null}
+
+          {/* Row-list-only badges: moved below the Updated line */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className={`text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(type)}`}>{type}</span>
+            {publishLabel ? (
+              <span className="text-[10px] px-2 py-1 rounded-full bg-gray-200 text-gray-800 dark:bg-black/55 dark:text-white">
+                {publishLabel}
+              </span>
+            ) : null}
+            {work?.isMature ? <span className="text-[10px] px-2 py-1 rounded-full bg-black/75 text-white">18+</span> : null}
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+
+      {/* Row actions: only Bookmark + Favorite */}
+      {work?.id ? (
+        <div className="shrink-0 flex items-start gap-2 pt-1">
+          <BookmarkIconButton workId={work.id} initialBookmarked={!!work.viewerBookmarked} />
+          <FavoriteIconButton workId={work.id} initialFavorited={!!work.viewerFavorited} />
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -4,26 +4,23 @@ import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 
-export default function LikeButton({
+export default function FavoriteIconButton({
   workId,
-  initialLiked,
-  initialCount,
+  initialFavorited,
+  className = "",
 }: {
   workId: string;
-  initialLiked: boolean;
-  initialCount: number;
+  initialFavorited: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [liked, setLiked] = useState(initialLiked);
-  const [count, setCount] = useState(initialCount);
+  const [favorited, setFavorited] = useState(initialFavorited);
 
-  // Keep in sync if server re-renders
   useEffect(() => {
-    setLiked(initialLiked);
-    setCount(initialCount);
-  }, [initialLiked, initialCount]);
+    setFavorited(initialFavorited);
+  }, [initialFavorited]);
 
   const toggle = () => {
     startTransition(async () => {
@@ -34,26 +31,25 @@ export default function LikeButton({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      setLiked(!!data.liked);
-      if (typeof data.likeCount === "number") setCount(data.likeCount);
+      setFavorited(!!data.liked);
       router.refresh();
     });
   };
 
   return (
     <button
+      type="button"
       onClick={toggle}
       disabled={isPending}
-      className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border transition disabled:opacity-60 ${
-        liked
+      className={`inline-flex items-center justify-center w-9 h-9 rounded-full border transition disabled:opacity-60 ${
+        favorited
           ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
           : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-      }`}
-      aria-label="Favorite"
+      } ${className}`}
+      aria-label={favorited ? "Favorited" : "Favorite"}
+      title={favorited ? "Favorited" : "Favorite"}
     >
-      <Heart size={18} className={liked ? "fill-current" : ""} />
-      <span>Favorite</span>
-      <span className="text-xs opacity-70">{count}</span>
+      <Heart size={18} className={favorited ? "fill-current" : ""} />
     </button>
   );
 }

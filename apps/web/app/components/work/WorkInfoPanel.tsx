@@ -56,7 +56,7 @@ export default function WorkInfoPanel({ work }: { work: any }) {
           {work?.uploaderNote ? row("Note", <span className="whitespace-pre-wrap">{work.uploaderNote}</span>) : null}
 
           {row("Chapters", String(work?.chapterCount ?? 0))}
-          {row("Likes", String(work?.likeCount ?? 0))}
+          {row("Favorites", String(work?.likeCount ?? 0))}
           {row("Rating", `${(Math.round(Number(work?.ratingAvg ?? 0) * 10) / 10).toFixed(1)} (${work?.ratingCount ?? 0})`)}
           {row("Updated", updatedLabel)}
         </div>

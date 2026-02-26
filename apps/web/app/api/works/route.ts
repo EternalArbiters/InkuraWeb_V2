@@ -352,8 +352,28 @@ export async function GET(req: Request) {
     },
   });
 
+  // Add viewer interaction flags for list rows (bookmark/favorite)
+  let worksWithViewer: any[] = works as any;
+  if (viewer?.id && works.length) {
+    const ids = works.map((w: any) => w.id);
+    const [likes, bookmarks] = await Promise.all([
+      prisma.workLike.findMany({ where: { userId: viewer.id, workId: { in: ids } }, select: { workId: true } }),
+      prisma.bookmark.findMany({ where: { userId: viewer.id, workId: { in: ids } }, select: { workId: true } }),
+    ]);
+
+    const likedSet = new Set(likes.map((x) => x.workId));
+    const bookmarkedSet = new Set(bookmarks.map((x) => x.workId));
+
+    worksWithViewer = works.map((w: any) => ({
+      ...w,
+      viewerFavorited: likedSet.has(w.id),
+      viewerBookmarked: bookmarkedSet.has(w.id),
+    }));
+  }
+
+
   return NextResponse.json({
-    works,
+    works: worksWithViewer,
     viewer: viewer
       ? {
           adultConfirmed: viewer.adultConfirmed,

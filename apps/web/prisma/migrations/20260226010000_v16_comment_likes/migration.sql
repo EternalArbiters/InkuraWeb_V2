@@ -1,0 +1,18 @@
+-- v16: comment likes (for Top sorting)
+
+ALTER TABLE "Comment" ADD COLUMN IF NOT EXISTS "likeCount" INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS "CommentLike" (
+  "userId" TEXT NOT NULL,
+  "commentId" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "CommentLike_pkey" PRIMARY KEY ("userId", "commentId")
+);
+
+ALTER TABLE "CommentLike" DROP CONSTRAINT IF EXISTS "CommentLike_userId_fkey";
+ALTER TABLE "CommentLike" DROP CONSTRAINT IF EXISTS "CommentLike_commentId_fkey";
+
+ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE INDEX IF NOT EXISTS "CommentLike_commentId_idx" ON "CommentLike"("commentId");

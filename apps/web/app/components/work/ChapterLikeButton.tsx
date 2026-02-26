@@ -4,14 +4,18 @@ import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 
-export default function LikeButton({
-  workId,
+export default function ChapterLikeButton({
+  chapterId,
   initialLiked,
   initialCount,
+  className = "",
+  variant = "pill",
 }: {
-  workId: string;
+  chapterId: string;
   initialLiked: boolean;
   initialCount: number;
+  className?: string;
+  variant?: "pill" | "icon";
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -19,7 +23,6 @@ export default function LikeButton({
   const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
 
-  // Keep in sync if server re-renders
   useEffect(() => {
     setLiked(initialLiked);
     setCount(initialCount);
@@ -27,7 +30,7 @@ export default function LikeButton({
 
   const toggle = () => {
     startTransition(async () => {
-      const res = await fetch(`/api/works/${workId}/like`, { method: "POST" });
+      const res = await fetch(`/api/chapters/${chapterId}/like`, { method: "POST" });
       if (res.status === 401) {
         router.push(`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`);
         return;
@@ -40,6 +43,27 @@ export default function LikeButton({
     });
   };
 
+  if (variant === "icon") {
+    return (
+      <button
+        onClick={toggle}
+        disabled={isPending}
+        className={`inline-flex items-center justify-center w-11 h-11 rounded-full border transition disabled:opacity-60 ${
+          liked
+            ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
+            : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+        } ${className}`}
+        aria-label={liked ? `Unlike (${count})` : `Like (${count})`}
+        title={liked ? `Liked • ${count}` : `Like • ${count}`}
+      >
+        <span className="relative inline-flex items-center justify-center">
+          <Heart size={18} className={liked ? "fill-current" : ""} />
+          <span className="absolute -bottom-2 -right-3 text-[10px] font-bold opacity-80">{count}</span>
+        </span>
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={toggle}
@@ -48,11 +72,11 @@ export default function LikeButton({
         liked
           ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
           : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-      }`}
-      aria-label="Favorite"
+      } ${className}`}
+      aria-label="Like chapter"
     >
       <Heart size={18} className={liked ? "fill-current" : ""} />
-      <span>Favorite</span>
+      <span>Like</span>
       <span className="text-xs opacity-70">{count}</span>
     </button>
   );

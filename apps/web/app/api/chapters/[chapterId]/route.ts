@@ -28,6 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       number: true,
       status: true,
       isMature: true,
+      likeCount: true,
       warningTags: { select: { name: true, slug: true } },
       text: { select: { content: true } },
       pages: { orderBy: { order: "asc" }, select: { id: true, imageUrl: true, order: true } },
@@ -58,6 +59,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
   }
 
   const viewer = await getViewer();
+  const viewerLiked = viewer?.id
+    ? !!(await prisma.chapterLike.findUnique({ where: { userId_chapterId: { userId: viewer.id, chapterId } } }))
+    : false;
   const isOwner = !!viewer?.id && viewer.id === chapter.work.authorId;
   // v14: adultConfirmed alone unlocks mature content.
   const canViewMature = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed);
@@ -96,6 +100,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
         number: chapter.number,
         title: chapter.title,
         isMature: chapter.isMature,
+        likeCount: chapter.likeCount,
+        viewerLiked,
       },
     });
   }
@@ -120,6 +126,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       text: chapter.text,
       pages: chapter.pages,
       isMature: chapter.isMature,
+      likeCount: chapter.likeCount,
+      viewerLiked,
     },
     work: {
       id: chapter.work.id,
