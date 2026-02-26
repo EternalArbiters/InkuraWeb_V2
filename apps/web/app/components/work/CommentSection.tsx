@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ensureCommentMedia } from "@/lib/commentMediaClient";
-import { EyeOff, Image as ImageIcon, Link2, RefreshCw, ThumbsUp } from "lucide-react";
+import { Check, Eye, EyeOff, Flag, Image as ImageIcon, Link2, Pencil, RefreshCw, SendHorizonal, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react";
 
 type TargetType = "WORK" | "CHAPTER";
 
@@ -208,6 +209,8 @@ export default function CommentSection({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const viewerId = (session?.user as any)?.id as string | undefined;
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -219,6 +222,8 @@ export default function CommentSection({
   const [info, setInfo] = useState<string | null>(null);
   const [reportFor, setReportFor] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -397,10 +402,113 @@ export default function CommentSection({
         return;
       }
       setComments((prev) =>
-        prev.map((c) => (c.id === commentId ? { ...c, likeCount: data.likeCount, viewerLiked: data.liked } : c))
+        prev.map((c: any) =>
+          c.id === commentId
+            ? {
+                ...c,
+                likeCount: data.likeCount,
+                dislikeCount: data.dislikeCount,
+                viewerLiked: data.liked,
+                viewerDisliked: data.liked ? false : c.viewerDisliked,
+              }
+            : c
+        )
       );
     });
   };
+
+  const toggleDislikeComment = (commentId: string) => {
+    setError(null);
+    setInfo(null);
+    startTransition(async () => {
+      const res = await fetch(`/api/comments/${commentId}/dislike`, { method: "POST" });
+      if (res.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        setError(data?.error || "Gagal dislike comment");
+        return;
+      }
+      setComments((prev) =>
+        prev.map((c: any) =>
+          c.id === commentId
+            ? {
+                ...c,
+                likeCount: data.likeCount,
+                dislikeCount: data.dislikeCount,
+                viewerDisliked: data.disliked,
+                viewerLiked: data.disliked ? false : c.viewerLiked,
+              }
+            : c
+        )
+      );
+    });
+  };
+
+  const startEdit = (commentId: string, currentBody: string) => {
+    setEditingId(commentId);
+    setEditingText(currentBody);
+    setReportFor(null);
+    setReportReason("");
+    setError(null);
+    setInfo(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingText("");
+  };
+
+  const saveEdit = (commentId: string) => {
+    const body = editingText.trim();
+    if (!body) {
+      setError("Comment tidak boleh kosong");
+      return;
+    }
+    startTransition(async () => {
+      const res = await fetch(`/api/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
+      if (res.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        setError(data?.error || "Gagal edit comment");
+        return;
+      }
+      const updated = data?.comment;
+      setComments((prev) => prev.map((c: any) => (c.id === commentId ? { ...c, body: updated.body, editedAt: updated.editedAt } : c)));
+      setEditingId(null);
+      setEditingText("");
+      router.refresh();
+    });
+  };
+
+  const deleteComment = (commentId: string) => {
+    const ok = window.confirm("Delete this comment?");
+    if (!ok) return;
+    startTransition(async () => {
+      const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
+      if (res.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        setError(data?.error || "Gagal delete comment");
+        return;
+      }
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      router.refresh();
+    });
+  };
+
 
   const toggleHide = (commentId: string, hide: boolean) => {
     setError(null);
@@ -520,9 +628,11 @@ export default function CommentSection({
                 type="button"
                 disabled={isPending || !text.trim()}
                 onClick={submit}
-                className="rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                aria-label="Send"
+                title="Send"
               >
-                {isPending ? "Sending..." : "Send"}
+                <SendHorizonal className={`w-5 h-5 ${isPending ? "animate-pulse" : ""}`} />
               </button>
             </div>
 
@@ -576,7 +686,10 @@ export default function CommentSection({
               const spoiler = (c.isSpoiler ?? false) as boolean;
               const showSpoiler = !spoiler || revealed[c.id];
               const likeCount = typeof (c as any).likeCount === "number" ? (c as any).likeCount : 0;
+              const dislikeCount = typeof (c as any).dislikeCount === "number" ? (c as any).dislikeCount : 0;
               const viewerLiked = !!(c as any).viewerLiked;
+              const viewerDisliked = !!(c as any).viewerDisliked;
+              const isMine = !!viewerId && c.user?.id === viewerId;
 
               return (
                 <div key={c.id} className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3">
@@ -612,6 +725,35 @@ export default function CommentSection({
                         Hidden text — tap to reveal
                       </span>
                     </button>
+                  ) : editingId === c.id ? (
+                    <div className="mt-2">
+                      <textarea
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 min-h-[88px]"
+                      />
+                      <div className="mt-2 flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                          aria-label="Cancel edit"
+                          title="Cancel"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isPending || !editingText.trim()}
+                          onClick={() => saveEdit(c.id)}
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                          aria-label="Save edit"
+                          title="Save"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <CommentBody className="mt-2 text-sm text-gray-700 dark:text-gray-200 break-words" body={c.body} />
                   )}
@@ -643,6 +785,47 @@ export default function CommentSection({
                         <span>{likeCount}</span>
                       </span>
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleDislikeComment(c.id)}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold border ${
+                        viewerDisliked
+                          ? "border-gray-500/40 bg-gray-100 text-gray-900 dark:border-gray-400/30 dark:bg-gray-900/50 dark:text-gray-100"
+                          : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                      }`}
+                      title="Dislike"
+                      aria-label="Dislike"
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                        <span>{dislikeCount}</span>
+                      </span>
+                    </button>
+
+                    {isMine ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => startEdit(c.id, c.body)}
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                          title="Edit"
+                          aria-label="Edit"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteComment(c.id)}
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                          title="Delete"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    ) : null}
+
                     <button
                       type="button"
                       onClick={() => {
@@ -651,18 +834,30 @@ export default function CommentSection({
                         setError(null);
                         setInfo(null);
                       }}
-                      className="rounded-full px-3 py-1 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                      className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                        reportFor === c.id
+                          ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
+                          : "border-gray-300 dark:border-gray-700"
+                      }`}
+                      title="Report"
+                      aria-label="Report"
                     >
-                      Report
+                      <Flag className="w-4 h-4" />
                     </button>
 
                     {canModerate ? (
                       <button
                         type="button"
                         onClick={() => toggleHide(c.id, !hidden)}
-                        className="rounded-full px-3 py-1 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                        className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                          hidden
+                            ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-950/25 dark:text-amber-200"
+                            : "border-gray-300 dark:border-gray-700"
+                        }`}
+                        title={hidden ? "Unhide" : "Hide"}
+                        aria-label={hidden ? "Unhide" : "Hide"}
                       >
-                        {hidden ? "Unhide" : "Hide"}
+                        {hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                       </button>
                     ) : null}
                   </div>

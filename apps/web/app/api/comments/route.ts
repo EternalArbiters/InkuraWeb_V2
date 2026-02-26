@@ -89,19 +89,33 @@ export async function GET(req: Request) {
 
   const comments = await prisma.comment.findMany(query);
 
-  // Viewer liked flags
+  // Viewer like/dislike flags
   let out: any[] = comments as any;
   if (session?.user?.id && comments.length) {
     const ids = comments.map((c) => c.id);
-    const likes = await prisma.commentLike.findMany({
-      where: { userId: session.user.id, commentId: { in: ids } },
-      select: { commentId: true },
-    });
+
+    const [likes, dislikes] = await Promise.all([
+      prisma.commentLike.findMany({
+        where: { userId: session.user.id, commentId: { in: ids } },
+        select: { commentId: true },
+      }),
+      prisma.commentDislike.findMany({
+        where: { userId: session.user.id, commentId: { in: ids } },
+        select: { commentId: true },
+      }),
+    ]);
+
     const likedSet = new Set(likes.map((x) => x.commentId));
-    out = comments.map((c: any) => ({ ...c, viewerLiked: likedSet.has(c.id) }));
+    const dislikedSet = new Set(dislikes.map((x) => x.commentId));
+
+    out = comments.map((c: any) => ({
+      ...c,
+      viewerLiked: likedSet.has(c.id),
+      viewerDisliked: dislikedSet.has(c.id),
+    }));
   }
 
-  return NextResponse.json({ ok: true, canModerate, comments: out });
+return NextResponse.json({ ok: true, canModerate, comments: out });
 }
 
 export async function POST(req: Request) {

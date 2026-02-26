@@ -30,6 +30,7 @@ model User {
   likes      WorkLike[]
   chapterLikes ChapterLike[]
   commentLikes CommentLike[]
+  commentDislikes CommentDislike[]
   ratings    WorkRating[]
   bookmarks  Bookmark[]
   progress   ReadingProgress[]
@@ -402,6 +403,7 @@ model Comment {
   editedAt   DateTime?
   createdAt  DateTime          @default(now())
   likeCount  Int               @default(0)
+  dislikeCount Int             @default(0)
 
   // Moderation
   isHidden   Boolean           @default(false)
@@ -412,6 +414,7 @@ model Comment {
   hiddenBy    User?             @relation("HiddenComments", fields: [hiddenById], references: [id])
   attachments CommentAttachment[]
   likes       CommentLike[]
+  dislikes    CommentDislike[]
 
   @@index([targetType, targetId, createdAt])
   @@index([userId, createdAt])
@@ -433,6 +436,19 @@ model CommentAttachment {
 }
 
 model CommentLike {
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
+
+}
+
+model CommentDislike {
   userId    String
   commentId String
   createdAt DateTime @default(now())
