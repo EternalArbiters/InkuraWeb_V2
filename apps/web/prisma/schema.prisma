@@ -400,6 +400,8 @@ model Comment {
   userId     String
   body       String
   isSpoiler  Boolean           @default(false)
+  // v16: threaded replies (Batoto-style)
+  parentId   String?
   editedAt   DateTime?
   createdAt  DateTime          @default(now())
   likeCount  Int               @default(0)
@@ -411,12 +413,16 @@ model Comment {
   hiddenById String?
 
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[]         @relation("CommentReplies")
   hiddenBy    User?             @relation("HiddenComments", fields: [hiddenById], references: [id])
   attachments CommentAttachment[]
   likes       CommentLike[]
   dislikes    CommentDislike[]
 
   @@index([targetType, targetId, createdAt])
+  @@index([targetType, targetId, parentId, createdAt])
+  @@index([parentId])
   @@index([userId, createdAt])
 }
 
