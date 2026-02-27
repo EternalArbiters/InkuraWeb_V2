@@ -17,6 +17,7 @@ import {
   Pencil,
   RefreshCw,
   SendHorizonal,
+  Star,
   ThumbsDown,
   ThumbsUp,
   Trash2,
@@ -66,10 +67,13 @@ type CommentItem = {
   dislikeCount?: number;
   viewerLiked?: boolean;
   viewerDisliked?: boolean;
+  userRating?: number | null;
   replies?: CommentItem[];
 };
 
-type DecoratedComment = CommentItem & {
+// Avoid a replies type intersection (CommentItem.replies vs DecoratedComment.replies)
+// which can cause TS to infer replies items as CommentItem instead of DecoratedComment.
+type DecoratedComment = Omit<CommentItem, "replies"> & {
   createdAtLabel: string;
   editedAtLabel: string | null;
   displayName: string;
@@ -282,6 +286,7 @@ export default function CommentSection({
   workId,
   headerRight,
   showSortControl,
+  showUserRating = false,
 }: {
   targetType: TargetType;
   targetId: string;
@@ -294,6 +299,7 @@ export default function CommentSection({
   workId?: string;
   headerRight?: ReactNode;
   showSortControl?: boolean;
+  showUserRating?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -363,6 +369,9 @@ export default function CommentSection({
               take: String(take || 100),
             });
       qs.set("sort", sortMode);
+      if (showUserRating && targetType === "WORK" && scope === "target") {
+        qs.set("includeUserRating", "1");
+      }
 
       const res = await fetch(`/api/comments?${qs.toString()}`, { cache: "no-store" as any });
       const data = await res.json().catch(() => ({} as any));
@@ -770,7 +779,24 @@ export default function CommentSection({
         }`}
       >
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-semibold truncate">{c.displayName}</div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold truncate">{c.displayName}</div>
+            {showUserRating && targetType === "WORK" && typeof (c as any).userRating === "number" ? (
+              <div className="mt-0.5 flex items-center gap-1 text-xs text-amber-500">
+                {Array.from({ length: 5 }).map((_, i) => {
+                  const v = Math.max(0, Math.min(5, Number((c as any).userRating)));
+                  return (
+                    <Star
+                      key={i}
+                      className="w-3.5 h-3.5"
+                      fill={i < v ? "currentColor" : "none"}
+                    />
+                  );
+                })}
+                <span className="ml-1 text-gray-600 dark:text-gray-300">{(c as any).userRating}/5</span>
+              </div>
+            ) : null}
+          </div>
           <div className="flex items-center gap-2">
             {hidden ? (
               <span className="px-2 py-0.5 text-[11px] font-semibold border border-amber-300/60 text-amber-700 dark:text-amber-300 dark:border-amber-500/40">

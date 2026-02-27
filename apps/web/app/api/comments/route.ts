@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 type TargetType = "WORK" | "CHAPTER";
 
-type SortMode = "new" | "top";
+type SortMode = "latest" | "top" | "oldest";
 
 function safeTargetType(v: unknown): TargetType | null {
   const s = String(v || "").toUpperCase().trim();
@@ -17,13 +17,67 @@ function safeTargetType(v: unknown): TargetType | null {
 
 function safeSort(v: unknown): SortMode {
   const s = String(v || "").toLowerCase().trim();
-  return s === "top" ? "top" : "new";
+  if (s === "top") return "top";
+  if (s === "oldest" || s === "bottom") return "oldest";
+  // legacy: new
+  return "latest";
 }
 
 function clampInt(v: unknown, def: number, min: number, max: number) {
   const n = Number(v);
   if (!Number.isFinite(n)) return def;
   return Math.max(min, Math.min(max, Math.floor(n)));
+}
+
+function sortRoots(mode: SortMode, items: any[]) {
+  if (mode === "top") {
+    return items.sort((a, b) => {
+      const lc = (b.likeCount ?? 0) - (a.likeCount ?? 0);
+      if (lc !== 0) return lc;
+      const t = +new Date(b.createdAt) - +new Date(a.createdAt);
+      if (t !== 0) return t;
+      return String(b.id).localeCompare(String(a.id));
+    });
+  }
+  if (mode === "oldest") {
+    return items.sort((a, b) => {
+      const t = +new Date(a.createdAt) - +new Date(b.createdAt);
+      if (t !== 0) return t;
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }
+  // latest
+  return items.sort((a, b) => {
+    const t = +new Date(b.createdAt) - +new Date(a.createdAt);
+    if (t !== 0) return t;
+    return String(b.id).localeCompare(String(a.id));
+  });
+}
+
+function buildTree(all: any[]) {
+  const byId = new Map<string, any>();
+  for (const c of all) byId.set(String(c.id), { ...c, replies: [] as any[] });
+
+  const roots: any[] = [];
+  for (const node of byId.values()) {
+    const pid = node.parentId ? String(node.parentId) : "";
+    if (pid && byId.has(pid)) {
+      byId.get(pid).replies.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+
+  // replies in chronological order
+  const sortReplies = (n: any) => {
+    if (Array.isArray(n.replies) && n.replies.length) {
+      n.replies.sort((a: any, b: any) => +new Date(a.createdAt) - +new Date(b.createdAt));
+      for (const r of n.replies) sortReplies(r);
+    }
+  };
+  for (const r of roots) sortReplies(r);
+
+  return roots;
 }
 
 async function canModerateForTarget(session: any, targetType: TargetType, targetId: string) {
@@ -51,8 +105,11 @@ export async function GET(req: Request) {
   const targetId = String(url.searchParams.get("targetId") || "").trim();
   const workId = String(url.searchParams.get("workId") || "").trim();
   const cursor = String(url.searchParams.get("cursor") || "").trim() || null;
+  // take applies to ROOT comments. Replies are returned under roots.
   const take = clampInt(url.searchParams.get("take"), 40, 1, 100);
   const sort = safeSort(url.searchParams.get("sort"));
+
+  const includeUserRating = url.searchParams.get("includeUserRating") === "1";
 
   const session = await getServerSession(authOptions);
 
@@ -79,15 +136,11 @@ export async function GET(req: Request) {
       ...(canModerate ? {} : { isHidden: false }),
     };
 
-    const orderBy: any =
-      sort === "top"
-        ? [{ likeCount: "desc" as const }, { createdAt: "desc" as const }, { id: "desc" as const }]
-        : [{ createdAt: "desc" as const }, { id: "desc" as const }];
-
+    // Fetch enough rows to build the reply tree.
     const query: any = {
       where,
-      orderBy,
-      take,
+      orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
+      take: clampInt(url.searchParams.get("max"), 500, 1, 800),
       include: {
         user: { select: { id: true, username: true, name: true, image: true } },
         attachments: {
@@ -98,40 +151,21 @@ export async function GET(req: Request) {
       },
     };
 
-    if (cursor) {
-      query.cursor = { id: cursor };
-      query.skip = 1;
-    }
-
-    const comments = await prisma.comment.findMany(query);
-
-    // Viewer like/dislike flags
-    let out: any[] = comments as any;
-    if (session?.user?.id && comments.length) {
-      const ids = comments.map((c) => c.id);
-
+    const rows = await prisma.comment.findMany(query);
+    let enriched: any[] = rows as any;
+    if (session?.user?.id && rows.length) {
+      const ids = rows.map((c) => c.id);
       const [likes, dislikes] = await Promise.all([
-        prisma.commentLike.findMany({
-          where: { userId: session.user.id, commentId: { in: ids } },
-          select: { commentId: true },
-        }),
-        prisma.commentDislike.findMany({
-          where: { userId: session.user.id, commentId: { in: ids } },
-          select: { commentId: true },
-        }),
+        prisma.commentLike.findMany({ where: { userId: session.user.id, commentId: { in: ids } }, select: { commentId: true } }),
+        prisma.commentDislike.findMany({ where: { userId: session.user.id, commentId: { in: ids } }, select: { commentId: true } }),
       ]);
-
       const likedSet = new Set(likes.map((x) => x.commentId));
       const dislikedSet = new Set(dislikes.map((x) => x.commentId));
-
-      out = comments.map((c: any) => ({
-        ...c,
-        viewerLiked: likedSet.has(c.id),
-        viewerDisliked: dislikedSet.has(c.id),
-      }));
+      enriched = rows.map((c: any) => ({ ...c, viewerLiked: likedSet.has(c.id), viewerDisliked: dislikedSet.has(c.id) }));
     }
 
-    return NextResponse.json({ ok: true, canModerate, comments: out });
+    const roots = sortRoots(sort, buildTree(enriched)).slice(0, take);
+    return NextResponse.json({ ok: true, canModerate, comments: roots });
   }
 
   if (!targetType || !targetId) {
@@ -146,15 +180,10 @@ export async function GET(req: Request) {
     ...(canModerate ? {} : { isHidden: false }),
   };
 
-  const orderBy: any =
-    sort === "top"
-      ? [{ likeCount: "desc" as const }, { createdAt: "desc" as const }, { id: "desc" as const }]
-      : [{ createdAt: "desc" as const }, { id: "desc" as const }];
-
   const query: any = {
     where,
-    orderBy,
-    take,
+    orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
+    take: clampInt(url.searchParams.get("max"), 500, 1, 800),
     include: {
       user: { select: { id: true, username: true, name: true, image: true } },
       attachments: {
@@ -165,40 +194,33 @@ export async function GET(req: Request) {
     },
   };
 
-  if (cursor) {
-    query.cursor = { id: cursor };
-    query.skip = 1;
-  }
-
-  const comments = await prisma.comment.findMany(query);
-
-  // Viewer like/dislike flags
-  let out: any[] = comments as any;
-  if (session?.user?.id && comments.length) {
-    const ids = comments.map((c) => c.id);
-
+  const rows = await prisma.comment.findMany(query);
+  let enriched: any[] = rows as any;
+  if (session?.user?.id && rows.length) {
+    const ids = rows.map((c) => c.id);
     const [likes, dislikes] = await Promise.all([
-      prisma.commentLike.findMany({
-        where: { userId: session.user.id, commentId: { in: ids } },
-        select: { commentId: true },
-      }),
-      prisma.commentDislike.findMany({
-        where: { userId: session.user.id, commentId: { in: ids } },
-        select: { commentId: true },
-      }),
+      prisma.commentLike.findMany({ where: { userId: session.user.id, commentId: { in: ids } }, select: { commentId: true } }),
+      prisma.commentDislike.findMany({ where: { userId: session.user.id, commentId: { in: ids } }, select: { commentId: true } }),
     ]);
-
     const likedSet = new Set(likes.map((x) => x.commentId));
     const dislikedSet = new Set(dislikes.map((x) => x.commentId));
-
-    out = comments.map((c: any) => ({
-      ...c,
-      viewerLiked: likedSet.has(c.id),
-      viewerDisliked: dislikedSet.has(c.id),
-    }));
+    enriched = rows.map((c: any) => ({ ...c, viewerLiked: likedSet.has(c.id), viewerDisliked: dislikedSet.has(c.id) }));
   }
 
-return NextResponse.json({ ok: true, canModerate, comments: out });
+  if (includeUserRating && targetType === "WORK" && rows.length) {
+    const userIds = Array.from(new Set(rows.map((c: any) => String(c.userId))));
+    const ratings = await prisma.workRating.findMany({
+      where: { workId: targetId, userId: { in: userIds } },
+      select: { userId: true, value: true },
+    });
+    const map = new Map(ratings.map((r) => [String(r.userId), r.value]));
+    enriched = enriched.map((c: any) => ({ ...c, userRating: map.get(String(c.userId)) ?? null }));
+  }
+
+
+  const roots = sortRoots(sort, buildTree(enriched)).slice(0, take);
+
+  return NextResponse.json({ ok: true, canModerate, comments: roots });
 }
 
 export async function POST(req: Request) {
@@ -208,6 +230,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as any));
   const targetType = safeTargetType(body?.targetType);
   const targetId = String(body?.targetId || "").trim();
+  const parentId = body?.parentId ? String(body.parentId).trim() : null;
   const text = String(body?.body || "").trim();
   const isSpoiler = !!body?.isSpoiler;
 
@@ -222,6 +245,28 @@ export async function POST(req: Request) {
   } else {
     const ch = await prisma.chapter.findUnique({ where: { id: targetId }, select: { id: true } });
     if (!ch) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+  }
+
+  // Validate parent (if reply)
+  if (parentId) {
+    const parent = await prisma.comment.findUnique({
+      where: { id: parentId },
+      select: { id: true, targetType: true, targetId: true, parentId: true, isHidden: true },
+    });
+    if (!parent) return NextResponse.json({ error: "Parent comment not found" }, { status: 404 });
+    if (parent.isHidden) return NextResponse.json({ error: "Cannot reply to hidden comment" }, { status: 403 });
+    if (parent.targetType !== targetType || parent.targetId !== targetId) {
+      return NextResponse.json({ error: "Invalid parent for this target" }, { status: 400 });
+    }
+    // Limit reply depth to avoid abuse (max 5 levels)
+    let depth = 1;
+    let cur: string | null = parent.parentId ? String(parent.parentId) : null;
+    while (cur) {
+      depth += 1;
+      if (depth > 5) return NextResponse.json({ error: "Reply thread too deep" }, { status: 400 });
+      const next = await prisma.comment.findUnique({ where: { id: cur }, select: { parentId: true } });
+      cur = next?.parentId ? String(next.parentId) : null;
+    }
   }
 
   const rawAttachments: unknown[] = Array.isArray(body?.attachments) ? (body.attachments as unknown[]) : [];
@@ -254,6 +299,7 @@ export async function POST(req: Request) {
         targetType,
         targetId,
         userId: session.user.id,
+        parentId: parentId || null,
         body: text,
         isSpoiler,
       },

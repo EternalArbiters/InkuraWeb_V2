@@ -104,6 +104,11 @@ export default function FloatingActions() {
     return true;
   }, [pathname]);
 
+  const hideScrollTop = useMemo(() => {
+    if (!pathname) return false;
+    return pathname === "/chat" || pathname.startsWith("/chat/");
+  }, [pathname]);
+
   const chapterId = useMemo(() => (isReader ? extractChapterId(pathname) : null), [isReader, pathname]);
 
   const [isPending, startTransition] = useTransition();
@@ -152,9 +157,12 @@ export default function FloatingActions() {
 
   return (
     <div className={containerClass}>
+
+      {!hideScrollTop ? (
       <CircleButton ariaLabel="Scroll to top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={opacityClass}>
         <ArrowUpIcon />
       </CircleButton>
+      ) : null}
 
       {/* Desktop only: Chat Elya (not in reader) */}
       {showChat && !isReader ? (

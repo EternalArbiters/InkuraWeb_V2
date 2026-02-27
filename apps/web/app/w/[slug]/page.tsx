@@ -240,6 +240,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               targetType="WORK"
               targetId={work.id}
               title="Reviews"
+              showUserRating={true}
               headerRight={
                 <RatingStars
                   workId={work.id}
