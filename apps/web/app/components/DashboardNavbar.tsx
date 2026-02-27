@@ -511,7 +511,7 @@ export default function DashboardNavbar() {
                 />
                 <button
                   type="submit"
-                  className="absolute right-0 top-0 bottom-0 w-14 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition flex items-center justify-center"
+                  className="absolute right-0 inset-y-0 w-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition flex items-center justify-center"
                   aria-label="Search"
                   title="Search"
                 >

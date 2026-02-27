@@ -1085,9 +1085,9 @@ export default function CommentSection({
               aria-label="Sort"
               title="Sort"
             >
-              <option value="latest">Sort: Latest</option>
-              <option value="top">Sort: Top</option>
-              <option value="oldest">Sort: Bottom</option>
+              <option value="latest">Latest</option>
+              <option value="top">Top</option>
+              <option value="oldest">Bottom</option>
             </select>
           ) : null}
           <button

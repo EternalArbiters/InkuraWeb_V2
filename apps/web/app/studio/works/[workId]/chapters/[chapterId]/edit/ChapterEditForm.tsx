@@ -140,7 +140,16 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
         </label>
-            <label className="grid gap-2">
+      ) : (
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+          <div className="font-semibold">Comic pages</div>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            Halaman comic dikelola di halaman "Manage Pages".
+          </p>
+        </div>
+      )}
+
+      <label className="grid gap-2">
         <span className="text-sm font-semibold">Author message (optional)</span>
         <textarea
           value={authorNote}
@@ -151,13 +160,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         />
       </label>
 
-) : (
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-          <div className="font-semibold">Comic pages</div>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            Halaman comic dikelola di halaman "Manage Pages".
-          </p>
-        </div>
       )}
 
       <div className="flex items-center justify-end gap-2">
