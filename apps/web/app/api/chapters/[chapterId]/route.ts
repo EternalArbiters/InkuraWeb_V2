@@ -40,9 +40,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
           title: true,
           status: true,
           type: true,
+          publishType: true,
           isMature: true,
           authorId: true,
           author: { select: { id: true, username: true, name: true, image: true } },
+          translator: { select: { id: true, username: true, name: true, image: true } },
           warningTags: { select: { name: true, slug: true } },
           deviantLoveTags: { select: { name: true, slug: true } },
           genres: { select: { slug: true } },
@@ -96,7 +98,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
         title: chapter.work.title,
         type: chapter.work.type,
         isMature: chapter.work.isMature,
-        author: (chapter.work as any).author || null,
+      publishType: (chapter.work as any).publishType,
+      author: (chapter.work as any).author,
+      translator: (chapter.work as any).translator,
       },
       chapter: {
         id: chapter.id,
@@ -105,7 +109,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
         isMature: chapter.isMature,
         likeCount: chapter.likeCount,
         viewerLiked,
-        authorNote: chapter.authorNote,
+      authorNote: chapter.authorNote,
       },
     });
   }
@@ -132,7 +136,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       isMature: chapter.isMature,
       likeCount: chapter.likeCount,
       viewerLiked,
-      authorNote: chapter.authorNote,
+      authorNote: (chapter as any).authorNote ?? null,
     },
     work: {
       id: chapter.work.id,
@@ -140,7 +144,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       title: chapter.work.title,
       type: chapter.work.type,
       isMature: chapter.work.isMature,
-      author: (chapter.work as any).author || null,
       warningTags: chapter.work.warningTags,
       deviantLoveTags: chapter.work.deviantLoveTags,
       chapters: chapter.work.chapters,

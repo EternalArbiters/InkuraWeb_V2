@@ -32,7 +32,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   const [warningIds, setWarningIds] = React.useState<string[]>(chapter.warningTags.map((w) => w.id));
 
   const [content, setContent] = React.useState(chapter.text?.content || "");
-  const [authorNote, setAuthorNote] = React.useState<string>(chapter.authorNote ?? "");
+  const [authorNote, setAuthorNote] = React.useState(chapter.authorNote || "");
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -140,7 +140,18 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
         </label>
-      ) : (
+            <label className="grid gap-2">
+        <span className="text-sm font-semibold">Author message (optional)</span>
+        <textarea
+          value={authorNote}
+          onChange={(e) => setAuthorNote(e.target.value)}
+          rows={5}
+          placeholder="Pesan dari author/uploader untuk chapter ini..."
+          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+        />
+      </label>
+
+) : (
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
           <div className="font-semibold">Comic pages</div>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
@@ -149,19 +160,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         </div>
       )}
 
-
-
-      <label className="grid gap-2">
-        <span className="text-sm font-semibold">Author message (optional)</span>
-        <textarea
-          value={authorNote}
-          onChange={(e) => setAuthorNote(e.target.value)}
-          rows={4}
-          placeholder="Pesan dari penulis untuk chapter ini (opsional)..."
-          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <span className="text-xs text-gray-600 dark:text-gray-300">Akan tampil di akhir chapter sebelum kolom komentar.</span>
-      </label>
       <div className="flex items-center justify-end gap-2">
         <button
           type="submit"

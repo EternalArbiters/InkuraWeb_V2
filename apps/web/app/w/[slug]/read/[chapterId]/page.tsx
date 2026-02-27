@@ -6,6 +6,7 @@ import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderChrome from "@/app/components/reader/ReaderChrome";
 import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
+import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 
 export const dynamic = "force-dynamic";
 
@@ -89,26 +90,18 @@ export default async function ReadChapterPage({
       <div className="mx-auto max-w-6xl px-0 sm:px-4 py-0 lg:py-8 pb-24">
         <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
           <div>
-            {/* Desktop: show titles (no back/menu buttons) */}
+            {/* keep for accessibility/SEO only */}
+            <h1 className="sr-only">{work.title} — {chapterLabel(chapter.number, chapter.title)}</h1>
+
+            {/* Desktop titles */}
             <div className="hidden lg:block mb-4">
-              <div className="min-w-0">
-                <Link
-                  href={`/w/${work.slug}`}
-                  className="block truncate text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                  title="Go to work page"
-                >
-                  {work.title}
-                </Link>
-                <div className="mt-1 truncate text-3xl font-extrabold tracking-tight">
-                  {chapterLabel(chapter.number, chapter.title)}
-                </div>
+              <Link href={`/w/${work.slug}`} className="block text-sm text-white/60 hover:text-white truncate">
+                {work.title}
+              </Link>
+              <div className="mt-1 text-3xl font-extrabold tracking-tight text-white">
+                {chapterLabel(chapter.number, chapter.title)}
               </div>
             </div>
-
-            {/* keep for accessibility/SEO only */}
-            <h1 className="sr-only">
-              {work.title} — {chapterLabel(chapter.number, chapter.title)}
-            </h1>
 
             <div className="mt-0">
               <ContentWarningsGate
@@ -162,6 +155,15 @@ export default async function ReadChapterPage({
 
             {/* Mobile: preview only (top 5) */}
             <div className="lg:hidden px-4">
+              <div className="mt-6">
+                <CreatorNoteCard
+                  uploader={(work as any).author || { username: null, name: null, image: null }}
+                  translator={(work as any).translator || null}
+                  publishType={(work as any).publishType || null}
+                  note={(chapter as any).authorNote || null}
+                />
+              </div>
+
               <CommentSection
                 targetType="CHAPTER"
                 targetId={chapter.id}
@@ -185,6 +187,15 @@ export default async function ReadChapterPage({
           {/* Desktop: side comments */}
           <aside className="hidden lg:block">
             <div className="sticky top-24">
+              <div className="mb-4">
+                <CreatorNoteCard
+                  uploader={(work as any).author || { username: null, name: null, image: null }}
+                  translator={(work as any).translator || null}
+                  publishType={(work as any).publishType || null}
+                  note={(chapter as any).authorNote || null}
+                />
+              </div>
+
               <CommentSection
                 targetType="CHAPTER"
                 targetId={chapter.id}

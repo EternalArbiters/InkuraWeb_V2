@@ -85,8 +85,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
     const numberRaw = body.number;
     const number = typeof numberRaw === "number" && Number.isFinite(numberRaw) ? Math.max(1, Math.floor(numberRaw)) : undefined;
     const content = typeof body.content === "string" ? body.content : undefined;
-    const authorNoteRaw = typeof body.authorNote === "string" ? body.authorNote : undefined;
-    const authorNote = authorNoteRaw !== undefined ? authorNoteRaw : undefined;
+    const authorNote = typeof body.authorNote === "string" ? body.authorNote : body.authorNote === null ? null : undefined;
 
     const isMature = typeof body.isMature === "boolean" ? body.isMature : undefined;
     const warningTagIds = safeJsonArray(body.warningTagIds);
@@ -100,7 +99,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
     if (number !== undefined) data.number = number;
     if (isMature !== undefined) data.isMature = isMature;
     if (warningTagIds) data.warningTags = { set: warningTagIds.map((id) => ({ id })) };
-    if (authorNote !== undefined) data.authorNote = authorNote.trim() ? authorNote : null;
+    if (authorNote !== undefined) data.authorNote = authorNote;
 
     if (status !== undefined) {
       data.status = status;

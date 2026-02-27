@@ -195,14 +195,16 @@ model Chapter {
   // Chapter-level meta
   isMature    Boolean        @default(false)
   warningTags WarningTag[]   @relation("ChapterWarnings")
-  authorNote String? @db.Text
-
 
   text        ChapterText?
   pages       ComicPage[]
   likeCount   Int @default(0)
   likes       ChapterLike[]
   readingProgresses ReadingProgress[]
+
+
+  // v16: optional message from uploader/author for this chapter
+  authorNote String? @db.Text
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
