@@ -32,6 +32,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   const [warningIds, setWarningIds] = React.useState<string[]>(chapter.warningTags.map((w) => w.id));
 
   const [content, setContent] = React.useState(chapter.text?.content || "");
+  const [authorNote, setAuthorNote] = React.useState<string>(chapter.authorNote ?? "");
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
