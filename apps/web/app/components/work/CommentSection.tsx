@@ -10,6 +10,8 @@ import { Check, Eye, EyeOff, Flag, Image as ImageIcon, Link2, Pencil, RefreshCw,
 
 type TargetType = "WORK" | "CHAPTER";
 
+type ScopeMode = "target" | "workChapters";
+
 type CommentUser = {
   id: string;
   username: string | null;
@@ -198,6 +200,9 @@ export default function CommentSection({
   showComposer = true,
   sort = "new",
   variant = "full",
+  scope = "target",
+  workId,
+  headerRight,
 }: {
   targetType: TargetType;
   targetId: string;
@@ -206,6 +211,9 @@ export default function CommentSection({
   showComposer?: boolean;
   sort?: "new" | "top";
   variant?: "full" | "compact";
+  scope?: ScopeMode;
+  workId?: string;
+  headerRight?: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -227,12 +235,17 @@ export default function CommentSection({
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const allowCompose = showComposer && scope === "target";
+
   const fetchComments = async () => {
     setLoading(true);
     setError(null);
     setInfo(null);
     try {
-      const qs = new URLSearchParams({ targetType, targetId, take: String(take || 100) });
+      const qs =
+        scope === "workChapters"
+          ? new URLSearchParams({ scope: "workChapters", workId: String(workId || targetId), take: String(take || 100) })
+          : new URLSearchParams({ targetType, targetId, take: String(take || 100) });
       if (sort) qs.set("sort", sort);
       const res = await fetch(`/api/comments?${qs.toString()}`, { cache: "no-store" as any });
       const data = await res.json().catch(() => ({} as any));
@@ -568,19 +581,22 @@ export default function CommentSection({
     <section className={variant === "compact" ? "mt-6" : "mt-10"}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-xl font-bold">{title}</h2>
-        <button
-          type="button"
-          onClick={fetchComments}
-          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-          title="Refresh"
-          aria-label="Refresh"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {headerRight ? <div className="shrink-0">{headerRight}</div> : null}
+          <button
+            type="button"
+            onClick={fetchComments}
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+            title="Refresh"
+            aria-label="Refresh"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-5">
-        {showComposer ? (
+        {allowCompose ? (
           <div className="flex flex-col gap-2">
             <textarea
               ref={textareaRef}

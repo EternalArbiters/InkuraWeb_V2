@@ -44,17 +44,100 @@ async function canModerateForTarget(session: any, targetType: TargetType, target
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
+  const scope = String(url.searchParams.get("scope") || "")
+    .trim()
+    .toLowerCase();
   const targetType = safeTargetType(url.searchParams.get("targetType"));
   const targetId = String(url.searchParams.get("targetId") || "").trim();
+  const workId = String(url.searchParams.get("workId") || "").trim();
   const cursor = String(url.searchParams.get("cursor") || "").trim() || null;
   const take = clampInt(url.searchParams.get("take"), 40, 1, 100);
   const sort = safeSort(url.searchParams.get("sort"));
+
+  const session = await getServerSession(authOptions);
+
+  // Special scope: all comments from all chapters in a work.
+  if (scope === "workchapters") {
+    const wid = workId || targetId;
+    if (!wid) return NextResponse.json({ error: "workId is required" }, { status: 400 });
+
+    const canModerate = await canModerateForTarget(session, "WORK", wid);
+    const chapterIds = (
+      await prisma.chapter.findMany({
+        where: { workId: wid },
+        select: { id: true },
+      })
+    ).map((c) => c.id);
+
+    if (!chapterIds.length) {
+      return NextResponse.json({ ok: true, canModerate, comments: [] });
+    }
+
+    const where: any = {
+      targetType: "CHAPTER",
+      targetId: { in: chapterIds },
+      ...(canModerate ? {} : { isHidden: false }),
+    };
+
+    const orderBy: any =
+      sort === "top"
+        ? [{ likeCount: "desc" as const }, { createdAt: "desc" as const }, { id: "desc" as const }]
+        : [{ createdAt: "desc" as const }, { id: "desc" as const }];
+
+    const query: any = {
+      where,
+      orderBy,
+      take,
+      include: {
+        user: { select: { id: true, username: true, name: true, image: true } },
+        attachments: {
+          include: {
+            media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } },
+          },
+        },
+      },
+    };
+
+    if (cursor) {
+      query.cursor = { id: cursor };
+      query.skip = 1;
+    }
+
+    const comments = await prisma.comment.findMany(query);
+
+    // Viewer like/dislike flags
+    let out: any[] = comments as any;
+    if (session?.user?.id && comments.length) {
+      const ids = comments.map((c) => c.id);
+
+      const [likes, dislikes] = await Promise.all([
+        prisma.commentLike.findMany({
+          where: { userId: session.user.id, commentId: { in: ids } },
+          select: { commentId: true },
+        }),
+        prisma.commentDislike.findMany({
+          where: { userId: session.user.id, commentId: { in: ids } },
+          select: { commentId: true },
+        }),
+      ]);
+
+      const likedSet = new Set(likes.map((x) => x.commentId));
+      const dislikedSet = new Set(dislikes.map((x) => x.commentId));
+
+      out = comments.map((c: any) => ({
+        ...c,
+        viewerLiked: likedSet.has(c.id),
+        viewerDisliked: dislikedSet.has(c.id),
+      }));
+    }
+
+    return NextResponse.json({ ok: true, canModerate, comments: out });
+  }
 
   if (!targetType || !targetId) {
     return NextResponse.json({ error: "targetType and targetId are required" }, { status: 400 });
   }
 
-  const session = await getServerSession(authOptions);
   const canModerate = await canModerateForTarget(session, targetType, targetId);
 
   const where: any = {

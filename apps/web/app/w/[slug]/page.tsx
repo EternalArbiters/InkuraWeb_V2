@@ -237,7 +237,30 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               </ContentWarningsGate>
             </div>
 
-            <CommentSection targetType="WORK" targetId={work.id} title="Comments" />
+            {/* Reviews: overall rating + work-level comments */}
+            <CommentSection
+              targetType="WORK"
+              targetId={work.id}
+              title="Reviews"
+              headerRight={
+                <RatingStars
+                  workId={work.id}
+                  initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                  ratingAvg={Number(work.ratingAvg ?? 0)}
+                  ratingCount={Number(work.ratingCount ?? 0)}
+                />
+              }
+            />
+
+            {/* Comments: aggregated from all chapters */}
+            <CommentSection
+              targetType="CHAPTER"
+              targetId={work.id}
+              title="Comments"
+              scope="workChapters"
+              showComposer={false}
+              sort="top"
+            />
 
             <div className="mt-6">
               <BackButton href="/search" />
