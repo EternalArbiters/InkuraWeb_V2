@@ -488,11 +488,14 @@ export default function DashboardNavbar() {
               <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-white">
               Search anything on <span className="text-pink-500 font-bold">Inkura</span>
               </h2>
-              <form onSubmit={handleSearch} className="flex items-stretch w-full">
+              <form
+                onSubmit={handleSearch}
+                className="relative flex items-stretch w-full overflow-hidden rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+              >
                 <select
                   value={searchType}
                   onChange={e => setSearchType(e.target.value)}
-                  className="px-2 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-white border-r border-gray-300 dark:border-gray-700 rounded-l-full"
+                  className="px-3 text-sm bg-transparent text-gray-700 dark:text-white border-r border-gray-300 dark:border-gray-700 outline-none"
                 >
                   {["title", "tags", "authors", "translator", "users"].map(opt => (
                     <option key={opt} value={opt}>{opt[0].toUpperCase() + opt.slice(1)}</option>
@@ -504,11 +507,13 @@ export default function DashboardNavbar() {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder={`Search ${searchType}...`}
-                  className="flex-1 px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+                  className="flex-1 px-4 py-2 text-sm bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none pr-16"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition"
+                  className="absolute right-0 top-0 bottom-0 w-14 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition flex items-center justify-center"
+                  aria-label="Search"
+                  title="Search"
                 >
                   <Search size={16} />
                 </button>

@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 import { apiJson } from "@/lib/serverApi";
 import WorkCoverBadges from "../../components/WorkCoverBadges";
-import BackButton from "@/app/components/BackButton";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import LikeButton from "@/app/components/work/LikeButton";
@@ -51,7 +50,6 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 >
                   {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
                 </Link>
-                <BackButton href="/search" />
               </div>
 
               {work.coverImage ? (
@@ -262,9 +260,6 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               sort="top"
             />
 
-            <div className="mt-6">
-              <BackButton href="/search" />
-            </div>
           </div>
         </div>
       </div>

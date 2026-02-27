@@ -3,14 +3,31 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { ReactNode } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ensureCommentMedia } from "@/lib/commentMediaClient";
-import { Check, Eye, EyeOff, Flag, Image as ImageIcon, Link2, Pencil, RefreshCw, SendHorizonal, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react";
+import {
+  Check,
+  CornerDownRight,
+  Eye,
+  EyeOff,
+  Flag,
+  Image as ImageIcon,
+  Link2,
+  Pencil,
+  RefreshCw,
+  SendHorizonal,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+  X,
+} from "lucide-react";
 
 type TargetType = "WORK" | "CHAPTER";
 
 type ScopeMode = "target" | "workChapters";
+
+type SortMode = "latest" | "top" | "oldest";
 
 type CommentUser = {
   id: string;
@@ -35,6 +52,9 @@ type CommentAttachment = {
 
 type CommentItem = {
   id: string;
+  targetType: TargetType;
+  targetId: string;
+  parentId?: string | null;
   body: string;
   createdAt: string;
   editedAt?: string | null;
@@ -42,7 +62,27 @@ type CommentItem = {
   isSpoiler?: boolean;
   user: CommentUser;
   attachments?: CommentAttachment[];
+  likeCount?: number;
+  dislikeCount?: number;
+  viewerLiked?: boolean;
+  viewerDisliked?: boolean;
+  replies?: CommentItem[];
 };
+
+type DecoratedComment = CommentItem & {
+  createdAtLabel: string;
+  editedAtLabel: string | null;
+  displayName: string;
+  replies?: DecoratedComment[];
+};
+
+function normalizeSort(v: unknown): SortMode {
+  const s = String(v || "").toLowerCase().trim();
+  if (s === "top") return "top";
+  if (s === "oldest" || s === "bottom") return "oldest";
+  // legacy: new
+  return "latest";
+}
 
 function parseHiddenInline(body: string): Array<{ type: "text" | "hidden"; value: string }> {
   // Delimiter: ||hidden|| (non-nested). Unmatched delimiters are treated as plain text.
@@ -192,50 +232,118 @@ function CommentBody({ body, className }: { body: string; className?: string }) 
   );
 }
 
+function decorateTree(nodes: CommentItem[]): DecoratedComment[] {
+  return (nodes || []).map((c) => {
+    const createdAtLabel = new Date(c.createdAt).toLocaleString();
+    const editedAtLabel = c.editedAt ? new Date(c.editedAt).toLocaleString() : null;
+    const displayName = c.user?.name || c.user?.username || "Unknown";
+    return {
+      ...c,
+      createdAtLabel,
+      editedAtLabel,
+      displayName,
+      replies: c.replies ? decorateTree(c.replies) : [],
+    };
+  });
+}
+
+function updateTree(nodes: CommentItem[], id: string, updater: (c: any) => any): CommentItem[] {
+  return (nodes || []).map((c: any) => {
+    if (c.id === id) return updater(c);
+    if (Array.isArray(c.replies) && c.replies.length) {
+      return { ...c, replies: updateTree(c.replies, id, updater) };
+    }
+    return c;
+  });
+}
+
+function removeFromTree(nodes: CommentItem[], id: string): CommentItem[] {
+  const out: CommentItem[] = [];
+  for (const c of nodes || []) {
+    if (c.id === id) continue;
+    const next: any = { ...c };
+    if (Array.isArray(next.replies) && next.replies.length) {
+      next.replies = removeFromTree(next.replies, id);
+    }
+    out.push(next);
+  }
+  return out;
+}
+
 export default function CommentSection({
   targetType,
   targetId,
   title = "Comments",
   take = 100,
   showComposer = true,
-  sort = "new",
+  sort = "latest",
   variant = "full",
   scope = "target",
   workId,
   headerRight,
+  showSortControl,
 }: {
   targetType: TargetType;
   targetId: string;
   title?: string;
   take?: number;
   showComposer?: boolean;
-  sort?: "new" | "top";
+  sort?: SortMode | "new" | "top" | "oldest";
   variant?: "full" | "compact";
   scope?: ScopeMode;
   workId?: string;
   headerRight?: ReactNode;
+  showSortControl?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const viewerId = (session?.user as any)?.id as string | undefined;
+
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [canModerate, setCanModerate] = useState(false);
+
   const [text, setText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
+
   const [reportFor, setReportFor] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
+
+  const [replyTo, setReplyTo] = useState<
+    | {
+        id: string;
+        targetType: TargetType;
+        targetId: string;
+        displayName: string;
+      }
+    | null
+  >(null);
+  const [replyText, setReplyText] = useState("");
+
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const replyRef = useRef<HTMLTextAreaElement | null>(null);
 
   const allowCompose = showComposer && scope === "target";
+  const allowSort =
+    showSortControl !== undefined
+      ? showSortControl
+      : variant !== "compact" && !headerRight;
+
+  const [sortMode, setSortMode] = useState<SortMode>(() => normalizeSort(sort));
+  useEffect(() => {
+    setSortMode(normalizeSort(sort));
+  }, [sort]);
 
   const fetchComments = async () => {
     setLoading(true);
@@ -244,9 +352,18 @@ export default function CommentSection({
     try {
       const qs =
         scope === "workChapters"
-          ? new URLSearchParams({ scope: "workChapters", workId: String(workId || targetId), take: String(take || 100) })
-          : new URLSearchParams({ targetType, targetId, take: String(take || 100) });
-      if (sort) qs.set("sort", sort);
+          ? new URLSearchParams({
+              scope: "workChapters",
+              workId: String(workId || targetId),
+              take: String(take || 100),
+            })
+          : new URLSearchParams({
+              targetType,
+              targetId,
+              take: String(take || 100),
+            });
+      qs.set("sort", sortMode);
+
       const res = await fetch(`/api/comments?${qs.toString()}`, { cache: "no-store" as any });
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
@@ -266,78 +383,19 @@ export default function CommentSection({
   useEffect(() => {
     fetchComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetType, targetId, take, sort]);
+  }, [targetType, targetId, take, scope, workId, sortMode]);
 
-  const pretty = useMemo(() => {
-    return comments.map((c) => ({
-      ...c,
-      createdAtLabel: new Date(c.createdAt).toLocaleString(),
-      editedAtLabel: c.editedAt ? new Date(c.editedAt).toLocaleString() : null,
-      displayName: c.user.name || c.user.username || "Unknown",
-    }));
-  }, [comments]);
+  const pretty = useMemo(() => decorateTree(comments), [comments]);
 
   const onPickFiles = (picked: FileList | null) => {
     if (!picked) return;
     const arr = Array.from(picked);
-    // max 3 attachments
     const merged = [...files, ...arr].slice(0, 3);
     setFiles(merged);
   };
 
   const removeFileAt = (idx: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const submit = () => {
-    setError(null);
-    setUnauthorized(false);
-    setInfo(null);
-    const body = text.trim();
-    if (!body) return;
-
-    startTransition(async () => {
-      try {
-        // Upload attachments (dedupe-aware)
-        const media = [] as { mediaId: string }[];
-        for (const f of files) {
-          const kind = f.type === "image/gif" ? "gif" : "image";
-          const m = await ensureCommentMedia({ file: f, kind });
-          media.push({ mediaId: m.id });
-        }
-
-        const res = await fetch(`/api/comments`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            targetType,
-            targetId,
-            body,
-            attachments: media,
-          }),
-        });
-        if (res.status === 401) {
-          setUnauthorized(true);
-          return;
-        }
-        const data = await res.json().catch(() => ({} as any));
-        if (!res.ok) {
-          setError(data?.error || "Gagal kirim comment");
-          return;
-        }
-        setText("");
-        setFiles([]);
-        await fetchComments();
-        router.refresh();
-      } catch (e: any) {
-        const msg = e?.message || "Gagal kirim comment";
-        if (String(msg).toLowerCase().includes("unauthorized")) {
-          setUnauthorized(true);
-          return;
-        }
-        setError(msg);
-      }
-    });
   };
 
   const applyHidden = () => {
@@ -347,7 +405,6 @@ export default function CommentSection({
     const end = el.selectionEnd ?? 0;
     const value = text;
 
-    // If nothing selected, insert |||| and place cursor in the middle.
     if (start === end) {
       const next = value.slice(0, start) + "||||" + value.slice(end);
       setText(next);
@@ -400,6 +457,112 @@ export default function CommentSection({
     });
   };
 
+  const submit = () => {
+    setError(null);
+    setUnauthorized(false);
+    setInfo(null);
+    const body = text.trim();
+    if (!body) return;
+
+    startTransition(async () => {
+      try {
+        const media = [] as { mediaId: string }[];
+        for (const f of files) {
+          const kind = f.type === "image/gif" ? "gif" : "image";
+          const m = await ensureCommentMedia({ file: f, kind });
+          media.push({ mediaId: m.id });
+        }
+
+        const res = await fetch(`/api/comments`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            targetType,
+            targetId,
+            body,
+            attachments: media,
+          }),
+        });
+        if (res.status === 401) {
+          setUnauthorized(true);
+          return;
+        }
+        const data = await res.json().catch(() => ({} as any));
+        if (!res.ok) {
+          setError(data?.error || "Gagal kirim comment");
+          return;
+        }
+        setText("");
+        setFiles([]);
+        await fetchComments();
+        router.refresh();
+      } catch (e: any) {
+        const msg = e?.message || "Gagal kirim comment";
+        if (String(msg).toLowerCase().includes("unauthorized")) {
+          setUnauthorized(true);
+          return;
+        }
+        setError(msg);
+      }
+    });
+  };
+
+  const startReply = (c: DecoratedComment) => {
+    if (c.isHidden) return;
+    setReplyTo({ id: c.id, targetType: c.targetType, targetId: c.targetId, displayName: c.displayName });
+    setReplyText("");
+    setEditingId(null);
+    setEditingText("");
+    setReportFor(null);
+    setReportReason("");
+    setError(null);
+    setInfo(null);
+    requestAnimationFrame(() => {
+      replyRef.current?.focus();
+    });
+  };
+
+  const cancelReply = () => {
+    setReplyTo(null);
+    setReplyText("");
+  };
+
+  const submitReply = () => {
+    if (!replyTo) return;
+    const body = replyText.trim();
+    if (!body) return;
+
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/comments`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            targetType: replyTo.targetType,
+            targetId: replyTo.targetId,
+            parentId: replyTo.id,
+            body,
+          }),
+        });
+        if (res.status === 401) {
+          setUnauthorized(true);
+          return;
+        }
+        const data = await res.json().catch(() => ({} as any));
+        if (!res.ok) {
+          setError(data?.error || "Gagal kirim reply");
+          return;
+        }
+        setReplyTo(null);
+        setReplyText("");
+        await fetchComments();
+        router.refresh();
+      } catch {
+        setError("Gagal kirim reply");
+      }
+    });
+  };
+
   const toggleLikeComment = (commentId: string) => {
     setError(null);
     setInfo(null);
@@ -415,17 +578,13 @@ export default function CommentSection({
         return;
       }
       setComments((prev) =>
-        prev.map((c: any) =>
-          c.id === commentId
-            ? {
-                ...c,
-                likeCount: data.likeCount,
-                dislikeCount: data.dislikeCount,
-                viewerLiked: data.liked,
-                viewerDisliked: data.liked ? false : c.viewerDisliked,
-              }
-            : c
-        )
+        updateTree(prev, commentId, (c: any) => ({
+          ...c,
+          likeCount: data.likeCount,
+          dislikeCount: data.dislikeCount,
+          viewerLiked: data.liked,
+          viewerDisliked: data.liked ? false : c.viewerDisliked,
+        }))
       );
     });
   };
@@ -445,17 +604,13 @@ export default function CommentSection({
         return;
       }
       setComments((prev) =>
-        prev.map((c: any) =>
-          c.id === commentId
-            ? {
-                ...c,
-                likeCount: data.likeCount,
-                dislikeCount: data.dislikeCount,
-                viewerDisliked: data.disliked,
-                viewerLiked: data.disliked ? false : c.viewerLiked,
-              }
-            : c
-        )
+        updateTree(prev, commentId, (c: any) => ({
+          ...c,
+          likeCount: data.likeCount,
+          dislikeCount: data.dislikeCount,
+          viewerDisliked: data.disliked,
+          viewerLiked: data.disliked ? false : c.viewerLiked,
+        }))
       );
     });
   };
@@ -463,6 +618,8 @@ export default function CommentSection({
   const startEdit = (commentId: string, currentBody: string) => {
     setEditingId(commentId);
     setEditingText(currentBody);
+    setReplyTo(null);
+    setReplyText("");
     setReportFor(null);
     setReportReason("");
     setError(null);
@@ -496,7 +653,13 @@ export default function CommentSection({
         return;
       }
       const updated = data?.comment;
-      setComments((prev) => prev.map((c: any) => (c.id === commentId ? { ...c, body: updated.body, editedAt: updated.editedAt } : c)));
+      setComments((prev) =>
+        updateTree(prev, commentId, (c: any) => ({
+          ...c,
+          body: updated.body,
+          editedAt: updated.editedAt,
+        }))
+      );
       setEditingId(null);
       setEditingText("");
       router.refresh();
@@ -504,7 +667,7 @@ export default function CommentSection({
   };
 
   const deleteComment = (commentId: string) => {
-    const ok = window.confirm("Delete this comment?");
+    const ok = window.confirm("Delete this comment? (Replies will also be deleted)");
     if (!ok) return;
     startTransition(async () => {
       const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
@@ -517,11 +680,10 @@ export default function CommentSection({
         setError(data?.error || "Gagal delete comment");
         return;
       }
-      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setComments((prev) => removeFromTree(prev, commentId));
       router.refresh();
     });
   };
-
 
   const toggleHide = (commentId: string, hide: boolean) => {
     setError(null);
@@ -577,12 +739,331 @@ export default function CommentSection({
     });
   };
 
+  const onChangeSort = (next: SortMode) => {
+    setSortMode(next);
+    // Sync to URL (best-effort) for full pages.
+    if (variant !== "compact" && scope === "target") {
+      const sp = new URLSearchParams(searchParams.toString());
+      sp.set("sort", next);
+      const qs = sp.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    }
+  };
+
+  const renderComment = (c: DecoratedComment, depth: number) => {
+    const hidden = (c.isHidden ?? false) as boolean;
+    const spoiler = (c.isSpoiler ?? false) as boolean;
+    const showSpoiler = !spoiler || revealed[c.id];
+    const likeCount = typeof c.likeCount === "number" ? c.likeCount : 0;
+    const dislikeCount = typeof c.dislikeCount === "number" ? c.dislikeCount : 0;
+    const viewerLiked = !!c.viewerLiked;
+    const viewerDisliked = !!c.viewerDisliked;
+    const isMine = !!viewerId && c.user?.id === viewerId;
+
+    const isReplyingHere = replyTo?.id === c.id;
+
+    return (
+      <div
+        key={c.id}
+        className={`rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3 ${
+          depth > 0 ? "bg-white/60 dark:bg-gray-950/80" : "bg-white dark:bg-gray-950"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-semibold truncate">{c.displayName}</div>
+          <div className="flex items-center gap-2">
+            {hidden ? (
+              <span className="px-2 py-0.5 text-[11px] font-semibold border border-amber-300/60 text-amber-700 dark:text-amber-300 dark:border-amber-500/40">
+                Hidden
+              </span>
+            ) : null}
+            {spoiler ? (
+              <span className="px-2 py-0.5 text-[11px] font-semibold border border-purple-300/60 text-purple-700 dark:text-purple-300 dark:border-purple-500/40">
+                Hidden
+              </span>
+            ) : null}
+            <div className="text-xs text-gray-600 dark:text-gray-300">{c.createdAtLabel}</div>
+          </div>
+        </div>
+
+        {c.editedAtLabel ? (
+          <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Edited: {c.editedAtLabel}</div>
+        ) : null}
+
+        {hidden ? (
+          <p className="mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400">(Komentar ini disembunyikan oleh moderator)</p>
+        ) : spoiler && !showSpoiler ? (
+          <button
+            type="button"
+            onClick={() => setRevealed((prev) => ({ ...prev, [c.id]: true }))}
+            className="mt-2 w-full text-left rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
+          >
+            <span className="inline-flex items-center gap-2">
+              <EyeOff className="w-4 h-4" />
+              Hidden text — tap to reveal
+            </span>
+          </button>
+        ) : editingId === c.id ? (
+          <div className="mt-2">
+            <textarea
+              value={editingText}
+              onChange={(e) => setEditingText(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 min-h-[88px]"
+            />
+            <div className="mt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                aria-label="Cancel edit"
+                title="Cancel"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                disabled={isPending || !editingText.trim()}
+                onClick={() => saveEdit(c.id)}
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                aria-label="Save edit"
+                title="Save"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <CommentBody className="mt-2 text-sm text-gray-700 dark:text-gray-200 break-words" body={c.body} />
+        )}
+
+        {!hidden && showSpoiler && Array.isArray(c.attachments) && c.attachments.length ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {c.attachments.map((a) => (
+              <div key={a.id} className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={a.media.url}
+                  alt={a.type}
+                  className="max-w-[240px] max-h-[240px] object-contain block"
+                />
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => toggleLikeComment(c.id)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold border ${
+              viewerLiked
+                ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+            }`}
+            title="Like"
+            aria-label="Like"
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <ThumbsUp className="w-3.5 h-3.5" />
+              <span>{likeCount}</span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleDislikeComment(c.id)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold border ${
+              viewerDisliked
+                ? "border-gray-500/40 bg-gray-100 text-gray-900 dark:border-gray-400/30 dark:bg-gray-900/50 dark:text-gray-100"
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+            }`}
+            title="Dislike"
+            aria-label="Dislike"
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <ThumbsDown className="w-3.5 h-3.5" />
+              <span>{dislikeCount}</span>
+            </span>
+          </button>
+
+          {!hidden ? (
+            <button
+              type="button"
+              onClick={() => startReply(c)}
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                isReplyingHere
+                  ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
+                  : "border-gray-300 dark:border-gray-700"
+              }`}
+              title="Reply"
+              aria-label="Reply"
+            >
+              <CornerDownRight className="w-4 h-4" />
+            </button>
+          ) : null}
+
+          {isMine ? (
+            <>
+              <button
+                type="button"
+                onClick={() => startEdit(c.id, c.body)}
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                title="Edit"
+                aria-label="Edit"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteComment(c.id)}
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                title="Delete"
+                aria-label="Delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => {
+              setReportFor((prev) => (prev === c.id ? null : c.id));
+              setReportReason("");
+              setError(null);
+              setInfo(null);
+              setReplyTo(null);
+              setReplyText("");
+              setEditingId(null);
+              setEditingText("");
+            }}
+            className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+              reportFor === c.id
+                ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
+                : "border-gray-300 dark:border-gray-700"
+            }`}
+            title="Report"
+            aria-label="Report"
+          >
+            <Flag className="w-4 h-4" />
+          </button>
+
+          {canModerate ? (
+            <button
+              type="button"
+              onClick={() => toggleHide(c.id, !hidden)}
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                hidden
+                  ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-950/25 dark:text-amber-200"
+                  : "border-gray-300 dark:border-gray-700"
+              }`}
+              title={hidden ? "Unhide" : "Hide"}
+              aria-label={hidden ? "Unhide" : "Hide"}
+            >
+              {hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </button>
+          ) : null}
+        </div>
+
+        {isReplyingHere ? (
+          <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
+            <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+              Reply to <span className="text-purple-700 dark:text-purple-300">{replyTo?.displayName}</span>
+            </div>
+            <textarea
+              ref={replyRef}
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Write a reply..."
+              className="mt-2 w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 min-h-[80px]"
+            />
+            <div className="mt-2 flex items-center justify-between">
+              <div className="text-[11px] text-gray-600 dark:text-gray-300">Tip: you can hide text with ||like this||</div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={cancelReply}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                  aria-label="Cancel reply"
+                  title="Cancel"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={isPending || !replyText.trim()}
+                  onClick={submitReply}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                  aria-label="Send reply"
+                  title="Send"
+                >
+                  <SendHorizonal className={`w-4 h-4 ${isPending ? "animate-pulse" : ""}`} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {reportFor === c.id ? (
+          <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
+            <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">Alasan report</div>
+            <input
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Misal: spam, hate speech, harassment..."
+              className="mt-2 w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+            />
+            <div className="mt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setReportFor(null);
+                  setReportReason("");
+                }}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isPending || !reportReason.trim()}
+                onClick={() => submitReport(c.id)}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+              >
+                {isPending ? "Sending..." : "Submit"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {Array.isArray(c.replies) && c.replies.length ? (
+          <div className="mt-3 border-l border-gray-200 dark:border-gray-800 pl-3 space-y-3">
+            {c.replies.map((r) => renderComment(r, depth + 1))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
   return (
     <section className={variant === "compact" ? "mt-6" : "mt-10"}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-xl font-bold">{title}</h2>
         <div className="flex items-center gap-2">
           {headerRight ? <div className="shrink-0">{headerRight}</div> : null}
+          {allowSort ? (
+            <select
+              value={sortMode}
+              onChange={(e) => onChangeSort(e.target.value as SortMode)}
+              className="rounded-full border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 px-3 py-2 text-sm text-gray-800 dark:text-white outline-none hover:bg-gray-50 dark:hover:bg-gray-900"
+              aria-label="Sort"
+              title="Sort"
+            >
+              <option value="latest">Sort: Latest</option>
+              <option value="top">Sort: Top</option>
+              <option value="oldest">Sort: Bottom</option>
+            </select>
+          ) : null}
           <button
             type="button"
             onClick={fetchComments}
@@ -606,8 +1087,10 @@ export default function CommentSection({
               placeholder="Tulis comment..."
             />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-3">
+            {/* Toolbar: keep Send pinned to the right (mobile-safe) */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 overflow-x-auto pr-2 no-scrollbar flex-nowrap">
                 <button
                   type="button"
                   onClick={applyHidden}
@@ -638,13 +1121,14 @@ export default function CommentSection({
                 </button>
 
                 <span className="text-[11px] text-gray-600 dark:text-gray-300">({files.length}/3)</span>
+                </div>
               </div>
 
               <button
                 type="button"
                 disabled={isPending || !text.trim()}
                 onClick={submit}
-                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
                 aria-label="Send"
                 title="Send"
               >
@@ -676,18 +1160,21 @@ export default function CommentSection({
           </div>
         ) : null}
 
-          <div className="text-xs text-gray-600 dark:text-gray-300">
-            {unauthorized ? (
-              <span>
-                Kamu belum login. {" "}
-                <Link className="font-semibold text-purple-600 dark:text-purple-400 hover:underline" href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}>
-                  Sign in
-                </Link>
-              </span>
-            ) : null}
-            {info ? <span className="text-emerald-700 dark:text-emerald-400">{info}</span> : null}
-            {error ? <span className="text-red-600 dark:text-red-400">{error}</span> : null}
-      </div>
+        <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+          {unauthorized ? (
+            <span>
+              Kamu belum login. {" "}
+              <Link
+                className="font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}
+              >
+                Sign in
+              </Link>
+            </span>
+          ) : null}
+          {info ? <span className="ml-2 text-emerald-700 dark:text-emerald-400">{info}</span> : null}
+          {error ? <span className="ml-2 text-red-600 dark:text-red-400">{error}</span> : null}
+        </div>
 
         <hr className="my-5 border-gray-200 dark:border-gray-800" />
 
@@ -696,223 +1183,7 @@ export default function CommentSection({
         ) : pretty.length === 0 ? (
           <p className="text-sm text-gray-600 dark:text-gray-300">Belum ada comment.</p>
         ) : (
-          <div className="space-y-4">
-            {pretty.map((c) => {
-              const hidden = (c.isHidden ?? false) as boolean;
-              const spoiler = (c.isSpoiler ?? false) as boolean;
-              const showSpoiler = !spoiler || revealed[c.id];
-              const likeCount = typeof (c as any).likeCount === "number" ? (c as any).likeCount : 0;
-              const dislikeCount = typeof (c as any).dislikeCount === "number" ? (c as any).dislikeCount : 0;
-              const viewerLiked = !!(c as any).viewerLiked;
-              const viewerDisliked = !!(c as any).viewerDisliked;
-              const isMine = !!viewerId && c.user?.id === viewerId;
-
-              return (
-                <div key={c.id} className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold">{c.displayName}</div>
-                    <div className="flex items-center gap-2">
-                      {hidden ? (
-                        <span className="px-2 py-0.5 text-[11px] font-semibold border border-amber-300/60 text-amber-700 dark:text-amber-300 dark:border-amber-500/40">
-                          Hidden
-                        </span>
-                      ) : null}
-                    {spoiler ? (
-                      <span className="px-2 py-0.5 text-[11px] font-semibold border border-purple-300/60 text-purple-700 dark:text-purple-300 dark:border-purple-500/40">
-                        Hidden
-                      </span>
-                    ) : null}
-                      <div className="text-xs text-gray-600 dark:text-gray-300">{c.createdAtLabel}</div>
-                    </div>
-                  </div>
-
-                  {c.editedAtLabel ? <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Edited: {c.editedAtLabel}</div> : null}
-
-                  {hidden ? (
-                    <p className="mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400">(Komentar ini disembunyikan oleh moderator)</p>
-                  ) : spoiler && !showSpoiler ? (
-                    <button
-                      type="button"
-                      onClick={() => setRevealed((prev) => ({ ...prev, [c.id]: true }))}
-                      className="mt-2 w-full text-left rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <EyeOff className="w-4 h-4" />
-                        Hidden text — tap to reveal
-                      </span>
-                    </button>
-                  ) : editingId === c.id ? (
-                    <div className="mt-2">
-                      <textarea
-                        value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 min-h-[88px]"
-                      />
-                      <div className="mt-2 flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                          aria-label="Cancel edit"
-                          title="Cancel"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isPending || !editingText.trim()}
-                          onClick={() => saveEdit(c.id)}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
-                          aria-label="Save edit"
-                          title="Save"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <CommentBody className="mt-2 text-sm text-gray-700 dark:text-gray-200 break-words" body={c.body} />
-                  )}
-
-                  {!hidden && showSpoiler && Array.isArray(c.attachments) && c.attachments.length ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {c.attachments.map((a) => (
-                        <div key={a.id} className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={a.media.url} alt={a.type} className="max-w-[240px] max-h-[240px] object-contain block" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleLikeComment(c.id)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold border ${
-                        viewerLiked
-                          ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
-                          : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                      }`}
-                      title="Like"
-                    >
-                      <span className="inline-flex items-center gap-1.5">
-                        <ThumbsUp className="w-3.5 h-3.5" />
-                        <span>{likeCount}</span>
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleDislikeComment(c.id)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold border ${
-                        viewerDisliked
-                          ? "border-gray-500/40 bg-gray-100 text-gray-900 dark:border-gray-400/30 dark:bg-gray-900/50 dark:text-gray-100"
-                          : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                      }`}
-                      title="Dislike"
-                      aria-label="Dislike"
-                    >
-                      <span className="inline-flex items-center gap-1.5">
-                        <ThumbsDown className="w-3.5 h-3.5" />
-                        <span>{dislikeCount}</span>
-                      </span>
-                    </button>
-
-                    {isMine ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => startEdit(c.id, c.body)}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                          title="Edit"
-                          aria-label="Edit"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteComment(c.id)}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                          title="Delete"
-                          aria-label="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReportFor((prev) => (prev === c.id ? null : c.id));
-                        setReportReason("");
-                        setError(null);
-                        setInfo(null);
-                      }}
-                      className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
-                        reportFor === c.id
-                          ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
-                          : "border-gray-300 dark:border-gray-700"
-                      }`}
-                      title="Report"
-                      aria-label="Report"
-                    >
-                      <Flag className="w-4 h-4" />
-                    </button>
-
-                    {canModerate ? (
-                      <button
-                        type="button"
-                        onClick={() => toggleHide(c.id, !hidden)}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
-                          hidden
-                            ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-950/25 dark:text-amber-200"
-                            : "border-gray-300 dark:border-gray-700"
-                        }`}
-                        title={hidden ? "Unhide" : "Hide"}
-                        aria-label={hidden ? "Unhide" : "Hide"}
-                      >
-                        {hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                      </button>
-                    ) : null}
-                  </div>
-
-                  {reportFor === c.id ? (
-                    <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
-                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">Alasan report</div>
-                      <input
-                        value={reportReason}
-                        onChange={(e) => setReportReason(e.target.value)}
-                        placeholder="Misal: spam, hate speech, harassment..."
-                        className="mt-2 w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-                      />
-                      <div className="mt-2 flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReportFor(null);
-                            setReportReason("");
-                          }}
-                          className="rounded-full px-3 py-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isPending || !reportReason.trim()}
-                          onClick={() => submitReport(c.id)}
-                          className="rounded-full px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
-                        >
-                          {isPending ? "Sending..." : "Submit"}
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
+          <div className="space-y-4">{pretty.map((c) => renderComment(c, 0))}</div>
         )}
       </div>
     </section>
