@@ -142,6 +142,29 @@ export default async function ReadChapterPage({
               </ContentWarningsGate>
             </div>
 
+
+
+            {/* Author message (between story end and comments) */}
+            {typeof (chapter as any).authorNote === "string" && (chapter as any).authorNote.trim() ? (
+              <div className="mt-6 px-4 lg:px-0">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0">
+                      {work?.author?.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={work.author.image} alt="Author" className="w-full h-full object-cover" />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs text-gray-600 dark:text-gray-300">Message from the author</div>
+                      <div className="font-semibold truncate">{work?.author?.name || work?.author?.username || "Author"}</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{(chapter as any).authorNote}</div>
+                </div>
+              </div>
+            ) : null}
+
             {/* Mobile: preview only (top 5) */}
             <div className="lg:hidden px-4">
               <CommentSection
@@ -149,7 +172,7 @@ export default async function ReadChapterPage({
                 targetId={chapter.id}
                 title="Comments"
                 take={5}
-                showComposer={false}
+                showComposer={true}
                 sort="top"
                 variant="compact"
               />

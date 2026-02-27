@@ -195,6 +195,8 @@ model Chapter {
   // Chapter-level meta
   isMature    Boolean        @default(false)
   warningTags WarningTag[]   @relation("ChapterWarnings")
+  authorNote String? @db.Text
+
 
   text        ChapterText?
   pages       ComicPage[]

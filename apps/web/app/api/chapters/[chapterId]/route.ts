@@ -29,6 +29,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       status: true,
       isMature: true,
       likeCount: true,
+      authorNote: true,
       warningTags: { select: { name: true, slug: true } },
       text: { select: { content: true } },
       pages: { orderBy: { order: "asc" }, select: { id: true, imageUrl: true, order: true } },
@@ -41,6 +42,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
           type: true,
           isMature: true,
           authorId: true,
+          author: { select: { id: true, username: true, name: true, image: true } },
           warningTags: { select: { name: true, slug: true } },
           deviantLoveTags: { select: { name: true, slug: true } },
           genres: { select: { slug: true } },
@@ -94,6 +96,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
         title: chapter.work.title,
         type: chapter.work.type,
         isMature: chapter.work.isMature,
+        author: (chapter.work as any).author || null,
       },
       chapter: {
         id: chapter.id,
@@ -102,6 +105,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
         isMature: chapter.isMature,
         likeCount: chapter.likeCount,
         viewerLiked,
+        authorNote: chapter.authorNote,
       },
     });
   }
@@ -128,6 +132,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       isMature: chapter.isMature,
       likeCount: chapter.likeCount,
       viewerLiked,
+      authorNote: chapter.authorNote,
     },
     work: {
       id: chapter.work.id,
@@ -135,6 +140,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       title: chapter.work.title,
       type: chapter.work.type,
       isMature: chapter.work.isMature,
+      author: (chapter.work as any).author || null,
       warningTags: chapter.work.warningTags,
       deviantLoveTags: chapter.work.deviantLoveTags,
       chapters: chapter.work.chapters,

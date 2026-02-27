@@ -11,9 +11,12 @@ function chapterLabel(n: number, title: string) {
   return `Ch. ${n}${t}`;
 }
 
-function safeSort(v: unknown): "new" | "top" {
+function safeSort(v: unknown): "latest" | "top" | "oldest" {
   const s = String(v || "").toLowerCase().trim();
-  return s === "top" ? "top" : "new";
+  if (s === "top") return "top";
+  if (s === "oldest" || s === "bottom") return "oldest";
+  // legacy: new
+  return "latest";
 }
 
 export default async function ChapterCommentsPage({
@@ -73,48 +76,24 @@ export default async function ChapterCommentsPage({
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-3xl mx-auto px-4 py-8 pb-24">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-sm text-gray-600 dark:text-gray-300 font-semibold truncate">{work.title}</div>
-            <h1 className="mt-1 text-2xl font-extrabold tracking-tight truncate">{chapterLabel(chapter.number, chapter.title)}</h1>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href={`/w/${work.slug}/read/${chapter.id}`}
-              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
-            >
-              Back
-            </Link>
             <Link
               href={`/w/${work.slug}`}
-              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+              className="block truncate text-sm text-gray-600 dark:text-gray-300 font-semibold hover:text-gray-900 dark:hover:text-white"
+              title="Go to work page"
             >
-              Menu
+              {work.title}
+            </Link>
+            <Link
+              href={`/w/${work.slug}/read/${chapter.id}`}
+              className="mt-1 block truncate text-2xl font-extrabold tracking-tight hover:underline"
+              title="Back to reader"
+            >
+              {chapterLabel(chapter.number, chapter.title)}
             </Link>
           </div>
         </div>
-
-        <div className="mt-4 flex items-center gap-2">
-          <Link
-            href={`/w/${work.slug}/read/${chapter.id}/comments?sort=new`}
-            className={`rounded-full px-4 py-2 text-sm font-semibold border ${
-              sort === "new"
-                ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
-                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-            }`}
-          >
-            New
-          </Link>
-          <Link
-            href={`/w/${work.slug}/read/${chapter.id}/comments?sort=top`}
-            className={`rounded-full px-4 py-2 text-sm font-semibold border ${
-              sort === "top"
-                ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
-                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-            }`}
-          >
-            Top
-          </Link>        </div>
 
         <CommentSection targetType="CHAPTER" targetId={chapter.id} title="Comments" sort={sort} />
       </div>

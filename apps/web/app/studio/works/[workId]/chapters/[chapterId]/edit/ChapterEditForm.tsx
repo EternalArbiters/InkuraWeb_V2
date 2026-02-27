@@ -12,6 +12,7 @@ type Chapter = {
   isMature: boolean;
   warningTags: { id: string; name: string; slug: string }[];
   text?: { content: string } | null;
+  authorNote?: string | null;
 };
 
 type Props = {
@@ -48,6 +49,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         warningTagIds: warningIds,
       };
       if (workType === "NOVEL") payload.content = content;
+      payload.authorNote = authorNote.trim() ? authorNote : null;
 
       const res = await fetch(`/api/studio/chapters/${chapter.id}`, {
         method: "PATCH",
@@ -146,6 +148,19 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         </div>
       )}
 
+
+
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold">Author message (optional)</span>
+        <textarea
+          value={authorNote}
+          onChange={(e) => setAuthorNote(e.target.value)}
+          rows={4}
+          placeholder="Pesan dari penulis untuk chapter ini (opsional)..."
+          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+        />
+        <span className="text-xs text-gray-600 dark:text-gray-300">Akan tampil di akhir chapter sebelum kolom komentar.</span>
+      </label>
       <div className="flex items-center justify-end gap-2">
         <button
           type="submit"
