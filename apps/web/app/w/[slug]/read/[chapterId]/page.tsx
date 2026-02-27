@@ -89,8 +89,26 @@ export default async function ReadChapterPage({
       <div className="mx-auto max-w-6xl px-0 sm:px-4 py-0 lg:py-8 pb-24">
         <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
           <div>
+            {/* Desktop: show titles (no back/menu buttons) */}
+            <div className="hidden lg:block mb-4">
+              <div className="min-w-0">
+                <Link
+                  href={`/w/${work.slug}`}
+                  className="block truncate text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  title="Go to work page"
+                >
+                  {work.title}
+                </Link>
+                <div className="mt-1 truncate text-3xl font-extrabold tracking-tight">
+                  {chapterLabel(chapter.number, chapter.title)}
+                </div>
+              </div>
+            </div>
+
             {/* keep for accessibility/SEO only */}
-            <h1 className="sr-only">{work.title} — {chapterLabel(chapter.number, chapter.title)}</h1>
+            <h1 className="sr-only">
+              {work.title} — {chapterLabel(chapter.number, chapter.title)}
+            </h1>
 
             <div className="mt-0">
               <ContentWarningsGate
@@ -141,29 +159,6 @@ export default async function ReadChapterPage({
                 </ReaderChrome>
               </ContentWarningsGate>
             </div>
-
-
-
-            {/* Author message (between story end and comments) */}
-            {typeof (chapter as any).authorNote === "string" && (chapter as any).authorNote.trim() ? (
-              <div className="mt-6 px-4 lg:px-0">
-                <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0">
-                      {work?.author?.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={work.author.image} alt="Author" className="w-full h-full object-cover" />
-                      ) : null}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs text-gray-600 dark:text-gray-300">Message from the author</div>
-                      <div className="font-semibold truncate">{work?.author?.name || work?.author?.username || "Author"}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{(chapter as any).authorNote}</div>
-                </div>
-              </div>
-            ) : null}
 
             {/* Mobile: preview only (top 5) */}
             <div className="lg:hidden px-4">
