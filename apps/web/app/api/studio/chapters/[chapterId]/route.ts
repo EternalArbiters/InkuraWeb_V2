@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 
 export const runtime = "nodejs";
 
@@ -121,6 +122,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
     }
 
     await recomputePublishedChapterCount(updated.workId);
+
+    // Notify favorite/bookmark readers if this PATCH just published the chapter
+    const wasPublished = owned.chapter.status === "PUBLISHED";
+    const nowPublished = updated.status === "PUBLISHED";
+    if (!wasPublished && nowPublished) {
+      await notifyNewChapter({ workId: updated.workId, chapterId: updated.id, actorId: session.user.id });
+    }
 
     return NextResponse.json({ ok: true, chapter: updated });
   } catch (e) {

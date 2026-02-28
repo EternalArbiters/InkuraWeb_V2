@@ -495,13 +495,25 @@ model Notification {
   title     String
   body      String?
   href      String
+
+  // optional structured refs (v16.1)
+  workId    String?
+  chapterId String?
+  actorId   String?
+  // Prevent double notifications for the same event
+  dedupeKey String?
+
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@unique([userId, dedupeKey])
+  @@index([workId, createdAt])
+  @@index([chapterId, createdAt])
 }
+
 
 // --- Reports ---
 enum ReportTargetType {

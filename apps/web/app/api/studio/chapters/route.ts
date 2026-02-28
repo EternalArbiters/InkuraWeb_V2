@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { savePublicUpload } from "@/lib/upload";
+import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 
 export const runtime = "nodejs";
 
@@ -183,6 +184,11 @@ export async function POST(req: Request) {
     }
 
     await recomputePublishedChapterCount(workId);
+
+    // Notify favorite/bookmark readers when a chapter is published
+    if (chapter.status === "PUBLISHED") {
+      await notifyNewChapter({ workId, chapterId: chapter.id, actorId: session.user.id });
+    }
 
     return NextResponse.json({ ok: true, chapter }, { status: 201 });
   } catch (e) {
