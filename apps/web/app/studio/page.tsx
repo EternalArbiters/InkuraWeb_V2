@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { apiJson } from "@/lib/serverApi";
+import StudioWorksGrid from "./StudioWorksGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -39,30 +40,8 @@ export default async function StudioPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3">
-          {works.length === 0 ? (
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-              Belum ada karya.
-            </div>
-          ) : (
-            works.map((w) => (
-              <Link
-                key={w.id}
-                href={`/studio/works/${w.id}`}
-                className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-semibold">{w.title}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-300">
-                      {w.type} • {w.publishType}
-                    </div>
-                  </div>
-                  <span className="text-sm text-purple-600 dark:text-purple-400">Open ▶</span>
-                </div>
-              </Link>
-            ))
-          )}
+        <div className="mt-8">
+          <StudioWorksGrid works={works as any} />
         </div>
       </div>
     </main>

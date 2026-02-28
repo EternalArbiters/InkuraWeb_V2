@@ -295,3 +295,104 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ workId: string }> }) {
+  const { workId } = await params;
+
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const me = await getCreator(session.user.id);
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Fetch everything we need BEFORE deleting so we can clean up media + orphan records.
+  const work = await prisma.work.findUnique({
+    where: { id: workId },
+    select: {
+      id: true,
+      title: true,
+      authorId: true,
+      coverImage: true,
+      coverKey: true,
+      chapters: { select: { id: true } },
+    },
+  });
+
+  if (!work) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!isOwnerOrAdmin(me.role, session.user.id, work.authorId)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const chapterIds = (work.chapters || []).map((c) => c.id);
+
+  // Collect media keys/urls for best-effort deletion AFTER DB delete.
+  const mediaKeysOrUrls: string[] = [];
+  if (work.coverKey || work.coverImage) mediaKeysOrUrls.push(String(work.coverKey || work.coverImage));
+
+  if (chapterIds.length) {
+    const pages = await prisma.comicPage.findMany({
+      where: { chapterId: { in: chapterIds } },
+      select: { imageKey: true, imageUrl: true },
+    });
+    for (const p of pages) {
+      const k = p.imageKey || p.imageUrl;
+      if (k) mediaKeysOrUrls.push(String(k));
+    }
+  }
+
+  // Comments are polymorphic (targetId), so they WON'T cascade on Work/Chapter delete.
+  // We must delete them manually (+ related reports/notifications).
+  const commentWhere: any = chapterIds.length
+    ? {
+        OR: [
+          { targetType: "WORK", targetId: workId },
+          { targetType: "CHAPTER", targetId: { in: chapterIds } },
+        ],
+      }
+    : { targetType: "WORK", targetId: workId };
+
+  const commentIds = await prisma.comment
+    .findMany({ where: commentWhere, select: { id: true } })
+    .then((rows) => rows.map((r) => r.id));
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Remove notifications that point to this work/chapters (they are not FK constrained).
+      await tx.notification.deleteMany({
+        where: {
+          OR: [
+            { workId: workId },
+            ...(chapterIds.length ? [{ chapterId: { in: chapterIds } }] : []),
+          ],
+        },
+      });
+
+      // Remove reports about comments that will be deleted.
+      if (commentIds.length) {
+        await tx.report.deleteMany({
+          where: {
+            targetType: "COMMENT",
+            targetId: { in: commentIds },
+          },
+        });
+
+        await tx.comment.deleteMany({
+          where: { id: { in: commentIds } },
+        });
+      }
+
+      // Finally delete the work (chapters/pages/text/likes/bookmarks/etc will cascade by FK).
+      await tx.work.delete({ where: { id: workId } });
+    });
+
+    // Best-effort media cleanup (cover + comic pages). Failure here should not fail the request.
+    for (const keyOrUrl of Array.from(new Set(mediaKeysOrUrls))) {
+      await deletePublicUpload(keyOrUrl);
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
