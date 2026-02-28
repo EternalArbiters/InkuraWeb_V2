@@ -8,6 +8,7 @@ import CommentSection from "@/app/components/work/CommentSection";
 import LikeButton from "@/app/components/work/LikeButton";
 import RatingStars from "@/app/components/work/RatingStars";
 import ShareButton from "@/app/components/work/ShareButton";
+import AddToListButton from "@/app/components/work/AddToListButton";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 
 export const dynamic = "force-dynamic";
@@ -173,6 +174,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
+              <AddToListButton workId={work.id} />
               <ShareButton title={work.title} />
               <RatingStars
                 workId={work.id}

@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Menu, X, Search, Upload, Settings, LogOut, Users, History, ListOrdered, Bookmark,
+  Menu, X, Search, Upload, Settings, LogOut, Users, History, ListOrdered, Bookmark, Layers,
   Bell,
   Sun,
   Moon,
@@ -350,6 +350,7 @@ export default function DashboardNavbar() {
                 ) : null}
               </div>
               <IconButton icon={<Bookmark size={22} />} label="Library" href="/library" />
+              <IconButton icon={<Layers size={22} />} label="Lists" href="/lists" />
               <IconButton icon={<History size={22} />} label="History" href="/settings/history" />
               <div className="relative">
                 <IconButton icon={<Settings size={22} />} label="Settings" onClick={() => toggleDropdown("settings")} />

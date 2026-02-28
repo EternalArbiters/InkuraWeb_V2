@@ -43,6 +43,9 @@ model User {
   // Notifications
   notifications Notification[]
 
+  // Reading lists
+  readingLists ReadingList[]
+
   // Moderation
   hiddenComments  Comment[] @relation("HiddenComments")
   reportsMade     Report[]  @relation("ReportsMade")
@@ -170,6 +173,8 @@ model Work {
   ratings     WorkRating[]
   bookmarks   Bookmark[]
   progress    ReadingProgress[]
+
+  readingListItems ReadingListItem[]
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -514,6 +519,43 @@ model Notification {
   @@index([chapterId, createdAt])
 }
 
+
+
+
+// --- Reading Lists / Collections ---
+model ReadingList {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  slug        String   @unique
+  title       String
+  description String?
+  isPublic    Boolean  @default(false)
+
+  items       ReadingListItem[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId, updatedAt])
+  @@index([isPublic, updatedAt])
+}
+
+model ReadingListItem {
+  id        String   @id @default(cuid())
+  listId    String
+  list      ReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  workId    String
+  work      Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+
+  @@unique([listId, workId])
+  @@index([listId, sortOrder])
+  @@index([workId])
+}
 
 // --- Reports ---
 enum ReportTargetType {
