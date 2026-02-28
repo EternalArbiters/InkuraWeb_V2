@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import { savePublicUpload } from "@/lib/upload";
+import { savePublicUpload, deletePublicUpload } from "@/lib/upload";
 
 export const runtime = "nodejs";
 
@@ -32,6 +32,12 @@ function isOwnerOrAdmin(role: string, userId: string, ownerId: string) {
 
 type PageMeta = { url: string; key?: string | null; order?: number | null };
 
+function normalizeReplace(v: unknown): boolean {
+  if (typeof v === "boolean") return v;
+  const s = String(v || "").toLowerCase().trim();
+  return s === "1" || s === "true" || s === "yes" || s === "on" || s === "replace";
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
   const { chapterId } = await params;
   const session = await getServerSession(authOptions);
@@ -55,16 +61,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
 
     let pagesMeta: PageMeta[] = [];
     let files: File[] = [];
+    let replace = false;
 
     if (ct.includes("application/json")) {
       const body = await req.json().catch(() => ({} as any));
+      replace = normalizeReplace(body?.replace ?? body?.mode);
       pagesMeta = Array.isArray(body?.pages)
         ? body.pages
-            .map((p: any) => ({ url: String(p?.url || "").trim(), key: p?.key ? String(p.key) : null, order: p?.order ? Number(p.order) : null }))
+            .map((p: any) => ({
+              url: String(p?.url || "").trim(),
+              key: p?.key ? String(p.key) : null,
+              order: p?.order ? Number(p.order) : null,
+            }))
             .filter((p: PageMeta) => !!p.url)
         : [];
     } else {
       const fd = await req.formData();
+      replace = normalizeReplace(fd.get("replace") || fd.get("mode"));
       files = fd.getAll("pages").filter((x) => typeof x !== "string") as File[];
 
       const pagesJson = String(fd.get("pages") || "").trim();
@@ -73,7 +86,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
           const parsed = JSON.parse(pagesJson);
           if (Array.isArray(parsed)) {
             pagesMeta = parsed
-              .map((p: any) => ({ url: String(p?.url || "").trim(), key: p?.key ? String(p.key) : null, order: p?.order ? Number(p.order) : null }))
+              .map((p: any) => ({
+                url: String(p?.url || "").trim(),
+                key: p?.key ? String(p.key) : null,
+                order: p?.order ? Number(p.order) : null,
+              }))
               .filter((p: PageMeta) => !!p.url);
           }
         } catch {
@@ -84,6 +101,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
 
     if (!files.length && !pagesMeta.length) {
       return NextResponse.json({ error: "No pages provided" }, { status: 400 });
+    }
+
+    // Replace mode: delete existing page rows and best-effort delete their R2 objects.
+    // This prevents duplicates accumulating when re-uploading a chapter.
+    if (replace) {
+      const existing = await prisma.comicPage.findMany({
+        where: { chapterId },
+        select: { id: true, imageKey: true, imageUrl: true },
+      });
+
+      if (existing.length) {
+        await prisma.comicPage.deleteMany({ where: { chapterId } });
+        await Promise.all(
+          existing.map(async (p) => {
+            const keyOrUrl = p.imageKey || p.imageUrl;
+            if (!keyOrUrl) return;
+            await deletePublicUpload(keyOrUrl);
+          })
+        );
+      }
     }
 
     // Upload files (fallback flow)

@@ -1,4 +1,15 @@
-import "server-only";
+// NOTE:
+// `server-only` is a Next.js marker module that helps prevent accidental client imports.
+// When running Node scripts (e.g. `tsx scripts/...`), this module may not be resolvable.
+// We try to load it when available, and safely ignore otherwise.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const require: any;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require("server-only");
+} catch {
+  // ignore outside Next.js bundler/runtime
+}
 
 import crypto from "crypto";
 import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
@@ -9,27 +20,50 @@ function required(name: string, v: string | undefined) {
   return v;
 }
 
+function r2EndpointFromAccountId(accountId: string) {
+  // Cloudflare R2 S3-compatible API endpoint
+  return `https://${accountId}.r2.cloudflarestorage.com`;
+}
+
 export type R2Env = {
   endpoint: string;
   accessKeyId: string;
   secretAccessKey: string;
   bucket: string;
-  publicBaseUrl: string; // e.g. https://cdn.example.com or https://<bucket>.<account>.r2.dev
+  publicBaseUrl: string; // e.g. https://cdn.example.com
 };
 
 export function getR2Env(): R2Env {
-  const endpoint = process.env.R2_ENDPOINT || process.env.CLOUDFLARE_R2_ENDPOINT;
-  const bucket = process.env.R2_BUCKET || process.env.CLOUDFLARE_R2_BUCKET;
+  // Support BOTH naming styles:
+  // - v15 docs / check-env: R2_ACCOUNT_ID + R2_BUCKET_NAME
+  // - runtime helpers:      R2_ENDPOINT + R2_BUCKET
+
+  const accountId = process.env.R2_ACCOUNT_ID || process.env.CLOUDFLARE_R2_ACCOUNT_ID;
+
+  const endpoint =
+    process.env.R2_ENDPOINT ||
+    process.env.CLOUDFLARE_R2_ENDPOINT ||
+    (accountId ? r2EndpointFromAccountId(accountId) : undefined);
+
+  const bucket =
+    process.env.R2_BUCKET ||
+    process.env.CLOUDFLARE_R2_BUCKET ||
+    process.env.R2_BUCKET_NAME ||
+    process.env.CLOUDFLARE_R2_BUCKET_NAME;
+
   const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL || process.env.CLOUDFLARE_R2_PUBLIC_BASE_URL;
 
   return {
-    endpoint: required("R2_ENDPOINT", endpoint),
-    accessKeyId: required("R2_ACCESS_KEY_ID", process.env.R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID),
+    endpoint: required("R2_ENDPOINT (or R2_ACCOUNT_ID)", endpoint),
+    accessKeyId: required(
+      "R2_ACCESS_KEY_ID",
+      process.env.R2_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
+    ),
     secretAccessKey: required(
       "R2_SECRET_ACCESS_KEY",
       process.env.R2_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
     ),
-    bucket: required("R2_BUCKET", bucket),
+    bucket: required("R2_BUCKET (or R2_BUCKET_NAME)", bucket),
     publicBaseUrl: required("R2_PUBLIC_BASE_URL", publicBaseUrl).replace(/\/$/, ""),
   };
 }
@@ -128,7 +162,6 @@ export async function deleteObject(key: string) {
   await client.send(new DeleteObjectCommand({ Bucket: env.bucket, Key: key }));
   return true;
 }
-
 
 export async function headObject(key: string): Promise<{ exists: boolean; contentLength?: number; contentType?: string }> {
   const env = getR2Env();

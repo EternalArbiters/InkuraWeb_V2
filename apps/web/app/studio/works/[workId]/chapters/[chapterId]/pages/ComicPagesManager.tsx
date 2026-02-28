@@ -19,12 +19,25 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
 
+  // Default ON if chapter already has pages to prevent accidental duplicate accumulation.
+  const [replaceExisting, setReplaceExisting] = React.useState<boolean>(pages.length > 0);
+
   async function upload() {
     if (!files.length) return;
     setErr(null);
     setLoading(true);
     try {
-      const startOrder = pages.length;
+      if (replaceExisting && pages.length > 0) {
+        const ok = confirm(
+          "Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones."
+        );
+        if (!ok) {
+          setLoading(false);
+          return;
+        }
+      }
+
+      const startOrder = replaceExisting ? 0 : pages.length;
       const uploaded = [] as { url: string; key: string; order: number }[];
 
       for (let i = 0; i < files.length; i++) {
@@ -36,7 +49,7 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
       const res = await fetch(`/api/studio/chapters/${chapterId}/pages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pages: uploaded }),
+        body: JSON.stringify({ replace: replaceExisting, pages: uploaded }),
       });
 
       const json = await res.json();
@@ -70,11 +83,13 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
   return (
     <div className="grid gap-4">
       {err ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">{err}</div>
+        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
+          {err}
+        </div>
       ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
-        <div className="font-semibold">Add pages</div>
+        <div className="font-semibold">Upload pages</div>
         <input
           type="file"
           accept="image/*"
@@ -82,6 +97,17 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
           onChange={(e) => setFiles(Array.from(e.target.files || []))}
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
         />
+
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 select-none">
+          <input
+            type="checkbox"
+            checked={replaceExisting}
+            onChange={(e) => setReplaceExisting(e.target.checked)}
+            className="h-4 w-4"
+          />
+          Replace existing pages (recommended)
+        </label>
+
         <div className="flex items-center justify-end">
           <button
             type="button"
@@ -89,10 +115,12 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
             disabled={loading || files.length === 0}
             className="px-4 py-2 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
           >
-            {loading ? "Working..." : "Upload"}
+            {loading ? "Working..." : replaceExisting ? "Replace" : "Upload"}
           </button>
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-300">Tip: upload large chapters in batches (e.g. 10–20 pages).</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">
+          Tip: upload large chapters in batches (e.g. 10–20 pages).
+        </div>
       </div>
 
       <div className="grid gap-2">
@@ -102,7 +130,9 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
         </div>
 
         {pages.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">No pages yet.</div>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
+            No pages yet.
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pages.map((p) => (
