@@ -21,6 +21,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   Trash2,
+  Pin,
   X,
 } from "lucide-react";
 
@@ -65,6 +66,8 @@ type CommentItem = {
   attachments?: CommentAttachment[];
   likeCount?: number;
   dislikeCount?: number;
+  isPinned?: boolean;
+  pinnedAt?: string | null;
   viewerLiked?: boolean;
   viewerDisliked?: boolean;
   userRating?: number | null;
@@ -336,6 +339,7 @@ export default function CommentSection({
   const [replyText, setReplyText] = useState("");
 
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const replyRef = useRef<HTMLTextAreaElement | null>(null);
@@ -393,6 +397,21 @@ export default function CommentSection({
     fetchComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetType, targetId, take, scope, workId, sortMode]);
+
+  // Focus/highlight a comment from URL param (?c=commentId)
+  useEffect(() => {
+    const cid = searchParams.get("c");
+    if (!cid) return;
+    if (loading) return;
+
+    const el = document.getElementById(`comment-${cid}`);
+    if (!el) return;
+
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setFocusedId(cid);
+    const t = setTimeout(() => setFocusedId(null), 3000);
+    return () => clearTimeout(t);
+  }, [searchParams, loading, comments]);
 
   const pretty = useMemo(() => decorateTree(comments), [comments]);
 
@@ -718,6 +737,30 @@ export default function CommentSection({
     });
   };
 
+  const togglePin = (commentId: string, pin: boolean) => {
+    setError(null);
+    setInfo(null);
+    startTransition(async () => {
+      const res = await fetch(`/api/comments/${commentId}/pin`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      if (res.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        setError(data?.error || "Gagal pin comment");
+        return;
+      }
+      setInfo(pin ? "Comment pinned" : "Comment unpinned");
+      await fetchComments();
+      router.refresh();
+    });
+  };
+
   const submitReport = async (commentId: string) => {
     setError(null);
     setInfo(null);
@@ -769,13 +812,21 @@ export default function CommentSection({
     const viewerDisliked = !!c.viewerDisliked;
     const isMine = !!viewerId && c.user?.id === viewerId;
 
+    const isPinned = depth === 0 && !!(c as any).isPinned;
+    const isFocused = focusedId === c.id;
+
     const isReplyingHere = replyTo?.id === c.id;
 
     return (
       <div
         key={c.id}
-        className={`rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3 ${
+        id={`comment-${c.id}`}
+        className={`rounded-xl border px-4 py-3 ${
           depth > 0 ? "bg-white/60 dark:bg-gray-950/80" : "bg-white dark:bg-gray-950"
+        } ${
+          isPinned ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20" : "border-gray-200 dark:border-gray-800"
+        } ${
+          isFocused ? "ring-2 ring-amber-400/40" : ""
         }`}
       >
         <div className="flex items-center justify-between gap-3">
@@ -801,6 +852,11 @@ export default function CommentSection({
             {hidden ? (
               <span className="px-2 py-0.5 text-[11px] font-semibold border border-amber-300/60 text-amber-700 dark:text-amber-300 dark:border-amber-500/40">
                 Hidden
+              </span>
+            ) : null}
+            {isPinned ? (
+              <span className="px-2 py-0.5 text-[11px] font-semibold border border-purple-300/60 text-purple-700 dark:text-purple-300 dark:border-purple-500/40">
+                Pinned
               </span>
             ) : null}
             {spoiler ? (
@@ -974,6 +1030,22 @@ export default function CommentSection({
             <Flag className="w-4 h-4" />
           </button>
 
+          {canModerate && depth === 0 && !hidden ? (
+            <button
+              type="button"
+              onClick={() => togglePin(c.id, !isPinned)}
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                isPinned
+                  ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
+                  : "border-gray-300 dark:border-gray-700"
+              }`}
+              title={isPinned ? "Unpin" : "Pin"}
+              aria-label={isPinned ? "Unpin" : "Pin"}
+            >
+              <Pin className="w-4 h-4" />
+            </button>
+          ) : null}
+
           {canModerate ? (
             <button
               type="button"
@@ -1072,7 +1144,7 @@ export default function CommentSection({
   };
 
   return (
-    <section className={variant === "compact" ? "mt-6" : "mt-10"}>
+    <section id="comments" className={variant === "compact" ? "mt-6" : "mt-10"}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-xl font-bold">{title}</h2>
         <div className="flex items-center gap-2">

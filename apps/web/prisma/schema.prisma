@@ -46,8 +46,14 @@ model User {
   // Reading lists
   readingLists ReadingList[]
 
+  // Reviews
+  reviews Review[]
+  reviewVotes ReviewVote[]
+
   // Moderation
   hiddenComments  Comment[] @relation("HiddenComments")
+  pinnedComments  Comment[] @relation("PinnedComments")
+
   reportsMade     Report[]  @relation("ReportsMade")
   reportsResolved Report[]  @relation("ReportsResolved")
 
@@ -171,6 +177,7 @@ model Work {
 
   likes       WorkLike[]
   ratings     WorkRating[]
+  reviews     Review[]
   bookmarks   Bookmark[]
   progress    ReadingProgress[]
 
@@ -416,6 +423,11 @@ model Comment {
   likeCount  Int               @default(0)
   dislikeCount Int             @default(0)
 
+  // v16.2: pinned/highlighted comment
+  isPinned   Boolean           @default(false)
+  pinnedAt   DateTime?
+  pinnedById String?
+
   // Moderation
   isHidden   Boolean           @default(false)
   hiddenAt   DateTime?
@@ -425,6 +437,7 @@ model Comment {
   parent      Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies     Comment[]         @relation("CommentReplies")
   hiddenBy    User?             @relation("HiddenComments", fields: [hiddenById], references: [id])
+  pinnedBy   User?             @relation("PinnedComments", fields: [pinnedById], references: [id], onDelete: SetNull)
   attachments CommentAttachment[]
   likes       CommentLike[]
   dislikes    CommentDislike[]
@@ -432,6 +445,8 @@ model Comment {
   @@index([targetType, targetId, createdAt])
   @@index([targetType, targetId, parentId, createdAt])
   @@index([parentId])
+  @@index([targetType, targetId, isPinned, pinnedAt])
+  @@index([pinnedById])
   @@index([userId, createdAt])
 }
 
@@ -491,6 +506,10 @@ model FollowUser {
 enum NotificationType {
   NEW_WORK
   NEW_CHAPTER
+  COMMENT_NEW
+  COMMENT_REPLY
+  COMMENT_MENTION
+  COMMENT_PINNED
 }
 
 model Notification {
@@ -521,6 +540,45 @@ model Notification {
 
 
 
+
+
+
+// --- Reviews ---
+model Review {
+  id           String   @id @default(cuid())
+  workId       String
+  userId       String
+
+  rating       Int
+  title        String?
+  body         String   @db.Text
+  isSpoiler    Boolean  @default(false)
+
+  helpfulCount Int      @default(0)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  work         Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes        ReviewVote[]
+
+  @@unique([workId, userId])
+  @@index([workId, createdAt])
+  @@index([workId, helpfulCount, createdAt])
+}
+
+model ReviewVote {
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review    Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
+  @@index([userId])
+}
 
 // --- Reading Lists / Collections ---
 model ReadingList {

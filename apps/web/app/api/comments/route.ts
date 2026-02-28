@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { notifyCommentEvents } from "@/server/services/notifyCommentEvents";
 
 export const runtime = "nodejs";
 
@@ -30,28 +31,44 @@ function clampInt(v: unknown, def: number, min: number, max: number) {
 }
 
 function sortRoots(mode: SortMode, items: any[]) {
-  if (mode === "top") {
-    return items.sort((a, b) => {
-      const lc = (b.likeCount ?? 0) - (a.likeCount ?? 0);
-      if (lc !== 0) return lc;
+  const pinned = items.filter((x) => !!x?.isPinned);
+  const rest = items.filter((x) => !x?.isPinned);
+
+  pinned.sort((a, b) => {
+    const ta = +(a.pinnedAt ? new Date(a.pinnedAt) : new Date(a.createdAt));
+    const tb = +(b.pinnedAt ? new Date(b.pinnedAt) : new Date(b.createdAt));
+    if (tb !== ta) return tb - ta;
+    const t2 = +new Date(b.createdAt) - +new Date(a.createdAt);
+    if (t2 !== 0) return t2;
+    return String(b.id).localeCompare(String(a.id));
+  });
+
+  const sorted = (() => {
+    if (mode === "top") {
+      return rest.sort((a, b) => {
+        const lc = (b.likeCount ?? 0) - (a.likeCount ?? 0);
+        if (lc !== 0) return lc;
+        const t = +new Date(b.createdAt) - +new Date(a.createdAt);
+        if (t !== 0) return t;
+        return String(b.id).localeCompare(String(a.id));
+      });
+    }
+    if (mode === "oldest") {
+      return rest.sort((a, b) => {
+        const t = +new Date(a.createdAt) - +new Date(b.createdAt);
+        if (t !== 0) return t;
+        return String(a.id).localeCompare(String(b.id));
+      });
+    }
+    // latest
+    return rest.sort((a, b) => {
       const t = +new Date(b.createdAt) - +new Date(a.createdAt);
       if (t !== 0) return t;
       return String(b.id).localeCompare(String(a.id));
     });
-  }
-  if (mode === "oldest") {
-    return items.sort((a, b) => {
-      const t = +new Date(a.createdAt) - +new Date(b.createdAt);
-      if (t !== 0) return t;
-      return String(a.id).localeCompare(String(b.id));
-    });
-  }
-  // latest
-  return items.sort((a, b) => {
-    const t = +new Date(b.createdAt) - +new Date(a.createdAt);
-    if (t !== 0) return t;
-    return String(b.id).localeCompare(String(a.id));
-  });
+  })();
+
+  return [...pinned, ...sorted];
 }
 
 function buildTree(all: any[]) {
@@ -328,6 +345,20 @@ export async function POST(req: Request) {
       },
     });
   });
+  try {
+    if (created?.id) {
+      await notifyCommentEvents({
+        commentId: created.id,
+        actorId: session.user.id,
+        targetType,
+        targetId,
+        parentId: parentId || null,
+        body: text,
+      });
+    }
+  } catch (e) {
+    console.error("notifyCommentEvents failed", e);
+  }
 
   return NextResponse.json({ ok: true, comment: created }, { status: 201 });
 }

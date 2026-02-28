@@ -9,6 +9,7 @@ import LikeButton from "@/app/components/work/LikeButton";
 import RatingStars from "@/app/components/work/RatingStars";
 import ShareButton from "@/app/components/work/ShareButton";
 import AddToListButton from "@/app/components/work/AddToListButton";
+import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 
 export const dynamic = "force-dynamic";
@@ -45,10 +46,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               </p>
 
               <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                <Link
-                  href="/settings/account"
-                  className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110"
-                >
+                <Link href="/settings/account" className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110">
                   {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
                 </Link>
               </div>
@@ -66,7 +64,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
                   {isDeviant
                     ? "Deviant Love locked. Pastikan kamu sudah centang 18+ lalu unlock Deviant Love."
-                    : "NSFW locked. Pastikan kamu sudah centang \"I am 18+\" dan aktifkan \"Include mature content\"."}
+                    : 'NSFW locked. Pastikan kamu sudah centang "I am 18+" dan aktifkan "Include mature content".'}
                 </div>
               ) : null}
             </div>
@@ -109,9 +107,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                   <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
                   <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.completion}</span>
                   {work.language ? (
-                    <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">
-                      {String(work.language).toUpperCase()}
-                    </span>
+                    <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{String(work.language).toUpperCase()}</span>
                   ) : null}
                   {work.isMature ? <span className="px-2 py-1 rounded-full bg-black/70 text-white">18+</span> : null}
                 </div>
@@ -184,9 +180,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               />
             </div>
 
-            {work.description ? (
-              <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{work.description}</p>
-            ) : null}
+            {work.description ? <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{work.description}</p> : null}
 
             <div className="mt-6">
               <WorkInfoPanel work={work} />
@@ -237,32 +231,15 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               </ContentWarningsGate>
             </div>
 
-            {/* Reviews: overall rating + work-level comments */}
-            <CommentSection
-              targetType="WORK"
-              targetId={work.id}
-              title="Reviews"
-              showUserRating={true}
-              headerRight={
-                <RatingStars
-                  workId={work.id}
-                  initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
-                  ratingAvg={Number(work.ratingAvg ?? 0)}
-                  ratingCount={Number(work.ratingCount ?? 0)}
-                />
-              }
+            <ReviewSection
+              workId={work.id}
+              ratingAvg={Number(work.ratingAvg ?? 0)}
+              ratingCount={Number(work.ratingCount ?? 0)}
+              initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
             />
 
             {/* Comments: aggregated from all chapters */}
-            <CommentSection
-              targetType="CHAPTER"
-              targetId={work.id}
-              title="Comments"
-              scope="workChapters"
-              showComposer={false}
-              sort="top"
-            />
-
+            <CommentSection targetType="CHAPTER" targetId={work.id} title="Comments" scope="workChapters" showComposer={false} sort="top" />
           </div>
         </div>
       </div>
