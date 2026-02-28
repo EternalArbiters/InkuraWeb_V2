@@ -60,7 +60,16 @@ export async function GET(req: Request) {
   const works = await prisma.work.findMany({
     where: me.role === "ADMIN" && all ? {} : { authorId: session.user.id },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true, type: true, status: true, updatedAt: true, publishType: true, authorId: true },
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      status: true,
+      updatedAt: true,
+      publishType: true,
+      authorId: true,
+      coverImage: true,
+    },
   });
 
   return NextResponse.json({ works });

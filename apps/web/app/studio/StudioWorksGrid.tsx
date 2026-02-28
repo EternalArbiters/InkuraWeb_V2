@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, Trash2 } from "lucide-react";
 import PublishToggle from "./works/[workId]/PublishToggle";
 
 type WorkItem = {
@@ -65,20 +66,20 @@ export default function StudioWorksGrid({ works }: { works: WorkItem[] }) {
               <div className="absolute top-2 right-2 flex items-center gap-2">
                 <Link
                   href={`/studio/works/${w.id}`}
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 transition"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/70 dark:bg-black/55 text-gray-900 dark:text-white backdrop-blur border border-black/10 dark:border-white/10 hover:bg-white/85 dark:hover:bg-black/70 transition"
                   title="Edit / Open"
                   aria-label={`Open ${w.title}`}
                 >
-                  ✏️
+                  <Pencil className="w-5 h-5" />
                 </Link>
                 <button
                   type="button"
                   onClick={() => setConfirm(w)}
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 transition"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/70 dark:bg-black/55 text-gray-900 dark:text-white backdrop-blur border border-black/10 dark:border-white/10 hover:bg-white/85 dark:hover:bg-black/70 transition"
                   title="Delete"
                   aria-label={`Delete ${w.title}`}
                 >
-                  🗑️
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>
