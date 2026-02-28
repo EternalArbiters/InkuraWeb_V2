@@ -11,6 +11,7 @@ import {
   Bell,
   Sun,
   Moon,
+  ChevronDown,
 } from "lucide-react";
 import IconButton from "./IconButton";
 import MobileNav from "./MobileNav";
@@ -490,28 +491,40 @@ export default function DashboardNavbar() {
               </h2>
               <form
                 onSubmit={handleSearch}
-                className="relative flex items-stretch w-full overflow-hidden rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                className="relative flex w-full items-stretch overflow-hidden rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
               >
-                <select
-                  value={searchType}
-                  onChange={e => setSearchType(e.target.value)}
-                  className="px-3 text-sm bg-transparent text-gray-700 dark:text-white border-r border-gray-300 dark:border-gray-700 outline-none"
-                >
-                  {["title", "tags", "authors", "translator", "users"].map(opt => (
-                    <option key={opt} value={opt}>{opt[0].toUpperCase() + opt.slice(1)}</option>
-                  ))}
-                </select>
+                <div className="relative w-[120px] shrink-0">
+                  <select
+                    value={searchType}
+                    onChange={(e) => setSearchType(e.target.value)}
+                    className="h-full w-full appearance-none bg-transparent pl-4 pr-9 py-2 text-sm text-gray-700 dark:text-white outline-none"
+                  >
+                    {["title", "tags", "authors", "translator", "users"].map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt[0].toUpperCase() + opt.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={16}
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                  />
+                </div>
+
+                <div className="w-px bg-gray-300/80 dark:bg-gray-700" />
+
                 <input
                   autoFocus
                   type="text"
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={`Search ${searchType}...`}
-                  className="flex-1 px-4 py-2 text-sm bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none pr-16"
+                  className="min-w-0 flex-1 bg-transparent px-4 py-2 pr-20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white"
                 />
+
                 <button
                   type="submit"
-                  className="absolute right-0 inset-y-0 w-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 transition flex items-center justify-center"
+                  className="absolute right-0 inset-y-0 w-16 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110 flex items-center justify-center"
                   aria-label="Search"
                   title="Search"
                 >
