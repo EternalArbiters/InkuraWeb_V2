@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, DeleteObjectCommand, type ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 
 import { getR2Client, getR2Env, tryExtractKeyFromUrl } from "../server/storage/r2";
 
@@ -126,7 +126,7 @@ async function listAllObjects(params: { prefix?: string }) {
   const out: { key: string; size: number; lastModified?: Date }[] = [];
 
   do {
-    const res = await client.send(
+    const res: ListObjectsV2CommandOutput = await client.send(
       new ListObjectsV2Command({
         Bucket: env.bucket,
         Prefix: params.prefix || undefined,
