@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 export default function PublishToggle({
   workId,
   status,
+  fullWidth = false,
 }: {
   workId: string;
   status: "DRAFT" | "PUBLISHED";
+  fullWidth?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -41,11 +43,11 @@ export default function PublishToggle({
   };
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className={`flex flex-col gap-2 ${fullWidth ? "items-stretch" : "items-start"}`}>
       <button
         onClick={onClick}
         disabled={isPending}
-        className={`rounded-full px-4 py-2 text-sm font-semibold border transition ${
+        className={`rounded-full px-4 py-2 text-sm font-semibold border transition ${fullWidth ? "w-full text-center" : ""} ${
           status === "PUBLISHED"
             ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200"
             : "border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-200"
