@@ -8,6 +8,8 @@ import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 
+type PublishType = "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
+
 type Work = {
   id: string;
   slug: string;
@@ -20,7 +22,7 @@ type Work = {
   origin: string;
   completion: string;
   isMature: boolean;
-  publishType?: "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
+  publishType?: PublishType;
   originalAuthorCredit?: string | null;
   originalTranslatorCredit?: string | null;
   sourceUrl?: string | null;
@@ -51,7 +53,8 @@ function hrefForWorkSlug(slug: string) {
 export default function WorkEditForm({ work, genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
 
-  const publishType = (work.publishType || "ORIGINAL").toUpperCase() as Work["publishType"];
+  // Normalize publishType to a non-optional string literal union so FormData.append is type-safe.
+  const publishType: PublishType = ((work.publishType || "ORIGINAL").toUpperCase() as PublishType);
   const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
   const [title, setTitle] = React.useState(work.title);
