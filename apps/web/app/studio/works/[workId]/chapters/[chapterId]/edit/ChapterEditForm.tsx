@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
-import ThumbCropper from "@/components/ThumbCropper";
+import ThumbCropper from "@/app/components/ThumbCropper";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Chapter = {
