@@ -78,7 +78,11 @@ export default function AddToListButton({ workId }: { workId: string }) {
       </button>
 
       {open ? (
-        <div className="absolute z-50 mt-2 right-0 w-[320px] max-w-[80vw] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-xl overflow-hidden">
+        <>
+          {/* Mobile: use fixed sheet so it never gets clipped */}
+          <div className="fixed inset-0 z-40 md:hidden" onClick={() => setOpen(false)} />
+
+          <div className="fixed z-50 bottom-24 left-1/2 -translate-x-1/2 w-[360px] max-w-[92vw] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-xl overflow-hidden md:absolute md:bottom-auto md:left-auto md:translate-x-0 md:mt-2 md:right-0 md:w-[320px] md:max-w-[80vw]">
           <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
             <div className="text-sm font-extrabold">Add to list</div>
             <div className="flex items-center gap-2">
@@ -140,7 +144,8 @@ export default function AddToListButton({ workId }: { workId: string }) {
               Close
             </button>
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
   );

@@ -102,6 +102,8 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
   const publishLabel = publishTypeLabel(work?.publishType);
 
   const ratingText =
+  const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
+  const isUp = !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000;
     typeof work?.ratingAvg === "number" && typeof work?.ratingCount === "number"
       ? `${work.ratingAvg.toFixed(2)} (${work.ratingCount})`
       : "";
@@ -136,12 +138,10 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
             {work?.title || "Untitled"}
           </div>
 
-          {(author || translator) && (
-            <div className="mt-1 text-xs sm:text-sm text-gray-700 dark:text-gray-200 line-clamp-1">
-              {author}
-              {translator ? <span className="opacity-80"> • TL: {translator}</span> : null}
-            </div>
-          )}
+          <div className="mt-1 text-xs sm:text-sm text-gray-700 dark:text-gray-200 truncate" title={`Up by ${author || "Unknown"}`}>
+            Up by {author || "Unknown"}
+            {translator ? <span className="opacity-80"> • TL: {translator}</span> : null}
+          </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
             {typeof work?.chapterCount === "number" ? <span>Ch: {work.chapterCount}</span> : null}
@@ -153,13 +153,14 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
 
           {/* Row-list-only badges: moved below the Updated line */}
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className={`text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(type)}`}>{type}</span>
+            {isUp ? <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-emerald-500/90 text-white">UP</span> : null}
+            <span className={`inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(type)}`}>{type}</span>
             {publishLabel ? (
-              <span className="text-[10px] px-2 py-1 rounded-full bg-gray-200 text-gray-800 dark:bg-black/55 dark:text-white">
+              <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-gray-200 text-gray-800 dark:bg-black/55 dark:text-white">
                 {publishLabel}
               </span>
             ) : null}
-            {work?.isMature ? <span className="text-[10px] px-2 py-1 rounded-full bg-black/75 text-white">18+</span> : null}
+            {work?.isMature ? <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/75 text-white">18+</span> : null}
           </div>
         </div>
       </Link>

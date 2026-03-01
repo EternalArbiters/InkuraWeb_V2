@@ -127,6 +127,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
       originalAuthorCredit: true,
       sourceUrl: true,
       uploaderNote: true,
+      translatorCredit: true,
+      companyCredit: true,
+      prevArcUrl: true,
+      nextArcUrl: true,
     },
   });
 
@@ -179,6 +183,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     const sourceUrlRaw = String(fd.get("sourceUrl") || "").trim();
     const uploaderNoteRaw = String(fd.get("uploaderNote") || "");
 
+    const hasTranslatorCredit = fd.get("translatorCredit") != null;
+    const translatorCreditRaw = hasTranslatorCredit ? String(fd.get("translatorCredit") || "").trim() : "";
+
+    const hasCompanyCredit = fd.get("companyCredit") != null;
+    const companyCreditRaw = hasCompanyCredit ? String(fd.get("companyCredit") || "").trim() : "";
+    const prevArcUrlRaw = String(fd.get("prevArcUrl") || "").trim();
+    const nextArcUrlRaw = String(fd.get("nextArcUrl") || "").trim();
+
     // Allow editing publishType in studio (optional; defaults to existing)
     const publishTypeFromForm = fd.get("publishType");
     const nextPublishType =
@@ -198,21 +210,39 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
 
     // publishType rules:
     // - TRANSLATION: credit + source required; translatorId should be set (uploader)
-    // - REUPLOAD: source required
+    // - REUPLOAD: credit + source required
+    // - ORIGINAL: clear all credit fields
     const publishType = String(nextPublishType || "ORIGINAL").toUpperCase();
     const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
-    const nextOriginalAuthorCredit =
-      publishType === "TRANSLATION" ? (originalAuthorCreditRaw || existing.originalAuthorCredit || "") : null;
+    const nextOriginalAuthorCredit = needsSource ? (originalAuthorCreditRaw || existing.originalAuthorCredit || "") : null;
     const nextSourceUrl = needsSource ? (sourceUrlRaw || existing.sourceUrl || "") : null;
     const nextUploaderNote = publishType === "REUPLOAD" ? uploaderNoteRaw : null;
     const nextTranslatorId = publishType === "TRANSLATION" ? session.user.id : null;
+
+    const nextTranslatorCredit =
+      publishType === "TRANSLATION"
+        ? hasTranslatorCredit
+          ? (translatorCreditRaw || null)
+          : (existing.translatorCredit || null)
+        : null;
+
+    const nextCompanyCredit =
+      needsSource
+        ? hasCompanyCredit
+          ? (companyCreditRaw || null)
+          : (existing.companyCredit || null)
+        : null;
+
+    const nextPrevArcUrl = prevArcUrlRaw || null;
+    const nextNextArcUrl = nextArcUrlRaw || null;
 
     if (publishType === "TRANSLATION") {
       if (!String(nextOriginalAuthorCredit || "").trim()) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
       if (!String(nextSourceUrl || "").trim()) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
     }
     if (publishType === "REUPLOAD") {
+      if (!String(nextOriginalAuthorCredit || "").trim()) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
       if (!String(nextSourceUrl || "").trim()) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
     }
 
@@ -286,6 +316,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
         originalAuthorCredit: needsSource ? nextOriginalAuthorCredit : null,
         sourceUrl: needsSource ? nextSourceUrl : null,
         uploaderNote: publishType === "REUPLOAD" ? nextUploaderNote : null,
+
+        translatorCredit: publishType === "TRANSLATION" ? nextTranslatorCredit : null,
+        companyCredit: needsSource ? nextCompanyCredit : null,
+        prevArcUrl: nextPrevArcUrl,
+        nextArcUrl: nextNextArcUrl,
 
         genres: { set: genreIds.map((id) => ({ id })) },
         warningTags: { set: warningTagIds.map((id) => ({ id })) },

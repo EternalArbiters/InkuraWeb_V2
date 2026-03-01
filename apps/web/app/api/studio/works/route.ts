@@ -113,6 +113,8 @@ export async function POST(req: Request) {
     let originalAuthorCredit: string | null = null;
     let sourceUrl: string | null = null;
     let uploaderNote: string | null = null;
+    let translatorCredit: string | null = null;
+    let companyCredit: string | null = null;
 
     // v14: cover upload is required at creation (max 2MB). Server uploads to R2.
     let coverFile: File | null = null;
@@ -140,6 +142,8 @@ export async function POST(req: Request) {
       originalAuthorCredit = String(fd.get("originalAuthorCredit") || "").trim() || null;
       sourceUrl = String(fd.get("sourceUrl") || "").trim() || null;
       uploaderNote = String(fd.get("uploaderNote") || "").trim() || null;
+      translatorCredit = String(fd.get("translatorCredit") || "").trim() || null;
+      companyCredit = String(fd.get("companyCredit") || "").trim() || null;
 
       const cover = fd.get("cover");
       if (cover && typeof cover !== "string") {
@@ -159,11 +163,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Cover too large (max 2MB)." }, { status: 400 });
     }
 
-    if (publishType === "TRANSLATION") {
+    if (publishType === "TRANSLATION" || publishType === "REUPLOAD") {
       if (!originalAuthorCredit) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
-      if (!sourceUrl) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
-    }
-    if (publishType === "REUPLOAD") {
       if (!sourceUrl) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
     }
 
@@ -194,6 +195,9 @@ export async function POST(req: Request) {
         originalAuthorCredit: publishType === "ORIGINAL" ? null : originalAuthorCredit,
         sourceUrl: publishType === "ORIGINAL" ? null : sourceUrl,
         uploaderNote: publishType === "REUPLOAD" ? uploaderNote : null,
+
+        translatorCredit: publishType === "TRANSLATION" ? translatorCredit : null,
+        companyCredit: publishType === "ORIGINAL" ? null : companyCredit,
 
         genres: genreIds.length ? { connect: genreIds.map((id) => ({ id })) } : undefined,
         warningTags: warningTagIds.length ? { connect: warningTagIds.map((id) => ({ id })) } : undefined,

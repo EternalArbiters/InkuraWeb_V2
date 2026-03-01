@@ -216,7 +216,7 @@ export default async function SearchPage({
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Search</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Advance Search</h1>
 
         <form
           className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_180px_180px_220px_180px_140px] gap-3"
@@ -588,13 +588,14 @@ export default async function SearchPage({
                       isMature: !!w.isMature,
                       language: w.language,
                       comicType: w.comicType,
+                      updatedAt: w.updatedAt,
                     }}
                   />
                 </div>
                 <div className="p-3">
                   <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
-                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                    {w.type} • {authorName}
+                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate" title={`Up by ${authorName}`}>
+                    Up by {authorName}
                   </div>
                   <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
                     {typeof w.chapterCount === "number" ? `${w.chapterCount} ch` : null}

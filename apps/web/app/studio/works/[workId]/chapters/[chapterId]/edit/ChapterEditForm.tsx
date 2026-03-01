@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Chapter = {
   id: string;
@@ -13,6 +14,9 @@ type Chapter = {
   warningTags: { id: string; name: string; slug: string }[];
   text?: { content: string } | null;
   authorNote?: string | null;
+  thumbnailImage?: string | null;
+  thumbnailKey?: string | null;
+  pages?: { id: string; imageUrl: string; imageKey?: string | null; order: number }[];
 };
 
 type Props = {
@@ -34,8 +38,36 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   const [content, setContent] = React.useState(chapter.text?.content || "");
   const [authorNote, setAuthorNote] = React.useState(chapter.authorNote || "");
 
+  const [thumbUrl, setThumbUrl] = React.useState<string | null>(chapter.thumbnailImage || null);
+  const [thumbKey, setThumbKey] = React.useState<string | null>(chapter.thumbnailKey || null);
+  const [thumbUploading, setThumbUploading] = React.useState(false);
+
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  const autoThumb = React.useMemo(() => {
+    const pages = Array.isArray(chapter.pages) ? chapter.pages.filter((p) => !!p?.imageUrl) : [];
+    if (!pages.length) return null;
+    // stable "random": pick based on chapterId hash
+    let h = 5381;
+    for (let i = 0; i < chapter.id.length; i++) h = (h * 33) ^ chapter.id.charCodeAt(i);
+    const idx = (h >>> 0) % pages.length;
+    return pages[idx]?.imageUrl || pages[0]?.imageUrl || null;
+  }, [chapter.id, chapter.pages]);
+
+  async function uploadThumbnail(file: File) {
+    setError(null);
+    setThumbUploading(true);
+    try {
+      const up = await presignAndUpload({ scope: "pages", file, workId, chapterId: chapter.id });
+      setThumbUrl(up.url);
+      setThumbKey(up.key);
+    } catch (e: any) {
+      setError(e?.message || "Failed to upload thumbnail");
+    } finally {
+      setThumbUploading(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +83,10 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       };
       if (workType === "NOVEL") payload.content = content;
       payload.authorNote = authorNote.trim() ? authorNote : null;
+
+      // Chapter thumbnail (optional)
+      payload.thumbnailImage = thumbUrl || null;
+      payload.thumbnailKey = thumbUrl ? thumbKey || null : null;
 
       const res = await fetch(`/api/studio/chapters/${chapter.id}`, {
         method: "PATCH",
@@ -148,6 +184,90 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           </p>
         </div>
       )}
+
+      {/* Chapter thumbnail (Webtoon-style) */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold">Chapter cover (thumbnail)</div>
+            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+              Kalau tidak dipilih, sistem akan ambil otomatis dari page (acak tapi stabil).
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setThumbUrl(null);
+              setThumbKey(null);
+            }}
+            className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
+            disabled={thumbUploading}
+          >
+            Use auto
+          </button>
+        </div>
+
+        <div className="mt-3 grid md:grid-cols-[140px_1fr] gap-4 items-start">
+          <div className="w-[140px]">
+            <div className="aspect-[3/2] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
+              {thumbUrl || autoThumb ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumbUrl || autoThumb || ""} alt="thumbnail" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">No image</div>
+              )}
+            </div>
+            <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300">
+              Mode: <b>{thumbUrl ? "Custom" : "Auto"}</b>
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Upload thumbnail</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadThumbnail(f);
+                }}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+                disabled={thumbUploading}
+              />
+              {thumbUploading ? <span className="text-xs text-gray-600 dark:text-gray-300">Uploading…</span> : null}
+            </label>
+
+            {workType === "COMIC" && Array.isArray(chapter.pages) && chapter.pages.length ? (
+              <div>
+                <div className="text-sm font-semibold">Pick from pages</div>
+                <div className="mt-2 grid grid-cols-4 sm:grid-cols-6 gap-2">
+                  {chapter.pages.slice(0, 24).map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setThumbUrl(p.imageUrl);
+                        setThumbKey(p.imageKey || null);
+                      }}
+                      className={
+                        "aspect-[1/1] rounded-xl overflow-hidden border transition " +
+                        (thumbUrl === p.imageUrl
+                          ? "border-purple-500 ring-2 ring-purple-400"
+                          : "border-gray-200 dark:border-gray-800 hover:brightness-95")
+                      }
+                      title={`Use page #${p.order}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.imageUrl} alt="page" className="w-full h-full object-cover" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
 
       <label className="grid gap-2">
         <span className="text-sm font-semibold">Author message (optional)</span>

@@ -27,6 +27,7 @@ export default async function AdminTaxonomyLayout({ children }: { children: Reac
         </div>
         <div className="flex flex-wrap gap-2">
           <NavLink href="/admin/reports" label="Reports" />
+          <NavLink href="/admin/notify" label="Notify" />
           <NavLink href="/admin/taxonomy/genres" label="Genres" />
           <NavLink href="/admin/taxonomy/warnings" label="Warnings" />
           <NavLink href="/admin/taxonomy/deviant-love" label="Deviant Love" />

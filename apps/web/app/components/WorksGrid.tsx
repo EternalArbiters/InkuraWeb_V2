@@ -14,6 +14,7 @@ type Work = {
   likeCount?: number;
   ratingAvg?: number;
   ratingCount?: number;
+  updatedAt?: string | Date | null;
   author?: { username?: string | null; name?: string | null } | null;
 };
 
@@ -41,14 +42,14 @@ export default function WorksGrid({ works }: { works: Work[] }) {
                   isMature: !!w.isMature,
                   language: w.language,
                   comicType: w.comicType,
+                  updatedAt: w.updatedAt,
                 }}
               />
             </div>
             <div className="p-3">
               <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
-              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                {w.type ? `${w.type} • ` : ""}
-                {authorName}
+              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate" title={`Up by ${authorName}`}>
+                Up by {authorName}
               </div>
               <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-3">
                 <span>❤ {w.likeCount ?? 0}</span>

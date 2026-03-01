@@ -24,17 +24,18 @@ export default function WorkCardSquare({ work }: { work: any }) {
             isMature: !!work?.isMature,
             language: work?.language,
             comicType: work?.comicType,
+            updatedAt: work?.updatedAt,
           }}
         />
       </div>
 
       <div className="p-3">
         <div className="text-sm font-semibold leading-snug line-clamp-2">{work?.title || "Untitled"}</div>
-        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 line-clamp-1">
-          {work?.author?.name || work?.author?.username || ""}
-          {work?.translator?.name || work?.translator?.username ? (
-            <span className="opacity-80"> • TL: {work?.translator?.name || work?.translator?.username}</span>
-          ) : null}
+        <div
+          className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate"
+          title={`Up by ${work?.author?.name || work?.author?.username || "Unknown"}`}
+        >
+          Up by {work?.author?.name || work?.author?.username || "Unknown"}
         </div>
       </div>
     </Link>

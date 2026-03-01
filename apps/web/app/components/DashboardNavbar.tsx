@@ -381,6 +381,11 @@ export default function DashboardNavbar() {
                         Taxonomy
                       </Link>
                     ) : null}
+                    {session?.user?.role === "ADMIN" ? (
+                      <Link href="/admin/notify" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
+                        Notify User
+                      </Link>
+                    ) : null}
                     <div className="px-4 py-2">
                       <button
                         onClick={toggleDarkMode}

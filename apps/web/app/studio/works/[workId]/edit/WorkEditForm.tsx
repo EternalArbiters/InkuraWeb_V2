@@ -23,6 +23,11 @@ type Work = {
   originalAuthorCredit?: string | null;
   sourceUrl?: string | null;
   uploaderNote?: string | null;
+  translatorCredit?: string | null;
+  companyCredit?: string | null;
+
+  prevArcUrl?: string | null;
+  nextArcUrl?: string | null;
   genres: { id: string; name: string; slug: string }[];
   warningTags: { id: string; name: string; slug: string }[];
   deviantLoveTags?: { id: string; name: string; slug: string }[];
@@ -54,6 +59,12 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [originalAuthorCredit, setOriginalAuthorCredit] = React.useState(work.originalAuthorCredit || "");
   const [sourceUrl, setSourceUrl] = React.useState(work.sourceUrl || "");
   const [uploaderNote, setUploaderNote] = React.useState(work.uploaderNote || "");
+
+  const [translatorCredit, setTranslatorCredit] = React.useState(work.translatorCredit || "");
+  const [companyCredit, setCompanyCredit] = React.useState(work.companyCredit || "");
+
+  const [prevArcUrl, setPrevArcUrl] = React.useState(work.prevArcUrl || "");
+  const [nextArcUrl, setNextArcUrl] = React.useState(work.nextArcUrl || "");
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
@@ -97,10 +108,15 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       if (needsSource) {
         fd.append("originalAuthorCredit", originalAuthorCredit);
         fd.append("sourceUrl", sourceUrl);
+        fd.append("companyCredit", companyCredit);
+        if (publishType === "TRANSLATION") fd.append("translatorCredit", translatorCredit);
       }
       if (publishType === "REUPLOAD") {
         fd.append("uploaderNote", uploaderNote);
       }
+
+      fd.append("prevArcUrl", prevArcUrl);
+      fd.append("nextArcUrl", nextArcUrl);
 
       if (coverFile && !removeCover) {
         const up = await presignAndUpload({ scope: "covers", file: coverFile, workId: work.id });
@@ -161,6 +177,28 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
             />
           </label>
 
+          {publishType === "TRANSLATION" ? (
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Translator credit (optional)</span>
+              <input
+                value={translatorCredit}
+                onChange={(e) => setTranslatorCredit(e.target.value)}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+                placeholder="Team / group / alias"
+              />
+            </label>
+          ) : null}
+
+          <label className="grid gap-2">
+            <span className="text-sm font-semibold">Company / publisher (optional)</span>
+            <input
+              value={companyCredit}
+              onChange={(e) => setCompanyCredit(e.target.value)}
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              placeholder="Publisher / platform / company"
+            />
+          </label>
+
           {publishType === "REUPLOAD" ? (
             <label className="grid gap-2">
               <span className="text-sm font-semibold">Uploader note (optional)</span>
@@ -174,6 +212,33 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
           ) : null}
         </div>
       ) : null}
+
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+        <div className="text-sm font-semibold">Series arc links (optional)</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">
+          Untuk series yang punya arc/season lain. Bisa link ke /w/slug atau URL luar.
+        </div>
+
+        <label className="grid gap-2">
+          <span className="text-sm font-semibold">Previous arc URL</span>
+          <input
+            value={prevArcUrl}
+            onChange={(e) => setPrevArcUrl(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            placeholder="/w/arc-1-slug"
+          />
+        </label>
+
+        <label className="grid gap-2">
+          <span className="text-sm font-semibold">Next arc URL</span>
+          <input
+            value={nextArcUrl}
+            onChange={(e) => setNextArcUrl(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            placeholder="/w/arc-3-slug"
+          />
+        </label>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label className="grid gap-2">

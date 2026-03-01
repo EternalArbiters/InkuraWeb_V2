@@ -29,6 +29,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
   const [publishType, setPublishType] = React.useState<"ORIGINAL" | "TRANSLATION" | "REUPLOAD">("ORIGINAL");
   const [originalAuthorCredit, setOriginalAuthorCredit] = React.useState("");
+  const [translatorCredit, setTranslatorCredit] = React.useState("");
+  const [companyCredit, setCompanyCredit] = React.useState("");
   const [sourceUrl, setSourceUrl] = React.useState("");
   const [uploaderNote, setUploaderNote] = React.useState("");
 
@@ -77,8 +79,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
     setTags(next);
   }
 
-  const needsCredit = publishType === "TRANSLATION";
-  const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
+  const needsOriginalAuthor = publishType !== "ORIGINAL";
+  const needsSource = publishType !== "ORIGINAL";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,8 +94,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       setErr("Cover wajib diupload (max 2MB).");
       return;
     }
-    if (needsCredit && !originalAuthorCredit.trim()) {
-      setErr("Original author credit wajib diisi untuk Translation.");
+    if (needsOriginalAuthor && !originalAuthorCredit.trim()) {
+      setErr("Original author credit wajib diisi untuk Translation / Reupload.");
       return;
     }
     if (needsSource && !sourceUrl.trim()) {
@@ -120,9 +122,11 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
       if (publishType !== "ORIGINAL") {
         fd.set("sourceUrl", sourceUrl.trim());
-      }
-      if (publishType === "TRANSLATION") {
         fd.set("originalAuthorCredit", originalAuthorCredit.trim());
+        if (companyCredit.trim()) fd.set("companyCredit", companyCredit.trim());
+      }
+      if (publishType === "TRANSLATION" && translatorCredit.trim()) {
+        fd.set("translatorCredit", translatorCredit.trim());
       }
       if (publishType === "REUPLOAD" && uploaderNote.trim()) {
         fd.set("uploaderNote", uploaderNote.trim());
@@ -198,7 +202,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
           </div>
         ) : null}
 
-        {needsCredit ? (
+        {needsOriginalAuthor ? (
           <div className="grid gap-1">
             <label className="text-sm font-semibold">Original author credit (wajib)</label>
             <input
@@ -206,6 +210,30 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
               onChange={(e) => setOriginalAuthorCredit(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
               placeholder="Contoh: Nama author asli / studio / dll"
+            />
+          </div>
+        ) : null}
+
+        {publishType === "TRANSLATION" ? (
+          <div className="grid gap-1">
+            <label className="text-sm font-semibold">Translator credit (opsional)</label>
+            <input
+              value={translatorCredit}
+              onChange={(e) => setTranslatorCredit(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
+              placeholder="Contoh: nama tim TL / grup / username"
+            />
+          </div>
+        ) : null}
+
+        {publishType !== "ORIGINAL" ? (
+          <div className="grid gap-1">
+            <label className="text-sm font-semibold">Company / publisher (opsional)</label>
+            <input
+              value={companyCredit}
+              onChange={(e) => setCompanyCredit(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
+              placeholder="Contoh: penerbit / platform / perusahaan"
             />
           </div>
         ) : null}

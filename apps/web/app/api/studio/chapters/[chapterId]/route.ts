@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { notifyNewChapter } from "@/server/services/notifyNewChapter";
+import { deletePublicUpload } from "@/lib/upload";
 
 export const runtime = "nodejs";
 
@@ -93,6 +94,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
 
     const status = typeof body.status === "string" ? safeStatus(body.status) : undefined;
 
+    const thumbnailImage =
+      typeof body.thumbnailImage === "string" ? body.thumbnailImage.trim() : body.thumbnailImage === null ? null : undefined;
+    const thumbnailKey =
+      typeof body.thumbnailKey === "string" ? body.thumbnailKey.trim() : body.thumbnailKey === null ? null : undefined;
+
     if (title !== undefined && title.length === 0) return badRequest("title cannot be empty");
 
     const data: any = {};
@@ -101,6 +107,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
     if (isMature !== undefined) data.isMature = isMature;
     if (warningTagIds) data.warningTags = { set: warningTagIds.map((id) => ({ id })) };
     if (authorNote !== undefined) data.authorNote = authorNote;
+
+    if (thumbnailImage !== undefined) {
+      data.thumbnailImage = thumbnailImage ? thumbnailImage : null;
+      // If thumbnailImage cleared, also clear key.
+      if (!thumbnailImage) data.thumbnailKey = null;
+    }
+    if (thumbnailKey !== undefined) {
+      data.thumbnailKey = thumbnailKey ? thumbnailKey : null;
+    }
 
     if (status !== undefined) {
       data.status = status;
@@ -112,6 +127,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
       data,
       select: { id: true, title: true, number: true, status: true, workId: true },
     });
+
+    // Best-effort delete old thumbnail if it was a dedicated upload (not a page image)
+    if ((thumbnailImage !== undefined || thumbnailKey !== undefined) && (owned.chapter.thumbnailKey || owned.chapter.thumbnailImage)) {
+      const oldKeyOrUrl = String(owned.chapter.thumbnailKey || owned.chapter.thumbnailImage);
+      const nextKeyOrUrl = thumbnailKey ? String(thumbnailKey) : thumbnailImage ? String(thumbnailImage) : "";
+
+      // Do not delete if unchanged
+      const unchanged = !!nextKeyOrUrl && oldKeyOrUrl === nextKeyOrUrl;
+
+      // Do not delete if the old key/url is one of the chapter pages (shared asset)
+      const pageAssets = new Set(
+        (owned.chapter.pages || []).map((p: any) => String(p.imageKey || p.imageUrl)).filter(Boolean)
+      );
+
+      if (!unchanged && oldKeyOrUrl && !pageAssets.has(oldKeyOrUrl)) {
+        await deletePublicUpload(oldKeyOrUrl);
+      }
+    }
 
     if (owned.chapter.work.type === "NOVEL" && content !== undefined) {
       if (owned.chapter.text) {

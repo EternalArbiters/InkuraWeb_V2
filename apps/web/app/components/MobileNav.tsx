@@ -8,7 +8,7 @@ import {
   BookOpen,
   Moon,
   Sun,
-  Home,
+  Search,
   LayoutGrid,
   BookText,
   PanelsTopLeft,
@@ -24,6 +24,7 @@ import {
   Languages,
   ShieldAlert,
   ListTree,
+  Layers,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -81,25 +82,30 @@ export default function MobileNav({
 
   if (!isOpen) return null;
 
-  const navItems: NavItem[] = [
-    { label: "Home", href: "/home", Icon: Home },
+  const primaryBeforeCategories: NavItem[] = [
+    { label: "Advance Search", href: "/search", Icon: Search },
     { label: "All", href: "/all", Icon: LayoutGrid },
     { label: "Novel", href: "/novel", Icon: BookText },
     { label: "Comic", href: "/comic", Icon: PanelsTopLeft },
     { label: "Film", href: "/film", Icon: Clapperboard },
+  ];
+
+  const primaryAfterCategories: NavItem[] = [
     { label: "Library", href: "/library", Icon: Bookmark },
+    { label: "History", href: "/settings/history", Icon: History },
+    { label: "Lists", href: "/lists", Icon: Layers },
     { label: "Notifications", href: "/notifications", Icon: Bell },
     { label: "Upload", href: "/studio", Icon: Upload },
     { label: "Community", href: "/community", Icon: Users },
     { label: "Account", href: "/settings/account", Icon: User },
-    { label: "History", href: "/settings/history", Icon: History },
   ];
 
-  // Admin-only quick links (keeps user navigation unchanged)
+  // Admin-only quick links
   const adminItems: NavItem[] = isAdmin
     ? [
         { label: "Content Reports", href: "/admin/reports", Icon: ShieldAlert },
         { label: "Taxonomy", href: "/admin/taxonomy", Icon: ListTree },
+        { label: "Notify User", href: "/admin/notify", Icon: Bell },
       ]
     : [];
 
@@ -163,20 +169,12 @@ export default function MobileNav({
           </div>
           {/* Navigation */}
           <nav className="space-y-2">
-            {navItems.map((item) => (
+            {primaryBeforeCategories.map((item) => (
               <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
             ))}
 
-            {adminItems.length ? (
-              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
-                {adminItems.map((item) => (
-                  <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
-                ))}
-              </div>
-            ) : null}
-
-            {/* Dropdown */}
-            <div className="mt-2">
+            {/* Categories dropdown (requested: right under Film) */}
+            <div className="mt-1">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="w-full flex items-center justify-between px-4 py-2 rounded text-sm text-gray-700 dark:text-white/80 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
@@ -185,9 +183,13 @@ export default function MobileNav({
                   <Tags className="w-4 h-4 opacity-90" aria-hidden />
                   Categories
                 </span>
-                {showDropdown ? <ChevronUp className="w-4 h-4 opacity-90" aria-hidden /> : <ChevronDown className="w-4 h-4 opacity-90" aria-hidden />}
+                {showDropdown ? (
+                  <ChevronUp className="w-4 h-4 opacity-90" aria-hidden />
+                ) : (
+                  <ChevronDown className="w-4 h-4 opacity-90" aria-hidden />
+                )}
               </button>
-              {showDropdown && (
+              {showDropdown ? (
                 <div className="ml-4 mt-1 space-y-1">
                   {categoryItems.map((item) => (
                     <Link
@@ -207,8 +209,23 @@ export default function MobileNav({
                     </Link>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
+
+            {primaryAfterCategories.map((item) => (
+              <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+            ))}
+
+            {/* Requested: Admin Report (user report) button under Account */}
+            {isAuthed ? <NavRow item={{ label: "Admin Report", href: "/admin-report", Icon: ShieldAlert }} active={isActive("/admin-report")} onClick={onClose} /> : null}
+
+            {adminItems.length ? (
+              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
+                {adminItems.map((item) => (
+                  <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+                ))}
+              </div>
+            ) : null}
           </nav>
         </div>
 

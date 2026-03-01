@@ -40,6 +40,12 @@ export default async function AdminReportsPage() {
               Taxonomy
             </Link>
             <Link
+              href="/admin/notify"
+              className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Notify user
+            </Link>
+            <Link
               href="/home"
               className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
