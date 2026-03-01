@@ -103,12 +103,12 @@ export default function WorkChaptersWebtoon({
                 key={c.id}
                 href={`/w/${slug}/read/${c.id}`}
                 className={
-                  "flex gap-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/20 hover:bg-gray-50 dark:hover:bg-gray-900 transition p-3 " +
+                  "flex gap-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/20 hover:bg-gray-50 dark:hover:bg-gray-900 transition p-3 rounded-xl " +
                   (read ? "opacity-60" : "")
                 }
               >
-                <div className="relative w-[92px] shrink-0">
-                  <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                <div className="relative w-[120px] shrink-0">
+                  <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-lg">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -116,8 +116,9 @@ export default function WorkChaptersWebtoon({
                         alt={c.title}
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
-                          transformOrigin: `${focusX}% ${focusY}%`,
-                          transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+                          objectPosition: `${focusX}% ${focusY}%`,
+                          transform: `scale(${zoom})`,
+                          transformOrigin: "center",
                         }}
                         loading="lazy"
                       />

@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 import { deletePublicUpload, saveCoverUpload } from "@/lib/upload";
-import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -83,6 +82,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ workId:
           id: true,
           number: true,
           title: true,
+          thumbnailImage: true,
+          thumbnailFocusX: true,
+          thumbnailFocusY: true,
+          thumbnailZoom: true,
           publishedAt: true,
           status: true,
           isMature: true,
@@ -361,20 +364,20 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ work
     const chapterIds = (work.chapters || []).map((c) => c.id);
 
     // Delete polymorphic comments + reports for those comments
-    const commentOr: Prisma.CommentWhereInput[] = [
-      { targetType: CommentTargetType.WORK, targetId: workId },
-      ...(chapterIds.length ? [{ targetType: CommentTargetType.CHAPTER, targetId: { in: chapterIds } }] : []),
-    ];
-
     const comments = await prisma.comment.findMany({
-      where: { OR: commentOr },
+      where: {
+        OR: [
+          { targetType: "WORK", targetId: workId },
+          ...(chapterIds.length ? [{ targetType: "CHAPTER", targetId: { in: chapterIds } }] : []),
+        ],
+      },
       select: { id: true },
     });
     const commentIds = comments.map((c) => c.id);
 
     await prisma.$transaction(async (tx) => {
       if (commentIds.length) {
-        await tx.report.deleteMany({ where: { targetType: ReportTargetType.COMMENT, targetId: { in: commentIds } } });
+        await tx.report.deleteMany({ where: { targetType: "COMMENT", targetId: { in: commentIds } } });
         await tx.comment.deleteMany({ where: { id: { in: commentIds } } });
       }
 

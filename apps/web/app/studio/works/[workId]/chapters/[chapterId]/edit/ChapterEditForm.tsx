@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import ThumbCropper from "@/components/ThumbCropper";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Chapter = {
@@ -37,6 +38,7 @@ function clamp(n: unknown, def: number, min: number, max: number) {
 
 export default function ChapterEditForm({ workId, workTitle, workType, chapter, warningTags }: Props) {
   const router = useRouter();
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [title, setTitle] = React.useState(chapter.title || "");
   const [number, setNumber] = React.useState(chapter.number || 0);
   const [status, setStatus] = React.useState(chapter.status || "DRAFT");
@@ -65,6 +67,10 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       const up = await presignAndUpload({ scope: "pages", file, workId, chapterId: chapter.id });
       setThumbUrl(up.url);
       setThumbKey(up.key);
+      // Reset crop to a sensible default for new uploads
+      setThumbFocusX(50);
+      setThumbFocusY(50);
+      setThumbZoom(1);
     } catch (e: any) {
       setError(e?.message || "Upload failed");
     } finally {
@@ -121,11 +127,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
     }
   }
 
-  const previewStyle: React.CSSProperties = {
-    transformOrigin: `${thumbFocusX}% ${thumbFocusY}%`,
-    transform: thumbZoom !== 1 ? `scale(${thumbZoom})` : undefined,
-  };
-
   return (
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
       {error ? (
@@ -149,6 +150,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
               Thumbnail yang tampil di list chapter (Webtoon-style). Kalau kosong, sistem ambil otomatis.
             </div>
           </div>
+
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -169,77 +171,78 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-[96px_1fr] gap-3 items-start">
-          <div className="relative aspect-[3/4] border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden">
-            {thumbUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumbUrl} alt="chapter cover" className="absolute inset-0 w-full h-full object-cover" style={previewStyle} />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">Auto</div>
-            )}
-          </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,420px)_1fr] md:items-start">
+          <ThumbCropper
+            src={thumbUrl}
+            value={{ focusX: thumbFocusX, focusY: thumbFocusY, zoom: thumbZoom }}
+            onChange={(v) => {
+              setThumbFocusX(v.focusX);
+              setThumbFocusY(v.focusY);
+              setThumbZoom(v.zoom);
+            }}
+            disabled={thumbUploading || !thumbUrl}
+            help={
+              thumbUrl
+                ? "Geser gambarnya langsung untuk atur posisi. Scroll mouse untuk zoom."
+                : workType === "COMIC"
+                ? 'Tip: untuk COMIC, kamu juga bisa pilih cover dari halaman di menu "Manage Pages".'
+                : "Biarkan kosong kalau mau otomatis."
+            }
+          />
 
           <div className="grid gap-3">
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={(e) => uploadThumb(e.target.files?.[0] || null)}
               disabled={thumbUploading}
-              className="text-sm"
+              className="hidden"
             />
-            <div className="text-[11px] text-gray-600 dark:text-gray-300">
-              {thumbUrl ? <span className="break-all">{thumbUrl}</span> : <span>Tip: untuk COMIC, kamu juga bisa pilih dari halaman di menu "Manage Pages".</span>}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={thumbUploading}
+                className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-60"
+              >
+                {thumbUploading ? "Uploading..." : thumbUrl ? "Change image" : "Upload image"}
+              </button>
+
+              {thumbUrl ? (
+                <button
+                  type="button"
+                  onClick={clearThumb}
+                  disabled={thumbUploading}
+                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-60"
+                >
+                  Remove
+                </button>
+              ) : null}
             </div>
 
-            {/* Crop / position controls */}
-            <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-              <div className="text-xs font-semibold">Adjust thumbnail position</div>
-              <div className="mt-2 grid gap-2">
-                <label className="grid gap-1">
-                  <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
-                    <span>Zoom</span>
-                    <span>{thumbZoom.toFixed(2)}×</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={2.5}
-                    step={0.05}
-                    value={thumbZoom}
-                    onChange={(e) => setThumbZoom(parseFloat(e.target.value))}
-                  />
-                </label>
-
-                <label className="grid gap-1">
-                  <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
-                    <span>Horizontal</span>
-                    <span>{Math.round(thumbFocusX)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={thumbFocusX}
-                    onChange={(e) => setThumbFocusX(parseInt(e.target.value, 10))}
-                  />
-                </label>
-
-                <label className="grid gap-1">
-                  <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
-                    <span>Vertical</span>
-                    <span>{Math.round(thumbFocusY)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={thumbFocusY}
-                    onChange={(e) => setThumbFocusY(parseInt(e.target.value, 10))}
-                  />
-                </label>
+            <label className="grid gap-1 rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+              <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
+                <span>Zoom</span>
+                <span>{thumbZoom.toFixed(2)}×</span>
               </div>
+              <input
+                type="range"
+                min={1}
+                max={2.5}
+                step={0.05}
+                value={thumbZoom}
+                onChange={(e) => setThumbZoom(parseFloat(e.target.value))}
+                disabled={!thumbUrl || thumbUploading}
+              />
+              <div className="text-[11px] text-gray-600 dark:text-gray-300">
+                (Opsional) Kamu juga bisa zoom pakai scroll mouse di preview.
+              </div>
+            </label>
+
+            <div className="text-[11px] text-gray-600 dark:text-gray-300">
+              Tidak menampilkan nama/link file di sini biar rapi.
             </div>
           </div>
         </div>

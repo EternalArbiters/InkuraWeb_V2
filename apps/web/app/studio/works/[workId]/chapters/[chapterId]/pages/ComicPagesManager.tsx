@@ -180,7 +180,7 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
           ) : null}
         </div>
         <div className="mt-3 grid grid-cols-[96px_1fr] gap-3 items-start">
-          <div className="relative aspect-[3/4] border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden">
+          <div className="relative aspect-[4/3] border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden">
             {thumbnailImage ? (
               <img src={thumbnailImage} alt="chapter thumb" className="absolute inset-0 w-full h-full object-cover" />
             ) : (
@@ -189,13 +189,11 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
           </div>
           <div className="text-sm text-gray-700 dark:text-gray-200">
             {thumbnailImage ? (
-              <div className="text-xs text-gray-600 dark:text-gray-300 break-all">{thumbnailImage}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300">Cover sudah dipilih. Atur posisi/zoom di halaman Edit Chapter.</div>
             ) : (
-              <div className="text-xs text-gray-600 dark:text-gray-300">
-                Belum pilih cover. Sistem akan ambil otomatis dari halaman chapter.
-              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-300">Belum pilih cover. Sistem akan ambil otomatis dari halaman chapter.</div>
             )}
-          </div>
+</div>
         </div>
       </div>
 

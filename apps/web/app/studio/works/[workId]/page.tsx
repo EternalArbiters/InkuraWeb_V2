@@ -4,6 +4,12 @@ import { apiJson } from "@/lib/serverApi";
 
 export const dynamic = "force-dynamic";
 
+function clamp(n: unknown, def: number, min: number, max: number) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return def;
+  return Math.max(min, Math.min(max, v));
+}
+
 export default async function StudioWorkPage({
   params: paramsPromise,
 }: {
@@ -106,36 +112,66 @@ export default async function StudioWorkPage({
             {(work.chapters || []).length === 0 ? (
               <div className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">Belum ada chapter.</div>
             ) : (
-              (work.chapters || []).map((ch: any) => (
-                <div key={ch.id} className="px-4 py-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">
-                      #{ch.number} — {ch.title}
-                    </div>
-                    <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
-                      {ch.status === "PUBLISHED" ? "Published" : "Draft"}
-                      {ch.isMature ? " • Mature" : ""}
-                    </div>
-                  </div>
+              (work.chapters || []).map((ch: any) => {
+                const thumb = ch.thumbnailImage || null;
+                const focusX = clamp(ch.thumbnailFocusX, 50, 0, 100);
+                const focusY = clamp(ch.thumbnailFocusY, 50, 0, 100);
+                const zoom = clamp(ch.thumbnailZoom, 1, 1, 2.5);
 
-                  <div className="flex gap-2 shrink-0">
-                    <Link
-                      href={`/studio/works/${work.id}/chapters/${ch.id}/edit`}
-                      className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
-                    >
-                      Edit
-                    </Link>
-                    {isComic ? (
+                return (
+                  <div key={ch.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative w-[120px] shrink-0">
+                        <div className="relative aspect-[4/3] rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5">
+                          {thumb ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={thumb}
+                              alt={ch.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              style={{
+                                objectPosition: `${focusX}% ${focusY}%`,
+                                transform: `scale(${zoom})`,
+                                transformOrigin: "center",
+                              }}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">Auto</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold truncate">
+                          #{ch.number} — {ch.title}
+                        </div>
+                        <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
+                          {ch.status === "PUBLISHED" ? "Published" : "Draft"}
+                          {ch.isMature ? " • Mature" : ""}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 shrink-0">
                       <Link
-                        href={`/studio/works/${work.id}/chapters/${ch.id}/pages`}
+                        href={`/studio/works/${work.id}/chapters/${ch.id}/edit`}
                         className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
                       >
-                        Pages
+                        Edit
                       </Link>
-                    ) : null}
+                      {isComic ? (
+                        <Link
+                          href={`/studio/works/${work.id}/chapters/${ch.id}/pages`}
+                          className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
+                        >
+                          Pages
+                        </Link>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
