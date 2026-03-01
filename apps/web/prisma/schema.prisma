@@ -149,6 +149,14 @@ model Work {
   sourceUrl String?
   uploaderNote String?
 
+  // v16.3: additional display credits (manual)
+  translatorCredit String?
+  companyCredit String?
+
+  // v16.3: optional series arc links
+  prevArcUrl String?
+  nextArcUrl String?
+
   translatorId String?
   translator   User? @relation("WorkTranslator", fields: [translatorId], references: [id])
 
@@ -217,6 +225,10 @@ model Chapter {
 
   // v16: optional message from uploader/author for this chapter
   authorNote String? @db.Text
+
+  // v16.3: optional chapter thumbnail (manual or auto-picked)
+  thumbnailImage String?
+  thumbnailKey   String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -510,6 +522,7 @@ enum NotificationType {
   COMMENT_REPLY
   COMMENT_MENTION
   COMMENT_PINNED
+  ADMIN_MESSAGE
 }
 
 model Notification {
