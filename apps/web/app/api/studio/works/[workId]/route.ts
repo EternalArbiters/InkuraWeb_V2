@@ -45,6 +45,12 @@ function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | 
   return "UNKNOWN";
 }
 
+function safePublishType(v: unknown): "ORIGINAL" | "TRANSLATION" | "REUPLOAD" {
+  const s = String(v || "ORIGINAL").toUpperCase().trim();
+  if (s === "TRANSLATION" || s === "REUPLOAD") return s;
+  return "ORIGINAL";
+}
+
 async function ensureUniqueSlug(base: string, workId: string) {
   let candidate = base;
   let i = 0;
@@ -117,6 +123,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
       coverKey: true,
       status: true,
       publishType: true,
+      translatorId: true,
       originalAuthorCredit: true,
       sourceUrl: true,
       uploaderNote: true,
@@ -172,6 +179,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     const sourceUrlRaw = String(fd.get("sourceUrl") || "").trim();
     const uploaderNoteRaw = String(fd.get("uploaderNote") || "");
 
+    // Allow editing publishType in studio (optional; defaults to existing)
+    const publishTypeFromForm = fd.get("publishType");
+    const nextPublishType =
+      publishTypeFromForm != null
+        ? safePublishType(publishTypeFromForm)
+        : safePublishType(existing.publishType || "ORIGINAL");
+
     if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
 
     // Slug is optional; if provided, make sure unique.
@@ -183,14 +197,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     }
 
     // publishType rules:
-    // - TRANSLATION: credit + source required
+    // - TRANSLATION: credit + source required; translatorId should be set (uploader)
     // - REUPLOAD: source required
-    const publishType = String(existing.publishType || "ORIGINAL").toUpperCase();
+    const publishType = String(nextPublishType || "ORIGINAL").toUpperCase();
     const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
-    const nextOriginalAuthorCredit = publishType === "TRANSLATION" ? (originalAuthorCreditRaw || existing.originalAuthorCredit || "") : null;
+    const nextOriginalAuthorCredit =
+      publishType === "TRANSLATION" ? (originalAuthorCreditRaw || existing.originalAuthorCredit || "") : null;
     const nextSourceUrl = needsSource ? (sourceUrlRaw || existing.sourceUrl || "") : null;
     const nextUploaderNote = publishType === "REUPLOAD" ? uploaderNoteRaw : null;
+    const nextTranslatorId = publishType === "TRANSLATION" ? session.user.id : null;
 
     if (publishType === "TRANSLATION") {
       if (!String(nextOriginalAuthorCredit || "").trim()) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
@@ -265,13 +281,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
         ...(completion ? { completion: completion as any } : {}),
         ...(isMature !== undefined ? { isMature } : {}),
 
-        ...(needsSource
-          ? {
-              originalAuthorCredit: nextOriginalAuthorCredit,
-              sourceUrl: nextSourceUrl,
-              uploaderNote: nextUploaderNote,
-            }
-          : {}),
+        publishType: publishType as any,
+        translatorId: nextTranslatorId,
+        originalAuthorCredit: needsSource ? nextOriginalAuthorCredit : null,
+        sourceUrl: needsSource ? nextSourceUrl : null,
+        uploaderNote: publishType === "REUPLOAD" ? nextUploaderNote : null,
 
         genres: { set: genreIds.map((id) => ({ id })) },
         warningTags: { set: warningTagIds.map((id) => ({ id })) },
