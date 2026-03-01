@@ -38,7 +38,22 @@ export default async function StudioWorkPage({
               <div className="mt-3 text-xs text-gray-600 dark:text-gray-300 space-y-1">
                 {work.originalAuthorCredit ? (
                   <div>
-                    Original credit: <b>{work.originalAuthorCredit}</b>
+                    Original author: <b>{work.originalAuthorCredit}</b>
+                  </div>
+                ) : null}
+                {publishType === "REUPLOAD" && work.originalTranslatorCredit ? (
+                  <div>
+                    Original translator: <b>{work.originalTranslatorCredit}</b>
+                  </div>
+                ) : null}
+                {work.translatorCredit ? (
+                  <div>
+                    Translator credit: <b>{work.translatorCredit}</b>
+                  </div>
+                ) : null}
+                {work.companyCredit ? (
+                  <div>
+                    Company: <b>{work.companyCredit}</b>
                   </div>
                 ) : null}
                 {work.sourceUrl ? (
@@ -61,8 +76,7 @@ export default async function StudioWorkPage({
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Link
+          <div className="flex flex-col gap-2">            <Link
               href={`/studio/works/${work.id}/edit`}
               className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold text-center"
             >

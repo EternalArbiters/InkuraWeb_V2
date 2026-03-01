@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 type TargetType = "WORK" | "CHAPTER";
 
-type SortMode = "latest" | "top" | "oldest";
+type SortMode = "newest" | "oldest" | "top" | "bottom";
 
 function safeTargetType(v: unknown): TargetType | null {
   const s = String(v || "").toUpperCase().trim();
@@ -19,9 +19,10 @@ function safeTargetType(v: unknown): TargetType | null {
 function safeSort(v: unknown): SortMode {
   const s = String(v || "").toLowerCase().trim();
   if (s === "top") return "top";
-  if (s === "oldest" || s === "bottom") return "oldest";
-  // legacy: new
-  return "latest";
+  if (s === "bottom") return "bottom";
+  if (s === "oldest") return "oldest";
+  if (s === "newest" || s === "latest" || s === "new") return "newest";
+  return "newest";
 }
 
 function clampInt(v: unknown, def: number, min: number, max: number) {
@@ -53,6 +54,15 @@ function sortRoots(mode: SortMode, items: any[]) {
         return String(b.id).localeCompare(String(a.id));
       });
     }
+    if (mode === "bottom") {
+      return rest.sort((a, b) => {
+        const lc = (a.likeCount ?? 0) - (b.likeCount ?? 0);
+        if (lc !== 0) return lc;
+        const t = +new Date(b.createdAt) - +new Date(a.createdAt);
+        if (t !== 0) return t;
+        return String(b.id).localeCompare(String(a.id));
+      });
+    }
     if (mode === "oldest") {
       return rest.sort((a, b) => {
         const t = +new Date(a.createdAt) - +new Date(b.createdAt);
@@ -60,7 +70,7 @@ function sortRoots(mode: SortMode, items: any[]) {
         return String(a.id).localeCompare(String(b.id));
       });
     }
-    // latest
+    // newest
     return rest.sort((a, b) => {
       const t = +new Date(b.createdAt) - +new Date(a.createdAt);
       if (t !== 0) return t;

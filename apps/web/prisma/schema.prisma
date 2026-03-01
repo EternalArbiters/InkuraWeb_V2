@@ -146,14 +146,13 @@ model Work {
   // Publish meta (v12)
   publishType WorkPublishType @default(ORIGINAL)
   originalAuthorCredit String?
+  originalTranslatorCredit String?
   sourceUrl String?
   uploaderNote String?
 
-  // v16.3: additional display credits (manual)
+  // v16.3: additional credits + series arcs
   translatorCredit String?
   companyCredit String?
-
-  // v16.3: optional series arc links
   prevArcUrl String?
   nextArcUrl String?
 
@@ -223,12 +222,15 @@ model Chapter {
   readingProgresses ReadingProgress[]
 
 
+  // v16.3: optional chapter thumbnail (cover) used in chapter list
+  thumbnailImage String?
+  thumbnailKey String?
+  thumbnailFocusX Int?
+  thumbnailFocusY Int?
+  thumbnailZoom Float?
+
   // v16: optional message from uploader/author for this chapter
   authorNote String? @db.Text
-
-  // v16.3: optional chapter thumbnail (manual or auto-picked)
-  thumbnailImage String?
-  thumbnailKey   String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -675,6 +677,9 @@ model AdminInboxReport {
 
   resolvedAt DateTime?
   adminNote  String?
+
+  reporterReadAt DateTime?
+  adminReadAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

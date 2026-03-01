@@ -68,8 +68,8 @@ export default function NotificationsClient({ initial }: { initial: Notification
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-sm font-bold">{n.title}</div>
-                  {n.body ? <div className="mt-1 text-sm text-gray-700 dark:text-gray-200 line-clamp-2">{n.body}</div> : null}
+                  <div className={"text-sm font-bold " + (n.isRead ? "text-gray-700 dark:text-gray-200 opacity-70" : "")}>{n.title}</div>
+                  {n.body ? <div className={"mt-1 text-sm line-clamp-2 " + (n.isRead ? "text-gray-600 dark:text-gray-300" : "text-gray-700 dark:text-gray-200")}>{n.body}</div> : null}
                   <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
                     {new Date(n.createdAt).toLocaleString()}
                   </div>

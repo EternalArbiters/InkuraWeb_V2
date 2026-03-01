@@ -16,7 +16,9 @@ type Chapter = {
   authorNote?: string | null;
   thumbnailImage?: string | null;
   thumbnailKey?: string | null;
-  pages?: { id: string; imageUrl: string; imageKey?: string | null; order: number }[];
+  thumbnailFocusX?: number | null;
+  thumbnailFocusY?: number | null;
+  thumbnailZoom?: number | null;
 };
 
 type Props = {
@@ -26,6 +28,12 @@ type Props = {
   chapter: Chapter;
   warningTags: PickerItem[];
 };
+
+function clamp(n: unknown, def: number, min: number, max: number) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return def;
+  return Math.max(min, Math.min(max, v));
+}
 
 export default function ChapterEditForm({ workId, workTitle, workType, chapter, warningTags }: Props) {
   const router = useRouter();
@@ -42,20 +50,15 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   const [thumbKey, setThumbKey] = React.useState<string | null>(chapter.thumbnailKey || null);
   const [thumbUploading, setThumbUploading] = React.useState(false);
 
+  const [thumbFocusX, setThumbFocusX] = React.useState<number>(clamp(chapter.thumbnailFocusX, 50, 0, 100));
+  const [thumbFocusY, setThumbFocusY] = React.useState<number>(clamp(chapter.thumbnailFocusY, 50, 0, 100));
+  const [thumbZoom, setThumbZoom] = React.useState<number>(clamp(chapter.thumbnailZoom, 1, 1, 2.5));
+
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const autoThumb = React.useMemo(() => {
-    const pages = Array.isArray(chapter.pages) ? chapter.pages.filter((p) => !!p?.imageUrl) : [];
-    if (!pages.length) return null;
-    // stable "random": pick based on chapterId hash
-    let h = 5381;
-    for (let i = 0; i < chapter.id.length; i++) h = (h * 33) ^ chapter.id.charCodeAt(i);
-    const idx = (h >>> 0) % pages.length;
-    return pages[idx]?.imageUrl || pages[0]?.imageUrl || null;
-  }, [chapter.id, chapter.pages]);
-
-  async function uploadThumbnail(file: File) {
+  async function uploadThumb(file: File | null) {
+    if (!file) return;
     setError(null);
     setThumbUploading(true);
     try {
@@ -63,10 +66,21 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       setThumbUrl(up.url);
       setThumbKey(up.key);
     } catch (e: any) {
-      setError(e?.message || "Failed to upload thumbnail");
+      setError(e?.message || "Upload failed");
     } finally {
       setThumbUploading(false);
     }
+  }
+
+  function clearThumb() {
+    setThumbUrl(null);
+    setThumbKey(null);
+  }
+
+  function resetThumbAdjust() {
+    setThumbFocusX(50);
+    setThumbFocusY(50);
+    setThumbZoom(1);
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -84,9 +98,11 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       if (workType === "NOVEL") payload.content = content;
       payload.authorNote = authorNote.trim() ? authorNote : null;
 
-      // Chapter thumbnail (optional)
-      payload.thumbnailImage = thumbUrl || null;
-      payload.thumbnailKey = thumbUrl ? thumbKey || null : null;
+      payload.thumbnailImage = thumbUrl;
+      payload.thumbnailKey = thumbKey;
+      payload.thumbnailFocusX = Math.round(clamp(thumbFocusX, 50, 0, 100));
+      payload.thumbnailFocusY = Math.round(clamp(thumbFocusY, 50, 0, 100));
+      payload.thumbnailZoom = clamp(thumbZoom, 1, 1, 2.5);
 
       const res = await fetch(`/api/studio/chapters/${chapter.id}`, {
         method: "PATCH",
@@ -105,6 +121,11 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
     }
   }
 
+  const previewStyle: React.CSSProperties = {
+    transformOrigin: `${thumbFocusX}% ${thumbFocusY}%`,
+    transform: thumbZoom !== 1 ? `scale(${thumbZoom})` : undefined,
+  };
+
   return (
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
       {error ? (
@@ -117,6 +138,110 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         <div className="text-sm text-gray-600 dark:text-gray-300">
           <div className="font-semibold">{workTitle}</div>
           <div className="text-xs">Type: {workType}</div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="font-semibold">Chapter cover</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">
+              Thumbnail yang tampil di list chapter (Webtoon-style). Kalau kosong, sistem ambil otomatis.
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={resetThumbAdjust}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
+            >
+              Reset position
+            </button>
+            {thumbUrl ? (
+              <button
+                type="button"
+                onClick={clearThumb}
+                className="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-[96px_1fr] gap-3 items-start">
+          <div className="relative aspect-[3/4] border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden">
+            {thumbUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={thumbUrl} alt="chapter cover" className="absolute inset-0 w-full h-full object-cover" style={previewStyle} />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">Auto</div>
+            )}
+          </div>
+
+          <div className="grid gap-3">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => uploadThumb(e.target.files?.[0] || null)}
+              disabled={thumbUploading}
+              className="text-sm"
+            />
+            <div className="text-[11px] text-gray-600 dark:text-gray-300">
+              {thumbUrl ? <span className="break-all">{thumbUrl}</span> : <span>Tip: untuk COMIC, kamu juga bisa pilih dari halaman di menu "Manage Pages".</span>}
+            </div>
+
+            {/* Crop / position controls */}
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+              <div className="text-xs font-semibold">Adjust thumbnail position</div>
+              <div className="mt-2 grid gap-2">
+                <label className="grid gap-1">
+                  <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
+                    <span>Zoom</span>
+                    <span>{thumbZoom.toFixed(2)}×</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={2.5}
+                    step={0.05}
+                    value={thumbZoom}
+                    onChange={(e) => setThumbZoom(parseFloat(e.target.value))}
+                  />
+                </label>
+
+                <label className="grid gap-1">
+                  <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
+                    <span>Horizontal</span>
+                    <span>{Math.round(thumbFocusX)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={thumbFocusX}
+                    onChange={(e) => setThumbFocusX(parseInt(e.target.value, 10))}
+                  />
+                </label>
+
+                <label className="grid gap-1">
+                  <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
+                    <span>Vertical</span>
+                    <span>{Math.round(thumbFocusY)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={thumbFocusY}
+                    onChange={(e) => setThumbFocusY(parseInt(e.target.value, 10))}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -163,7 +288,13 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         </label>
       </div>
 
-      <MultiSelectPicker title="NSFW (Chapter)" subtitle="NSFW / sensitive tags khusus chapter ini." items={warningTags} selectedIds={warningIds} onChange={setWarningIds} />
+      <MultiSelectPicker
+        title="NSFW (Chapter)"
+        subtitle="NSFW / sensitive tags khusus chapter ini."
+        items={warningTags}
+        selectedIds={warningIds}
+        onChange={setWarningIds}
+      />
 
       {workType === "NOVEL" ? (
         <label className="grid gap-2">
@@ -179,95 +310,9 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       ) : (
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
           <div className="font-semibold">Comic pages</div>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            Halaman comic dikelola di halaman "Manage Pages".
-          </p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Halaman comic dikelola di halaman "Manage Pages".</p>
         </div>
       )}
-
-      {/* Chapter thumbnail (Webtoon-style) */}
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold">Chapter cover (thumbnail)</div>
-            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-              Kalau tidak dipilih, sistem akan ambil otomatis dari page (acak tapi stabil).
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setThumbUrl(null);
-              setThumbKey(null);
-            }}
-            className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
-            disabled={thumbUploading}
-          >
-            Use auto
-          </button>
-        </div>
-
-        <div className="mt-3 grid md:grid-cols-[140px_1fr] gap-4 items-start">
-          <div className="w-[140px]">
-            <div className="aspect-[3/2] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
-              {thumbUrl || autoThumb ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={thumbUrl || autoThumb || ""} alt="thumbnail" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">No image</div>
-              )}
-            </div>
-            <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300">
-              Mode: <b>{thumbUrl ? "Custom" : "Auto"}</b>
-            </div>
-          </div>
-
-          <div className="grid gap-3">
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold">Upload thumbnail</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) uploadThumbnail(f);
-                }}
-                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-                disabled={thumbUploading}
-              />
-              {thumbUploading ? <span className="text-xs text-gray-600 dark:text-gray-300">Uploading…</span> : null}
-            </label>
-
-            {workType === "COMIC" && Array.isArray(chapter.pages) && chapter.pages.length ? (
-              <div>
-                <div className="text-sm font-semibold">Pick from pages</div>
-                <div className="mt-2 grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {chapter.pages.slice(0, 24).map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setThumbUrl(p.imageUrl);
-                        setThumbKey(p.imageKey || null);
-                      }}
-                      className={
-                        "aspect-[1/1] rounded-xl overflow-hidden border transition " +
-                        (thumbUrl === p.imageUrl
-                          ? "border-purple-500 ring-2 ring-purple-400"
-                          : "border-gray-200 dark:border-gray-800 hover:brightness-95")
-                      }
-                      title={`Use page #${p.order}`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.imageUrl} alt="page" className="w-full h-full object-cover" loading="lazy" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
 
       <label className="grid gap-2">
         <span className="text-sm font-semibold">Author message (optional)</span>
@@ -284,7 +329,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         <button
           type="submit"
           disabled={loading}
-          className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+          className="rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
         >
           {loading ? "Saving..." : "Save"}
         </button>

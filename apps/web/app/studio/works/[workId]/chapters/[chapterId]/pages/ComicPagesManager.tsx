@@ -11,9 +11,10 @@ type Props = {
   workId: string;
   chapterId: string;
   pages: Page[];
+  thumbnailImage: string | null;
 };
 
-export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
+export default function ComicPagesManager({ workId, chapterId, pages, thumbnailImage }: Props) {
   const router = useRouter();
   const [files, setFiles] = React.useState<File[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -56,6 +57,44 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
       if (!res.ok) throw new Error(json?.error || "Commit failed");
 
       setFiles([]);
+      router.refresh();
+    } catch (e: any) {
+      setErr(e?.message || "Error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function setThumb(url: string) {
+    setErr(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/studio/chapters/${chapterId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thumbnailImage: url, thumbnailKey: null }),
+      });
+      const json = await res.json().catch(() => ({} as any));
+      if (!res.ok) throw new Error(json?.error || "Failed");
+      router.refresh();
+    } catch (e: any) {
+      setErr(e?.message || "Error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function clearThumb() {
+    setErr(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/studio/chapters/${chapterId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thumbnailImage: null, thumbnailKey: null }),
+      });
+      const json = await res.json().catch(() => ({} as any));
+      if (!res.ok) throw new Error(json?.error || "Failed");
       router.refresh();
     } catch (e: any) {
       setErr(e?.message || "Error");
@@ -123,7 +162,44 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-2">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="font-semibold">Chapter cover</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Dipakai untuk thumbnail di list chapter.</div>
+          </div>
+          {thumbnailImage ? (
+            <button
+              type="button"
+              onClick={clearThumb}
+              disabled={loading}
+              className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-60"
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
+        <div className="mt-3 grid grid-cols-[96px_1fr] gap-3 items-start">
+          <div className="relative aspect-[3/4] border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden">
+            {thumbnailImage ? (
+              <img src={thumbnailImage} alt="chapter thumb" className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">Auto</div>
+            )}
+          </div>
+          <div className="text-sm text-gray-700 dark:text-gray-200">
+            {thumbnailImage ? (
+              <div className="text-xs text-gray-600 dark:text-gray-300 break-all">{thumbnailImage}</div>
+            ) : (
+              <div className="text-xs text-gray-600 dark:text-gray-300">
+                Belum pilih cover. Sistem akan ambil otomatis dari halaman chapter.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+<div className="grid gap-2">
         <div className="flex items-center justify-between">
           <div className="font-semibold">Pages ({pages.length})</div>
           <BackButton href={`/studio/works/${workId}`} />
@@ -150,6 +226,14 @@ export default function ComicPagesManager({ workId, chapterId, pages }: Props) {
                 </div>
                 <div className="p-2 flex items-center justify-between gap-2">
                   <div className="text-xs text-gray-600 dark:text-gray-300">#{p.order}</div>
+                  <button
+                    type="button"
+                    onClick={() => setThumb(p.imageUrl)}
+                    disabled={loading}
+                    className="text-xs font-semibold px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-60"
+                  >
+                    Use as cover
+                  </button>
                   <button
                     type="button"
                     onClick={() => del(p.id)}

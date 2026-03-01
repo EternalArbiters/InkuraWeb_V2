@@ -110,6 +110,7 @@ export default async function ReadChapterPage({
                 warnings={allWarnings}
               >
                 <ReaderChrome
+                  workId={work.id}
                   workSlug={work.slug}
                   workTitle={work.title}
                   chapterTitle={chapterLabel(chapter.number, chapter.title)}

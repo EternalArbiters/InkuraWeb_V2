@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { apiJson } from "@/lib/serverApi";
-import StudioWorksGrid from "./StudioWorksGrid";
+import StudioWorksGridClient from "./StudioWorksGridClient";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export default async function StudioPage() {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio`)}`);
   }
 
-  const works = worksRes.ok ? worksRes.data.works : [];
+  const works = worksRes.ok ? (worksRes.data.works || []) : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -41,7 +41,13 @@ export default async function StudioPage() {
         </div>
 
         <div className="mt-8">
-          <StudioWorksGrid works={works as any} />
+          {works.length === 0 ? (
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
+              Belum ada karya.
+            </div>
+          ) : (
+            <StudioWorksGridClient works={works as any} />
+          )}
         </div>
       </div>
     </main>

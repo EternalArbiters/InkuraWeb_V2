@@ -86,8 +86,7 @@ export default function WorkCoverBadges({ work }: { work: WorkBadgeInput }) {
   const type = normalize(work.type) || "WORK";
   const publishLabel = publishTypeLabel(work.publishType);
   const flag = originFlagEmoji(work);
-
-  const updatedAt = work.updatedAt ? new Date(work.updatedAt) : null;
+  const updatedAt = work.updatedAt ? new Date(work.updatedAt as any) : null;
   const isUp = !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000;
 
   return (
@@ -103,18 +102,15 @@ export default function WorkCoverBadges({ work }: { work: WorkBadgeInput }) {
       ) : null}
 
       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        {isUp ? (
-          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-emerald-500/90 text-white">
-            UP
-          </span>
-        ) : null}
-
         <span className={`inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(type)}`}>{type}</span>
         {publishLabel ? (
           <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/55 text-white backdrop-blur">{publishLabel}</span>
         ) : null}
         {work.isMature ? (
           <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/75 text-white backdrop-blur">18+</span>
+        ) : null}
+        {isUp ? (
+          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-emerald-600/90 text-white font-extrabold">UP</span>
         ) : null}
       </div>
     </>

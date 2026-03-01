@@ -39,17 +39,12 @@ function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | 
 }
 
 async function getCreator(sessionUserId: string) {
-  return prisma.user.findUnique({
-    where: { id: sessionUserId },
-    select: { role: true },
-  });
+  return prisma.user.findUnique({ where: { id: sessionUserId }, select: { role: true } });
 }
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,6 +57,7 @@ export async function GET(req: Request) {
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,
+      slug: true,
       title: true,
       type: true,
       status: true,
@@ -77,114 +73,81 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const ct = req.headers.get("content-type") || "";
-
-    if (ct.includes("application/json")) {
-      return NextResponse.json(
-        { error: "Use multipart/form-data for create work (cover upload required)." },
-        { status: 400 }
-      );
+    if (!ct.includes("multipart/form-data")) {
+      return NextResponse.json({ error: "Use multipart/form-data for create work" }, { status: 400 });
     }
 
-    let title = "";
-    let description = "";
-    let type = "NOVEL";
-    let comicType: any = "UNKNOWN";
+    const fd = await req.formData();
 
-    let language = "unknown";
-    let origin = "UNKNOWN";
-    let completion = "ONGOING";
-    let isMature = false;
+    const title = String(fd.get("title") || "").trim();
+    const description = String(fd.get("description") || "").trim();
 
-    let genreIds: string[] = [];
-    let warningTagIds: string[] = [];
-    let deviantLoveTagIds: string[] = [];
-    let tagNames: string[] = [];
+    const typeRaw = String(fd.get("type") || "NOVEL").toUpperCase().trim();
+    const type: "NOVEL" | "COMIC" = typeRaw === "COMIC" ? "COMIC" : "NOVEL";
+    const comicType = safeComicType(fd.get("comicType"));
 
-    let publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD" = "ORIGINAL";
-    let originalAuthorCredit: string | null = null;
-    let sourceUrl: string | null = null;
-    let uploaderNote: string | null = null;
-    let translatorCredit: string | null = null;
-    let companyCredit: string | null = null;
+    const language = String(fd.get("language") || "unknown").toLowerCase().trim() || "unknown";
+    const origin = String(fd.get("origin") || "UNKNOWN").toUpperCase().trim() || "UNKNOWN";
+    const completion = String(fd.get("completion") || "ONGOING").toUpperCase().trim() || "ONGOING";
+    const isMature = safeBool(fd.get("isMature"));
 
-    // v14: cover upload is required at creation (max 2MB). Server uploads to R2.
-    let coverFile: File | null = null;
+    const genreIds = toStringArray(fd.get("genreIds"));
+    const warningTagIds = toStringArray(fd.get("warningTagIds"));
+    const deviantLoveTagIds = toStringArray(fd.get("deviantLoveTagIds"));
+    const tagNames = toStringArray(fd.get("tags"));
 
-    {
-      const fd = await req.formData();
-      title = String(fd.get("title") || "").trim();
-      description = String(fd.get("description") || "").trim();
-      type = String(fd.get("type") || "NOVEL").toUpperCase();
-      comicType = safeComicType(fd.get("comicType"));
+    const pt = String(fd.get("publishType") || "ORIGINAL").toUpperCase().trim();
+    const publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD" = (pt === "TRANSLATION" || pt === "REUPLOAD") ? (pt as any) : "ORIGINAL";
 
-      language = String(fd.get("language") || "unknown").toLowerCase().trim() || "unknown";
-      origin = String(fd.get("origin") || "UNKNOWN").toUpperCase().trim() || "UNKNOWN";
-      completion = String(fd.get("completion") || "ONGOING").toUpperCase().trim() || "ONGOING";
-      isMature = safeBool(fd.get("isMature"));
+    const originalAuthorCredit = String(fd.get("originalAuthorCredit") || "").trim() || null;
+    const originalTranslatorCredit = String(fd.get("originalTranslatorCredit") || "").trim() || null;
+    const sourceUrl = String(fd.get("sourceUrl") || "").trim() || null;
+    const uploaderNote = String(fd.get("uploaderNote") || "").trim() || null;
 
-      genreIds = toStringArray(fd.get("genreIds"));
-      warningTagIds = toStringArray(fd.get("warningTagIds"));
-      deviantLoveTagIds = toStringArray(fd.get("deviantLoveTagIds"));
-      tagNames = toStringArray(fd.get("tags"));
+    const translatorCredit = String(fd.get("translatorCredit") || "").trim() || null;
+    const companyCredit = String(fd.get("companyCredit") || "").trim() || null;
 
-      const pt = String(fd.get("publishType") || "ORIGINAL").toUpperCase();
-      if (pt === "ORIGINAL" || pt === "TRANSLATION" || pt === "REUPLOAD") publishType = pt as any;
+    const cover = fd.get("cover");
+    const coverFile = cover && typeof cover !== "string" ? (cover as File) : null;
 
-      originalAuthorCredit = String(fd.get("originalAuthorCredit") || "").trim() || null;
-      sourceUrl = String(fd.get("sourceUrl") || "").trim() || null;
-      uploaderNote = String(fd.get("uploaderNote") || "").trim() || null;
-      translatorCredit = String(fd.get("translatorCredit") || "").trim() || null;
-      companyCredit = String(fd.get("companyCredit") || "").trim() || null;
+    if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    if (!coverFile || coverFile.size <= 0) return NextResponse.json({ error: "Cover is required (max 2MB)." }, { status: 400 });
+    if (coverFile.size > 2 * 1024 * 1024) return NextResponse.json({ error: "Cover too large (max 2MB)." }, { status: 400 });
 
-      const cover = fd.get("cover");
-      if (cover && typeof cover !== "string") {
-        const file = cover as File;
-        if (file.size > 0) coverFile = file;
-      }
-    }
-
-    if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    }
-
-    if (!coverFile) {
-      return NextResponse.json({ error: "Cover is required (max 2MB)." }, { status: 400 });
-    }
-    if (coverFile.size > 2 * 1024 * 1024) {
-      return NextResponse.json({ error: "Cover too large (max 2MB)." }, { status: 400 });
-    }
-
-    if (publishType === "TRANSLATION" || publishType === "REUPLOAD") {
+    const needsSource = publishType !== "ORIGINAL";
+    if (needsSource) {
       if (!originalAuthorCredit) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
       if (!sourceUrl) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
+    }
+
+    if (publishType === "REUPLOAD") {
+      if (!originalTranslatorCredit) {
+        return NextResponse.json({ error: "Original translator credit is required for Reupload" }, { status: 400 });
+      }
     }
 
     const base = slugify(title);
     const suffix = Math.random().toString(36).slice(2, 8);
     const slug = `${base}-${suffix}`;
 
-    // Create first (so we can build a stable R2 key using workId), then upload cover, then update.
-    const work = await prisma.work.create({
+    const created = await prisma.work.create({
       data: {
         slug,
         title,
         description: description || null,
-        type: type === "COMIC" ? "COMIC" : "NOVEL",
+        type,
         comicType: type === "COMIC" ? comicType : "UNKNOWN",
         status: "DRAFT",
         coverImage: null,
         coverKey: null,
         authorId: session.user.id,
-
         language,
         origin: origin as any,
         completion: completion as any,
@@ -193,6 +156,7 @@ export async function POST(req: Request) {
         publishType: publishType as any,
         translatorId: publishType === "TRANSLATION" ? session.user.id : null,
         originalAuthorCredit: publishType === "ORIGINAL" ? null : originalAuthorCredit,
+        originalTranslatorCredit: publishType === "REUPLOAD" ? originalTranslatorCredit : null,
         sourceUrl: publishType === "ORIGINAL" ? null : sourceUrl,
         uploaderNote: publishType === "REUPLOAD" ? uploaderNote : null,
 
@@ -211,20 +175,18 @@ export async function POST(req: Request) {
             }
           : undefined,
       },
-      select: { id: true, slug: true },
+      select: { id: true },
     });
 
     try {
-      const saved = await saveCoverUpload(coverFile, "covers", { userId: session.user.id, workId: work.id });
-      await prisma.work.update({ where: { id: work.id }, data: { coverImage: saved.url, coverKey: saved.key } });
+      const saved = await saveCoverUpload(coverFile, "covers", { userId: session.user.id, workId: created.id });
+      await prisma.work.update({ where: { id: created.id }, data: { coverImage: saved.url, coverKey: saved.key } });
     } catch (err) {
-      // Avoid leaving orphan draft if cover upload fails.
-      await prisma.work.delete({ where: { id: work.id } }).catch(() => {});
+      await prisma.work.delete({ where: { id: created.id } }).catch(() => {});
       throw err;
     }
 
-    const full = await prisma.work.findUnique({ where: { id: work.id } });
-
+    const full = await prisma.work.findUnique({ where: { id: created.id } });
     return NextResponse.json({ ok: true, work: full }, { status: 201 });
   } catch (e) {
     console.error(e);

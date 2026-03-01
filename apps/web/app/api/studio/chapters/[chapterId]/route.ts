@@ -89,15 +89,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
     const content = typeof body.content === "string" ? body.content : undefined;
     const authorNote = typeof body.authorNote === "string" ? body.authorNote : body.authorNote === null ? null : undefined;
 
+    const thumbnailImage = typeof body.thumbnailImage === "string" ? body.thumbnailImage.trim() : body.thumbnailImage === null ? null : undefined;
+    const thumbnailKey = typeof body.thumbnailKey === "string" ? body.thumbnailKey.trim() : body.thumbnailKey === null ? null : undefined;
+
+    const thumbnailFocusX = body.thumbnailFocusX === null ? null : body.thumbnailFocusX === undefined ? undefined : Number(body.thumbnailFocusX);
+    const thumbnailFocusY = body.thumbnailFocusY === null ? null : body.thumbnailFocusY === undefined ? undefined : Number(body.thumbnailFocusY);
+    const thumbnailZoom = body.thumbnailZoom === null ? null : body.thumbnailZoom === undefined ? undefined : Number(body.thumbnailZoom);
+
     const isMature = typeof body.isMature === "boolean" ? body.isMature : undefined;
     const warningTagIds = safeJsonArray(body.warningTagIds);
 
     const status = typeof body.status === "string" ? safeStatus(body.status) : undefined;
-
-    const thumbnailImage =
-      typeof body.thumbnailImage === "string" ? body.thumbnailImage.trim() : body.thumbnailImage === null ? null : undefined;
-    const thumbnailKey =
-      typeof body.thumbnailKey === "string" ? body.thumbnailKey.trim() : body.thumbnailKey === null ? null : undefined;
 
     if (title !== undefined && title.length === 0) return badRequest("title cannot be empty");
 
@@ -107,19 +109,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
     if (isMature !== undefined) data.isMature = isMature;
     if (warningTagIds) data.warningTags = { set: warningTagIds.map((id) => ({ id })) };
     if (authorNote !== undefined) data.authorNote = authorNote;
-
-    if (thumbnailImage !== undefined) {
-      data.thumbnailImage = thumbnailImage ? thumbnailImage : null;
-      // If thumbnailImage cleared, also clear key.
-      if (!thumbnailImage) data.thumbnailKey = null;
-    }
-    if (thumbnailKey !== undefined) {
-      data.thumbnailKey = thumbnailKey ? thumbnailKey : null;
-    }
+    if (thumbnailImage !== undefined) data.thumbnailImage = thumbnailImage;
+    if (thumbnailKey !== undefined) data.thumbnailKey = thumbnailKey;
+    if (thumbnailFocusX !== undefined) data.thumbnailFocusX = (thumbnailFocusX === null || Number.isNaN(thumbnailFocusX)) ? null : Math.max(0, Math.min(100, Math.round(thumbnailFocusX)));
+    if (thumbnailFocusY !== undefined) data.thumbnailFocusY = (thumbnailFocusY === null || Number.isNaN(thumbnailFocusY)) ? null : Math.max(0, Math.min(100, Math.round(thumbnailFocusY)));
+    if (thumbnailZoom !== undefined) data.thumbnailZoom = (thumbnailZoom === null || Number.isNaN(thumbnailZoom)) ? null : Math.max(1, Math.min(2.5, thumbnailZoom));
 
     if (status !== undefined) {
       data.status = status;
       data.publishedAt = status === "PUBLISHED" ? owned.chapter.publishedAt || new Date() : null;
+    }
+
+    // Best-effort delete old thumbnail if it was a dedicated upload (thumbnailKey set).
+    if ((thumbnailImage !== undefined || thumbnailKey !== undefined) && (owned.chapter as any).thumbnailKey) {
+      const oldKey = String((owned.chapter as any).thumbnailKey);
+      const nextKey = thumbnailKey ? String(thumbnailKey) : "";
+      if (!nextKey || nextKey !== oldKey) {
+        await deletePublicUpload(oldKey);
+      }
     }
 
     const updated = await prisma.chapter.update({
@@ -127,24 +134,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
       data,
       select: { id: true, title: true, number: true, status: true, workId: true },
     });
-
-    // Best-effort delete old thumbnail if it was a dedicated upload (not a page image)
-    if ((thumbnailImage !== undefined || thumbnailKey !== undefined) && (owned.chapter.thumbnailKey || owned.chapter.thumbnailImage)) {
-      const oldKeyOrUrl = String(owned.chapter.thumbnailKey || owned.chapter.thumbnailImage);
-      const nextKeyOrUrl = thumbnailKey ? String(thumbnailKey) : thumbnailImage ? String(thumbnailImage) : "";
-
-      // Do not delete if unchanged
-      const unchanged = !!nextKeyOrUrl && oldKeyOrUrl === nextKeyOrUrl;
-
-      // Do not delete if the old key/url is one of the chapter pages (shared asset)
-      const pageAssets = new Set(
-        (owned.chapter.pages || []).map((p: any) => String(p.imageKey || p.imageUrl)).filter(Boolean)
-      );
-
-      if (!unchanged && oldKeyOrUrl && !pageAssets.has(oldKeyOrUrl)) {
-        await deletePublicUpload(oldKeyOrUrl);
-      }
-    }
 
     if (owned.chapter.work.type === "NOVEL" && content !== undefined) {
       if (owned.chapter.text) {

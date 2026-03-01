@@ -9,6 +9,8 @@ type ReportRow = {
   pageUrl: string | null;
   status: string;
   createdAt: string;
+  reporterReadAt?: string | null;
+  adminReadAt?: string | null;
   reporter?: { id: string; name: string | null; username: string | null; email: string; image: string | null };
 };
 
@@ -147,31 +149,42 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
           {rows.length === 0 ? (
             <div className="text-sm text-gray-600 dark:text-gray-300">Belum ada report.</div>
           ) : (
-            rows.map((r) => (
-              <div key={r.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="font-semibold break-words">{r.title}</div>
-                    <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                      {new Date(r.createdAt).toLocaleString()} • {r.status}
-                      {isAdmin && r.reporter ? (
-                        <>
-                          {" "}• {r.reporter.username || r.reporter.name || r.reporter.email}
-                        </>
-                      ) : null}
+            rows.map((r) => {
+              const unread = isAdmin ? !r.adminReadAt : false;
+              return (
+                <div
+                  key={r.id}
+                  className={
+                    "rounded-2xl border p-4 transition " +
+                    (unread
+                      ? "border-purple-200 dark:border-purple-900 bg-purple-50/60 dark:bg-purple-950/30"
+                      : "border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-900/40")
+                  }
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className={(unread ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-200") + " font-semibold break-words"}>
+                        {r.title}
+                      </div>
+                      <div className={(unread ? "" : "opacity-70") + " mt-1 text-xs text-gray-600 dark:text-gray-300"}>
+                        {new Date(r.createdAt).toLocaleString()} • {r.status}
+                        {isAdmin && r.reporter ? <> • {r.reporter.username || r.reporter.name || r.reporter.email}</> : null}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-3 text-sm whitespace-pre-wrap break-words">{r.message}</div>
-                {r.pageUrl ? (
-                  <div className="mt-2 text-sm">
-                    <a className="text-blue-600 dark:text-blue-400 hover:underline break-all" href={r.pageUrl} target="_blank" rel="noreferrer">
-                      {r.pageUrl}
-                    </a>
+                  <div className={(unread ? "" : "text-gray-600 dark:text-gray-300") + " mt-3 text-sm whitespace-pre-wrap break-words"}>
+                    {r.message}
                   </div>
-                ) : null}
-              </div>
-            ))
+                  {r.pageUrl ? (
+                    <div className="mt-2 text-sm">
+                      <a className="text-blue-600 dark:text-blue-400 hover:underline break-all" href={r.pageUrl} target="_blank" rel="noreferrer">
+                        {r.pageUrl}
+                      </a>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })
           )}
         </div>
       </div>

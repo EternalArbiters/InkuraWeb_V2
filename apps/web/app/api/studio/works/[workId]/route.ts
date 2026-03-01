@@ -45,12 +45,6 @@ function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | 
   return "UNKNOWN";
 }
 
-function safePublishType(v: unknown): "ORIGINAL" | "TRANSLATION" | "REUPLOAD" {
-  const s = String(v || "ORIGINAL").toUpperCase().trim();
-  if (s === "TRANSLATION" || s === "REUPLOAD") return s;
-  return "ORIGINAL";
-}
-
 async function ensureUniqueSlug(base: string, workId: string) {
   let candidate = base;
   let i = 0;
@@ -123,10 +117,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
       coverKey: true,
       status: true,
       publishType: true,
-      translatorId: true,
       originalAuthorCredit: true,
+      originalTranslatorCredit: true,
       sourceUrl: true,
       uploaderNote: true,
+      translatorId: true,
       translatorCredit: true,
       companyCredit: true,
       prevArcUrl: true,
@@ -180,23 +175,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     const tagNames = safeJsonArray(fd.get("tags"));
 
     const originalAuthorCreditRaw = String(fd.get("originalAuthorCredit") || "").trim();
+    const originalTranslatorCreditRaw = String(fd.get("originalTranslatorCredit") || "").trim();
     const sourceUrlRaw = String(fd.get("sourceUrl") || "").trim();
     const uploaderNoteRaw = String(fd.get("uploaderNote") || "");
-
-    const hasTranslatorCredit = fd.get("translatorCredit") != null;
-    const translatorCreditRaw = hasTranslatorCredit ? String(fd.get("translatorCredit") || "").trim() : "";
-
-    const hasCompanyCredit = fd.get("companyCredit") != null;
-    const companyCreditRaw = hasCompanyCredit ? String(fd.get("companyCredit") || "").trim() : "";
+    const translatorCreditRaw = String(fd.get("translatorCredit") || "").trim();
+    const companyCreditRaw = String(fd.get("companyCredit") || "").trim();
     const prevArcUrlRaw = String(fd.get("prevArcUrl") || "").trim();
     const nextArcUrlRaw = String(fd.get("nextArcUrl") || "").trim();
-
-    // Allow editing publishType in studio (optional; defaults to existing)
-    const publishTypeFromForm = fd.get("publishType");
-    const nextPublishType =
-      publishTypeFromForm != null
-        ? safePublishType(publishTypeFromForm)
-        : safePublishType(existing.publishType || "ORIGINAL");
 
     if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
 
@@ -209,41 +194,27 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     }
 
     // publishType rules:
-    // - TRANSLATION: credit + source required; translatorId should be set (uploader)
-    // - REUPLOAD: credit + source required
-    // - ORIGINAL: clear all credit fields
-    const publishType = String(nextPublishType || "ORIGINAL").toUpperCase();
-    const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
+// - ORIGINAL: no credit/source
+// - TRANSLATION: original author + source required, uploader becomes translator
+// - REUPLOAD: original author + source required, uploader becomes reuploader
+const publishTypeRaw = String(fd.get("publishType") || "").toUpperCase().trim();
+const publishType = (publishTypeRaw === "ORIGINAL" || publishTypeRaw === "TRANSLATION" || publishTypeRaw === "REUPLOAD") ? publishTypeRaw : String(existing.publishType || "ORIGINAL").toUpperCase();
+const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
     const nextOriginalAuthorCredit = needsSource ? (originalAuthorCreditRaw || existing.originalAuthorCredit || "") : null;
+    const nextOriginalTranslatorCredit = publishType === "REUPLOAD" ? (originalTranslatorCreditRaw || (existing as any).originalTranslatorCredit || "") : null;
     const nextSourceUrl = needsSource ? (sourceUrlRaw || existing.sourceUrl || "") : null;
     const nextUploaderNote = publishType === "REUPLOAD" ? uploaderNoteRaw : null;
-    const nextTranslatorId = publishType === "TRANSLATION" ? session.user.id : null;
 
-    const nextTranslatorCredit =
-      publishType === "TRANSLATION"
-        ? hasTranslatorCredit
-          ? (translatorCreditRaw || null)
-          : (existing.translatorCredit || null)
-        : null;
-
-    const nextCompanyCredit =
-      needsSource
-        ? hasCompanyCredit
-          ? (companyCreditRaw || null)
-          : (existing.companyCredit || null)
-        : null;
-
-    const nextPrevArcUrl = prevArcUrlRaw || null;
-    const nextNextArcUrl = nextArcUrlRaw || null;
-
-    if (publishType === "TRANSLATION") {
+    if (needsSource) {
       if (!String(nextOriginalAuthorCredit || "").trim()) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
       if (!String(nextSourceUrl || "").trim()) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
     }
+
     if (publishType === "REUPLOAD") {
-      if (!String(nextOriginalAuthorCredit || "").trim()) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
-      if (!String(nextSourceUrl || "").trim()) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
+      if (!String(nextOriginalTranslatorCredit || "").trim()) {
+        return NextResponse.json({ error: "Original translator credit is required for Reupload" }, { status: 400 });
+      }
     }
 
     // Cover updates (R2)
@@ -312,15 +283,26 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
         ...(isMature !== undefined ? { isMature } : {}),
 
         publishType: publishType as any,
-        translatorId: nextTranslatorId,
-        originalAuthorCredit: needsSource ? nextOriginalAuthorCredit : null,
-        sourceUrl: needsSource ? nextSourceUrl : null,
-        uploaderNote: publishType === "REUPLOAD" ? nextUploaderNote : null,
-
-        translatorCredit: publishType === "TRANSLATION" ? nextTranslatorCredit : null,
-        companyCredit: needsSource ? nextCompanyCredit : null,
-        prevArcUrl: nextPrevArcUrl,
-        nextArcUrl: nextNextArcUrl,
+        translatorId: publishType === "TRANSLATION" ? session.user.id : null,
+        ...(needsSource
+          ? {
+              originalAuthorCredit: nextOriginalAuthorCredit,
+              originalTranslatorCredit: publishType === "REUPLOAD" ? nextOriginalTranslatorCredit : null,
+              sourceUrl: nextSourceUrl,
+              uploaderNote: nextUploaderNote,
+              translatorCredit: publishType === "TRANSLATION" ? (translatorCreditRaw || null) : null,
+              companyCredit: companyCreditRaw || null,
+            }
+          : {
+              originalAuthorCredit: null,
+              originalTranslatorCredit: null,
+              sourceUrl: null,
+              uploaderNote: null,
+              translatorCredit: null,
+              companyCredit: null,
+            }),
+        prevArcUrl: prevArcUrlRaw || null,
+        nextArcUrl: nextArcUrlRaw || null,
 
         genres: { set: genreIds.map((id) => ({ id })) },
         warningTags: { set: warningTagIds.map((id) => ({ id })) },
@@ -345,99 +327,86 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
   }
 }
 
+
 export async function DELETE(_req: Request, { params }: { params: Promise<{ workId: string }> }) {
   const { workId } = await params;
-
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Fetch everything we need BEFORE deleting so we can clean up media + orphan records.
   const work = await prisma.work.findUnique({
     where: { id: workId },
     select: {
       id: true,
-      title: true,
       authorId: true,
-      coverImage: true,
       coverKey: true,
-      chapters: { select: { id: true } },
+      coverImage: true,
+      chapters: {
+        select: {
+          id: true,
+          thumbnailKey: true,
+          thumbnailImage: true,
+          pages: { select: { imageKey: true, imageUrl: true } },
+        },
+      },
     },
   });
-
   if (!work) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (!isOwnerOrAdmin(me.role, session.user.id, work.authorId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const chapterIds = (work.chapters || []).map((c) => c.id);
-
-  // Collect media keys/urls for best-effort deletion AFTER DB delete.
-  const mediaKeysOrUrls: string[] = [];
-  if (work.coverKey || work.coverImage) mediaKeysOrUrls.push(String(work.coverKey || work.coverImage));
-
-  if (chapterIds.length) {
-    const pages = await prisma.comicPage.findMany({
-      where: { chapterId: { in: chapterIds } },
-      select: { imageKey: true, imageUrl: true },
-    });
-    for (const p of pages) {
-      const k = p.imageKey || p.imageUrl;
-      if (k) mediaKeysOrUrls.push(String(k));
-    }
-  }
-
-  // Comments are polymorphic (targetId), so they WON'T cascade on Work/Chapter delete.
-  // We must delete them manually (+ related reports/notifications).
-  const commentWhere: any = chapterIds.length
-    ? {
-        OR: [
-          { targetType: "WORK", targetId: workId },
-          { targetType: "CHAPTER", targetId: { in: chapterIds } },
-        ],
-      }
-    : { targetType: "WORK", targetId: workId };
-
-  const commentIds = await prisma.comment
-    .findMany({ where: commentWhere, select: { id: true } })
-    .then((rows) => rows.map((r) => r.id));
+  if (!isOwnerOrAdmin(me.role, session.user.id, work.authorId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {
+    const chapterIds = (work.chapters || []).map((c) => c.id);
+
+    // Delete polymorphic comments + reports for those comments
+    const comments = await prisma.comment.findMany({
+      where: {
+        OR: [
+          { targetType: "WORK", targetId: workId },
+          ...(chapterIds.length ? [{ targetType: "CHAPTER", targetId: { in: chapterIds } }] : []),
+        ],
+      },
+      select: { id: true },
+    });
+    const commentIds = comments.map((c) => c.id);
+
     await prisma.$transaction(async (tx) => {
-      // Remove notifications that point to this work/chapters (they are not FK constrained).
+      if (commentIds.length) {
+        await tx.report.deleteMany({ where: { targetType: "COMMENT", targetId: { in: commentIds } } });
+        await tx.comment.deleteMany({ where: { id: { in: commentIds } } });
+      }
+
+      // Delete notifications referencing this work/chapters
       await tx.notification.deleteMany({
         where: {
           OR: [
-            { workId: workId },
+            { workId },
             ...(chapterIds.length ? [{ chapterId: { in: chapterIds } }] : []),
           ],
         },
       });
 
-      // Remove reports about comments that will be deleted.
-      if (commentIds.length) {
-        await tx.report.deleteMany({
-          where: {
-            targetType: "COMMENT",
-            targetId: { in: commentIds },
-          },
-        });
-
-        await tx.comment.deleteMany({
-          where: { id: { in: commentIds } },
-        });
-      }
-
-      // Finally delete the work (chapters/pages/text/likes/bookmarks/etc will cascade by FK).
+      // Finally delete the work (cascades most relational data)
       await tx.work.delete({ where: { id: workId } });
     });
 
-    // Best-effort media cleanup (cover + comic pages). Failure here should not fail the request.
-    for (const keyOrUrl of Array.from(new Set(mediaKeysOrUrls))) {
-      await deletePublicUpload(keyOrUrl);
+    // Best-effort delete R2 objects (cover + pages + thumbnails)
+    const toDelete: string[] = [];
+    if (work.coverKey || work.coverImage) toDelete.push(String(work.coverKey || work.coverImage));
+
+    for (const ch of work.chapters || []) {
+      if (ch.thumbnailKey) toDelete.push(String(ch.thumbnailKey));
+      // We intentionally do NOT delete thumbnailImage if thumbnailKey is null (it may be a page image).
+      for (const p of ch.pages || []) {
+        if (p.imageKey) toDelete.push(String(p.imageKey));
+        else if (p.imageUrl) toDelete.push(String(p.imageUrl));
+      }
     }
+
+    // Dedupe
+    const uniq = Array.from(new Set(toDelete)).filter(Boolean);
+    await Promise.all(uniq.map((x) => deletePublicUpload(x)));
 
     return NextResponse.json({ ok: true });
   } catch (e) {

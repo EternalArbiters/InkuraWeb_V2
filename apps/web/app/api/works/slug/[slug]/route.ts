@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { publicUrlForKey } from "@/lib/upload";
 
 export const runtime = "nodejs";
 
@@ -16,8 +17,26 @@ async function getViewer() {
   return user;
 }
 
+function stablePick(id: string, candidates: string[]) {
+  if (!candidates.length) return null;
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return candidates[h % candidates.length] || null;
+}
+
+function resolveChapterThumb(ch: any) {
+  const img = typeof ch.thumbnailImage === "string" ? ch.thumbnailImage.trim() : "";
+  if (img) return img;
+  const key = typeof ch.thumbnailKey === "string" ? ch.thumbnailKey.trim() : "";
+  if (key) return publicUrlForKey(key);
+  const candidates = Array.isArray(ch.pages) ? ch.pages.map((p: any) => String(p.imageUrl || "").trim()).filter(Boolean) : [];
+  return stablePick(String(ch.id), candidates);
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  const viewer = await getViewer();
 
   const work = await prisma.work.findUnique({
     where: { slug },
@@ -36,8 +55,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       completion: true,
       publishType: true,
       originalAuthorCredit: true,
+      originalTranslatorCredit: true,
       sourceUrl: true,
       uploaderNote: true,
+      translatorCredit: true,
+      companyCredit: true,
+      prevArcUrl: true,
+      nextArcUrl: true,
       likeCount: true,
       ratingAvg: true,
       ratingCount: true,
@@ -52,14 +76,26 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       author: { select: { username: true, name: true } },
       translator: { select: { username: true, name: true } },
       chapters: {
-        where: { status: "PUBLISHED" },
-        orderBy: [{ number: "desc" }, { createdAt: "desc" }],
+        orderBy: [{ number: "asc" }, { createdAt: "asc" }],
         select: {
           id: true,
           title: true,
           number: true,
+          status: true,
           createdAt: true,
+          publishedAt: true,
           isMature: true,
+          thumbnailImage: true,
+          thumbnailKey: true,
+          thumbnailFocusX: true,
+          thumbnailFocusY: true,
+          thumbnailZoom: true,
+          // Thumbnail candidates
+          pages: {
+            orderBy: { order: "asc" },
+            take: 3,
+            select: { imageUrl: true },
+          },
           warningTags: { select: { name: true, slug: true } },
         },
       },
@@ -70,20 +106,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const viewer = await getViewer();
   const isOwner = !!viewer?.id && viewer.id === work.authorId;
-  // v14: adultConfirmed alone unlocks mature content.
   const canViewMature = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed);
-  const canViewDeviantLove =
-    isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
+  const canViewDeviantLove = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
 
-  const requiresMatureGate = work.isMature && !canViewMature;
+  const requiresMatureGate = !!work.isMature && !canViewMature;
   const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
   const hasLegacyDeviantGenre = Array.isArray(work.genres) && work.genres.some((g: any) => legacyDeviant.has(String(g.slug || "")));
   const hasDeviantTags = Array.isArray(work.deviantLoveTags) && work.deviantLoveTags.length > 0;
   const requiresDeviantGate = (hasDeviantTags || hasLegacyDeviantGenre) && !canViewDeviantLove;
 
-  // If gated and viewer can't access, return only limited metadata.
   if (requiresMatureGate || requiresDeviantGate) {
     return NextResponse.json({
       gated: true,
@@ -112,20 +144,44 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     });
   }
 
-  // Viewer interactions (like/bookmark/rating)
+  // Viewer interactions
   let viewerLiked = false;
   let viewerBookmarked = false;
   let viewerRating: number | null = null;
+
+  // Viewer reading progress
+  let lastReadChapterNumber: number | null = null;
+
   if (viewer?.id) {
-    const [like, bookmark, rating] = await Promise.all([
+    const [like, bookmark, rating, prog] = await Promise.all([
       prisma.workLike.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { userId: true } }),
       prisma.bookmark.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { userId: true } }),
       prisma.workRating.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { value: true } }),
+      prisma.readingProgress.findUnique({
+        where: { userId_workId: { userId: viewer.id, workId: work.id } },
+        select: { chapter: { select: { number: true } } },
+      }),
     ]);
+
     viewerLiked = !!like;
     viewerBookmarked = !!bookmark;
     viewerRating = rating?.value ?? null;
+    lastReadChapterNumber = prog?.chapter?.number ?? null;
   }
+
+  const visibleChapters = Array.isArray(work.chapters)
+    ? work.chapters
+        .filter((c: any) => (isOwner || viewer?.role === "ADMIN") ? true : c.status === "PUBLISHED")
+        .map((c: any) => ({
+          ...c,
+          thumbnailUrl: resolveChapterThumb(c),
+        }))
+    : [];
+
+  const workOut = {
+    ...work,
+    chapters: visibleChapters,
+  };
 
   return NextResponse.json({
     gated: false,
@@ -139,11 +195,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
           isOwner,
         }
       : null,
+    progress: { lastReadChapterNumber },
     interactions: {
       liked: viewerLiked,
       bookmarked: viewerBookmarked,
       myRating: viewerRating,
     },
-    work,
+    work: workOut,
   });
 }

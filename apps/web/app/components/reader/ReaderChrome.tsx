@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, LayoutGrid, MessageCircle } from "lucide-react";
 import ChapterLikeButton from "@/app/components/work/ChapterLikeButton";
@@ -13,6 +13,7 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
 }
 
 export default function ReaderChrome({
+  workId,
   workSlug,
   workTitle,
   chapterTitle,
@@ -23,6 +24,7 @@ export default function ReaderChrome({
   initialLikeCount,
   children,
 }: {
+  workId: string;
   workSlug: string;
   workTitle: string;
   chapterTitle: string;
@@ -34,6 +36,17 @@ export default function ReaderChrome({
   children: ReactNode;
 }) {
   const [visible, setVisible] = useState(false);
+
+  // Reading history / progress
+  useEffect(() => {
+    if (!workId || !chapterId) return;
+    // Best-effort; ignore errors (401 for guests).
+    fetch(`/api/progress`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ workId, chapterId, progress: 0 }),
+    }).catch(() => null);
+  }, [workId, chapterId]);
 
   const hrefPrev = useMemo(() => (prevId ? `/w/${workSlug}/read/${prevId}` : null), [prevId, workSlug]);
   const hrefNext = useMemo(() => (nextId ? `/w/${workSlug}/read/${nextId}` : null), [nextId, workSlug]);
@@ -111,12 +124,7 @@ export default function ReaderChrome({
               )}
 
               <div onClick={(e) => e.stopPropagation()}>
-                <ChapterLikeButton
-                  chapterId={chapterId}
-                  initialLiked={initialLiked}
-                  initialCount={initialLikeCount}
-                  variant="icon"
-                />
+                <ChapterLikeButton chapterId={chapterId} initialLiked={initialLiked} initialCount={initialLikeCount} variant="icon" />
               </div>
 
               <Link

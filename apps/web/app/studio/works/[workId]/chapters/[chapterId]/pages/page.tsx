@@ -40,7 +40,7 @@ export default async function ChapterPagesPage({
         <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight">Manage Pages</h1>
 
         <div className="mt-6">
-          <ComicPagesManager workId={params.workId} chapterId={params.chapterId} pages={pages} />
+          <ComicPagesManager workId={params.workId} chapterId={params.chapterId} pages={pages} thumbnailImage={(chapter as any).thumbnailImage || null} />
         </div>
       </div>
     </main>

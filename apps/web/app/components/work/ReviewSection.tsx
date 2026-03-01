@@ -57,7 +57,7 @@ export default function ReviewSection({
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<"helpful" | "latest">("helpful");
+  const [sort, setSort] = useState<"helpful" | "top" | "bottom" | "newest" | "oldest">("helpful");
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [myReviewId, setMyReviewId] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
@@ -233,24 +233,20 @@ export default function ReviewSection({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-full border border-gray-200 dark:border-gray-800 overflow-hidden">
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-semibold ${sort === "helpful" ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "bg-transparent"}`}
-                onClick={() => setSort("helpful")}
-                disabled={isPending}
-              >
-                Helpful
-              </button>
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-semibold ${sort === "latest" ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "bg-transparent"}`}
-                onClick={() => setSort("latest")}
-                disabled={isPending}
-              >
-                Latest
-              </button>
-            </div>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as any)}
+              disabled={isPending}
+              className="rounded-full border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/20 px-3 py-2 text-xs font-semibold"
+              aria-label="Sort reviews"
+              title="Sort reviews"
+            >
+              <option value="helpful">Helpful</option>
+              <option value="top">Top (highest rating)</option>
+              <option value="bottom">Bottom (lowest rating)</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
 
             <button
               type="button"

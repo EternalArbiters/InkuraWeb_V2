@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import IconButton from "./IconButton";
+import NavCountBadge from "./NavCountBadge";
 import MobileNav from "./MobileNav";
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -50,7 +51,7 @@ export default function DashboardNavbar() {
   const [searchType, setSearchType] = useState("title");
   const [searchQuery, setSearchQuery] = useState("");
   const [scrollY, setScrollY] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
+
   const [isNavigating, setIsNavigating] = useState(false);
   const [navProgress, setNavProgress] = useState(0);
   const navFallbackTimer = useRef<number | null>(null);
@@ -66,26 +67,6 @@ export default function DashboardNavbar() {
     document.documentElement.classList.toggle("dark", dark);
   }, []);
 
-  // Unread notifications badge
-  useEffect(() => {
-    let mounted = true;
-    const run = async () => {
-      if (!isAuthed) {
-        if (mounted) setUnreadCount(0);
-        return;
-      }
-      const res = await fetch("/api/notifications", { cache: "no-store" as any }).catch(() => null);
-      if (!res) return;
-      const data = await res.json().catch(() => ({} as any));
-      if (mounted) setUnreadCount(Number(data?.unreadCount || 0));
-    };
-    run();
-    const t = setInterval(run, 30000);
-    return () => {
-      mounted = false;
-      clearInterval(t);
-    };
-  }, [isAuthed]);
 
   // Hide scroll button if menu open
   useEffect(() => {
@@ -342,12 +323,16 @@ export default function DashboardNavbar() {
               </div>
               <IconButton icon={<Users size={22} />} label="Community" href="/community" />
               <div className="relative">
-                <IconButton icon={<Bell size={22} />} label="Notifications" href="/notifications" />
-                {unreadCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                ) : null}
+                <IconButton
+                  icon={
+                    <div className="relative">
+                      <Bell size={22} />
+                      <NavCountBadge endpoint="/api/notifications/unread-count" />
+                    </div>
+                  }
+                  label="Notifications"
+                  href="/notifications"
+                />
               </div>
               <IconButton icon={<Bookmark size={22} />} label="Library" href="/library" />
               <IconButton icon={<Layers size={22} />} label="Lists" href="/lists" />
@@ -368,7 +353,10 @@ export default function DashboardNavbar() {
                     <Link href="/settings/account" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">Account</Link>
                     {isAuthed ? (
                       <Link href="/admin-report" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
-                        Admin Report
+                        <span className="inline-flex items-center gap-2">
+                          Admin Report
+                          <NavCountBadge endpoint="/api/admin-report/unread-count" variant="inline" />
+                        </span>
                       </Link>
                     ) : null}
                     {session?.user?.role === "ADMIN" ? (
@@ -379,11 +367,6 @@ export default function DashboardNavbar() {
                     {session?.user?.role === "ADMIN" ? (
                       <Link href="/admin/taxonomy" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
                         Taxonomy
-                      </Link>
-                    ) : null}
-                    {session?.user?.role === "ADMIN" ? (
-                      <Link href="/admin/notify" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
-                        Notify User
                       </Link>
                     ) : null}
                     <div className="px-4 py-2">

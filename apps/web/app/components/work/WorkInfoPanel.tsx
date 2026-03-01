@@ -13,8 +13,10 @@ function row(label: string, value: ReactNode) {
 export default function WorkInfoPanel({ work }: { work: any }) {
   const uploader = work?.author?.name || work?.author?.username || "Unknown";
   const translatorUser = work?.translator?.name || work?.translator?.username || null;
+  const translatorCredit = work?.translatorCredit || null;
+  const companyCredit = work?.companyCredit || null;
 
-  const publishType = String(work?.publishType || "ORIGINAL").toUpperCase();
+  const publishType = String(work?.publishType || "ORIGINAL");
   const completion = String(work?.completion || "ONGOING");
   const origin = String(work?.origin || "UNKNOWN");
   const language = work?.language ? String(work.language).toUpperCase() : "UNKNOWN";
@@ -41,53 +43,25 @@ export default function WorkInfoPanel({ work }: { work: any }) {
           {row("Origin", origin)}
           {row("Language", language)}
           {row("Publish", publishType)}
+          {row("Up by", uploader)}
 
-          {/* Uploader credit depends on publishType */}
-          {publishType === "TRANSLATION"
-            ? row("Translator", uploader)
-            : publishType === "REUPLOAD"
-            ? row("Reuploader", uploader)
-            : row("Author", uploader)}
+          {translatorUser || translatorCredit ? row("Translator", translatorCredit || translatorUser) : null}
 
-          {/* Manual credits (non-original) */}
-          {publishType !== "ORIGINAL" && work?.originalAuthorCredit ? row("Original author", work.originalAuthorCredit) : null}
-          {publishType === "TRANSLATION" ? (
-            work?.translatorCredit ? row("Translator credit", work.translatorCredit) : translatorUser ? row("Translator credit", translatorUser) : null
+          {work?.originalAuthorCredit ? row("Original author", work.originalAuthorCredit) : null}
+
+          {work?.originalTranslatorCredit ? row("Original translator", work.originalTranslatorCredit) : null}
+          {companyCredit ? row("Company", companyCredit) : null}
+          {work?.sourceUrl ? row(
+            "Source",
+            <Link className="underline text-blue-700 dark:text-blue-300 block max-w-full truncate" href={work.sourceUrl} target="_blank" rel="noreferrer">
+              {work.sourceUrl}
+            </Link>
           ) : null}
-          {publishType !== "ORIGINAL" && work?.companyCredit ? row("Company", work.companyCredit) : null}
 
-          {publishType !== "ORIGINAL" && work?.sourceUrl
-            ? row(
-                "Source",
-                <Link
-                  className="underline text-blue-700 dark:text-blue-300 block truncate"
-                  href={work.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  title={work.sourceUrl}
-                >
-                  {work.sourceUrl}
-                </Link>
-              )
-            : null}
+          {work?.uploaderNote ? row("Note", <span className="whitespace-pre-wrap">{work.uploaderNote}</span>) : null}
 
-          {publishType === "REUPLOAD" && work?.uploaderNote ? row("Note", <span className="whitespace-pre-wrap">{work.uploaderNote}</span>) : null}
-
-          {(work?.prevArcUrl || work?.nextArcUrl) ? row(
-            "Arc",
-            <div className="flex flex-wrap gap-2">
-              {work?.prevArcUrl ? (
-                <Link className="underline text-blue-700 dark:text-blue-300 truncate max-w-full" href={work.prevArcUrl} target={/^https?:\/\//i.test(work.prevArcUrl) ? "_blank" : undefined} rel="noreferrer" title={work.prevArcUrl}>
-                  Previous Arc
-                </Link>
-              ) : null}
-              {work?.nextArcUrl ? (
-                <Link className="underline text-blue-700 dark:text-blue-300 truncate max-w-full" href={work.nextArcUrl} target={/^https?:\/\//i.test(work.nextArcUrl) ? "_blank" : undefined} rel="noreferrer" title={work.nextArcUrl}>
-                  Next Arc
-                </Link>
-              ) : null}
-            </div>
-          ) : null}
+          {work?.prevArcUrl ? row("Prev arc", <Link className="underline text-blue-700 dark:text-blue-300 block max-w-full truncate" href={work.prevArcUrl} target="_blank" rel="noreferrer">{work.prevArcUrl}</Link>) : null}
+          {work?.nextArcUrl ? row("Next arc", <Link className="underline text-blue-700 dark:text-blue-300 block max-w-full truncate" href={work.nextArcUrl} target="_blank" rel="noreferrer">{work.nextArcUrl}</Link>) : null}
 
           {row("Chapters", String(work?.chapterCount ?? 0))}
           {row("Favorites", String(work?.likeCount ?? 0))}

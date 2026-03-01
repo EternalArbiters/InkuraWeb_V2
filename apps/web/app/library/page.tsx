@@ -13,8 +13,8 @@ export default async function LibraryPage() {
 
   const bookmarks = res.data.bookmarks || [];
   const progress = res.data.progress || [];
-  const favorites = res.data.favorites || [];
-  const lists = res.data.lists || [];
+  const favorites = (res.data as any).favorites || [];
+  const lists = (res.data as any).lists || [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -71,13 +71,14 @@ export default async function LibraryPage() {
           )}
         </div>
 
+
         <div className="mt-12">
           <h2 className="text-lg font-bold">Favorites</h2>
           {favorites.length === 0 ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No favorites yet.</p>
           ) : (
             <div className="mt-6">
-              <WorksGrid works={favorites.map((f: any) => f.work) as any} />
+              <WorksGrid works={favorites.map((x: any) => x.work) as any} />
             </div>
           )}
         </div>
@@ -86,42 +87,30 @@ export default async function LibraryPage() {
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold">Your Lists</h2>
             <Link href="/lists" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-              Open Lists
+              Manage
             </Link>
           </div>
 
           {lists.length === 0 ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No lists yet.</p>
           ) : (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {lists.slice(0, 8).map((l: any) => (
-                <Link
-                  key={l.id}
-                  href={`/lists/${l.slug}`}
-                  className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-semibold truncate">{l.title}</div>
-                      <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                        {l._count?.items ?? l.items?.length ?? 0} items
-                      </div>
-                    </div>
-                    <div className="shrink-0 flex -space-x-2">
-                      {(l.items || []).slice(0, 3).map((it: any) => (
-                        <div
-                          key={it.id}
-                          className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800"
-                        >
-                          {it.work?.coverImage ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={it.work.coverImage} alt={it.work.title} className="w-full h-full object-cover" loading="lazy" />
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
+            <div className="mt-6 grid gap-6">
+              {lists.map((l: any) => (
+                <div key={l.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <Link href={`/lists/${l.slug}`} className="font-extrabold hover:underline line-clamp-1">
+                      {l.title}
+                    </Link>
+                    <div className="text-xs text-gray-600 dark:text-gray-300">{l._count?.items ?? 0} items</div>
                   </div>
-                </Link>
+                  {Array.isArray(l.items) && l.items.length ? (
+                    <div className="mt-4">
+                      <WorksGrid works={l.items.map((it: any) => it.work) as any} />
+                    </div>
+                  ) : (
+                    <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">Empty.</div>
+                  )}
+                </div>
               ))}
             </div>
           )}

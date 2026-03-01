@@ -594,9 +594,7 @@ export default async function SearchPage({
                 </div>
                 <div className="p-3">
                   <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
-                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate" title={`Up by ${authorName}`}>
-                    Up by {authorName}
-                  </div>
+                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 line-clamp-1">Up by {authorName}</div>
                   <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
                     {typeof w.chapterCount === "number" ? `${w.chapterCount} ch` : null}
                     {w.completion ? ` • ${w.completion}` : ""}

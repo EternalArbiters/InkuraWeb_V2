@@ -18,6 +18,7 @@ export default function AddToListButton({ workId }: { workId: string }) {
   const [loading, setLoading] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [added, setAdded] = useState<Record<string, boolean>>({});
+  const [isMobile, setIsMobile] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -35,6 +36,14 @@ export default function AddToListButton({ workId }: { workId: string }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const on = () => setIsMobile(!!mq.matches);
+    on();
+    mq.addEventListener?.("change", on);
+    return () => mq.removeEventListener?.("change", on);
+  }, []);
 
   useEffect(() => {
     if (open && lists == null) void load();
@@ -78,74 +87,142 @@ export default function AddToListButton({ workId }: { workId: string }) {
       </button>
 
       {open ? (
-        <>
-          {/* Mobile: use fixed sheet so it never gets clipped */}
-          <div className="fixed inset-0 z-40 md:hidden" onClick={() => setOpen(false)} />
+        isMobile ? (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
+            <div className="absolute bottom-0 left-0 right-0 max-h-[75vh] rounded-t-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-2xl overflow-hidden">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <div className="text-sm font-extrabold">Add to list</div>
+                <div className="flex items-center gap-3">
+                  <Link href="/lists/new" onClick={() => setOpen(false)} className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                    New
+                  </Link>
+                  <Link href="/lists" onClick={() => setOpen(false)} className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                    Manage
+                  </Link>
+                </div>
+              </div>
 
-          <div className="fixed z-50 bottom-24 left-1/2 -translate-x-1/2 w-[360px] max-w-[92vw] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-xl overflow-hidden md:absolute md:bottom-auto md:left-auto md:translate-x-0 md:mt-2 md:right-0 md:w-[320px] md:max-w-[80vw]">
-          <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-            <div className="text-sm font-extrabold">Add to list</div>
-            <div className="flex items-center gap-2">
-              <Link href="/lists/new" className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-                New
-              </Link>
-              <Link href="/lists" className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-                Manage
-              </Link>
+              <div className="max-h-[55vh] overflow-auto">
+                {loading ? (
+                  <div className="p-4 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={16} /> Loading...
+                  </div>
+                ) : lists && lists.length ? (
+                  <ul className="p-2">
+                    {lists.map((l) => {
+                      const isAdding = addingId === l.id;
+                      const done = !!added[l.id];
+                      return (
+                        <li key={l.id}>
+                          <button
+                            type="button"
+                            onClick={() => addToList(l.id)}
+                            disabled={isAdding}
+                            className="w-full flex items-center justify-between gap-2 px-3 py-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-900 text-left"
+                          >
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold truncate">{l.title}</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-300">
+                                {(l._count?.items ?? 0)} item • {l.isPublic ? "Public" : "Private"}
+                              </div>
+                            </div>
+
+                            <div className="shrink-0">
+                              {done ? <Check size={18} className="text-emerald-600" /> : isAdding ? <Loader2 className="animate-spin" size={18} /> : null}
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <div className="p-4 text-sm text-gray-600 dark:text-gray-300">
+                    Belum ada list.{" "}
+                    <Link href="/lists/new" onClick={() => setOpen(false)} className="underline text-purple-600 dark:text-purple-400">
+                      Buat list
+                    </Link>{" "}
+                    dulu.
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 border-t border-gray-200 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="w-full px-3 py-3 rounded-2xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-
-          <div className="max-h-[320px] overflow-auto">
-            {loading ? (
-              <div className="p-4 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                <Loader2 className="animate-spin" size={16} /> Loading...
+        ) : (
+          <div className="absolute z-50 mt-2 right-0 w-[320px] max-w-[80vw] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-xl overflow-hidden">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+              <div className="text-sm font-extrabold">Add to list</div>
+              <div className="flex items-center gap-2">
+                <Link href="/lists/new" className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                  New
+                </Link>
+                <Link href="/lists" className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                  Manage
+                </Link>
               </div>
-            ) : lists && lists.length ? (
-              <ul className="p-2">
-                {lists.map((l) => {
-                  const isAdding = addingId === l.id;
-                  const done = !!added[l.id];
-                  return (
-                    <li key={l.id}>
-                      <button
-                        type="button"
-                        onClick={() => addToList(l.id)}
-                        disabled={isAdding}
-                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 text-left"
-                      >
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold truncate">{l.title}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-300">
-                            {(l._count?.items ?? 0)} item • {l.isPublic ? "Public" : "Private"}
+            </div>
+
+            <div className="max-h-[320px] overflow-auto">
+              {loading ? (
+                <div className="p-4 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={16} /> Loading...
+                </div>
+              ) : lists && lists.length ? (
+                <ul className="p-2">
+                  {lists.map((l) => {
+                    const isAdding = addingId === l.id;
+                    const done = !!added[l.id];
+                    return (
+                      <li key={l.id}>
+                        <button
+                          type="button"
+                          onClick={() => addToList(l.id)}
+                          disabled={isAdding}
+                          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 text-left"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold truncate">{l.title}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-300">
+                              {(l._count?.items ?? 0)} item • {l.isPublic ? "Public" : "Private"}
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="shrink-0">
-                          {done ? <Check size={18} className="text-emerald-600" /> : isAdding ? <Loader2 className="animate-spin" size={18} /> : null}
-                        </div>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="p-4 text-sm text-gray-600 dark:text-gray-300">
-                Belum ada list. <Link href="/lists/new" className="underline text-purple-600 dark:text-purple-400">Buat list</Link> dulu.
-              </div>
-            )}
-          </div>
+                          <div className="shrink-0">
+                            {done ? <Check size={18} className="text-emerald-600" /> : isAdding ? <Loader2 className="animate-spin" size={18} /> : null}
+                          </div>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="p-4 text-sm text-gray-600 dark:text-gray-300">
+                  Belum ada list. <Link href="/lists/new" className="underline text-purple-600 dark:text-purple-400">Buat list</Link> dulu.
+                </div>
+              )}
+            </div>
 
-          <div className="p-2 border-t border-gray-200 dark:border-gray-800">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
-            >
-              Close
-            </button>
+            <div className="p-2 border-t border-gray-200 dark:border-gray-800">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="w-full px-3 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                Close
+              </button>
+            </div>
           </div>
-          </div>
-        </>
+        )
       ) : null}
     </div>
   );

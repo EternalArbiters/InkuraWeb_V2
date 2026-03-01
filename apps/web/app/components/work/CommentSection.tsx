@@ -29,7 +29,7 @@ type TargetType = "WORK" | "CHAPTER";
 
 type ScopeMode = "target" | "workChapters";
 
-type SortMode = "latest" | "top" | "oldest";
+type SortMode = "newest" | "oldest" | "top" | "bottom";
 
 type CommentUser = {
   id: string;
@@ -86,9 +86,10 @@ type DecoratedComment = Omit<CommentItem, "replies"> & {
 function normalizeSort(v: unknown): SortMode {
   const s = String(v || "").toLowerCase().trim();
   if (s === "top") return "top";
-  if (s === "oldest" || s === "bottom") return "oldest";
-  // legacy: new
-  return "latest";
+  if (s === "bottom") return "bottom";
+  if (s === "oldest") return "oldest";
+  if (s === "newest" || s === "latest" || s === "new") return "newest";
+  return "top";
 }
 
 function parseHiddenInline(body: string): Array<{ type: "text" | "hidden"; value: string }> {
@@ -1157,9 +1158,10 @@ export default function CommentSection({
               aria-label="Sort"
               title="Sort"
             >
-              <option value="latest">Latest</option>
               <option value="top">Top</option>
-              <option value="oldest">Bottom</option>
+              <option value="bottom">Bottom</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
             </select>
           ) : null}
           <button

@@ -23,7 +23,6 @@ export async function GET() {
             title: true,
             coverImage: true,
             type: true,
-            updatedAt: true,
             likeCount: true,
             ratingAvg: true,
             ratingCount: true,
@@ -55,16 +54,14 @@ export async function GET() {
             title: true,
             coverImage: true,
             type: true,
-            isMature: true,
-            publishType: true,
-            comicType: true,
-            language: true,
             likeCount: true,
             ratingAvg: true,
             ratingCount: true,
+            isMature: true,
             updatedAt: true,
             author: { select: { username: true, name: true } },
             translator: { select: { username: true, name: true } },
+            publishType: true,
           },
         },
       },
@@ -75,7 +72,7 @@ export async function GET() {
       include: {
         _count: { select: { items: true } },
         items: {
-          orderBy: { addedAt: "desc" },
+          orderBy: [{ sortOrder: "desc" }, { addedAt: "desc" }],
           take: 8,
           include: {
             work: {
@@ -85,16 +82,14 @@ export async function GET() {
                 title: true,
                 coverImage: true,
                 type: true,
-                isMature: true,
-                publishType: true,
-                comicType: true,
-                language: true,
                 likeCount: true,
                 ratingAvg: true,
                 ratingCount: true,
+                isMature: true,
                 updatedAt: true,
                 author: { select: { username: true, name: true } },
                 translator: { select: { username: true, name: true } },
+                publishType: true,
               },
             },
           },
@@ -104,4 +99,5 @@ export async function GET() {
   ]);
 
   return NextResponse.json({ bookmarks, progress, favorites, lists });
+
 }

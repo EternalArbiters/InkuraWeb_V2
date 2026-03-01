@@ -31,12 +31,7 @@ export default function WorkCardSquare({ work }: { work: any }) {
 
       <div className="p-3">
         <div className="text-sm font-semibold leading-snug line-clamp-2">{work?.title || "Untitled"}</div>
-        <div
-          className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate"
-          title={`Up by ${work?.author?.name || work?.author?.username || "Unknown"}`}
-        >
-          Up by {work?.author?.name || work?.author?.username || "Unknown"}
-        </div>
+        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 line-clamp-1">Up by {work?.author?.name || work?.author?.username || "Unknown"}</div>
       </div>
     </Link>
   );

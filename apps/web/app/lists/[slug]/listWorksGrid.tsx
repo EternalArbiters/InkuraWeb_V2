@@ -64,9 +64,7 @@ export default function ListWorksGrid({ listId, isOwner, items }: { listId: stri
               </div>
               <div className="p-3">
                 <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
-                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate" title={`Up by ${authorName}`}>
-                  Up by {authorName}
-                </div>
+                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 line-clamp-1">Up by {authorName}</div>
                 <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-3">
                   <span>❤ {w.likeCount ?? 0}</span>
                   <span>

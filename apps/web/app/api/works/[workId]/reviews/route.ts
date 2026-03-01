@@ -6,6 +6,8 @@ import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 
 export const runtime = "nodejs";
 
+type SortMode = "helpful" | "top" | "bottom" | "newest" | "oldest";
+
 function clampRating(v: number) {
   if (!Number.isFinite(v)) return null;
   const n = Math.round(v);
@@ -49,7 +51,8 @@ async function ensureCanViewWork(workId: string) {
   const viewer = await getViewer();
   const isOwner = !!viewer?.id && viewer.id === work.authorId;
   const canViewMature = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed);
-  const canViewDeviantLove = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
+  const canViewDeviantLove =
+    isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
 
   const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
   const hasLegacyDeviantGenre = Array.isArray(work.genres) && work.genres.some((g: any) => legacyDeviant.has(String(g.slug || "")));
@@ -69,29 +72,41 @@ async function ensureCanViewWork(workId: string) {
     };
   }
 
-  return {
-    ok: true as const,
-    viewer,
-    work,
-  };
+  return { ok: true as const, viewer, work };
+}
+
+function safeSort(v: unknown): SortMode {
+  const s = String(v || "").toLowerCase().trim();
+  if (s === "helpful") return "helpful";
+  if (s === "top") return "top";
+  if (s === "bottom") return "bottom";
+  if (s === "oldest") return "oldest";
+  if (s === "newest" || s === "latest" || s === "new") return "newest";
+  return "helpful";
 }
 
 export async function GET(req: Request, { params }: { params: Promise<{ workId: string }> }) {
   const { workId } = await params;
   const url = new URL(req.url);
 
-  const sort = (url.searchParams.get("sort") || "helpful").toLowerCase();
-  const takeRaw = parseInt(url.searchParams.get("take") || "20", 10);
-  const take = Math.max(1, Math.min(50, Number.isFinite(takeRaw) ? takeRaw : 20));
-
   const gate = await ensureCanViewWork(workId);
   if (!gate.ok) return NextResponse.json(gate.payload, { status: gate.status });
 
   const viewer = gate.viewer;
+  const sort = safeSort(url.searchParams.get("sort"));
+
+  const takeRaw = parseInt(url.searchParams.get("take") || "20", 10);
+  const take = Math.max(1, Math.min(50, Number.isFinite(takeRaw) ? takeRaw : 20));
 
   const orderBy =
-    sort === "latest"
+    sort === "newest"
       ? [{ createdAt: "desc" as const }]
+      : sort === "oldest"
+      ? [{ createdAt: "asc" as const }]
+      : sort === "bottom"
+      ? [{ rating: "asc" as const }, { createdAt: "desc" as const }]
+      : sort === "top"
+      ? [{ rating: "desc" as const }, { createdAt: "desc" as const }]
       : [{ helpfulCount: "desc" as const }, { createdAt: "desc" as const }];
 
   const reviews = await prisma.review.findMany({
@@ -109,22 +124,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ workId: 
   let myReviewId: string | null = null;
 
   if (viewer?.id && ids.length) {
-    const votes = await prisma.reviewVote.findMany({
-      where: { userId: viewer.id, reviewId: { in: ids } },
-      select: { reviewId: true },
-    });
-    voted = new Set(votes.map((v) => v.reviewId));
+    const [votes, mine] = await Promise.all([
+      prisma.reviewVote.findMany({ where: { userId: viewer.id, reviewId: { in: ids } }, select: { reviewId: true } }),
+      prisma.review.findUnique({ where: { workId_userId: { workId, userId: viewer.id } }, select: { id: true } }),
+    ]);
 
-    const mine = await prisma.review.findUnique({
-      where: { workId_userId: { workId, userId: viewer.id } },
-      select: { id: true },
-    });
+    voted = new Set(votes.map((v) => v.reviewId));
     myReviewId = mine?.id ?? null;
   }
 
   return NextResponse.json({
     ok: true,
-    sort: sort === "latest" ? "latest" : "helpful",
+    sort,
     myReviewId,
     reviews: reviews.map((r) => ({
       id: r.id,

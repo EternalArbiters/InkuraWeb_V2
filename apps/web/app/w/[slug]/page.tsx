@@ -12,7 +12,7 @@ import ShareButton from "@/app/components/work/ShareButton";
 import AddToListButton from "@/app/components/work/AddToListButton";
 import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
-import WorkChaptersWebtoonList from "@/app/components/work/WorkChaptersWebtoonList";
+import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
   const gated = !!res.data.gated;
   const viewer = res.data.viewer;
   const interactions = (res.data as any).interactions || { liked: false, bookmarked: false, myRating: null };
+  const progress = (res.data as any).progress || { lastReadChapterNumber: null };
   const canViewMature = !!viewer?.canViewMature;
   const canViewDeviantLove = !!viewer?.canViewDeviantLove;
   const gateReason = (res.data as any).gateReason as string | undefined;
@@ -77,7 +78,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
   }
 
   const combinedWarnings = Array.isArray(work.warningTags) ? work.warningTags : [];
-  const upByName = work.author?.name || work.author?.username || "Unknown";
+  const authorName = work.author?.name || work.author?.username || "Unknown";
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -103,9 +104,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 />
               </div>
               <div className="p-4">
-                <div className="text-sm text-gray-600 dark:text-gray-300 truncate" title={`Up by ${upByName}`}>
-                  Up by <b>{upByName}</b>
-                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 truncate">Up by <b>{authorName}</b></div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
                   <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.completion}</span>
@@ -171,19 +170,17 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{work.title}</h1>
 
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
-              <div className="inline-flex items-center gap-2 min-w-max">
-                <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
-                <BookmarkButton workId={work.id} initialBookmarked={!!interactions.bookmarked} />
-                <AddToListButton workId={work.id} />
-                <ShareButton title={work.title} />
-                <RatingStars
-                  workId={work.id}
-                  initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
-                  ratingAvg={Number(work.ratingAvg ?? 0)}
-                  ratingCount={Number(work.ratingCount ?? 0)}
-                />
-              </div>
+            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 md:flex-wrap md:overflow-visible">
+              <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
+              <BookmarkButton workId={work.id} initialBookmarked={!!interactions.bookmarked} />
+              <AddToListButton workId={work.id} />
+              <ShareButton title={work.title} />
+              <RatingStars
+                workId={work.id}
+                initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                ratingAvg={Number(work.ratingAvg ?? 0)}
+                ratingCount={Number(work.ratingCount ?? 0)}
+              />
             </div>
 
             {work.description ? <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{work.description}</p> : null}
@@ -194,14 +191,37 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
             <div className="mt-6">
               <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
-                <WorkChaptersWebtoonList
-                  workSlug={work.slug}
-                  chapters={Array.isArray(work.chapters) ? work.chapters : []}
-                  chapterCount={Number(work.chapterCount ?? 0)}
-                  progressChapterNumber={Number((res.data as any)?.progress?.chapterNumber ?? 0)}
-                  prevArcUrl={work.prevArcUrl || null}
-                  nextArcUrl={work.nextArcUrl || null}
-                />
+                <div className="grid gap-3">
+                  {(work.prevArcUrl || work.nextArcUrl) ? (
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+                      <div className="text-sm font-semibold">Series arcs</div>
+                      <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                        {work.prevArcUrl ? (
+                          <Link
+                            href={work.prevArcUrl}
+                            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center hover:bg-gray-50 dark:hover:bg-gray-900"
+                          >
+                            Previous Arc
+                          </Link>
+                        ) : null}
+                        {work.nextArcUrl ? (
+                          <Link
+                            href={work.nextArcUrl}
+                            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center hover:bg-gray-50 dark:hover:bg-gray-900"
+                          >
+                            Next Arc
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <WorkChaptersWebtoon
+                    slug={work.slug}
+                    chapters={Array.isArray(work.chapters) ? work.chapters : []}
+                    lastReadChapterNumber={typeof progress?.lastReadChapterNumber === "number" ? progress.lastReadChapterNumber : null}
+                  />
+                </div>
               </ContentWarningsGate>
             </div>
 

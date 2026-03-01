@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import NavCountBadge from "./NavCountBadge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BookOpen,
   Moon,
   Sun,
   Search,
@@ -46,6 +46,7 @@ type NavItem = { label: string; href: string; Icon: LucideIcon };
 
 function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onClick: () => void }) {
   const Icon = item.Icon;
+  const badgeEndpoint = item.href === "/notifications" ? "/api/notifications/unread-count" : item.href === "/admin-report" ? "/api/admin-report/unread-count" : null;
   return (
     <Link
       key={item.href}
@@ -61,6 +62,11 @@ function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onC
     >
       <Icon className="w-4 h-4 shrink-0 opacity-90" aria-hidden />
       <span className="truncate">{item.label}</span>
+      {badgeEndpoint ? (
+        <span className="ml-auto">
+          <NavCountBadge endpoint={badgeEndpoint} variant="inline" />
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -78,36 +84,32 @@ export default function MobileNav({
 }: MobileNavProps) {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [brandLogoError, setBrandLogoError] = useState(false);
 
   if (!isOpen) return null;
 
-  const primaryBeforeCategories: NavItem[] = [
+  const navItems: NavItem[] = [
     { label: "Advance Search", href: "/search", Icon: Search },
     { label: "All", href: "/all", Icon: LayoutGrid },
     { label: "Novel", href: "/novel", Icon: BookText },
     { label: "Comic", href: "/comic", Icon: PanelsTopLeft },
     { label: "Film", href: "/film", Icon: Clapperboard },
-  ];
 
-  const primaryAfterCategories: NavItem[] = [
     { label: "Library", href: "/library", Icon: Bookmark },
     { label: "History", href: "/settings/history", Icon: History },
     { label: "Lists", href: "/lists", Icon: Layers },
+
     { label: "Notifications", href: "/notifications", Icon: Bell },
     { label: "Upload", href: "/studio", Icon: Upload },
     { label: "Community", href: "/community", Icon: Users },
+
     { label: "Account", href: "/settings/account", Icon: User },
+    // User -> Admin inbox report (for sending a message/report to admin)
+    ...(isAuthed ? [{ label: "Admin Report", href: "/admin-report", Icon: ShieldAlert }] : []),
+    // Admin-only quick links
+    ...(isAdmin ? [{ label: "Content Reports", href: "/admin/reports", Icon: ShieldAlert }] : []),
+    ...(isAdmin ? [{ label: "Taxonomy", href: "/admin/taxonomy", Icon: ListTree }] : []),
   ];
 
-  // Admin-only quick links
-  const adminItems: NavItem[] = isAdmin
-    ? [
-        { label: "Content Reports", href: "/admin/reports", Icon: ShieldAlert },
-        { label: "Taxonomy", href: "/admin/taxonomy", Icon: ListTree },
-        { label: "Notify User", href: "/admin/notify", Icon: Bell },
-      ]
-    : [];
 
   const categoryItems: NavItem[] = [
     { label: "Genres", href: "/genre", Icon: Tags },
@@ -169,12 +171,15 @@ export default function MobileNav({
           </div>
           {/* Navigation */}
           <nav className="space-y-2">
-            {primaryBeforeCategories.map((item) => (
-              <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
-            ))}
+            {navItems
+              .filter((it) => !["Genres", "Regions", "Translated"].includes(it.label))
+              .slice(0, 5)
+              .map((item) => (
+                <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+              ))}
 
-            {/* Categories dropdown (requested: right under Film) */}
-            <div className="mt-1">
+            {/* Categories dropdown (placed right under Film) */}
+            <div className="mt-2">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="w-full flex items-center justify-between px-4 py-2 rounded text-sm text-gray-700 dark:text-white/80 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
@@ -189,7 +194,7 @@ export default function MobileNav({
                   <ChevronDown className="w-4 h-4 opacity-90" aria-hidden />
                 )}
               </button>
-              {showDropdown ? (
+              {showDropdown && (
                 <div className="ml-4 mt-1 space-y-1">
                   {categoryItems.map((item) => (
                     <Link
@@ -209,23 +214,13 @@ export default function MobileNav({
                     </Link>
                   ))}
                 </div>
-              ) : null}
+              )}
             </div>
 
-            {primaryAfterCategories.map((item) => (
+            {/* Remaining items */}
+            {navItems.slice(5).map((item) => (
               <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
             ))}
-
-            {/* Requested: Admin Report (user report) button under Account */}
-            {isAuthed ? <NavRow item={{ label: "Admin Report", href: "/admin-report", Icon: ShieldAlert }} active={isActive("/admin-report")} onClick={onClose} /> : null}
-
-            {adminItems.length ? (
-              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
-                {adminItems.map((item) => (
-                  <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
-                ))}
-              </div>
-            ) : null}
           </nav>
         </div>
 

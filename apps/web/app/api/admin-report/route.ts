@@ -28,11 +28,36 @@ export async function GET() {
         createdAt: true,
         resolvedAt: true,
         adminNote: true,
+        reporterReadAt: true,
+        adminReadAt: true,
         reporter: { select: { id: true, name: true, username: true, email: true, image: true } },
       },
     });
 
-    return NextResponse.json({ reports: rows, isAdmin });
+    // Mark as read (best-effort)
+    const ids = rows.map((r) => r.id);
+    const now = new Date();
+    if (ids.length) {
+      if (isAdmin) {
+        await prisma.adminInboxReport.updateMany({
+          where: { id: { in: ids }, adminReadAt: null },
+          data: { adminReadAt: now },
+        });
+      } else {
+        await prisma.adminInboxReport.updateMany({
+          where: { id: { in: ids }, reporterId: me.id, reporterReadAt: null },
+          data: { reporterReadAt: now },
+        });
+      }
+    }
+
+    const reports = rows.map((r: any) => {
+      if (isAdmin && !r.adminReadAt) return { ...r, adminReadAt: now };
+      if (!isAdmin && !r.reporterReadAt) return { ...r, reporterReadAt: now };
+      return r;
+    });
+
+    return NextResponse.json({ reports, isAdmin });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -56,6 +81,8 @@ export async function POST(req: Request) {
         message,
         pageUrl,
         reporterId: me.id,
+        reporterReadAt: new Date(),
+        // adminReadAt stays null so admin badge increments
       },
       select: { id: true },
     });

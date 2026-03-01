@@ -10,6 +10,7 @@ import { presignAndUpload } from "@/lib/r2UploadClient";
 
 type Work = {
   id: string;
+  slug: string;
   title: string;
   description: string | null;
   type: "NOVEL" | "COMIC";
@@ -21,11 +22,11 @@ type Work = {
   isMature: boolean;
   publishType?: "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
   originalAuthorCredit?: string | null;
+  originalTranslatorCredit?: string | null;
   sourceUrl?: string | null;
   uploaderNote?: string | null;
   translatorCredit?: string | null;
   companyCredit?: string | null;
-
   prevArcUrl?: string | null;
   nextArcUrl?: string | null;
   genres: { id: string; name: string; slug: string }[];
@@ -34,12 +35,18 @@ type Work = {
   tags: { id: string; name: string; slug: string }[];
 };
 
+type WorkLite = { id: string; slug: string; title: string; type: string; status: string };
+
 type Props = {
   work: Work;
   genres: PickerItem[];
   warningTags: PickerItem[];
   deviantLoveTags: PickerItem[];
 };
+
+function hrefForWorkSlug(slug: string) {
+  return slug ? `/w/${slug}` : "";
+}
 
 export default function WorkEditForm({ work, genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
@@ -57,6 +64,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [isMature, setIsMature] = React.useState(!!work.isMature);
 
   const [originalAuthorCredit, setOriginalAuthorCredit] = React.useState(work.originalAuthorCredit || "");
+  const [originalTranslatorCredit, setOriginalTranslatorCredit] = React.useState(work.originalTranslatorCredit || "");
   const [sourceUrl, setSourceUrl] = React.useState(work.sourceUrl || "");
   const [uploaderNote, setUploaderNote] = React.useState(work.uploaderNote || "");
 
@@ -65,6 +73,9 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
   const [prevArcUrl, setPrevArcUrl] = React.useState(work.prevArcUrl || "");
   const [nextArcUrl, setNextArcUrl] = React.useState(work.nextArcUrl || "");
+
+  const [myWorks, setMyWorks] = React.useState<WorkLite[]>([]);
+  const [loadingWorks, setLoadingWorks] = React.useState(false);
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
@@ -79,6 +90,38 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    let mounted = true;
+    setLoadingWorks(true);
+    fetch(`/api/studio/works`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (!mounted) return;
+        const works = Array.isArray(j?.works) ? (j.works as any[]) : [];
+        const lite = works
+          .map((w) => ({ id: String(w.id), slug: String(w.slug || ""), title: String(w.title || ""), type: String(w.type || ""), status: String(w.status || "") }))
+          .filter((w) => w.id && w.slug && w.id !== work.id);
+        setMyWorks(lite);
+      })
+      .catch(() => null)
+      .finally(() => mounted && setLoadingWorks(false));
+    return () => {
+      mounted = false;
+    };
+  }, [work.id]);
+
+  function setPrevFromWorkId(id: string) {
+    const w = myWorks.find((x) => x.id === id);
+    if (!w) return;
+    setPrevArcUrl(hrefForWorkSlug(w.slug));
+  }
+
+  function setNextFromWorkId(id: string) {
+    const w = myWorks.find((x) => x.id === id);
+    if (!w) return;
+    setNextArcUrl(hrefForWorkSlug(w.slug));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -86,6 +129,9 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
     if (needsSource) {
       if (!originalAuthorCredit.trim()) return setError("Original author credit is required");
       if (!sourceUrl.trim()) return setError("Source URL is required");
+    }
+    if (publishType === "REUPLOAD") {
+      if (!originalTranslatorCredit.trim()) return setError("Original translator credit is required for Reupload");
     }
 
     setLoading(true);
@@ -105,18 +151,24 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
 
+      // credits
+      fd.append("publishType", publishType);
       if (needsSource) {
         fd.append("originalAuthorCredit", originalAuthorCredit);
         fd.append("sourceUrl", sourceUrl);
-        fd.append("companyCredit", companyCredit);
-        if (publishType === "TRANSLATION") fd.append("translatorCredit", translatorCredit);
+        fd.append("companyCredit", companyCredit.trim());
       }
       if (publishType === "REUPLOAD") {
+        fd.append("originalTranslatorCredit", originalTranslatorCredit);
         fd.append("uploaderNote", uploaderNote);
       }
+      if (publishType === "TRANSLATION") {
+        fd.append("translatorCredit", translatorCredit);
+      }
 
-      fd.append("prevArcUrl", prevArcUrl);
-      fd.append("nextArcUrl", nextArcUrl);
+      // arcs
+      fd.append("prevArcUrl", prevArcUrl.trim());
+      fd.append("nextArcUrl", nextArcUrl.trim());
 
       if (coverFile && !removeCover) {
         const up = await presignAndUpload({ scope: "covers", file: coverFile, workId: work.id });
@@ -140,9 +192,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   return (
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
       {error ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          {error}
-        </div>
+        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">{error}</div>
       ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
@@ -160,21 +210,25 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
           <div className="text-sm font-semibold">Credit & source</div>
 
           <label className="grid gap-2">
-            <span className="text-sm font-semibold">Original author credit</span>
-            <input
-              value={originalAuthorCredit}
-              onChange={(e) => setOriginalAuthorCredit(e.target.value)}
-              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            />
+            <span className="text-sm font-semibold">Original author credit (required)</span>
+            <input value={originalAuthorCredit} onChange={(e) => setOriginalAuthorCredit(e.target.value)} className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800" />
           </label>
 
+          {publishType === "REUPLOAD" ? (
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Original translator credit (required)</span>
+              <input
+                value={originalTranslatorCredit}
+                onChange={(e) => setOriginalTranslatorCredit(e.target.value)}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+                placeholder="Contoh: Nama translator / group"
+              />
+            </label>
+          ) : null}
+
           <label className="grid gap-2">
-            <span className="text-sm font-semibold">Source URL</span>
-            <input
-              value={sourceUrl}
-              onChange={(e) => setSourceUrl(e.target.value)}
-              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            />
+            <span className="text-sm font-semibold">Source URL (required)</span>
+            <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800" />
           </label>
 
           {publishType === "TRANSLATION" ? (
@@ -184,60 +238,89 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
                 value={translatorCredit}
                 onChange={(e) => setTranslatorCredit(e.target.value)}
                 className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-                placeholder="Team / group / alias"
+                placeholder="Contoh: Eternal Scans"
               />
             </label>
           ) : null}
 
           <label className="grid gap-2">
-            <span className="text-sm font-semibold">Company / publisher (optional)</span>
+            <span className="text-sm font-semibold">Company / Publisher (optional)</span>
             <input
               value={companyCredit}
               onChange={(e) => setCompanyCredit(e.target.value)}
               className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              placeholder="Publisher / platform / company"
+              placeholder="Contoh: Kakao, Naver, Shueisha, dll"
             />
           </label>
 
           {publishType === "REUPLOAD" ? (
             <label className="grid gap-2">
               <span className="text-sm font-semibold">Uploader note (optional)</span>
-              <textarea
-                value={uploaderNote}
-                onChange={(e) => setUploaderNote(e.target.value)}
-                rows={3}
-                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              />
+              <textarea value={uploaderNote} onChange={(e) => setUploaderNote(e.target.value)} rows={3} className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800" />
             </label>
           ) : null}
         </div>
       ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
-        <div className="text-sm font-semibold">Series arc links (optional)</div>
-        <div className="text-xs text-gray-600 dark:text-gray-300">
-          Untuk series yang punya arc/season lain. Bisa link ke /w/slug atau URL luar.
+        <div className="text-sm font-semibold">Series arcs (optional)</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">Pilih dari karya yang kamu upload dulu. Kalau tidak ada, isi link external.</div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold">Previous arc</div>
+            <select
+              disabled={loadingWorks}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (!id) return;
+                setPrevFromWorkId(id);
+              }}
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              defaultValue=""
+            >
+              <option value="">Pick from my works…</option>
+              {myWorks.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.title} ({w.type})
+                </option>
+              ))}
+            </select>
+            <input
+              value={prevArcUrl}
+              onChange={(e) => setPrevArcUrl(e.target.value)}
+              placeholder="Or paste external link…"
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold">Next arc</div>
+            <select
+              disabled={loadingWorks}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (!id) return;
+                setNextFromWorkId(id);
+              }}
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              defaultValue=""
+            >
+              <option value="">Pick from my works…</option>
+              {myWorks.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.title} ({w.type})
+                </option>
+              ))}
+            </select>
+            <input
+              value={nextArcUrl}
+              onChange={(e) => setNextArcUrl(e.target.value)}
+              placeholder="Or paste external link…"
+              className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            />
+          </div>
         </div>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Previous arc URL</span>
-          <input
-            value={prevArcUrl}
-            onChange={(e) => setPrevArcUrl(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            placeholder="/w/arc-1-slug"
-          />
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Next arc URL</span>
-          <input
-            value={nextArcUrl}
-            onChange={(e) => setNextArcUrl(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            placeholder="/w/arc-3-slug"
-          />
-        </label>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -327,48 +410,11 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
           </select>
         </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Cover</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          />
-          {work.coverImage ? (
-            <label className="mt-1 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-              <input type="checkbox" checked={removeCover} onChange={(e) => setRemoveCover(e.target.checked)} />
-              Remove existing cover
-            </label>
-          ) : null}
-          <span className="text-xs text-gray-600 dark:text-gray-300">Server akan auto-crop center + compress (WebP).</span>
-        </label>
-
         <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Viewer wajib opt-in 18+ di Settings sebelum bisa membaca.
-            </div>
-          </div>
-        </label>
-
-        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-          <input
-            type="checkbox"
-            checked={isDeviantLove}
-            onChange={(e) => {
-              const next = e.target.checked;
-              setIsDeviantLove(next);
-              if (!next) setDeviantLoveTagIds([]);
-            }}
-          />
-          <div>
-            <div className="text-sm font-semibold">Deviant Love</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Jika dicentang, reader perlu unlock Deviant Love (selain 18+) untuk melihat karya ini.
-            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Viewer wajib opt-in 18+.</div>
           </div>
         </label>
       </div>
@@ -378,40 +424,64 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={5}
+          rows={6}
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
         />
       </label>
 
-      <MultiSelectPicker title="Genres" subtitle="Unlimited selection." items={genres} selectedIds={genreIds} onChange={setGenreIds} />
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold">Cover</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Upload cover baru atau remove cover.</div>
+          </div>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={removeCover} onChange={(e) => setRemoveCover(e.target.checked)} />
+            Remove
+          </label>
+        </div>
 
-      <MultiSelectPicker
-        title="NSFW"
-        subtitle="NSFW / sensitive tags untuk karya (sexual content, gore, dll)."
-        items={warningTags}
-        selectedIds={warningIds}
-        onChange={setWarningIds}
-      />
+        <div className="mt-3 grid grid-cols-[120px_1fr] gap-3 items-start">
+          <div className="relative aspect-[3/4] border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+            {work.coverImage && !removeCover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={work.coverImage} alt={work.title} className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">No cover</div>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="text-sm" />
+            <div className="text-[11px] text-gray-600 dark:text-gray-300">Max 2MB. JPG/PNG/WebP.</div>
+          </div>
+        </div>
+      </div>
 
-      {isDeviantLove ? (
-        <MultiSelectPicker
-          title="Deviant Love"
-          subtitle="Deviant Love tags (locked by default for readers; requires 18+ + Deviant Love unlock)."
-          items={deviantLoveTags}
-          selectedIds={deviantLoveTagIds}
-          onChange={setDeviantLoveTagIds}
-        />
-      ) : null}
+      <MultiSelectPicker title="Genres" subtitle="Pilih genre utama." items={genres} selectedIds={genreIds} onChange={setGenreIds} />
+      <MultiSelectPicker title="Warnings" subtitle="NSFW / sensitive tags." items={warningTags} selectedIds={warningIds} onChange={setWarningIds} />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-        <TagMultiInput value={tags} onChange={setTags} placeholder="Tambah tag, enter untuk simpan..." />
+        <label className="flex items-center gap-3">
+          <input type="checkbox" checked={isDeviantLove} onChange={(e) => setIsDeviantLove(e.target.checked)} />
+          <div>
+            <div className="text-sm font-semibold">Deviant Love</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Tag khusus (butuh unlock). Jika tidak dicentang, tag DL akan dihapus.</div>
+          </div>
+        </label>
+        {isDeviantLove ? (
+          <div className="mt-4">
+            <MultiSelectPicker title="Deviant Love Tags" subtitle="Pilih tag deviant love." items={deviantLoveTags} selectedIds={deviantLoveTagIds} onChange={setDeviantLoveTagIds} />
+          </div>
+        ) : null}
       </div>
+
+      <TagMultiInput label="Tags" value={tags} onChange={setTags} />
 
       <div className="flex items-center justify-end gap-2">
         <button
           type="submit"
           disabled={loading}
-          className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
+          className="rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
         >
           {loading ? "Saving..." : "Save"}
         </button>
