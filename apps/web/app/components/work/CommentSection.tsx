@@ -284,7 +284,8 @@ export default function CommentSection({
   title = "Comments",
   take = 100,
   showComposer = true,
-  sort = "latest",
+  // Keep legacy alias support ("latest"/"new") while using the canonical default.
+  sort = "newest",
   variant = "full",
   scope = "target",
   workId,
@@ -297,7 +298,8 @@ export default function CommentSection({
   title?: string;
   take?: number;
   showComposer?: boolean;
-  sort?: SortMode | "new" | "top" | "oldest";
+  // Accept legacy aliases from older links/query params.
+  sort?: SortMode | "new" | "latest";
   variant?: "full" | "compact";
   scope?: ScopeMode;
   workId?: string;
