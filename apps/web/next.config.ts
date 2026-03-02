@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+
+  // Reduce serverless function bundle duplication (helps large route trees + Prisma on Vercel).
+  // This often prevents deploy-time "Deploying outputs..." internal errors on Hobby.
+  output: "standalone",
+  experimental: {
+    // Keep Prisma out of RSC bundling/tracing to avoid repeated native engine copies.
+    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
+  },
 };
 
 export default nextConfig;
