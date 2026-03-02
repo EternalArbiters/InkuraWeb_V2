@@ -31,13 +31,22 @@ export default function AdminReportsClient({ initial }: { initial: ReportItem[] 
   const [isPending, startTransition] = useTransition();
 
   const act = (reportId: string, payload: any) => {
-    startTransition(async () => {
-      await fetch(`/api/admin/reports/${reportId}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      }).catch(() => null);
-      setItems((prev) => prev.filter((r) => r.id !== reportId));
+    // React's startTransition expects a sync callback (return void),
+    // so we run the async work inside an IIFE.
+    startTransition(() => {
+      void (async () => {
+        try {
+          await fetch(`/api/admin/reports/${reportId}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        } catch {
+          // ignore network errors; UI will still optimistically remove the report
+        }
+
+        setItems((prev) => prev.filter((r) => r.id !== reportId));
+      })();
     });
   };
 
