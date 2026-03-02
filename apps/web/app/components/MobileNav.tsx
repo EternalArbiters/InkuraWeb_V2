@@ -1,6 +1,5 @@
 "use client";
 
-import Avatar from "./Avatar";
 import NavCountBadge from "./NavCountBadge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,9 +34,9 @@ interface MobileNavProps {
   onClose: () => void;
   displayName: string;
   userImage: string;
-  userFocusX?: number | null;
-  userFocusY?: number | null;
-  userZoom?: number | null;
+  avatarFocusX?: number;
+  avatarFocusY?: number;
+  avatarZoom?: number;
   toggleDarkMode: () => void;
   handleLogout: () => void;
   isDarkMode: boolean;
@@ -79,9 +78,9 @@ export default function MobileNav({
   onClose,
   displayName,
   userImage,
-  userFocusX,
-  userFocusY,
-  userZoom,
+  avatarFocusX = 50,
+  avatarFocusY = 50,
+  avatarZoom = 1,
   toggleDarkMode,
   handleLogout,
   isDarkMode,
@@ -140,14 +139,25 @@ export default function MobileNav({
             {isAuthed ? (
               <Link href="/settings/profile" prefetch={false} onClick={onClose} className="flex items-center space-x-4 group">
                 <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-400">
-                  <Avatar src={userImage} alt="User" focusX={userFocusX} focusY={userFocusY} zoom={userZoom} className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={userImage}
+                    alt="User"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{
+                      objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
+                      transform: `scale(${avatarZoom})`,
+                      transformOrigin: "center",
+                    }}
+                  />
                 </div>
                 <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">{displayName}</span>
               </Link>
             ) : (
               <>
                 <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-400">
-                  <Avatar src={userImage} alt="User" focusX={userFocusX} focusY={userFocusY} zoom={userZoom} className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={userImage} alt="User" className="absolute inset-0 w-full h-full object-cover" />
                 </div>
                 <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
               </>

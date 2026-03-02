@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "cropperjs/dist/cropper.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,6 +35,22 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Inkura cropper: hide Cropper.js UI chrome (only keep the image so user can drag/zoom) */
+.inkura-cropper .cropper-line,
+.inkura-cropper .cropper-point,
+.inkura-cropper .cropper-dashed,
+.inkura-cropper .cropper-center {
+  display: none !important;
+}
+.inkura-cropper .cropper-face,
+.inkura-cropper .cropper-view-box {
+  opacity: 0 !important;
+  outline: none !important;
+}
+.inkura-cropper .cropper-modal {
+  opacity: 0 !important;
 }
 
 

@@ -138,9 +138,9 @@ export default function AddToListButton({ workId }: { workId: string }) {
                   </ul>
                 ) : (
                   <div className="p-4 text-sm text-gray-600 dark:text-gray-300">
-                    Belum ada list.{" "}
+                    There is no list yet.{" "}
                     <Link href="/lists/new" onClick={() => setOpen(false)} className="underline text-purple-600 dark:text-purple-400">
-                      Buat list
+                      Create List
                     </Link>{" "}
                     dulu.
                   </div>
@@ -207,7 +207,7 @@ export default function AddToListButton({ workId }: { workId: string }) {
                 </ul>
               ) : (
                 <div className="p-4 text-sm text-gray-600 dark:text-gray-300">
-                  Belum ada list. <Link href="/lists/new" className="underline text-purple-600 dark:text-purple-400">Buat list</Link> dulu.
+                  There is no list yet. <Link href="/lists/new" className="underline text-purple-600 dark:text-purple-400">Create list</Link> first.
                 </div>
               )}
             </div>

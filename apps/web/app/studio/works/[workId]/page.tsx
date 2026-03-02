@@ -110,7 +110,7 @@ export default async function StudioWorkPage({
 
           <div className="divide-y divide-gray-200 dark:divide-gray-800">
             {(work.chapters || []).length === 0 ? (
-              <div className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">Belum ada chapter.</div>
+              <div className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
             ) : (
               (work.chapters || []).map((ch: any) => {
                 const thumb = ch.thumbnailImage || null;

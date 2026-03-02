@@ -242,8 +242,8 @@ export default function ReviewSection({
               title="Sort reviews"
             >
               <option value="helpful">Helpful</option>
-              <option value="top">Top (highest rating)</option>
-              <option value="bottom">Bottom (lowest rating)</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
             </select>

@@ -345,8 +345,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         </div>
       </div>
 
-      <MultiSelectPicker title="Genres" subtitle="Pilih genre utama." items={genres} selectedIds={genreIds} onChange={setGenreIds} />
-      <MultiSelectPicker title="Warnings" subtitle="NSFW / sensitive tags." items={warningTags} selectedIds={warningTagIds} onChange={setWarningTagIds} />
+      <MultiSelectPicker title="Genres" items={genres} selectedIds={genreIds} onChange={setGenreIds} />
+      <MultiSelectPicker title="Warnings" items={warningTags} selectedIds={warningTagIds} onChange={setWarningTagIds} />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
         <label className="flex items-center gap-3">
@@ -358,7 +358,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         </label>
         {isDeviantLove ? (
           <div className="mt-4">
-            <MultiSelectPicker title="Deviant Love Tags" subtitle="Pilih tag deviant love." items={deviantLoveTags} selectedIds={deviantLoveTagIds} onChange={setDeviantLoveTagIds} />
+            <MultiSelectPicker title="Deviant Love Tags" items={deviantLoveTags} selectedIds={deviantLoveTagIds} onChange={setDeviantLoveTagIds} />
           </div>
         ) : null}
       </div>

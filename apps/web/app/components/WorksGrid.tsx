@@ -63,7 +63,7 @@ export default function WorksGrid({ works }: { works: Work[] }) {
       {works.length === 0 ? (
         <div className="col-span-2 md:col-span-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
           <div className="text-lg font-bold">No works</div>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Belum ada data untuk ditampilkan.</p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">There is no data to display yet.</p>
         </div>
       ) : null}
     </div>

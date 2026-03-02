@@ -147,7 +147,7 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
 
         <div className="mt-4 grid gap-3">
           {rows.length === 0 ? (
-            <div className="text-sm text-gray-600 dark:text-gray-300">Belum ada report.</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">No reports yet.</div>
           ) : (
             rows.map((r) => {
               const unread = isAdmin ? !r.adminReadAt : false;

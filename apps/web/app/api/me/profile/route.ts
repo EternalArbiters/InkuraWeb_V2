@@ -28,24 +28,6 @@ function normalizeImage(raw: unknown) {
   return v.slice(0, 500);
 }
 
-function normalizeFocus(raw: unknown): number | null | undefined {
-  // undefined => ignore (invalid), null => reset, number => 0..100
-  if (raw === undefined) return undefined;
-  if (raw === null) return null;
-  const v = Number(raw);
-  if (!Number.isFinite(v)) return undefined;
-  return Math.max(0, Math.min(100, Math.round(v)));
-}
-
-function normalizeZoom(raw: unknown): number | null | undefined {
-  if (raw === undefined) return undefined;
-  if (raw === null) return null;
-  const v = Number(raw);
-  if (!Number.isFinite(v)) return undefined;
-  const clamped = Math.max(1, Math.min(2.5, v));
-  return Number(clamped.toFixed(2));
-}
-
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -88,19 +70,18 @@ export async function PATCH(req: Request) {
     if (img !== null) data.image = img;
   }
 
+  // Avatar framing (optional)
   if ("avatarFocusX" in body) {
-    const v = normalizeFocus(body.avatarFocusX);
-    if (v !== undefined) data.avatarFocusX = v;
+    const v = Number(body.avatarFocusX);
+    if (Number.isFinite(v)) data.avatarFocusX = Math.max(0, Math.min(100, Math.round(v)));
   }
-
   if ("avatarFocusY" in body) {
-    const v = normalizeFocus(body.avatarFocusY);
-    if (v !== undefined) data.avatarFocusY = v;
+    const v = Number(body.avatarFocusY);
+    if (Number.isFinite(v)) data.avatarFocusY = Math.max(0, Math.min(100, Math.round(v)));
   }
-
   if ("avatarZoom" in body) {
-    const v = normalizeZoom(body.avatarZoom);
-    if (v !== undefined) data.avatarZoom = v;
+    const v = Number(body.avatarZoom);
+    if (Number.isFinite(v)) data.avatarZoom = Math.max(1, Math.min(6, v));
   }
 
   if ("username" in body) {

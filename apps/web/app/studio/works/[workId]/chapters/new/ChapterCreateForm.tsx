@@ -182,7 +182,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
       <MultiSelectPicker
         title="NSFW (Chapter)"
-        subtitle="NSFW / sensitive tags khusus chapter ini."
+        subtitle="NSFW / sensitive tags specifically for this chapter."
         items={warningTags}
         selectedIds={warningIds}
         onChange={setWarningIds}
@@ -195,7 +195,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={14}
-            placeholder="Tulis isi chapter..."
+            placeholder="Write the contents of the chapter..."
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
         </label>

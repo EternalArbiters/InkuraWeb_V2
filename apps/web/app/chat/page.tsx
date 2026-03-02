@@ -119,7 +119,7 @@ export default function ChatElyaPage() {
                   }
                 `}
               >
-                {isFromAdmin && <span className="text-xs opacity-70">Hahaue:</span>}
+                {isFromAdmin && <span className="text-xs opacity-70">Sayang:</span>}
                 <div>{msg.text}</div>
               </div>
             </motion.div>

@@ -27,7 +27,7 @@ export default async function GenrePage() {
         </div>
 
         {genres.length === 0 ? (
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">Belum ada genre. Tambahin lewat seed / studio.</p>
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">No genres yet. Add them via seed / studio.</p>
         ) : (
           <ul className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             {genres.map((g) => (

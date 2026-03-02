@@ -22,9 +22,9 @@ export default async function ListsPage() {
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-            <h1 className="text-2xl font-extrabold">Reading Lists</h1>
+            <h1 className="text-2xl font-extrabold">Collectuion</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Kamu harus login untuk membuat dan mengelola Reading Lists.
+              You must be logged in to create and manage your collections (Reading Lists)
             </p>
             <div className="mt-4 flex gap-2">
               <Link
@@ -53,8 +53,7 @@ export default async function ListsPage() {
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Reading Lists</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Koleksi pribadi kamu. Bisa public buat dibagikan.</p>
+            <h1 className="text-3xl font-extrabold tracking-tight">Collection</h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -75,9 +74,9 @@ export default async function ListsPage() {
 
         {lists.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-8">
-            <div className="text-lg font-extrabold">Belum ada list</div>
+            <div className="text-lg font-extrabold">No list yet.</div>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Buat list untuk mengelompokkan work favorit kamu (misal: “Romance Indo”, “Horror”, “Rekomendasi Teman”).
+              Create a list to group your favorite works (e.g.: “Indo Romance”, “Horror”, “Friend Recommendations”).
             </p>
             <div className="mt-4">
               <Link

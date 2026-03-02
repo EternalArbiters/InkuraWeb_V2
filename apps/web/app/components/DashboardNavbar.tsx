@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Avatar from "./Avatar";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -60,10 +59,9 @@ export default function DashboardNavbar() {
 
   const displayName = session?.user?.name || session?.user?.email?.split("@")[0] || (isAuthed ? "User" : "Guest");
   const userImage = session?.user?.image || "/images/default-avatar.png";
-
-  const avatarFocusX = (session?.user as any)?.avatarFocusX ?? null;
-  const avatarFocusY = (session?.user as any)?.avatarFocusY ?? null;
-  const avatarZoom = (session?.user as any)?.avatarZoom ?? null;
+  const avatarFocusX = Number.isFinite(Number((session?.user as any)?.avatarFocusX)) ? Number((session?.user as any)?.avatarFocusX) : 50;
+  const avatarFocusY = Number.isFinite(Number((session?.user as any)?.avatarFocusY)) ? Number((session?.user as any)?.avatarFocusY) : 50;
+  const avatarZoom = Number.isFinite(Number((session?.user as any)?.avatarZoom)) ? Math.max(1, Number((session?.user as any)?.avatarZoom)) : 1;
 
   // Set theme
   useEffect(() => {
@@ -414,13 +412,16 @@ export default function DashboardNavbar() {
                     {displayName}
                   </span>
                   <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-                    <Avatar
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={userImage}
                       alt="pp"
-                      focusX={avatarFocusX}
-                      focusY={avatarFocusY}
-                      zoom={avatarZoom}
-                      className="object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{
+                        objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
+                        transform: `scale(${avatarZoom})`,
+                        transformOrigin: "center",
+                      }}
                     />
                   </div>
                 </Link>
@@ -428,14 +429,8 @@ export default function DashboardNavbar() {
                 <div className="ml-4 hidden md:flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
                   <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-                    <Avatar
-                      src={userImage}
-                      alt="pp"
-                      focusX={avatarFocusX}
-                      focusY={avatarFocusY}
-                      zoom={avatarZoom}
-                      className="object-cover"
-                    />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={userImage} alt="pp" className="absolute inset-0 w-full h-full object-cover" />
                   </div>
                 </div>
               )}
@@ -462,9 +457,9 @@ export default function DashboardNavbar() {
         onClose={() => setIsMenuOpen(false)}
         displayName={displayName}
         userImage={userImage}
-        userFocusX={avatarFocusX}
-        userFocusY={avatarFocusY}
-        userZoom={avatarZoom}
+        avatarFocusX={avatarFocusX}
+        avatarFocusY={avatarFocusY}
+        avatarZoom={avatarZoom}
         toggleDarkMode={toggleDarkMode}
         handleLogout={handleLogout}
         isDarkMode={isDarkMode}

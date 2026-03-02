@@ -83,12 +83,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
     setThumbKey(null);
   }
 
-  function resetThumbAdjust() {
-    setThumbFocusX(50);
-    setThumbFocusY(50);
-    setThumbZoom(1);
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -150,25 +144,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
               Thumbnail yang tampil di list chapter (Webtoon-style). Kalau kosong, sistem ambil otomatis.
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={resetThumbAdjust}
-              className="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
-            >
-              Reset position
-            </button>
-            {thumbUrl ? (
-              <button
-                type="button"
-                onClick={clearThumb}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                Remove
-              </button>
-            ) : null}
-          </div>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,420px)_1fr] md:items-start">
@@ -181,13 +156,8 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
               setThumbZoom(v.zoom);
             }}
             disabled={thumbUploading || !thumbUrl}
-            help={
-              thumbUrl
-                ? "Geser gambarnya langsung untuk atur posisi. Scroll mouse untuk zoom."
-                : workType === "COMIC"
-                ? 'Tip: untuk COMIC, kamu juga bisa pilih cover dari halaman di menu "Manage Pages".'
-                : "Biarkan kosong kalau mau otomatis."
-            }
+            onPickImage={() => fileInputRef.current?.click()}
+            onRemoveImage={thumbUrl ? clearThumb : undefined}
           />
 
           <div className="grid gap-3">
@@ -199,51 +169,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
               disabled={thumbUploading}
               className="hidden"
             />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={thumbUploading}
-                className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-60"
-              >
-                {thumbUploading ? "Uploading..." : thumbUrl ? "Change image" : "Upload image"}
-              </button>
-
-              {thumbUrl ? (
-                <button
-                  type="button"
-                  onClick={clearThumb}
-                  disabled={thumbUploading}
-                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-60"
-                >
-                  Remove
-                </button>
-              ) : null}
-            </div>
-
-            <label className="grid gap-1 rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-              <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
-                <span>Zoom</span>
-                <span>{thumbZoom.toFixed(2)}×</span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={2.5}
-                step={0.05}
-                value={thumbZoom}
-                onChange={(e) => setThumbZoom(parseFloat(e.target.value))}
-                disabled={!thumbUrl || thumbUploading}
-              />
-              <div className="text-[11px] text-gray-600 dark:text-gray-300">
-                (Opsional) Kamu juga bisa zoom pakai scroll mouse di preview.
-              </div>
-            </label>
-
-            <div className="text-[11px] text-gray-600 dark:text-gray-300">
-              Tidak menampilkan nama/link file di sini biar rapi.
-            </div>
           </div>
         </div>
       </div>

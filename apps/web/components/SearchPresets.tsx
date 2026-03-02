@@ -93,7 +93,7 @@ export default function SearchPresets() {
           ))}
         </div>
       ) : (
-        <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">There are no presets yet.</div>
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">No presets yet.</div>
       )}
     </div>
   );

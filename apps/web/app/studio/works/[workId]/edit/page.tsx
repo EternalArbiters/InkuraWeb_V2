@@ -38,7 +38,6 @@ export default async function WorkEditPage({
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit work</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update metadata, tags, and credits.</p>
           </div>
           <BackButton href={`/studio/works/${workId}`} />
         </div>

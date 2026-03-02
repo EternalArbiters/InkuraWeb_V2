@@ -169,7 +169,7 @@ export default function WorkChaptersWebtoonList({
             );
           })
         ) : (
-          <div className="text-sm text-gray-600 dark:text-gray-300">Belum ada chapter.</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
         )}
       </div>
     </div>

@@ -82,7 +82,7 @@ export default async function ReadingListPublicPage({ params: paramsPromise }: {
                 Tambahkan work dari halaman work (pakai tombol “Add to List”) atau cari work lewat Search.
               </p>
             ) : (
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Belum ada work yang bisa ditampilkan.</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">There is no work to show yet.</p>
             )}
             {isOwner ? (
               <div className="mt-4">

@@ -97,7 +97,7 @@ export default function StudioWorksGrid({ works }: { works: WorkItem[] }) {
 
         {sortedWorks.length === 0 ? (
           <div className="col-span-2 sm:col-span-3 lg:col-span-4 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-            Belum ada karya.
+             No works yet.
           </div>
         ) : null}
       </div>

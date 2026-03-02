@@ -27,7 +27,6 @@ export default async function AccountSettingsPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Account Settings</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Preferences and content filters.</p>
           </div>
           <Link
             href="/home"

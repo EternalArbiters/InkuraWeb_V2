@@ -43,7 +43,7 @@ export default async function StudioPage() {
         <div className="mt-8">
           {works.length === 0 ? (
             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-              Belum ada karya.
+              No works yet.
             </div>
           ) : (
             <StudioWorksGridClient works={works as any} />

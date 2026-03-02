@@ -119,7 +119,7 @@ export default function PreferencesForm({ genres, warnings, deviantLoveTags, ini
               setConfirmOpen(true);
             }}
           />
-          <span className="text-sm font-semibold">Saya 18+ (unlock)</span>
+          <span className="text-sm font-semibold">I'm 18+ (Unlock it)</span>
         </label>
 
 

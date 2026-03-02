@@ -201,7 +201,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
         <div className="text-sm font-semibold">Publish type</div>
         <div className="text-xs text-gray-600 dark:text-gray-300">
-          Publish type terkunci (ditentukan saat dibuat). Untuk Translation/Reupload, credit + source wajib.
         </div>
         <span className="inline-flex w-fit px-3 py-1 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-semibold bg-gray-50 dark:bg-gray-900">
           {publishType}
@@ -247,7 +246,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
           ) : null}
 
           <label className="grid gap-2">
-            <span className="text-sm font-semibold">Company / Publisher (optional)</span>
+            <span className="text-sm font-semibold">Publisher (optional)</span>
             <input
               value={companyCredit}
               onChange={(e) => setCompanyCredit(e.target.value)}
@@ -423,7 +422,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       </div>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold">Description</span>
+        <span className="text-sm font-semibold">Summary</span>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -436,7 +435,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold">Cover</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">Upload cover baru atau remove cover.</div>
           </div>
           <label className="inline-flex items-center gap-2 text-sm">
             <input type="checkbox" checked={removeCover} onChange={(e) => setRemoveCover(e.target.checked)} />
@@ -460,8 +458,8 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         </div>
       </div>
 
-      <MultiSelectPicker title="Genres" subtitle="Pilih genre utama." items={genres} selectedIds={genreIds} onChange={setGenreIds} />
-      <MultiSelectPicker title="Warnings" subtitle="NSFW / sensitive tags." items={warningTags} selectedIds={warningIds} onChange={setWarningIds} />
+      <MultiSelectPicker title="Genres" items={genres} selectedIds={genreIds} onChange={setGenreIds} />
+      <MultiSelectPicker title="Warnings" items={warningTags} selectedIds={warningIds} onChange={setWarningIds} />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
         <label className="flex items-center gap-3">
@@ -473,7 +471,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         </label>
         {isDeviantLove ? (
           <div className="mt-4">
-            <MultiSelectPicker title="Deviant Love Tags" subtitle="Pilih tag deviant love." items={deviantLoveTags} selectedIds={deviantLoveTagIds} onChange={setDeviantLoveTagIds} />
+            <MultiSelectPicker title="Deviant Love Tags" items={deviantLoveTags} selectedIds={deviantLoveTagIds} onChange={setDeviantLoveTagIds} />
           </div>
         ) : null}
       </div>

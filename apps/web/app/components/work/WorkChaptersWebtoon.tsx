@@ -84,7 +84,7 @@ export default function WorkChaptersWebtoon({
 
       <div className="mt-4 grid gap-3">
         {sorted.length === 0 ? (
-          <div className="text-sm text-gray-600 dark:text-gray-300">Belum ada chapter.</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
         ) : (
           sorted.map((c) => {
             // Prefer server-resolved thumb. Fallback for older API payloads.

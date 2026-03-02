@@ -31,7 +31,7 @@ export default function NewListForm() {
 
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data?.error || "Gagal membuat list.");
+        setError(data?.error || "Failed to create list.");
         return;
       }
 

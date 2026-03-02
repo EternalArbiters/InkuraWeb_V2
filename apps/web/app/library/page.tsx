@@ -22,7 +22,6 @@ export default async function LibraryPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Library</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Your bookmarks and reading progress.</p>
           </div>
           <Link
             href="/home"
