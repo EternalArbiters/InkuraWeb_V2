@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Cropper from "cropperjs";
-import { Image as ImageIcon, RotateCcw, Trash2 } from "lucide-react";
+import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 export type ThumbCropState = {
   focusX: number; // 0..100
@@ -13,7 +13,14 @@ export type ThumbCropState = {
 type Props = {
   src: string | null;
   value: ThumbCropState;
+
+  /**
+   * IMPORTANT:
+   * onChange is ONLY called when user presses the ✅ (apply/lock) button
+   * (so the crop won't "auto-save" while you are still adjusting).
+   */
   onChange: (next: ThumbCropState) => void;
+
   disabled?: boolean;
   className?: string;
 
@@ -33,17 +40,17 @@ function safeNum(v: unknown, def: number) {
   return Number.isFinite(n) ? n : def;
 }
 
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
 /**
  * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
  * Inkura's rendering model (object-position + scale).
  */
-function toFocusZoom(args: {
-  data: Cropper.Data;
-  imgW: number;
-  imgH: number;
-  aspect: number;
-}) {
+function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number }) {
   const { data, imgW, imgH, aspect } = args;
+
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
 
@@ -74,7 +81,6 @@ function toFocusZoom(args: {
   // Zoom relative to the "cover" baseline. (>=1)
   const zoomW = baseW / Math.max(1e-6, w);
   const zoomH = baseH / Math.max(1e-6, h);
-  // Use the more stable of the two (they should be ~equal).
   const zoom = clamp((zoomW + zoomH) / 2, 1, 6);
 
   return { focusX, focusY, zoom };
@@ -83,14 +89,7 @@ function toFocusZoom(args: {
 /**
  * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
  */
-function fromFocusZoom(args: {
-  focusX: number;
-  focusY: number;
-  zoom: number;
-  imgW: number;
-  imgH: number;
-  aspect: number;
-}) {
+function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number }) {
   const { imgW, imgH, aspect } = args;
   const focusX = clamp(args.focusX, 0, 100);
   const focusY = clamp(args.focusY, 0, 100);
@@ -136,44 +135,31 @@ export default function ThumbCropper({
 }: Props) {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
-  const rafRef = React.useRef<number | null>(null);
-  const applyingExternalRef = React.useRef(false);
 
-  const commit = React.useCallback(() => {
-    const cropper = cropperRef.current;
-    if (!cropper) return;
-    const imgData = cropper.getImageData();
-    const imgW = Number(imgData?.naturalWidth || 0);
-    const imgH = Number(imgData?.naturalHeight || 0);
-    if (!imgW || !imgH) return;
-    const data = cropper.getData(true);
-    const next = toFocusZoom({ data, imgW, imgH, aspect });
-    onChange({ focusX: next.focusX, focusY: next.focusY, zoom: next.zoom });
-  }, [aspect, onChange]);
+  // "locked" mode renders a stable preview and avoids Cropper re-layout jitter.
+  const [locked, setLocked] = React.useState<boolean>(false);
 
-  const scheduleCommit = React.useCallback(() => {
-    if (rafRef.current != null) return;
-    rafRef.current = window.requestAnimationFrame(() => {
-      rafRef.current = null;
-      if (applyingExternalRef.current) return;
-      commit();
-    });
-  }, [commit]);
+  const valueRef = React.useRef(value);
+  React.useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
-  // (Re)create cropper when src changes.
+  // Auto-unlock when a new src comes in (new upload / change image).
+  React.useEffect(() => {
+    if (src) setLocked(false);
+    else setLocked(false);
+  }, [src]);
+
+  // (Re)create cropper when src changes AND not locked.
   React.useEffect(() => {
     // cleanup old
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
     if (cropperRef.current) {
       cropperRef.current.destroy();
       cropperRef.current = null;
     }
 
     const img = imgRef.current;
-    if (!img || !src) return;
+    if (!img || !src || locked) return;
 
     const cropper = new Cropper(img, {
       aspectRatio: aspect,
@@ -188,97 +174,120 @@ export default function ThumbCropper({
       cropBoxMovable: false,
       cropBoxResizable: false,
       toggleDragModeOnDblclick: false,
+
+      // hide all chrome via CSS in globals.css
       guides: false,
       center: false,
       highlight: false,
       background: false,
       modal: false,
+
       responsive: true,
       restore: false,
+
       ready() {
-        // Apply external focus/zoom.
+        // Apply external focus/zoom once, then let user adjust freely.
         try {
           const imgData = cropper.getImageData();
           const imgW = Number(imgData?.naturalWidth || 0);
           const imgH = Number(imgData?.naturalHeight || 0);
           if (!imgW || !imgH) return;
-          applyingExternalRef.current = true;
-          cropper.setData(
-            fromFocusZoom({
-              focusX: value.focusX,
-              focusY: value.focusY,
-              zoom: value.zoom,
-              imgW,
-              imgH,
-              aspect,
-            }) as any
-          );
-        } finally {
-          applyingExternalRef.current = false;
+          const v = valueRef.current;
+          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect }) as any);
+        } catch {
+          // ignore
         }
-        scheduleCommit();
-      },
-      crop() {
-        scheduleCommit();
+
+        if (disabled) {
+          try {
+            cropper.disable();
+          } catch {
+            // ignore
+          }
+        }
       },
     });
 
     cropperRef.current = cropper;
     return () => {
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
       cropper.destroy();
       cropperRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, aspect]);
+  }, [src, aspect, locked, disabled]);
 
-  // Apply external changes (e.g. parent reset).
+  // Enable/disable Cropper interactions when disabled changes.
   React.useEffect(() => {
     const cropper = cropperRef.current;
-    if (!cropper || !src) return;
-    const imgData = cropper.getImageData();
-    const imgW = Number(imgData?.naturalWidth || 0);
-    const imgH = Number(imgData?.naturalHeight || 0);
-    if (!imgW || !imgH) return;
+    if (!cropper) return;
     try {
-      applyingExternalRef.current = true;
-      cropper.setData(
-        fromFocusZoom({
-          focusX: value.focusX,
-          focusY: value.focusY,
-          zoom: value.zoom,
-          imgW,
-          imgH,
-          aspect,
-        }) as any
-      );
-    } finally {
-      applyingExternalRef.current = false;
+      if (disabled) cropper.disable();
+      else cropper.enable();
+    } catch {
+      // ignore
     }
-    scheduleCommit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value.focusX, value.focusY, value.zoom]);
+  }, [disabled]);
 
   const handleReset = () => {
+    // Reset should NOT auto-commit. User can press ✅ to apply.
     const cropper = cropperRef.current;
+
+    if (locked) {
+      // Reset committed state (explicit action)
+      onChange({ focusX: 50, focusY: 50, zoom: 1 });
+      return;
+    }
+
     if (cropper) {
-      // Reset to default center, zoom=1
       const imgData = cropper.getImageData();
       const imgW = Number(imgData?.naturalWidth || 0);
       const imgH = Number(imgData?.naturalHeight || 0);
       if (imgW && imgH) {
         try {
-          applyingExternalRef.current = true;
           cropper.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect }) as any);
-        } finally {
-          applyingExternalRef.current = false;
+        } catch {
+          // ignore
+        }
+      } else {
+        try {
+          cropper.reset();
+        } catch {
+          // ignore
         }
       }
     }
-    onChange({ focusX: 50, focusY: 50, zoom: 1 });
+  };
+
+  const handleApplyLock = () => {
+    if (!src) return;
+
+    const cropper = cropperRef.current;
+    if (!cropper) {
+      // If cropper isn't active (shouldn't happen unless locked), just lock.
+      setLocked(true);
+      return;
+    }
+
+    const imgData = cropper.getImageData();
+    const imgW = Number(imgData?.naturalWidth || 0);
+    const imgH = Number(imgData?.naturalHeight || 0);
+    if (!imgW || !imgH) return;
+
+    const data = cropper.getData(true);
+    const next = toFocusZoom({ data, imgW, imgH, aspect });
+
+    onChange({
+      focusX: round2(next.focusX),
+      focusY: round2(next.focusY),
+      zoom: round2(next.zoom),
+    });
+
+    // Lock immediately so the position won't "move by itself" after user is satisfied.
+    setLocked(true);
+  };
+
+  const handleUnlock = () => {
+    if (!src) return;
+    setLocked(false);
   };
 
   return (
@@ -291,22 +300,41 @@ export default function ThumbCropper({
         style={{ aspectRatio: String(aspect) }}
         aria-label="Image cropper"
       >
-        {/* Cropper.js needs a real <img>. Keep it mounted even when src is null. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          ref={imgRef}
-          src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
-          alt=""
-          className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
-          draggable={false}
-        />
+        {/* Locked preview (stable) */}
+        {locked ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
+            alt=""
+            className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
+            draggable={false}
+            style={{
+              objectPosition: `${value.focusX}% ${value.focusY}%`,
+              transform: `scale(${value.zoom})`,
+              transformOrigin: "center",
+            }}
+          />
+        ) : (
+          // Cropper.js editing image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            ref={imgRef}
+            src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
+            alt=""
+            className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
+            draggable={false}
+          />
+        )}
 
-        {/* 3 icon buttons only */}
+        {/* Icon buttons */}
         <div className="absolute top-2 right-2 flex gap-2 z-10">
           {onPickImage ? (
             <button
               type="button"
-              onClick={onPickImage}
+              onClick={() => {
+                // Changing image will come with new src and auto-unlock.
+                onPickImage();
+              }}
               disabled={!!disabled}
               className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
               title="Change image"
@@ -330,7 +358,10 @@ export default function ThumbCropper({
           {onRemoveImage ? (
             <button
               type="button"
-              onClick={onRemoveImage}
+              onClick={() => {
+                onRemoveImage();
+                setLocked(false);
+              }}
               disabled={!!disabled || !src}
               className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
               title="Remove"
@@ -338,6 +369,33 @@ export default function ThumbCropper({
             >
               <Trash2 className="h-4 w-4" />
             </button>
+          ) : null}
+
+          {/* ✅ Apply/Lock (and ✏️ Unlock/Edit) */}
+          {src ? (
+            locked ? (
+              <button
+                type="button"
+                onClick={handleUnlock}
+                disabled={!!disabled}
+                className="h-9 w-9 rounded-full bg-emerald-500/85 text-white backdrop-blur border border-white/10 hover:bg-emerald-500 flex items-center justify-center disabled:opacity-60"
+                title="Edit position"
+                aria-label="Edit position"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleApplyLock}
+                disabled={!!disabled}
+                className="h-9 w-9 rounded-full bg-emerald-500/85 text-white backdrop-blur border border-white/10 hover:bg-emerald-500 flex items-center justify-center disabled:opacity-60"
+                title="Apply & Lock"
+                aria-label="Apply & Lock"
+              >
+                <Check className="h-4 w-4" />
+              </button>
+            )
           ) : null}
         </div>
       </div>
