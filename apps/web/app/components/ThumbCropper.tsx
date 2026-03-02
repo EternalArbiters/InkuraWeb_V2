@@ -7,35 +7,40 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export type ThumbCropState = {
-  focusX: number; // 0..100 (object-position semantics)
-  focusY: number; // 0..100
-  zoom: number; // 1..2.5
+  /** Stored as 0..100 (compatible with existing DB). We reinterpret it as pan position, not CSS object-position. */
+  focusX: number;
+  /** Stored as 0..100 (compatible with existing DB). We reinterpret it as pan position, not CSS object-position. */
+  focusY: number;
+  /** 1..2.5 (user zoom multiplier) */
+  zoom: number;
 };
 
-function coverDisplayedSize(frameW: number, frameH: number, imgW: number, imgH: number) {
+function coverScale(frameW: number, frameH: number, imgW: number, imgH: number) {
   const iw = Math.max(1, imgW);
   const ih = Math.max(1, imgH);
-  const scale = Math.max(frameW / iw, frameH / ih);
+  return Math.max(frameW / iw, frameH / ih);
+}
+
+function maxPan(frameW: number, frameH: number, imgW: number, imgH: number, zoom: number) {
+  const s = coverScale(frameW, frameH, imgW, imgH) * zoom;
+  const scaledW = imgW * s;
+  const scaledH = imgH * s;
   return {
-    dispW: iw * scale,
-    dispH: ih * scale,
+    x: Math.max(0, (scaledW - frameW) / 2),
+    y: Math.max(0, (scaledH - frameH) / 2),
   };
 }
 
-function focusToShift(focus: number, maxShift: number) {
+// focus 50 => centered pan 0. focus 0 => pan +max. focus 100 => pan -max.
+function focusToPan(focus: number, maxShift: number) {
   if (maxShift <= 0) return 0;
-  // Keep compatibility with CSS object-position:
-  // focus=0  => left/top aligned => image center shifted +maxShift
-  // focus=50 => centered         => 0
-  // focus=100=> right/bottom     => -maxShift
   const f = clamp(focus, 0, 100);
-  const n = (50 - f) / 50; // 1..-1
-  return n * maxShift;
+  return ((50 - f) / 50) * maxShift;
 }
 
-function shiftToFocus(shift: number, maxShift: number) {
+function panToFocus(pan: number, maxShift: number) {
   if (maxShift <= 0) return 50;
-  const n = clamp(shift / maxShift, -1, 1);
+  const n = clamp(pan / maxShift, -1, 1);
   return clamp(50 - n * 50, 0, 100);
 }
 
@@ -63,137 +68,153 @@ export default function ThumbCropper({
   frameClassName?: string;
   /** Tailwind rounding class for the frame. Defaults to rounded-xl. */
   roundedClassName?: string;
-  /** Show 3x3 grid + corner marks (Instagram-like). */
+  /** Show 3x3 grid + corner marks (Android/IG-like). */
   showGuides?: boolean;
 }) {
-  const ref = React.useRef<HTMLDivElement | null>(null);
+  const frameRef = React.useRef<HTMLDivElement | null>(null);
 
-  // Natural image size (needed to compute true "cover" overflow). If not ready yet, we fall back.
+  const [frame, setFrame] = React.useState<{ w: number; h: number; left: number; top: number } | null>(null);
   const [nat, setNat] = React.useState<{ w: number; h: number } | null>(null);
+
+  // Keep frame size fresh (responsive).
   React.useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      setFrame({ w: Math.max(1, r.width), h: Math.max(1, r.height), left: r.left, top: r.top });
+    };
+
+    update();
+    const ro = new ResizeObserver(() => update());
+    ro.observe(el);
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    // reset nat when src changes
     setNat(null);
   }, [src]);
 
-  // Active pointers (drag + pinch)
-  const pointers = React.useRef(new Map<number, { x: number; y: number }>());
+  const safeZoom = clamp(Number((value.zoom || 1).toFixed(2)), 1, 2.5);
 
+  const bounds = React.useMemo(() => {
+    if (!frame || !nat) return { maxX: 0, maxY: 0, scale: 1 };
+    const m = maxPan(frame.w, frame.h, nat.w, nat.h, safeZoom);
+    // Rendering uses object-cover at zoom=1, so scale here is just the user zoom.
+    return { maxX: m.x, maxY: m.y, scale: safeZoom };
+  }, [frame, nat, safeZoom]);
+
+  // Derived pan in pixels (clamped). Rendering uses this directly.
+  const pan = React.useMemo(() => {
+    const px = focusToPan(value.focusX, bounds.maxX);
+    const py = focusToPan(value.focusY, bounds.maxY);
+    return {
+      x: clamp(px, -bounds.maxX, bounds.maxX),
+      y: clamp(py, -bounds.maxY, bounds.maxY),
+    };
+  }, [value.focusX, value.focusY, bounds.maxX, bounds.maxY]);
+
+  // If stored focus is out of range for current bounds (e.g., resizing), auto-correct once.
+  React.useEffect(() => {
+    if (disabled || !src) return;
+    if (!frame || !nat) return;
+
+    const correctedX = panToFocus(pan.x, bounds.maxX);
+    const correctedY = panToFocus(pan.y, bounds.maxY);
+
+    const dx = Math.abs(correctedX - value.focusX);
+    const dy = Math.abs(correctedY - value.focusY);
+
+    if (dx > 0.01 || dy > 0.01) {
+      onChange({ ...value, focusX: correctedX, focusY: correctedY });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bounds.maxX, bounds.maxY, pan.x, pan.y, frame?.w, frame?.h, nat?.w, nat?.h, src]);
+
+  // Pointer handling (drag + pinch)
+  const pointers = React.useRef(new Map<number, { x: number; y: number }>());
   const gesture = React.useRef<
     | null
     | {
         mode: "drag" | "pinch";
-        // Drag
-        startX: number;
-        startY: number;
-        startShiftX: number;
-        startShiftY: number;
-        // Zoom
+        startPanX: number;
+        startPanY: number;
         startZoom: number;
         startDist?: number;
-        startMidX?: number;
-        startMidY?: number;
+        startMid?: { x: number; y: number }; // relative to frame center
       }
   >(null);
 
-  const getFrame = React.useCallback(() => {
-    const el = ref.current;
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    const w = Math.max(1, r.width);
-    const h = Math.max(1, r.height);
-    const cx = r.left + w / 2;
-    const cy = r.top + h / 2;
-    return { r, w, h, cx, cy };
-  }, []);
+  const getCenter = React.useCallback(() => {
+    if (!frame) return null;
+    return { cx: frame.left + frame.w / 2, cy: frame.top + frame.h / 2 };
+  }, [frame]);
 
-  const getCover = React.useCallback(
-    (frameW: number, frameH: number) => {
-      // Fallback so interactions still work before onLoad.
-      const iw = nat?.w ?? frameW;
-      const ih = nat?.h ?? frameH;
-      return coverDisplayedSize(frameW, frameH, iw, ih);
-    },
-    [nat]
-  );
+  const applyPanZoom = React.useCallback(
+    (nextPanX: number, nextPanY: number, nextZoom: number) => {
+      if (!frame || !nat) {
+        // Still allow zoom update even before load.
+        onChange({ ...value, zoom: clamp(Number(nextZoom.toFixed(2)), 1, 2.5) });
+        return;
+      }
 
-  const getMaxShift = React.useCallback(
-    (frameW: number, frameH: number, zoom: number) => {
-      const { dispW, dispH } = getCover(frameW, frameH);
-      const scaledW = dispW * zoom;
-      const scaledH = dispH * zoom;
-      const overflowX = Math.max(0, scaledW - frameW);
-      const overflowY = Math.max(0, scaledH - frameH);
-      return { maxX: overflowX / 2, maxY: overflowY / 2 };
-    },
-    [getCover]
-  );
+      const z = clamp(Number(nextZoom.toFixed(2)), 1, 2.5);
+      const m = maxPan(frame.w, frame.h, nat.w, nat.h, z);
 
-  const applyShift = React.useCallback(
-    (frameW: number, frameH: number, shiftX: number, shiftY: number, zoom: number) => {
-      const { maxX, maxY } = getMaxShift(frameW, frameH, zoom);
-      const sx = clamp(shiftX, -maxX, maxX);
-      const sy = clamp(shiftY, -maxY, maxY);
-      const focusX = shiftToFocus(sx, maxX);
-      const focusY = shiftToFocus(sy, maxY);
+      const px = clamp(nextPanX, -m.x, m.x);
+      const py = clamp(nextPanY, -m.y, m.y);
+
       onChange({
-        focusX,
-        focusY,
-        zoom: clamp(Number(zoom.toFixed(2)), 1, 2.5),
+        focusX: panToFocus(px, m.x),
+        focusY: panToFocus(py, m.y),
+        zoom: z,
       });
     },
-    [getMaxShift, onChange]
+    [frame, nat, onChange, value]
   );
 
-  const beginDrag = React.useCallback(
-    (e: React.PointerEvent) => {
-      const frame = getFrame();
-      if (!frame) return;
-      const { w, h } = frame;
-      const z = clamp(value.zoom, 1, 2.5);
-      const { maxX, maxY } = getMaxShift(w, h, z);
-
-      gesture.current = {
-        mode: "drag",
-        startX: e.clientX,
-        startY: e.clientY,
-        startShiftX: focusToShift(value.focusX, maxX),
-        startShiftY: focusToShift(value.focusY, maxY),
-        startZoom: z,
-      };
-    },
-    [getFrame, getMaxShift, value.focusX, value.focusY, value.zoom]
-  );
+  const beginDrag = React.useCallback(() => {
+    gesture.current = {
+      mode: "drag",
+      startPanX: pan.x,
+      startPanY: pan.y,
+      startZoom: safeZoom,
+    };
+  }, [pan.x, pan.y, safeZoom]);
 
   const beginPinch = React.useCallback(() => {
-    const frame = getFrame();
     if (!frame) return;
     const pts = Array.from(pointers.current.values());
     if (pts.length < 2) return;
-
     const [a, b] = pts;
     const dist = Math.hypot(b.x - a.x, b.y - a.y);
-    const midX = (a.x + b.x) / 2;
-    const midY = (a.y + b.y) / 2;
+    const center = getCenter();
+    if (!center) return;
 
-    const { w, h } = frame;
-    const z = clamp(value.zoom, 1, 2.5);
-    const { maxX, maxY } = getMaxShift(w, h, z);
+    const midClientX = (a.x + b.x) / 2;
+    const midClientY = (a.y + b.y) / 2;
 
     gesture.current = {
       mode: "pinch",
-      startX: 0,
-      startY: 0,
-      startShiftX: focusToShift(value.focusX, maxX),
-      startShiftY: focusToShift(value.focusY, maxY),
-      startZoom: z,
+      startPanX: pan.x,
+      startPanY: pan.y,
+      startZoom: safeZoom,
       startDist: Math.max(1, dist),
-      startMidX: midX,
-      startMidY: midY,
+      startMid: { x: midClientX - center.cx, y: midClientY - center.cy },
     };
-  }, [getFrame, getMaxShift, value.focusX, value.focusY, value.zoom]);
+  }, [frame, getCenter, pan.x, pan.y, safeZoom]);
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (disabled || !src) return;
-
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     try {
       (e.currentTarget as any).setPointerCapture?.(e.pointerId);
@@ -202,81 +223,81 @@ export default function ThumbCropper({
     }
 
     if (pointers.current.size >= 2) beginPinch();
-    else beginDrag(e);
+    else beginDrag();
   };
+
+  // Drag: keep per-pointer previous position to compute dx/dy
+  const lastPos = React.useRef(new Map<number, { x: number; y: number }>());
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (disabled || !src) return;
     if (!pointers.current.has(e.pointerId)) return;
 
+    const prev = lastPos.current.get(e.pointerId) || { x: e.clientX, y: e.clientY };
+    lastPos.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-    const frame = getFrame();
-    if (!frame) return;
-    const { w, h, cx, cy } = frame;
-
     const g = gesture.current;
-    if (!g) return;
+    if (!g || !frame) return;
 
     if (g.mode === "pinch" && pointers.current.size >= 2) {
       const pts = Array.from(pointers.current.values());
       const [a, b] = pts;
       const dist = Math.hypot(b.x - a.x, b.y - a.y);
-      const scale = dist / (g.startDist || 1);
-      const nextZoom = clamp(Number((g.startZoom * scale).toFixed(2)), 1, 2.5);
+      const center = getCenter();
+      if (!center) return;
 
-      // Zoom around pinch midpoint (Instagram-like)
-      const midX = (a.x + b.x) / 2;
-      const midY = (a.y + b.y) / 2;
-      const px = midX - cx;
-      const py = midY - cy;
+      const nextZoom = clamp(g.startZoom * (dist / (g.startDist || 1)), 1, 2.5);
       const ratio = nextZoom / Math.max(1e-6, g.startZoom);
 
-      const nextShiftX = g.startShiftX * ratio + px * (1 - ratio);
-      const nextShiftY = g.startShiftY * ratio + py * (1 - ratio);
+      const midClientX = (a.x + b.x) / 2;
+      const midClientY = (a.y + b.y) / 2;
+      const anchorX = midClientX - center.cx;
+      const anchorY = midClientY - center.cy;
 
-      applyShift(w, h, nextShiftX, nextShiftY, nextZoom);
+      const nextPanX = g.startPanX * ratio + anchorX * (1 - ratio);
+      const nextPanY = g.startPanY * ratio + anchorY * (1 - ratio);
+
+      applyPanZoom(nextPanX, nextPanY, nextZoom);
       return;
     }
 
     if (g.mode === "drag") {
-      const dx = e.clientX - g.startX;
-      const dy = e.clientY - g.startY;
-
-      const nextShiftX = g.startShiftX + dx;
-      const nextShiftY = g.startShiftY + dy;
-
-      applyShift(w, h, nextShiftX, nextShiftY, g.startZoom);
+      const dx = e.clientX - prev.x;
+      const dy = e.clientY - prev.y;
+      const nextPanX = g.startPanX + dx;
+      const nextPanY = g.startPanY + dy;
+      // Update gesture baseline so dragging stays smooth frame-to-frame
+      g.startPanX = nextPanX;
+      g.startPanY = nextPanY;
+      applyPanZoom(nextPanX, nextPanY, g.startZoom);
     }
   };
 
   const endPointer = (e: React.PointerEvent) => {
     if (!pointers.current.has(e.pointerId)) return;
     pointers.current.delete(e.pointerId);
-
+    lastPos.current.delete(e.pointerId);
     try {
       (e.currentTarget as any).releasePointerCapture?.(e.pointerId);
     } catch {
       // ignore
     }
 
-    // If we drop from pinch to one pointer, continue as drag using the remaining pointer.
-    if (pointers.current.size === 1 && src && !disabled) {
-      const only = Array.from(pointers.current.values())[0];
-      // Re-init drag baseline using *current* state.
-      const frame = getFrame();
-      if (!frame) return;
-      const { w, h } = frame;
-      const z = clamp(value.zoom, 1, 2.5);
-      const { maxX, maxY } = getMaxShift(w, h, z);
+    // If leaving pinch and one pointer remains, continue drag from current state.
+    if (pointers.current.size === 1 && !disabled && src) {
       gesture.current = {
         mode: "drag",
-        startX: only.x,
-        startY: only.y,
-        startShiftX: focusToShift(value.focusX, maxX),
-        startShiftY: focusToShift(value.focusY, maxY),
-        startZoom: z,
+        startPanX: pan.x,
+        startPanY: pan.y,
+        startZoom: safeZoom,
       };
+      return;
+    }
+
+    if (pointers.current.size >= 2) {
+      beginPinch();
       return;
     }
 
@@ -287,28 +308,26 @@ export default function ThumbCropper({
     if (disabled || !src) return;
     e.preventDefault();
 
-    const frame = getFrame();
-    if (!frame) return;
-    const { w, h, cx, cy } = frame;
-
+    const curZoom = safeZoom;
     const dir = e.deltaY > 0 ? -1 : 1;
     const step = e.shiftKey ? 0.1 : 0.05;
-    const curZoom = clamp(value.zoom, 1, 2.5);
     const nextZoom = clamp(Number((curZoom + dir * step).toFixed(2)), 1, 2.5);
 
-    // Zoom around cursor point (Instagram-like)
-    const px = e.clientX - cx;
-    const py = e.clientY - cy;
+    const center = getCenter();
+    if (!center) {
+      applyPanZoom(pan.x, pan.y, nextZoom);
+      return;
+    }
+
+    // anchor zoom at cursor location (relative to frame center)
+    const anchorX = e.clientX - center.cx;
+    const anchorY = e.clientY - center.cy;
     const ratio = nextZoom / Math.max(1e-6, curZoom);
 
-    const { maxX, maxY } = getMaxShift(w, h, curZoom);
-    const curShiftX = focusToShift(value.focusX, maxX);
-    const curShiftY = focusToShift(value.focusY, maxY);
+    const nextPanX = pan.x * ratio + anchorX * (1 - ratio);
+    const nextPanY = pan.y * ratio + anchorY * (1 - ratio);
 
-    const nextShiftX = curShiftX * ratio + px * (1 - ratio);
-    const nextShiftY = curShiftY * ratio + py * (1 - ratio);
-
-    applyShift(w, h, nextShiftX, nextShiftY, nextZoom);
+    applyPanZoom(nextPanX, nextPanY, nextZoom);
   };
 
   const aspect = aspectClassName || "aspect-[4/3]";
@@ -317,7 +336,7 @@ export default function ThumbCropper({
   return (
     <div className={className}>
       <div
-        ref={ref}
+        ref={frameRef}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endPointer}
@@ -338,51 +357,63 @@ export default function ThumbCropper({
         title={disabled ? undefined : "Drag to move • Scroll/Pinch to zoom"}
       >
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt="Preview"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              objectPosition: `${clamp(value.focusX, 0, 100)}% ${clamp(value.focusY, 0, 100)}%`,
-              transform: `scale(${clamp(value.zoom, 1, 2.5)})`,
-              transformOrigin: "center",
-            }}
-            onLoad={(e) => {
-              const img = e.currentTarget;
-              const w = img.naturalWidth || 1;
-              const h = img.naturalHeight || 1;
-              setNat((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }));
-            }}
-            draggable={false}
-          />
+          <div className="absolute inset-0">
+            {/* Pan wrapper (pixels, NOT scaled). */}
+            <div className="absolute inset-0" style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt="Preview"
+                draggable={false}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  const w = img.naturalWidth || 1;
+                  const h = img.naturalHeight || 1;
+                  setNat((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }));
+                }}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{
+                  transform: `scale(${bounds.scale})`,
+                  transformOrigin: "center",
+                  userSelect: "none",
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
+
+            {showGuides ? (
+              <div className="absolute inset-0 pointer-events-none">
+                {/* dim outside feel (subtle) */}
+                <div className="absolute inset-0 bg-black/10" />
+
+                {/* 3x3 grid */}
+                <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/25" />
+                <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/25" />
+                <div className="absolute top-1/3 left-0 right-0 h-px bg-white/25" />
+                <div className="absolute top-2/3 left-0 right-0 h-px bg-white/25" />
+
+                {/* Corner brackets */}
+                <div className="absolute inset-0">
+                  <div className="absolute top-0 left-0 w-10 h-10 border-t-[3px] border-l-[3px] border-white/90" />
+                  <div className="absolute top-0 right-0 w-10 h-10 border-t-[3px] border-r-[3px] border-white/90" />
+                  <div className="absolute bottom-0 left-0 w-10 h-10 border-b-[3px] border-l-[3px] border-white/90" />
+                  <div className="absolute bottom-0 right-0 w-10 h-10 border-b-[3px] border-r-[3px] border-white/90" />
+                </div>
+
+                {/* Center dot */}
+                <div className="absolute left-1/2 top-1/2 w-1.5 h-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70" />
+              </div>
+            ) : null}
+
+            {!disabled ? (
+              <div className="absolute bottom-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/60 text-white">
+                Drag to move • Scroll/Pinch to zoom
+              </div>
+            ) : null}
+          </div>
         ) : (
           <div className="text-xs text-gray-500">Auto</div>
         )}
-
-        {src && showGuides ? (
-          <div className="absolute inset-0 pointer-events-none">
-            {/* 3x3 grid */}
-            <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/25" />
-            <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/25" />
-            <div className="absolute top-1/3 left-0 right-0 h-px bg-white/25" />
-            <div className="absolute top-2/3 left-0 right-0 h-px bg-white/25" />
-
-            {/* Corner brackets */}
-            <div className="absolute inset-0">
-              <div className="absolute top-0 left-0 w-10 h-10 border-t-[3px] border-l-[3px] border-white/80" />
-              <div className="absolute top-0 right-0 w-10 h-10 border-t-[3px] border-r-[3px] border-white/80" />
-              <div className="absolute bottom-0 left-0 w-10 h-10 border-b-[3px] border-l-[3px] border-white/80" />
-              <div className="absolute bottom-0 right-0 w-10 h-10 border-b-[3px] border-r-[3px] border-white/80" />
-            </div>
-          </div>
-        ) : null}
-
-        {src && !disabled ? (
-          <div className="absolute bottom-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/60 text-white">
-            Drag to move • Scroll/Pinch to zoom
-          </div>
-        ) : null}
       </div>
 
       {help ? <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300">{help}</div> : null}
