@@ -12,6 +12,16 @@ export type ThumbCropState = {
   zoom: number; // 1..2.5
 };
 
+function coverDisplayedSize(frameW: number, frameH: number, imgW: number, imgH: number) {
+  const iw = Math.max(1, imgW);
+  const ih = Math.max(1, imgH);
+  const scale = Math.max(frameW / iw, frameH / ih);
+  return {
+    dispW: iw * scale,
+    dispH: ih * scale,
+  };
+}
+
 export default function ThumbCropper({
   src,
   value,
@@ -40,6 +50,23 @@ export default function ThumbCropper({
   showGuides?: boolean;
 }) {
   const ref = React.useRef<HTMLDivElement | null>(null);
+
+  // Natural image size (helps decide when an axis can't move at zoom=1 because there's no overflow)
+  const imgNatural = React.useRef<{ w: number; h: number } | null>(null);
+  React.useEffect(() => {
+    imgNatural.current = null;
+    if (!src) return;
+
+    const img = new Image();
+    img.decoding = "async";
+    img.src = src;
+    img.onload = () => {
+      imgNatural.current = {
+        w: img.naturalWidth || 1,
+        h: img.naturalHeight || 1,
+      };
+    };
+  }, [src]);
 
   // Track active pointers for drag + pinch.
   const pointers = React.useRef(new Map<number, { x: number; y: number }>());
@@ -132,13 +159,56 @@ export default function ThumbCropper({
       const dx = e.clientX - g.startX;
       const dy = e.clientY - g.startY;
 
+      // Use at least the gesture start zoom even if parent state hasn't re-rendered yet.
+      const zoomNow = clamp(Math.max(value.zoom, g.startZoom), 1, 2.5);
+
+      // If the image has NO overflow on an axis at the current zoom,
+      // dragging that axis will look like "stuck" (common for portrait photos inside square crop).
+      // To make it feel like Instagram, we auto-bump zoom a tiny bit when user tries to drag on that axis.
+      const nat = imgNatural.current;
+      if (nat) {
+        const { dispW, dispH } = coverDisplayedSize(w, h, nat.w, nat.h);
+        const overflowX = dispW * zoomNow - w;
+        const overflowY = dispH * zoomNow - h;
+
+        let neededZoom = zoomNow;
+        const wantX = Math.abs(dx) > 2;
+        const wantY = Math.abs(dy) > 2;
+
+        if (wantX && overflowX < 2) {
+          // Ensure ~2px overflow so X movement becomes possible
+          neededZoom = Math.max(neededZoom, (w + 2) / Math.max(1, dispW));
+        }
+        if (wantY && overflowY < 2) {
+          neededZoom = Math.max(neededZoom, (h + 2) / Math.max(1, dispH));
+        }
+
+        // Small extra bump so it feels responsive
+        if (neededZoom > zoomNow && neededZoom < 1.05) neededZoom = 1.05;
+        neededZoom = clamp(Number(neededZoom.toFixed(2)), 1, 2.5);
+
+        if (neededZoom !== zoomNow) {
+          // Restart baseline so drag continues smoothly on next move.
+          gesture.current = {
+            mode: "drag",
+            startX: e.clientX,
+            startY: e.clientY,
+            startFocusX: value.focusX,
+            startFocusY: value.focusY,
+            startZoom: neededZoom,
+          };
+          onChange({ ...value, zoom: neededZoom });
+          return;
+        }
+      }
+
       // Dragging the image to the right should reveal more of the LEFT side,
       // so we decrease focusX. Same for Y.
-      const factor = Math.max(1, value.zoom);
-      const nextFocusX = clamp(g.startFocusX - (dx / w) * 100 / factor, 0, 100);
-      const nextFocusY = clamp(g.startFocusY - (dy / h) * 100 / factor, 0, 100);
+      const factor = Math.max(1, zoomNow);
+      const nextFocusX = clamp(g.startFocusX - (dx / w) * (100 / factor), 0, 100);
+      const nextFocusY = clamp(g.startFocusY - (dy / h) * (100 / factor), 0, 100);
 
-      onChange({ ...value, focusX: nextFocusX, focusY: nextFocusY });
+      onChange({ ...value, focusX: nextFocusX, focusY: nextFocusY, zoom: zoomNow });
     }
   };
 
