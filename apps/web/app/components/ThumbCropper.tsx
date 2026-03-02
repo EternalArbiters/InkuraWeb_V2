@@ -7,7 +7,7 @@ import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-rea
 export type ThumbCropState = {
   focusX: number; // 0..100
   focusY: number; // 0..100
-  zoom: number; // >=1
+  zoom: number;   // >=1
 };
 
 type Props = {
@@ -124,70 +124,6 @@ function fromFocusZoom(args: {
   return { x, y, width: w, height: h };
 }
 
-/**
- * LockedPreview — renders the committed crop without using transform:scale().
- *
- * Strategy:
- *   - Outer div = the clipping viewport (absolute inset-0, overflow hidden).
- *   - Inner div = zoom× the container size, positioned so focusX/focusY is centred.
- *   - <img> inside fills the inner div with object-fit:cover + object-position:center.
- *
- * Why not object-position + transform:scale on the <img> directly?
- *   CSS `transform:scale()` scales visually but does NOT change the element's
- *   layout box, so `object-position` still maps to the *unscaled* box → wrong pixel.
- *   This nested-div approach avoids that entirely.
- *
- * Left/top math (all percentages relative to the outer container):
- *   inner div is (zoom*100)% wide/tall.
- *   We want the focus point (at focusX% of inner div) to land at 50% of the container.
- *   focusX% of inner div in container-% = (focusX/100) * zoom * 100 = focusX * zoom  %
- *   So:  left edge of inner div = 50% - focusX*zoom %
- *        top  edge of inner div = 50% - focusY*zoom %
- */
-function LockedPreview({
-  src,
-  focusX,
-  focusY,
-  zoom,
-}: {
-  src: string;
-  focusX: number;
-  focusY: number;
-  zoom: number;
-}) {
-  const size = `${zoom * 100}%`;
-  const left = `${50 - focusX * zoom}%`;
-  const top  = `${50 - focusY * zoom}%`;
-
-  return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-      <div
-        style={{
-          position: "absolute",
-          width: size,
-          height: size,
-          left,
-          top,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt=""
-          draggable={false}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center",
-            display: "block",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function ThumbCropper({
   src,
   value,
@@ -204,17 +140,30 @@ export default function ThumbCropper({
   // Editing = Cropper.js active. Locked = stable preview.
   const [editing, setEditing] = React.useState<boolean>(true);
 
-  // Keep refs always current so async Cropper `ready` callbacks don't read stale closures.
+  /**
+   * FIX: Instead of trying to reconstruct the crop visually from focusX/Y/zoom
+   * (which always has subtle math mismatches), we snapshot the exact cropped
+   * pixels from Cropper.js via getCroppedCanvas() at the moment the user
+   * presses ✅. This dataURL is shown as the locked preview — pixel-perfect,
+   * zero math required.
+   */
+  const [lockedDataUrl, setLockedDataUrl] = React.useState<string | null>(null);
+
   const valueRef = React.useRef(value);
   React.useEffect(() => { valueRef.current = value; }, [value]);
 
   const aspectRef = React.useRef(aspect);
   React.useEffect(() => { aspectRef.current = aspect; }, [aspect]);
 
-  // When src changes (new upload), re-open the editor.
+  // When src changes (new upload), re-open the editor and clear the snapshot.
   React.useEffect(() => {
-    if (src) setEditing(true);
-    else setEditing(false);
+    if (src) {
+      setLockedDataUrl(null);
+      setEditing(true);
+    } else {
+      setLockedDataUrl(null);
+      setEditing(false);
+    }
   }, [src]);
 
   const destroyCropperNow = React.useCallback(() => {
@@ -312,7 +261,10 @@ export default function ThumbCropper({
   const handleReset = () => {
     if (!src) return;
     if (!editing) {
+      // Reset committed state and re-open editor with default position.
+      setLockedDataUrl(null);
       onChange({ focusX: 50, focusY: 50, zoom: 1 });
+      setEditing(true);
       return;
     }
     const c = cropperRef.current;
@@ -339,11 +291,27 @@ export default function ThumbCropper({
     const imgH = Number(imgData?.naturalHeight || 0);
     if (!imgW || !imgH) return;
 
+    // FIX: Snapshot the exact cropped pixels BEFORE destroying Cropper.
+    // This dataURL becomes the locked preview — no CSS math needed at all.
+    let snapshotUrl: string | null = null;
+    try {
+      const canvas = c.getCroppedCanvas({
+        // Reasonable preview resolution, keeps memory low.
+        maxWidth: 840,
+        maxHeight: 840,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: "high",
+      });
+      snapshotUrl = canvas.toDataURL("image/jpeg", 0.92);
+    } catch { /* ignore */ }
+
     const data = c.getData(true);
     const next = toFocusZoom({ data, imgW, imgH, aspect });
 
     // Destroy FIRST to avoid Cropper DOM flashing over the locked preview.
     destroyCropperNow();
+
+    if (snapshotUrl) setLockedDataUrl(snapshotUrl);
 
     onChange({
       focusX: round2(next.focusX),
@@ -356,6 +324,8 @@ export default function ThumbCropper({
 
   const handleUnlock = () => {
     if (!src) return;
+    // Clear snapshot so the live cropper takes over again.
+    setLockedDataUrl(null);
     setEditing(true);
   };
 
@@ -371,19 +341,24 @@ export default function ThumbCropper({
         style={{ aspectRatio: String(aspect) }}
         aria-label="Image cropper"
       >
-        {/* Locked preview — separate component, no transform:scale conflict */}
-        {isLocked && src ? (
-          <LockedPreview
-            src={src}
-            focusX={value.focusX}
-            focusY={value.focusY}
-            zoom={value.zoom}
+        {/*
+         * Locked preview: show the exact pixel snapshot taken at lock time.
+         * object-fit:cover fills the container perfectly at any aspect ratio.
+         * Zero CSS math — what you cropped is exactly what you see.
+         */}
+        {isLocked && lockedDataUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={lockedDataUrl}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : null}
 
         {/*
          * The <img> that Cropper.js attaches to.
-         * Hidden when locked (LockedPreview takes over), but never unmounted
+         * Hidden when locked (snapshot takes over), but never unmounted
          * to avoid Cropper.js DOM glitches.
          */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -427,6 +402,7 @@ export default function ThumbCropper({
               type="button"
               onClick={() => {
                 destroyCropperNow();
+                setLockedDataUrl(null);
                 onRemoveImage();
                 setEditing(false);
               }}
