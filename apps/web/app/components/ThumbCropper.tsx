@@ -7,17 +7,27 @@ import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-rea
 export type ThumbCropState = {
   focusX: number; // 0..100
   focusY: number; // 0..100
-  zoom: number;   // >=1
+  zoom: number; // >=1
 };
 
 type Props = {
   src: string | null;
   value: ThumbCropState;
+
+  /**
+   * IMPORTANT:
+   * onChange is ONLY called when user presses the ✅ (apply/lock) button
+   * (so the crop won't "auto-save" while you are still adjusting).
+   */
   onChange: (next: ThumbCropState) => void;
+
   disabled?: boolean;
   className?: string;
+
   onPickImage?: () => void;
   onRemoveImage?: () => void;
+
+  /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
 };
 
@@ -32,18 +42,25 @@ function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
+/**
+ * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
+ * Inkura's rendering model (object-position + scale).
+ */
 function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number }) {
   const { data, imgW, imgH, aspect } = args;
 
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
 
+  // Base crop region (zoom=1) for object-fit: cover at ratio r.
   let baseW = imgW;
   let baseH = imgH;
   if (ri > r) {
+    // Image is wider → cover by height.
     baseH = imgH;
     baseW = imgH * r;
   } else {
+    // Image is taller → cover by width.
     baseW = imgW;
     baseH = imgW / r;
   }
@@ -59,6 +76,7 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const focusX = clamp((cx / Math.max(1, imgW)) * 100, 0, 100);
   const focusY = clamp((cy / Math.max(1, imgH)) * 100, 0, 100);
 
+  // Zoom relative to the "cover" baseline. (>=1)
   const zoomW = baseW / Math.max(1e-6, w);
   const zoomH = baseH / Math.max(1e-6, h);
   const zoom = clamp((zoomW + zoomH) / 2, 1, 6);
@@ -66,14 +84,10 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   return { focusX, focusY, zoom };
 }
 
-function fromFocusZoom(args: {
-  focusX: number;
-  focusY: number;
-  zoom: number;
-  imgW: number;
-  imgH: number;
-  aspect: number;
-}) {
+/**
+ * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
+ */
+function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number }) {
   const { imgW, imgH, aspect } = args;
   const focusX = clamp(args.focusX, 0, 100);
   const focusY = clamp(args.focusY, 0, 100);
@@ -107,93 +121,6 @@ function fromFocusZoom(args: {
   return { x, y, width: w, height: h };
 }
 
-/**
- * Locked preview using background-image CSS.
- *
- * Why background-image instead of <img>?
- * - background-size + background-position work together correctly on the
- *   same element — no bounding-box conflict like transform:scale causes.
- * - We can express "show this crop region" purely in CSS without canvas/CORS.
- *
- * Math:
- *   We want to display a zoomed portion of the image centred on (focusX, focusY).
- *   background-size: zoom*100% means the full image is scaled to zoom× the container.
- *   background-position then shifts so the focus point is at the container centre.
- *
- *   When background-size = Z% (relative to container):
- *     image pixel at focusX% maps to container pixel at:
- *       focusX/100 * Z%  (from left edge of container)
- *     We want that at 50%, so shift = 50% - focusX/100 * Z%
- *
- *   CSS background-position percentages work differently from left/top — they
- *   account for the overflow, so we need to convert to absolute px or use the
- *   direct formula. The safest cross-browser approach is to use the
- *   "background-position as offset from the edge" form:
- *
- *     posX = (focusX / 100) * (imageDisplayW - containerW)
- *   where imageDisplayW = containerW * zoom
- *     posX = (focusX / 100) * containerW * (zoom - 1)  ... in px? No.
- *
- *   Actually the simplest correct approach: use percentage background-position
- *   directly. When background-size is set, background-position % refers to
- *   "what % of the image aligns with what % of the container":
- *     background-position: focusX% focusY%
- *   This EXACTLY means "put the focusX% point of the image at the focusX%
- *   point of the container" — NOT at 50%. That's not what we want.
- *
- *   The correct CSS background-position % formula to centre the focus point:
- *     If the image is bigger than container (which it is since zoom >= 1):
- *     overflow = imageSize - containerSize
- *     We want focusX% of imageSize to be at 50% of containerSize:
- *       left offset = focusX/100 * imageSize - 50% of containerSize
- *                   = focusX/100 * zoom * 100% - 50%     (in container units)
- *     background-position px = -(focusX/100 * zoom * containerW - containerW/2)
- *
- *   Since we can't use px without a ResizeObserver, we use the CSS % trick:
- *   background-position X% means:
- *     left = X/100 * (containerW - bgW)  where bgW = zoom * containerW
- *          = X/100 * containerW * (1 - zoom)
- *   We want left = -(focusX/100 * zoom * containerW - containerW/2)
- *               = containerW * (0.5 - focusX/100 * zoom)
- *   So: X/100 * containerW * (1-zoom) = containerW * (0.5 - focusX/100 * zoom)
- *       X/100 * (1-zoom) = 0.5 - focusX/100 * zoom
- *       X = (0.5 - focusX/100 * zoom) / (1-zoom) * 100
- *         = (0.5 - focusX * zoom / 100) * 100 / (1 - zoom)
- *         = (50 - focusX * zoom) / (1 - zoom)
- *
- *   When zoom=1: 1-zoom=0 → division by zero, but zoom=1 means no zoom,
- *   so just use 50% (centre).
- */
-function lockedBgStyle(
-  src: string,
-  focusX: number,
-  focusY: number,
-  zoom: number
-): React.CSSProperties {
-  const bgSize = `${zoom * 100}%`;
-
-  let posX: string;
-  let posY: string;
-
-  if (Math.abs(zoom - 1) < 0.001) {
-    // zoom ≈ 1: image fits container exactly, just centre it
-    posX = `${focusX}%`;
-    posY = `${focusY}%`;
-  } else {
-    const px = (50 - focusX * zoom) / (1 - zoom);
-    const py = (50 - focusY * zoom) / (1 - zoom);
-    posX = `${clamp(px, 0, 100)}%`;
-    posY = `${clamp(py, 0, 100)}%`;
-  }
-
-  return {
-    backgroundImage: `url(${JSON.stringify(src)})`,
-    backgroundSize: bgSize,
-    backgroundPosition: `${posX} ${posY}`,
-    backgroundRepeat: "no-repeat",
-  };
-}
-
 export default function ThumbCropper({
   src,
   value,
@@ -206,32 +133,29 @@ export default function ThumbCropper({
 }: Props) {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
+
+  // Editing means Cropper.js is active. Locked means stable preview.
   const [editing, setEditing] = React.useState<boolean>(true);
 
-  // Try to get a pixel-perfect snapshot via canvas (works when CORS allows it).
-  // Falls back to CSS background-image approach when CORS blocks canvas access.
-  const [lockedDataUrl, setLockedDataUrl] = React.useState<string | null>(null);
-
   const valueRef = React.useRef(value);
-  React.useEffect(() => { valueRef.current = value; }, [value]);
-
-  const aspectRef = React.useRef(aspect);
-  React.useEffect(() => { aspectRef.current = aspect; }, [aspect]);
-
   React.useEffect(() => {
-    if (src) {
-      setLockedDataUrl(null);
-      setEditing(true);
-    } else {
-      setLockedDataUrl(null);
-      setEditing(false);
-    }
+    valueRef.current = value;
+  }, [value]);
+
+  // When src changes (new upload / change image), open editor again.
+  React.useEffect(() => {
+    if (src) setEditing(true);
+    else setEditing(false);
   }, [src]);
 
   const destroyCropperNow = React.useCallback(() => {
     const c = cropperRef.current;
     if (c) {
-      try { c.destroy(); } catch { /* ignore */ }
+      try {
+        c.destroy();
+      } catch {
+        // ignore
+      }
       cropperRef.current = null;
     }
   }, []);
@@ -239,6 +163,8 @@ export default function ThumbCropper({
   const createCropperNow = React.useCallback(() => {
     const img = imgRef.current;
     if (!img || !src) return;
+
+    // ensure previous instance gone
     destroyCropperNow();
 
     const cropper = new Cropper(img, {
@@ -254,11 +180,15 @@ export default function ThumbCropper({
       cropBoxMovable: false,
       cropBoxResizable: false,
       toggleDragModeOnDblclick: false,
+
+      // hide all chrome via CSS in globals.css
       guides: false,
       center: false,
       highlight: false,
       background: false,
       modal: false,
+
+      // Prevent random reposition on mobile.
       responsive: false,
       restore: false,
 
@@ -268,33 +198,44 @@ export default function ThumbCropper({
           const imgW = Number(imgData?.naturalWidth || 0);
           const imgH = Number(imgData?.naturalHeight || 0);
           if (!imgW || !imgH) return;
+
           const v = valueRef.current;
-          const asp = aspectRef.current;
-          cropper.setData(
-            fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect: asp }) as any
-          );
-        } catch { /* ignore */ }
+          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect }) as any);
+        } catch {
+          // ignore
+        }
+
         try {
           if (disabled) cropper.disable();
           else cropper.enable();
-        } catch { /* ignore */ }
+        } catch {
+          // ignore
+        }
       },
     });
 
     cropperRef.current = cropper;
   }, [aspect, destroyCropperNow, disabled, src]);
 
+  // Create/destroy cropper based on "editing".
   React.useEffect(() => {
     const img = imgRef.current;
+
     if (!editing || !src || !img) {
       destroyCropperNow();
       return;
     }
+
     const setup = () => createCropperNow();
+
+    // Wait image loaded to avoid later "jump".
     if (img.complete && img.naturalWidth > 0) {
       setup();
-      return () => { destroyCropperNow(); };
+      return () => {
+        destroyCropperNow();
+      };
     }
+
     img.addEventListener("load", setup, { once: true });
     return () => {
       img.removeEventListener("load", setup as any);
@@ -302,25 +243,31 @@ export default function ThumbCropper({
     };
   }, [createCropperNow, destroyCropperNow, editing, src]);
 
+  // Enable/disable cropper interactions
   React.useEffect(() => {
     const c = cropperRef.current;
     if (!c) return;
     try {
       if (disabled) c.disable();
       else c.enable();
-    } catch { /* ignore */ }
+    } catch {
+      // ignore
+    }
   }, [disabled]);
 
   const handleReset = () => {
     if (!src) return;
+
+    const c = cropperRef.current;
+
+    // If we're locked, reset committed state immediately (explicit action).
     if (!editing) {
-      setLockedDataUrl(null);
       onChange({ focusX: 50, focusY: 50, zoom: 1 });
-      setEditing(true);
       return;
     }
-    const c = cropperRef.current;
+
     if (!c) return;
+
     try {
       const imgData = c.getImageData();
       const imgW = Number(imgData?.naturalWidth || 0);
@@ -330,41 +277,26 @@ export default function ThumbCropper({
       } else {
         c.reset();
       }
-    } catch { /* ignore */ }
+    } catch {
+      // ignore
+    }
   };
 
   const handleApplyLock = () => {
     if (!src) return;
     const c = cropperRef.current;
-    if (!c) { setEditing(false); return; }
+    if (!c) {
+      setEditing(false);
+      return;
+    }
 
     const imgData = c.getImageData();
     const imgW = Number(imgData?.naturalWidth || 0);
     const imgH = Number(imgData?.naturalHeight || 0);
     if (!imgW || !imgH) return;
 
-    // Try canvas snapshot first (best quality, but blocked by CORS on cross-origin images)
-    let snapshotUrl: string | null = null;
-    try {
-      const canvas = c.getCroppedCanvas({
-        maxWidth: 840,
-        maxHeight: 840,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: "high",
-      });
-      snapshotUrl = canvas.toDataURL("image/jpeg", 0.92);
-    } catch {
-      // CORS blocked — will fall back to CSS background-image approach
-    }
-
     const data = c.getData(true);
     const next = toFocusZoom({ data, imgW, imgH, aspect });
-
-    // Destroy FIRST to avoid Cropper DOM flashing over locked preview
-    destroyCropperNow();
-
-    if (snapshotUrl) setLockedDataUrl(snapshotUrl);
-    else setLockedDataUrl(null); // will use CSS fallback
 
     onChange({
       focusX: round2(next.focusX),
@@ -372,12 +304,13 @@ export default function ThumbCropper({
       zoom: round2(next.zoom),
     });
 
+    // Destroy synchronously BEFORE switching UI to avoid the glitch you recorded.
+    destroyCropperNow();
     setEditing(false);
   };
 
   const handleUnlock = () => {
     if (!src) return;
-    setLockedDataUrl(null);
     setEditing(true);
   };
 
@@ -393,45 +326,33 @@ export default function ThumbCropper({
         style={{ aspectRatio: String(aspect) }}
         aria-label="Image cropper"
       >
-        {/* Locked preview */}
-        {isLocked && src ? (
-          lockedDataUrl ? (
-            // Best case: pixel-perfect canvas snapshot (no CORS issues)
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={lockedDataUrl}
-              alt=""
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            // Fallback: CSS background-image (works cross-origin, math-correct)
-            <div
-              className="absolute inset-0"
-              style={lockedBgStyle(src, value.focusX, value.focusY, value.zoom)}
-            />
-          )
-        ) : null}
-
-        {/* Cropper.js image node — hidden when locked */}
+        {/* Single image node (never unmounted) to prevent Cropper.js DOM glitches */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
           src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
           draggable={false}
-          // crossOrigin lets getCroppedCanvas() work for same-domain or CORS-enabled CDNs
-          crossOrigin="anonymous"
-          style={{ opacity: isLocked || !src ? 0 : 1 }}
+          style={
+            isLocked
+              ? {
+                  objectPosition: `${value.focusX}% ${value.focusY}%`,
+                  transform: `scale(${value.zoom})`,
+                  transformOrigin: "center",
+                }
+              : undefined
+          }
         />
 
-        {/* Toolbar */}
+        {/* Icon buttons */}
         <div className="absolute top-2 right-2 flex gap-2 z-10">
           {onPickImage ? (
             <button
               type="button"
-              onClick={onPickImage}
+              onClick={() => {
+                onPickImage();
+              }}
               disabled={!!disabled}
               className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
               title="Change image"
@@ -457,7 +378,6 @@ export default function ThumbCropper({
               type="button"
               onClick={() => {
                 destroyCropperNow();
-                setLockedDataUrl(null);
                 onRemoveImage();
                 setEditing(false);
               }}
@@ -470,6 +390,7 @@ export default function ThumbCropper({
             </button>
           ) : null}
 
+          {/* ✅ Apply/Lock (and ✏️ Unlock/Edit) */}
           {src ? (
             isLocked ? (
               <button

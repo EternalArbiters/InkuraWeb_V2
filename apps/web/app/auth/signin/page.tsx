@@ -4,10 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import type { FC, SVGProps } from "react";
 import { FaGoogle } from "react-icons/fa";
-
-const GoogleIcon = FaGoogle as unknown as FC<SVGProps<SVGSVGElement>>;
 
 function SignInInner() {
   const router = useRouter();
@@ -86,7 +83,7 @@ function SignInInner() {
           onClick={() => signIn("google", { callbackUrl })}
           className="mt-3 w-full py-3 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105 flex items-center justify-center gap-2"
         >
-          <GoogleIcon /> Continue with Google
+          <FaGoogle /> Continue with Google
         </button>
 
         <div className="mt-3 text-sm">
