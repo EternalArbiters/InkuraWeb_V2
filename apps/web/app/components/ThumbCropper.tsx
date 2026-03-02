@@ -16,7 +16,7 @@ type Props = {
 
   /**
    * IMPORTANT:
-   * onChange is ONLY called when user presses the ✅ (apply/lock) button
+   * onChange is ONLY called when user presses the (apply/lock) button
    * (so the crop won't "auto-save" while you are still adjusting).
    */
   onChange: (next: ThumbCropState) => void;
