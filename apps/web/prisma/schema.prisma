@@ -16,6 +16,12 @@ model User {
   password  String?
   name      String?
   image     String?
+
+  // v16.5: avatar crop controls (position + zoom)
+  avatarFocusX Int?
+  avatarFocusY Int?
+  avatarZoom   Float?
+
   role      Role     @default(USER)
 
   // Preferences

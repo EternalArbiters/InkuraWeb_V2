@@ -35,6 +35,9 @@ export default async function EditProfilePage() {
             username: p.username,
             name: p.name,
             image: p.image,
+            avatarFocusX: p.avatarFocusX,
+            avatarFocusY: p.avatarFocusY,
+            avatarZoom: p.avatarZoom,
           }}
         />
       </div>

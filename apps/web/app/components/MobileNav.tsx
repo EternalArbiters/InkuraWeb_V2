@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Avatar from "./Avatar";
 import NavCountBadge from "./NavCountBadge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,6 +35,9 @@ interface MobileNavProps {
   onClose: () => void;
   displayName: string;
   userImage: string;
+  userFocusX?: number | null;
+  userFocusY?: number | null;
+  userZoom?: number | null;
   toggleDarkMode: () => void;
   handleLogout: () => void;
   isDarkMode: boolean;
@@ -76,6 +79,9 @@ export default function MobileNav({
   onClose,
   displayName,
   userImage,
+  userFocusX,
+  userFocusY,
+  userZoom,
   toggleDarkMode,
   handleLogout,
   isDarkMode,
@@ -133,12 +139,16 @@ export default function MobileNav({
           <div className="flex items-center space-x-4 mb-6">
             {isAuthed ? (
               <Link href="/settings/profile" prefetch={false} onClick={onClose} className="flex items-center space-x-4 group">
-                <Image src={userImage} alt="User" width={36} height={36} className="rounded-full border border-gray-400" />
+                <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-400">
+                  <Avatar src={userImage} alt="User" focusX={userFocusX} focusY={userFocusY} zoom={userZoom} className="object-cover" />
+                </div>
                 <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">{displayName}</span>
               </Link>
             ) : (
               <>
-                <Image src={userImage} alt="User" width={36} height={36} className="rounded-full border border-gray-400" />
+                <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-400">
+                  <Avatar src={userImage} alt="User" focusX={userFocusX} focusY={userFocusY} zoom={userZoom} className="object-cover" />
+                </div>
                 <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
               </>
             )}

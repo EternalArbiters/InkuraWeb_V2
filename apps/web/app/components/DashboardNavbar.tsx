@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Avatar from "./Avatar";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -59,6 +60,10 @@ export default function DashboardNavbar() {
 
   const displayName = session?.user?.name || session?.user?.email?.split("@")[0] || (isAuthed ? "User" : "Guest");
   const userImage = session?.user?.image || "/images/default-avatar.png";
+
+  const avatarFocusX = (session?.user as any)?.avatarFocusX ?? null;
+  const avatarFocusY = (session?.user as any)?.avatarFocusY ?? null;
+  const avatarZoom = (session?.user as any)?.avatarZoom ?? null;
 
   // Set theme
   useEffect(() => {
@@ -408,24 +413,30 @@ export default function DashboardNavbar() {
                   <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">
                     {displayName}
                   </span>
-                  <Image
-                    src={userImage}
-                    alt="pp"
-                    width={32}
-                    height={32}
-                    className="rounded-full border border-gray-300 dark:border-gray-600"
-                  />
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
+                    <Avatar
+                      src={userImage}
+                      alt="pp"
+                      focusX={avatarFocusX}
+                      focusY={avatarFocusY}
+                      zoom={avatarZoom}
+                      className="object-cover"
+                    />
+                  </div>
                 </Link>
               ) : (
                 <div className="ml-4 hidden md:flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
-                  <Image
-                    src={userImage}
-                    alt="pp"
-                    width={32}
-                    height={32}
-                    className="rounded-full border border-gray-300 dark:border-gray-600"
-                  />
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
+                    <Avatar
+                      src={userImage}
+                      alt="pp"
+                      focusX={avatarFocusX}
+                      focusY={avatarFocusY}
+                      zoom={avatarZoom}
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -451,6 +462,9 @@ export default function DashboardNavbar() {
         onClose={() => setIsMenuOpen(false)}
         displayName={displayName}
         userImage={userImage}
+        userFocusX={avatarFocusX}
+        userFocusY={avatarFocusY}
+        userZoom={avatarZoom}
         toggleDarkMode={toggleDarkMode}
         handleLogout={handleLogout}
         isDarkMode={isDarkMode}

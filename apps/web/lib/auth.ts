@@ -42,7 +42,16 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
 
   const existing = await prisma.user.findUnique({
     where: { email: emailLower },
-    select: { id: true, role: true, name: true, image: true, username: true },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      image: true,
+      username: true,
+      avatarFocusX: true,
+      avatarFocusY: true,
+      avatarZoom: true,
+    },
   });
 
   if (!existing) {
@@ -54,8 +63,20 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
         password: null,
         username: null,
         role: enforcedRole as any,
+        // avatar crop defaults (null means 50/50/1 in UI)
+        avatarFocusX: null,
+        avatarFocusY: null,
+        avatarZoom: null,
       },
-      select: { id: true, role: true, name: true, image: true },
+      select: {
+        id: true,
+        role: true,
+        name: true,
+        image: true,
+        avatarFocusX: true,
+        avatarFocusY: true,
+        avatarZoom: true,
+      },
     });
     await ensureUsername(created.id, emailLower, name);
     return created;
@@ -71,7 +92,15 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
   }
   if (!existing.username) await ensureUsername(existing.id, emailLower, name);
 
-  return { id: existing.id, role: enforcedRole as any, name: name ?? existing.name, image: image ?? existing.image };
+  return {
+    id: existing.id,
+    role: enforcedRole as any,
+    name: name ?? existing.name,
+    image: image ?? existing.image,
+    avatarFocusX: existing.avatarFocusX,
+    avatarFocusY: existing.avatarFocusY,
+    avatarZoom: existing.avatarZoom,
+  };
 }
 
 export const authOptions: NextAuthOptions = {
@@ -117,6 +146,9 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           name: user.name ?? null,
           image: user.image ?? null,
+          avatarFocusX: (user as any).avatarFocusX ?? null,
+          avatarFocusY: (user as any).avatarFocusY ?? null,
+          avatarZoom: (user as any).avatarZoom ?? null,
         } as any;
       },
     }),
@@ -149,28 +181,41 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account, trigger }) {
-      // If the client calls `useSession().update()`, refresh name/image from DB.
-      if (trigger === "update" && token.id) {
+      // If the client calls `useSession().update()`, refresh name/image (and avatar crop) from DB.
+      if (trigger === "update" && (token as any).id) {
         const dbUser = await prisma.user.findUnique({
-          where: { id: String(token.id) },
-          select: { name: true, image: true, email: true },
+          where: { id: String((token as any).id) },
+          select: {
+            name: true,
+            image: true,
+            email: true,
+            avatarFocusX: true,
+            avatarFocusY: true,
+            avatarZoom: true,
+          },
         });
         if (dbUser) {
           token.name = dbUser.name ?? null;
           token.picture = dbUser.image ?? null;
+          (token as any).avatarFocusX = dbUser.avatarFocusX ?? null;
+          (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
+          (token as any).avatarZoom = dbUser.avatarZoom ?? null;
           if (dbUser.email) {
             token.email = dbUser.email;
-            token.role = enforcedRoleFromEmail(String(dbUser.email));
+            (token as any).role = enforcedRoleFromEmail(String(dbUser.email));
           }
         }
         return token;
       }
 
       if (user && account?.provider === "credentials") {
-        token.id = (user as any).id;
-        token.role = enforcedRoleFromEmail((user as any).email);
+        (token as any).id = (user as any).id;
+        (token as any).role = enforcedRoleFromEmail((user as any).email);
         token.name = (user as any).name ?? null;
         token.picture = (user as any).image ?? null;
+        (token as any).avatarFocusX = (user as any).avatarFocusX ?? null;
+        (token as any).avatarFocusY = (user as any).avatarFocusY ?? null;
+        (token as any).avatarZoom = (user as any).avatarZoom ?? null;
         return token;
       }
 
@@ -182,41 +227,59 @@ export const authOptions: NextAuthOptions = {
             (user as any)?.name ?? (token.name as any),
             (user as any)?.image ?? (token.picture as any)
           );
-          token.id = dbUser.id;
-          token.role = enforcedRoleFromEmail(email);
+          (token as any).id = dbUser.id;
+          (token as any).role = enforcedRoleFromEmail(email);
           token.name = dbUser.name ?? null;
           token.picture = dbUser.image ?? null;
+          (token as any).avatarFocusX = (dbUser as any).avatarFocusX ?? null;
+          (token as any).avatarFocusY = (dbUser as any).avatarFocusY ?? null;
+          (token as any).avatarZoom = (dbUser as any).avatarZoom ?? null;
         }
         return token;
       }
 
-      if (!token.id && token.email) {
+      if (!(token as any).id && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: String(token.email).toLowerCase() },
-          select: { id: true, role: true, name: true, image: true },
+          select: {
+            id: true,
+            role: true,
+            name: true,
+            image: true,
+            avatarFocusX: true,
+            avatarFocusY: true,
+            avatarZoom: true,
+          },
         });
         if (dbUser) {
-          token.id = dbUser.id;
-          token.role = enforcedRoleFromEmail(String(token.email));
+          (token as any).id = dbUser.id;
+          (token as any).role = enforcedRoleFromEmail(String(token.email));
           token.name = dbUser.name ?? (token.name as any) ?? null;
           token.picture = dbUser.image ?? (token.picture as any) ?? null;
+          (token as any).avatarFocusX = dbUser.avatarFocusX ?? null;
+          (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
+          (token as any).avatarZoom = dbUser.avatarZoom ?? null;
         }
       }
 
-      if (token.id && !token.role) {
-        const dbUser = await prisma.user.findUnique({ where: { id: String(token.id) }, select: { role: true } });
-        if (dbUser) token.role = enforcedRoleFromEmail(String(token.email || ""));
+      if ((token as any).id && !(token as any).role) {
+        const dbUser = await prisma.user.findUnique({ where: { id: String((token as any).id) }, select: { role: true } });
+        if (dbUser) (token as any).role = enforcedRoleFromEmail(String(token.email || ""));
       }
 
       // Safety: always enforce role by email (prevents accidental admin).
-      if (token.email) token.role = enforcedRoleFromEmail(String(token.email));
+      if (token.email) (token as any).role = enforcedRoleFromEmail(String(token.email));
 
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).role = token.role as string;
+        (session.user as any).id = (token as any).id as string;
+        (session.user as any).role = (token as any).role as string;
+        (session.user as any).avatarFocusX = (token as any).avatarFocusX ?? null;
+        (session.user as any).avatarFocusY = (token as any).avatarFocusY ?? null;
+        (session.user as any).avatarZoom = (token as any).avatarZoom ?? null;
         session.user.name = (token.name as string) ?? null;
         session.user.image = (token.picture as string) ?? null;
       }

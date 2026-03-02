@@ -1,15 +1,25 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import Avatar from "@/app/components/Avatar";
+import ThumbCropper from "@/app/components/ThumbCropper";
 
 type Profile = {
   email: string;
   username: string | null;
   name: string | null;
   image: string | null;
+  avatarFocusX?: number | null;
+  avatarFocusY?: number | null;
+  avatarZoom?: number | null;
 };
+
+function clamp(n: unknown, def: number, min: number, max: number) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return def;
+  return Math.max(min, Math.min(max, v));
+}
 
 export default function ProfileForm({ initial }: { initial: Profile }) {
   const { update } = useSession();
@@ -18,14 +28,20 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
   const [username, setUsername] = useState(initial.username ?? "");
   const [image, setImage] = useState(initial.image ?? "");
 
+  // Avatar adjust (position + zoom)
+  const [avatarFocusX, setAvatarFocusX] = useState<number>(clamp(initial.avatarFocusX, 50, 0, 100));
+  const [avatarFocusY, setAvatarFocusY] = useState<number>(clamp(initial.avatarFocusY, 50, 0, 100));
+  const [avatarZoom, setAvatarZoom] = useState<number>(clamp(initial.avatarZoom, 1, 1, 2.5));
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const avatar = useMemo(() => {
+  const avatarSrc = useMemo(() => {
     if (localPreview) return localPreview;
     const v = (image || initial.image || "").trim();
     return v || "/images/default-avatar.png";
@@ -35,11 +51,43 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
     setName(initial.name ?? "");
     setUsername(initial.username ?? "");
     setImage(initial.image ?? "");
+    setAvatarFocusX(clamp(initial.avatarFocusX, 50, 0, 100));
+    setAvatarFocusY(clamp(initial.avatarFocusY, 50, 0, 100));
+    setAvatarZoom(clamp(initial.avatarZoom, 1, 1, 2.5));
     setLocalPreview(null);
+
+    // Cleanup any previous object URL.
+    if (previewUrlRef.current) {
+      try {
+        URL.revokeObjectURL(previewUrlRef.current);
+      } catch {
+        // ignore
+      }
+      previewUrlRef.current = null;
+    }
   }, [initial]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        try {
+          URL.revokeObjectURL(previewUrlRef.current);
+        } catch {
+          // ignore
+        }
+        previewUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const resetAvatarAdjust = () => {
+    setAvatarFocusX(50);
+    setAvatarFocusY(50);
+    setAvatarZoom(1);
   };
 
   const uploadAvatarFile = async (file: File) => {
@@ -58,6 +106,14 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
 
     // Local preview while uploading
     const previewUrl = URL.createObjectURL(file);
+    if (previewUrlRef.current) {
+      try {
+        URL.revokeObjectURL(previewUrlRef.current);
+      } catch {
+        // ignore
+      }
+    }
+    previewUrlRef.current = previewUrl;
     setLocalPreview(previewUrl);
     setAvatarUploading(true);
 
@@ -85,20 +141,19 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
       if (!putRes.ok) throw new Error("Upload failed");
 
       setImage(publicUrl);
-      setOk("Avatar uploaded. Click 'Save changes' to apply.");
+      setOk("Avatar uploaded. Adjust position/zoom if needed, then click 'Save changes'.");
+
+      // New image, reset crop defaults.
+      resetAvatarAdjust();
+
+      // Keep preview until Save (so user sees exact file), but if you prefer,
+      // you can uncomment the next line to show the public URL immediately.
+      // setLocalPreview(null);
     } catch (e: any) {
       setError(e?.message || "Failed to upload avatar");
       setLocalPreview(null);
     } finally {
       setAvatarUploading(false);
-      // Revoke preview URL after a short delay (allow Image to render)
-      setTimeout(() => {
-        try {
-          URL.revokeObjectURL(previewUrl);
-        } catch {
-          // ignore
-        }
-      }, 1500);
     }
   };
 
@@ -119,7 +174,14 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
     const res = await fetch("/api/me/profile", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, username, image }),
+      body: JSON.stringify({
+        name,
+        username,
+        image,
+        avatarFocusX: Math.round(clamp(avatarFocusX, 50, 0, 100)),
+        avatarFocusY: Math.round(clamp(avatarFocusY, 50, 0, 100)),
+        avatarZoom: Number(clamp(avatarZoom, 1, 1, 2.5).toFixed(2)),
+      }),
     }).catch(() => null);
 
     if (!res) {
@@ -138,7 +200,10 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
     setSaving(false);
     setOk("Saved.");
 
-    // Refresh NextAuth session so navbar updates name/image without re-login.
+    // Once saved, drop local preview so we use the public URL.
+    setLocalPreview(null);
+
+    // Refresh NextAuth session so navbar updates without re-login.
     try {
       await update();
     } catch {
@@ -149,8 +214,15 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
   return (
     <form onSubmit={onSubmit} className="mt-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 p-6 shadow-sm">
       <div className="flex items-center gap-4">
-        <div className="relative w-14 h-14">
-          <Image src={avatar} alt="Avatar" fill className="rounded-full border border-gray-300 dark:border-gray-700 object-cover" />
+        <div className="relative w-14 h-14 rounded-full overflow-hidden border border-gray-300 dark:border-gray-700">
+          <Avatar
+            src={avatarSrc}
+            alt="Avatar"
+            focusX={avatarFocusX}
+            focusY={avatarFocusY}
+            zoom={avatarZoom}
+            className="object-cover"
+          />
         </div>
         <div className="min-w-0">
           <div className="text-sm text-gray-500 dark:text-gray-400">Signed in as</div>
@@ -175,6 +247,66 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
           {avatarUploading ? "Uploading..." : "Change photo"}
         </button>
         <span className="text-xs text-gray-500 dark:text-gray-400">PNG/JPG/WebP • max 2MB</span>
+      </div>
+
+      {/* Avatar position + zoom (Instagram-like) */}
+      <div className="mt-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-950/30 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="font-semibold">Avatar position & zoom</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">
+              Geser untuk atur posisi. Scroll/Pinch untuk zoom. (Ini cuma ngubah tampilan crop, bukan re-upload file.)
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={resetAvatarAdjust}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
+          >
+            Reset
+          </button>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,360px)_1fr] md:items-start">
+          <ThumbCropper
+            src={avatarSrc}
+            value={{ focusX: avatarFocusX, focusY: avatarFocusY, zoom: avatarZoom }}
+            onChange={(v) => {
+              setAvatarFocusX(v.focusX);
+              setAvatarFocusY(v.focusY);
+              setAvatarZoom(v.zoom);
+            }}
+            disabled={false}
+            aspectClassName="aspect-square"
+            frameClassName="max-w-[360px]"
+            roundedClassName="rounded-none"
+            help="Tip: pakai trackpad/scroll untuk zoom. Di HP bisa pinch zoom."
+          />
+
+          <div className="grid gap-3">
+            <label className="grid gap-1 rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+              <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300">
+                <span>Zoom</span>
+                <span>{avatarZoom.toFixed(2)}×</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={2.5}
+                step={0.05}
+                value={avatarZoom}
+                onChange={(e) => setAvatarZoom(parseFloat(e.target.value))}
+              />
+              <div className="text-[11px] text-gray-600 dark:text-gray-300">
+                Kalau wajah kepotong, zoom-out sedikit lalu geser.
+              </div>
+            </label>
+
+            <div className="text-[11px] text-gray-600 dark:text-gray-300">
+              * Avatar final ditampilkan dalam bentuk lingkaran (navbar), tapi posisi/zoom mengikuti setting ini.
+            </div>
+          </div>
+        </div>
       </div>
 
       {error ? (

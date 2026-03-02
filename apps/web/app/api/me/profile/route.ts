@@ -28,13 +28,42 @@ function normalizeImage(raw: unknown) {
   return v.slice(0, 500);
 }
 
+function normalizeFocus(raw: unknown): number | null | undefined {
+  // undefined => ignore (invalid), null => reset, number => 0..100
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  const v = Number(raw);
+  if (!Number.isFinite(v)) return undefined;
+  return Math.max(0, Math.min(100, Math.round(v)));
+}
+
+function normalizeZoom(raw: unknown): number | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  const v = Number(raw);
+  if (!Number.isFinite(v)) return undefined;
+  const clamped = Math.max(1, Math.min(2.5, v));
+  return Number(clamped.toFixed(2));
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, username: true, name: true, image: true, role: true, createdAt: true },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      name: true,
+      image: true,
+      avatarFocusX: true,
+      avatarFocusY: true,
+      avatarZoom: true,
+      role: true,
+      createdAt: true,
+    },
   });
 
   if (!me) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -57,6 +86,21 @@ export async function PATCH(req: Request) {
     // If invalid, ignore it instead of failing hard.
     const img = normalizeImage(body.image);
     if (img !== null) data.image = img;
+  }
+
+  if ("avatarFocusX" in body) {
+    const v = normalizeFocus(body.avatarFocusX);
+    if (v !== undefined) data.avatarFocusX = v;
+  }
+
+  if ("avatarFocusY" in body) {
+    const v = normalizeFocus(body.avatarFocusY);
+    if (v !== undefined) data.avatarFocusY = v;
+  }
+
+  if ("avatarZoom" in body) {
+    const v = normalizeZoom(body.avatarZoom);
+    if (v !== undefined) data.avatarZoom = v;
   }
 
   if ("username" in body) {
@@ -89,7 +133,17 @@ export async function PATCH(req: Request) {
     const updated = await prisma.user.update({
       where: { id: session.user.id },
       data,
-      select: { id: true, email: true, username: true, name: true, image: true, role: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        name: true,
+        image: true,
+        avatarFocusX: true,
+        avatarFocusY: true,
+        avatarZoom: true,
+        role: true,
+      },
     });
     return NextResponse.json({ ok: true, profile: updated });
   } catch (e: any) {
