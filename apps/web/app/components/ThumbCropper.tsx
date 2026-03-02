@@ -16,7 +16,7 @@ type Props = {
 
   /**
    * IMPORTANT:
-   * onChange is ONLY called when user presses the (apply/lock) button
+   * onChange is ONLY called when user presses the ✅ (apply/lock) button
    * (so the crop won't "auto-save" while you are still adjusting).
    */
   onChange: (next: ThumbCropState) => void;
@@ -52,7 +52,6 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
 
-  // Base crop region (zoom=1) for object-fit: cover at ratio r.
   let baseW = imgW;
   let baseH = imgH;
   if (ri > r) {
@@ -74,7 +73,6 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const focusX = clamp((cx / Math.max(1, imgW)) * 100, 0, 100);
   const focusY = clamp((cy / Math.max(1, imgH)) * 100, 0, 100);
 
-  // Zoom relative to the "cover" baseline. (>=1)
   const zoomW = baseW / Math.max(1e-6, w);
   const zoomH = baseH / Math.max(1e-6, h);
   const zoom = clamp((zoomW + zoomH) / 2, 1, 6);
@@ -127,51 +125,67 @@ function fromFocusZoom(args: {
 }
 
 /**
- * FIX: Compute correct CSS for locked preview.
+ * LockedPreview — renders the committed crop without using transform:scale().
  *
- * The old approach used `object-position` + `transform: scale()` together,
- * which is broken — scale() expands the bounding box so object-position no
- * longer maps to the right pixel, causing the image to jump/glitch when
- * locking.
+ * Strategy:
+ *   - Outer div = the clipping viewport (absolute inset-0, overflow hidden).
+ *   - Inner div = zoom× the container size, positioned so focusX/focusY is centred.
+ *   - <img> inside fills the inner div with object-fit:cover + object-position:center.
  *
- * Instead we simulate object-fit:cover manually via absolute positioning:
- * - We size the image so it covers the container at the right zoom level.
- * - We offset it so the focus point is centred in the container.
- * - The container has overflow:hidden so edges are clipped cleanly.
+ * Why not object-position + transform:scale on the <img> directly?
+ *   CSS `transform:scale()` scales visually but does NOT change the element's
+ *   layout box, so `object-position` still maps to the *unscaled* box → wrong pixel.
+ *   This nested-div approach avoids that entirely.
  *
- * This produces pixel-accurate output that matches what Cropper.js shows.
+ * Left/top math (all percentages relative to the outer container):
+ *   inner div is (zoom*100)% wide/tall.
+ *   We want the focus point (at focusX% of inner div) to land at 50% of the container.
+ *   focusX% of inner div in container-% = (focusX/100) * zoom * 100 = focusX * zoom  %
+ *   So:  left edge of inner div = 50% - focusX*zoom %
+ *        top  edge of inner div = 50% - focusY*zoom %
  */
-function lockedImageStyle(
-  focusX: number,
-  focusY: number,
-  zoom: number
-): React.CSSProperties {
-  // Size: zoom ≥ 1 means the image occupies (zoom * 100)% of the container.
-  const sizePercent = zoom * 100;
+function LockedPreview({
+  src,
+  focusX,
+  focusY,
+  zoom,
+}: {
+  src: string;
+  focusX: number;
+  focusY: number;
+  zoom: number;
+}) {
+  const size = `${zoom * 100}%`;
+  const left = `${50 - focusX * zoom}%`;
+  const top  = `${50 - focusY * zoom}%`;
 
-  // Translate so the focus point is centred.
-  // When image is sizePercent wide/tall, the focus pixel is at:
-  //   focusX/100 * sizePercent  from the image's left edge.
-  // We want that pixel at 50% of the container, so offset is:
-  //   50% - (focusX/100 * sizePercent)%
-  const translateX = 50 - (focusX / 100) * sizePercent;
-  const translateY = 50 - (focusY / 100) * sizePercent;
-
-  return {
-    position: "absolute",
-    // Clamp so the image never shrinks below 100% of container on either axis.
-    width: `${sizePercent}%`,
-    height: `${sizePercent}%`,
-    // Keep aspect ratio intact; let the larger dimension drive coverage.
-    objectFit: "cover",
-    // Use left/top + translate to position the focus point at centre.
-    left: `${translateX}%`,
-    top: `${translateY}%`,
-    // Remove any transform (was causing the glitch in the original code).
-    transform: "none",
-    maxWidth: "none",
-    maxHeight: "none",
-  };
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          width: size,
+          height: size,
+          left,
+          top,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            display: "block",
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export default function ThumbCropper({
@@ -187,24 +201,17 @@ export default function ThumbCropper({
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
 
-  // Editing means Cropper.js is active. Locked means stable preview.
+  // Editing = Cropper.js active. Locked = stable preview.
   const [editing, setEditing] = React.useState<boolean>(true);
 
-  // FIX: Keep a ref that is always current so the Cropper `ready` callback
-  // (which captures a stale closure) always reads the latest value.
+  // Keep refs always current so async Cropper `ready` callbacks don't read stale closures.
   const valueRef = React.useRef(value);
-  React.useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
+  React.useEffect(() => { valueRef.current = value; }, [value]);
 
-  // FIX: Also keep aspect in a ref so the `ready` callback uses the current
-  // aspect even if the prop changes between mount and ready firing.
   const aspectRef = React.useRef(aspect);
-  React.useEffect(() => {
-    aspectRef.current = aspect;
-  }, [aspect]);
+  React.useEffect(() => { aspectRef.current = aspect; }, [aspect]);
 
-  // When src changes (new upload / change image), open editor again.
+  // When src changes (new upload), re-open the editor.
   React.useEffect(() => {
     if (src) setEditing(true);
     else setEditing(false);
@@ -213,11 +220,7 @@ export default function ThumbCropper({
   const destroyCropperNow = React.useCallback(() => {
     const c = cropperRef.current;
     if (c) {
-      try {
-        c.destroy();
-      } catch {
-        // ignore
-      }
+      try { c.destroy(); } catch { /* ignore */ }
       cropperRef.current = null;
     }
   }, []);
@@ -226,7 +229,6 @@ export default function ThumbCropper({
     const img = imgRef.current;
     if (!img || !src) return;
 
-    // Ensure previous instance is gone before creating a new one.
     destroyCropperNow();
 
     const cropper = new Cropper(img, {
@@ -242,21 +244,15 @@ export default function ThumbCropper({
       cropBoxMovable: false,
       cropBoxResizable: false,
       toggleDragModeOnDblclick: false,
-
-      // Hide all chrome via CSS in globals.css.
       guides: false,
       center: false,
       highlight: false,
       background: false,
       modal: false,
-
-      // Prevent random reposition on mobile.
       responsive: false,
       restore: false,
 
       ready() {
-        // FIX: Read from refs (not stale closure variables) so we always get
-        // the latest value and aspect even if they changed before ready fired.
         try {
           const imgData = cropper.getImageData();
           const imgW = Number(imgData?.naturalWidth || 0);
@@ -266,32 +262,21 @@ export default function ThumbCropper({
           const v = valueRef.current;
           const asp = aspectRef.current;
           cropper.setData(
-            fromFocusZoom({
-              focusX: v.focusX,
-              focusY: v.focusY,
-              zoom: v.zoom,
-              imgW,
-              imgH,
-              aspect: asp,
-            }) as any
+            fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect: asp }) as any
           );
-        } catch {
-          // ignore
-        }
+        } catch { /* ignore */ }
 
         try {
           if (disabled) cropper.disable();
           else cropper.enable();
-        } catch {
-          // ignore
-        }
+        } catch { /* ignore */ }
       },
     });
 
     cropperRef.current = cropper;
   }, [aspect, destroyCropperNow, disabled, src]);
 
-  // Create/destroy cropper based on "editing".
+  // Create/destroy cropper when editing state or src changes.
   React.useEffect(() => {
     const img = imgRef.current;
 
@@ -302,12 +287,9 @@ export default function ThumbCropper({
 
     const setup = () => createCropperNow();
 
-    // Wait for image to load to avoid layout jumps.
     if (img.complete && img.naturalWidth > 0) {
       setup();
-      return () => {
-        destroyCropperNow();
-      };
+      return () => { destroyCropperNow(); };
     }
 
     img.addEventListener("load", setup, { once: true });
@@ -317,54 +299,40 @@ export default function ThumbCropper({
     };
   }, [createCropperNow, destroyCropperNow, editing, src]);
 
-  // Enable/disable cropper interactions when `disabled` prop changes.
+  // Sync disabled prop to active cropper instance.
   React.useEffect(() => {
     const c = cropperRef.current;
     if (!c) return;
     try {
       if (disabled) c.disable();
       else c.enable();
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, [disabled]);
 
   const handleReset = () => {
     if (!src) return;
-
-    const c = cropperRef.current;
-
-    // If we're locked, reset committed state immediately (explicit action).
     if (!editing) {
       onChange({ focusX: 50, focusY: 50, zoom: 1 });
       return;
     }
-
+    const c = cropperRef.current;
     if (!c) return;
-
     try {
       const imgData = c.getImageData();
       const imgW = Number(imgData?.naturalWidth || 0);
       const imgH = Number(imgData?.naturalHeight || 0);
       if (imgW && imgH) {
-        c.setData(
-          fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect }) as any
-        );
+        c.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect }) as any);
       } else {
         c.reset();
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const handleApplyLock = () => {
     if (!src) return;
     const c = cropperRef.current;
-    if (!c) {
-      setEditing(false);
-      return;
-    }
+    if (!c) { setEditing(false); return; }
 
     const imgData = c.getImageData();
     const imgW = Number(imgData?.naturalWidth || 0);
@@ -374,8 +342,7 @@ export default function ThumbCropper({
     const data = c.getData(true);
     const next = toFocusZoom({ data, imgW, imgH, aspect });
 
-    // FIX: Destroy BEFORE calling onChange + setEditing to prevent the
-    // Cropper DOM from briefly showing on top of the locked preview (glitch).
+    // Destroy FIRST to avoid Cropper DOM flashing over the locked preview.
     destroyCropperNow();
 
     onChange({
@@ -404,43 +371,37 @@ export default function ThumbCropper({
         style={{ aspectRatio: String(aspect) }}
         aria-label="Image cropper"
       >
+        {/* Locked preview — separate component, no transform:scale conflict */}
+        {isLocked && src ? (
+          <LockedPreview
+            src={src}
+            focusX={value.focusX}
+            focusY={value.focusY}
+            zoom={value.zoom}
+          />
+        ) : null}
+
         {/*
-         * Single image node (never unmounted) to prevent Cropper.js DOM glitches.
-         *
-         * FIX: When locked, use lockedImageStyle() instead of the broken
-         * object-position + transform:scale() combo.
-         * When editing, let Cropper.js manage all styles (no inline style).
+         * The <img> that Cropper.js attaches to.
+         * Hidden when locked (LockedPreview takes over), but never unmounted
+         * to avoid Cropper.js DOM glitches.
          */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
-          src={
-            src ||
-            "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
-          }
+          src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
           alt=""
-          className={
-            "absolute inset-0 " +
-            (!src ? "opacity-0 w-full h-full object-cover" : "")
-          }
+          className="absolute inset-0 w-full h-full object-cover"
           draggable={false}
-          style={
-            isLocked
-              ? lockedImageStyle(value.focusX, value.focusY, value.zoom)
-              : src
-              ? { width: "100%", height: "100%", objectFit: "cover" }
-              : undefined
-          }
+          style={{ opacity: isLocked || !src ? 0 : 1 }}
         />
 
-        {/* Icon buttons */}
+        {/* Toolbar */}
         <div className="absolute top-2 right-2 flex gap-2 z-10">
           {onPickImage ? (
             <button
               type="button"
-              onClick={() => {
-                onPickImage();
-              }}
+              onClick={onPickImage}
               disabled={!!disabled}
               className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
               title="Change image"
@@ -478,7 +439,6 @@ export default function ThumbCropper({
             </button>
           ) : null}
 
-          {/* ✅ Apply/Lock (and ✏️ Unlock/Edit) */}
           {src ? (
             isLocked ? (
               <button
