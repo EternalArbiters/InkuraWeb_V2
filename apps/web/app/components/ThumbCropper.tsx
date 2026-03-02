@@ -13,21 +13,11 @@ export type ThumbCropState = {
 type Props = {
   src: string | null;
   value: ThumbCropState;
-
-  /**
-   * IMPORTANT:
-   * onChange is ONLY called when user presses the ✅ (apply/lock) button
-   * (so the crop won't "auto-save" while you are still adjusting).
-   */
   onChange: (next: ThumbCropState) => void;
-
   disabled?: boolean;
   className?: string;
-
   onPickImage?: () => void;
   onRemoveImage?: () => void;
-
-  /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
 };
 
@@ -42,10 +32,6 @@ function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
-/**
- * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
- * Inkura's rendering model (focusX/focusY/zoom).
- */
 function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number }) {
   const { data, imgW, imgH, aspect } = args;
 
@@ -77,12 +63,9 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const zoomH = baseH / Math.max(1e-6, h);
   const zoom = clamp((zoomW + zoomH) / 2, 1, 6);
 
-  return { focusX, focusY, zoom };
+  return { focusX, focusY, zoom, _debug: { baseW, baseH, cropW: w, cropH: h, zoomW, zoomH } };
 }
 
-/**
- * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
- */
 function fromFocusZoom(args: {
   focusX: number;
   focusY: number;
@@ -136,18 +119,11 @@ export default function ThumbCropper({
 }: Props) {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
-
-  // Editing = Cropper.js active. Locked = stable preview.
   const [editing, setEditing] = React.useState<boolean>(true);
-
-  /**
-   * FIX: Instead of trying to reconstruct the crop visually from focusX/Y/zoom
-   * (which always has subtle math mismatches), we snapshot the exact cropped
-   * pixels from Cropper.js via getCroppedCanvas() at the moment the user
-   * presses ✅. This dataURL is shown as the locked preview — pixel-perfect,
-   * zero math required.
-   */
   const [lockedDataUrl, setLockedDataUrl] = React.useState<string | null>(null);
+
+  // DEBUG: store the last committed values to display on screen
+  const [debugInfo, setDebugInfo] = React.useState<string | null>(null);
 
   const valueRef = React.useRef(value);
   React.useEffect(() => { valueRef.current = value; }, [value]);
@@ -155,13 +131,14 @@ export default function ThumbCropper({
   const aspectRef = React.useRef(aspect);
   React.useEffect(() => { aspectRef.current = aspect; }, [aspect]);
 
-  // When src changes (new upload), re-open the editor and clear the snapshot.
   React.useEffect(() => {
     if (src) {
       setLockedDataUrl(null);
+      setDebugInfo(null);
       setEditing(true);
     } else {
       setLockedDataUrl(null);
+      setDebugInfo(null);
       setEditing(false);
     }
   }, [src]);
@@ -177,7 +154,6 @@ export default function ThumbCropper({
   const createCropperNow = React.useCallback(() => {
     const img = imgRef.current;
     if (!img || !src) return;
-
     destroyCropperNow();
 
     const cropper = new Cropper(img, {
@@ -207,14 +183,12 @@ export default function ThumbCropper({
           const imgW = Number(imgData?.naturalWidth || 0);
           const imgH = Number(imgData?.naturalHeight || 0);
           if (!imgW || !imgH) return;
-
           const v = valueRef.current;
           const asp = aspectRef.current;
           cropper.setData(
             fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect: asp }) as any
           );
         } catch { /* ignore */ }
-
         try {
           if (disabled) cropper.disable();
           else cropper.enable();
@@ -225,22 +199,17 @@ export default function ThumbCropper({
     cropperRef.current = cropper;
   }, [aspect, destroyCropperNow, disabled, src]);
 
-  // Create/destroy cropper when editing state or src changes.
   React.useEffect(() => {
     const img = imgRef.current;
-
     if (!editing || !src || !img) {
       destroyCropperNow();
       return;
     }
-
     const setup = () => createCropperNow();
-
     if (img.complete && img.naturalWidth > 0) {
       setup();
       return () => { destroyCropperNow(); };
     }
-
     img.addEventListener("load", setup, { once: true });
     return () => {
       img.removeEventListener("load", setup as any);
@@ -248,7 +217,6 @@ export default function ThumbCropper({
     };
   }, [createCropperNow, destroyCropperNow, editing, src]);
 
-  // Sync disabled prop to active cropper instance.
   React.useEffect(() => {
     const c = cropperRef.current;
     if (!c) return;
@@ -261,8 +229,8 @@ export default function ThumbCropper({
   const handleReset = () => {
     if (!src) return;
     if (!editing) {
-      // Reset committed state and re-open editor with default position.
       setLockedDataUrl(null);
+      setDebugInfo(null);
       onChange({ focusX: 50, focusY: 50, zoom: 1 });
       setEditing(true);
       return;
@@ -291,12 +259,10 @@ export default function ThumbCropper({
     const imgH = Number(imgData?.naturalHeight || 0);
     if (!imgW || !imgH) return;
 
-    // FIX: Snapshot the exact cropped pixels BEFORE destroying Cropper.
-    // This dataURL becomes the locked preview — no CSS math needed at all.
+    // Snapshot exact pixels from Cropper before destroying
     let snapshotUrl: string | null = null;
     try {
       const canvas = c.getCroppedCanvas({
-        // Reasonable preview resolution, keeps memory low.
         maxWidth: 840,
         maxHeight: 840,
         imageSmoothingEnabled: true,
@@ -308,10 +274,18 @@ export default function ThumbCropper({
     const data = c.getData(true);
     const next = toFocusZoom({ data, imgW, imgH, aspect });
 
-    // Destroy FIRST to avoid Cropper DOM flashing over the locked preview.
+    // DEBUG info to show on screen
+    const dbg = `img:${imgW}×${imgH} aspect:${aspect.toFixed(2)}
+base:${round2((next as any)._debug?.baseW)}×${round2((next as any)._debug?.baseH)}
+crop:${round2((next as any)._debug?.cropW)}×${round2((next as any)._debug?.cropH)}
+zoomW:${round2((next as any)._debug?.zoomW)} zoomH:${round2((next as any)._debug?.zoomH)}
+→ focusX:${round2(next.focusX)} focusY:${round2(next.focusY)} zoom:${round2(next.zoom)}
+snapshot:${snapshotUrl ? "OK" : "FAIL"}`;
+
     destroyCropperNow();
 
     if (snapshotUrl) setLockedDataUrl(snapshotUrl);
+    setDebugInfo(dbg);
 
     onChange({
       focusX: round2(next.focusX),
@@ -324,8 +298,8 @@ export default function ThumbCropper({
 
   const handleUnlock = () => {
     if (!src) return;
-    // Clear snapshot so the live cropper takes over again.
     setLockedDataUrl(null);
+    setDebugInfo(null);
     setEditing(true);
   };
 
@@ -341,11 +315,7 @@ export default function ThumbCropper({
         style={{ aspectRatio: String(aspect) }}
         aria-label="Image cropper"
       >
-        {/*
-         * Locked preview: show the exact pixel snapshot taken at lock time.
-         * object-fit:cover fills the container perfectly at any aspect ratio.
-         * Zero CSS math — what you cropped is exactly what you see.
-         */}
+        {/* Locked preview: exact pixel snapshot from getCroppedCanvas */}
         {isLocked && lockedDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -356,11 +326,7 @@ export default function ThumbCropper({
           />
         ) : null}
 
-        {/*
-         * The <img> that Cropper.js attaches to.
-         * Hidden when locked (snapshot takes over), but never unmounted
-         * to avoid Cropper.js DOM glitches.
-         */}
+        {/* Cropper.js image node — hidden when locked */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
@@ -370,6 +336,28 @@ export default function ThumbCropper({
           draggable={false}
           style={{ opacity: isLocked || !src ? 0 : 1 }}
         />
+
+        {/* DEBUG OVERLAY — shows values on screen so you can screenshot them */}
+        {isLocked && debugInfo ? (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: "rgba(0,0,0,0.75)",
+              color: "#0f0",
+              fontSize: 10,
+              fontFamily: "monospace",
+              padding: "4px 6px",
+              whiteSpace: "pre",
+              zIndex: 20,
+              lineHeight: 1.4,
+            }}
+          >
+            {debugInfo}
+          </div>
+        ) : null}
 
         {/* Toolbar */}
         <div className="absolute top-2 right-2 flex gap-2 z-10">
@@ -403,6 +391,7 @@ export default function ThumbCropper({
               onClick={() => {
                 destroyCropperNow();
                 setLockedDataUrl(null);
+                setDebugInfo(null);
                 onRemoveImage();
                 setEditing(false);
               }}
