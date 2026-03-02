@@ -1,4 +1,4 @@
 {
-  "installCommand": "corepack enable && corepack prepare pnpm@8.15.6 --activate && pnpm install --no-frozen-lockfile --no-fund",
+  "installCommand": "corepack enable && corepack prepare pnpm@8.15.6 --activate && pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm run vercel-build"
 }
