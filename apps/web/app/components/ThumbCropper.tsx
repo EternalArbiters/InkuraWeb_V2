@@ -7,7 +7,7 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export type ThumbCropState = {
-  focusX: number; // 0..100
+  focusX: number; // 0..100 (object-position semantics)
   focusY: number; // 0..100
   zoom: number; // 1..2.5
 };
@@ -20,6 +20,23 @@ function coverDisplayedSize(frameW: number, frameH: number, imgW: number, imgH: 
     dispW: iw * scale,
     dispH: ih * scale,
   };
+}
+
+function focusToShift(focus: number, maxShift: number) {
+  if (maxShift <= 0) return 0;
+  // Keep compatibility with CSS object-position:
+  // focus=0  => left/top aligned => image center shifted +maxShift
+  // focus=50 => centered         => 0
+  // focus=100=> right/bottom     => -maxShift
+  const f = clamp(focus, 0, 100);
+  const n = (50 - f) / 50; // 1..-1
+  return n * maxShift;
+}
+
+function shiftToFocus(shift: number, maxShift: number) {
+  if (maxShift <= 0) return 50;
+  const n = clamp(shift / maxShift, -1, 1);
+  return clamp(50 - n * 50, 0, 100);
 }
 
 export default function ThumbCropper({
@@ -51,81 +68,141 @@ export default function ThumbCropper({
 }) {
   const ref = React.useRef<HTMLDivElement | null>(null);
 
-  // Natural image size (helps decide when an axis can't move at zoom=1 because there's no overflow)
-  const imgNatural = React.useRef<{ w: number; h: number } | null>(null);
+  // Natural image size (needed to compute true "cover" overflow). If not ready yet, we fall back.
+  const [nat, setNat] = React.useState<{ w: number; h: number } | null>(null);
   React.useEffect(() => {
-    imgNatural.current = null;
-    if (!src) return;
-
-    const img = new Image();
-    img.decoding = "async";
-    img.src = src;
-    img.onload = () => {
-      imgNatural.current = {
-        w: img.naturalWidth || 1,
-        h: img.naturalHeight || 1,
-      };
-    };
+    setNat(null);
   }, [src]);
 
-  // Track active pointers for drag + pinch.
+  // Active pointers (drag + pinch)
   const pointers = React.useRef(new Map<number, { x: number; y: number }>());
+
   const gesture = React.useRef<
     | null
     | {
         mode: "drag" | "pinch";
+        // Drag
         startX: number;
         startY: number;
-        startFocusX: number;
-        startFocusY: number;
+        startShiftX: number;
+        startShiftY: number;
+        // Zoom
         startZoom: number;
         startDist?: number;
+        startMidX?: number;
+        startMidY?: number;
       }
   >(null);
 
-  const beginDrag = (e: React.PointerEvent) => {
-    gesture.current = {
-      mode: "drag",
-      startX: e.clientX,
-      startY: e.clientY,
-      startFocusX: value.focusX,
-      startFocusY: value.focusY,
-      startZoom: value.zoom,
-    };
-  };
+  const getFrame = React.useCallback(() => {
+    const el = ref.current;
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const w = Math.max(1, r.width);
+    const h = Math.max(1, r.height);
+    const cx = r.left + w / 2;
+    const cy = r.top + h / 2;
+    return { r, w, h, cx, cy };
+  }, []);
 
-  const beginPinch = () => {
+  const getCover = React.useCallback(
+    (frameW: number, frameH: number) => {
+      // Fallback so interactions still work before onLoad.
+      const iw = nat?.w ?? frameW;
+      const ih = nat?.h ?? frameH;
+      return coverDisplayedSize(frameW, frameH, iw, ih);
+    },
+    [nat]
+  );
+
+  const getMaxShift = React.useCallback(
+    (frameW: number, frameH: number, zoom: number) => {
+      const { dispW, dispH } = getCover(frameW, frameH);
+      const scaledW = dispW * zoom;
+      const scaledH = dispH * zoom;
+      const overflowX = Math.max(0, scaledW - frameW);
+      const overflowY = Math.max(0, scaledH - frameH);
+      return { maxX: overflowX / 2, maxY: overflowY / 2 };
+    },
+    [getCover]
+  );
+
+  const applyShift = React.useCallback(
+    (frameW: number, frameH: number, shiftX: number, shiftY: number, zoom: number) => {
+      const { maxX, maxY } = getMaxShift(frameW, frameH, zoom);
+      const sx = clamp(shiftX, -maxX, maxX);
+      const sy = clamp(shiftY, -maxY, maxY);
+      const focusX = shiftToFocus(sx, maxX);
+      const focusY = shiftToFocus(sy, maxY);
+      onChange({
+        focusX,
+        focusY,
+        zoom: clamp(Number(zoom.toFixed(2)), 1, 2.5),
+      });
+    },
+    [getMaxShift, onChange]
+  );
+
+  const beginDrag = React.useCallback(
+    (e: React.PointerEvent) => {
+      const frame = getFrame();
+      if (!frame) return;
+      const { w, h } = frame;
+      const z = clamp(value.zoom, 1, 2.5);
+      const { maxX, maxY } = getMaxShift(w, h, z);
+
+      gesture.current = {
+        mode: "drag",
+        startX: e.clientX,
+        startY: e.clientY,
+        startShiftX: focusToShift(value.focusX, maxX),
+        startShiftY: focusToShift(value.focusY, maxY),
+        startZoom: z,
+      };
+    },
+    [getFrame, getMaxShift, value.focusX, value.focusY, value.zoom]
+  );
+
+  const beginPinch = React.useCallback(() => {
+    const frame = getFrame();
+    if (!frame) return;
     const pts = Array.from(pointers.current.values());
     if (pts.length < 2) return;
+
     const [a, b] = pts;
     const dist = Math.hypot(b.x - a.x, b.y - a.y);
+    const midX = (a.x + b.x) / 2;
+    const midY = (a.y + b.y) / 2;
+
+    const { w, h } = frame;
+    const z = clamp(value.zoom, 1, 2.5);
+    const { maxX, maxY } = getMaxShift(w, h, z);
+
     gesture.current = {
       mode: "pinch",
       startX: 0,
       startY: 0,
-      startFocusX: value.focusX,
-      startFocusY: value.focusY,
-      startZoom: value.zoom,
+      startShiftX: focusToShift(value.focusX, maxX),
+      startShiftY: focusToShift(value.focusY, maxY),
+      startZoom: z,
       startDist: Math.max(1, dist),
+      startMidX: midX,
+      startMidY: midY,
     };
-  };
+  }, [getFrame, getMaxShift, value.focusX, value.focusY, value.zoom]);
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (disabled || !src) return;
 
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
     try {
       (e.currentTarget as any).setPointerCapture?.(e.pointerId);
     } catch {
       // ignore
     }
 
-    if (pointers.current.size >= 2) {
-      beginPinch();
-    } else {
-      beginDrag(e);
-    }
+    if (pointers.current.size >= 2) beginPinch();
+    else beginDrag(e);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -134,81 +211,42 @@ export default function ThumbCropper({
 
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const w = Math.max(1, r.width);
-    const h = Math.max(1, r.height);
+    const frame = getFrame();
+    if (!frame) return;
+    const { w, h, cx, cy } = frame;
 
     const g = gesture.current;
     if (!g) return;
 
-    // Pinch zoom (mobile)
     if (g.mode === "pinch" && pointers.current.size >= 2) {
       const pts = Array.from(pointers.current.values());
       const [a, b] = pts;
       const dist = Math.hypot(b.x - a.x, b.y - a.y);
       const scale = dist / (g.startDist || 1);
       const nextZoom = clamp(Number((g.startZoom * scale).toFixed(2)), 1, 2.5);
-      onChange({ ...value, zoom: nextZoom });
+
+      // Zoom around pinch midpoint (Instagram-like)
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+      const px = midX - cx;
+      const py = midY - cy;
+      const ratio = nextZoom / Math.max(1e-6, g.startZoom);
+
+      const nextShiftX = g.startShiftX * ratio + px * (1 - ratio);
+      const nextShiftY = g.startShiftY * ratio + py * (1 - ratio);
+
+      applyShift(w, h, nextShiftX, nextShiftY, nextZoom);
       return;
     }
 
-    // Drag move
     if (g.mode === "drag") {
       const dx = e.clientX - g.startX;
       const dy = e.clientY - g.startY;
 
-      // Use at least the gesture start zoom even if parent state hasn't re-rendered yet.
-      const zoomNow = clamp(Math.max(value.zoom, g.startZoom), 1, 2.5);
+      const nextShiftX = g.startShiftX + dx;
+      const nextShiftY = g.startShiftY + dy;
 
-      // If the image has NO overflow on an axis at the current zoom,
-      // dragging that axis will look like "stuck" (common for portrait photos inside square crop).
-      // To make it feel like Instagram, we auto-bump zoom a tiny bit when user tries to drag on that axis.
-      const nat = imgNatural.current;
-      if (nat) {
-        const { dispW, dispH } = coverDisplayedSize(w, h, nat.w, nat.h);
-        const overflowX = dispW * zoomNow - w;
-        const overflowY = dispH * zoomNow - h;
-
-        let neededZoom = zoomNow;
-        const wantX = Math.abs(dx) > 2;
-        const wantY = Math.abs(dy) > 2;
-
-        if (wantX && overflowX < 2) {
-          // Ensure ~2px overflow so X movement becomes possible
-          neededZoom = Math.max(neededZoom, (w + 2) / Math.max(1, dispW));
-        }
-        if (wantY && overflowY < 2) {
-          neededZoom = Math.max(neededZoom, (h + 2) / Math.max(1, dispH));
-        }
-
-        // Small extra bump so it feels responsive
-        if (neededZoom > zoomNow && neededZoom < 1.05) neededZoom = 1.05;
-        neededZoom = clamp(Number(neededZoom.toFixed(2)), 1, 2.5);
-
-        if (neededZoom !== zoomNow) {
-          // Restart baseline so drag continues smoothly on next move.
-          gesture.current = {
-            mode: "drag",
-            startX: e.clientX,
-            startY: e.clientY,
-            startFocusX: value.focusX,
-            startFocusY: value.focusY,
-            startZoom: neededZoom,
-          };
-          onChange({ ...value, zoom: neededZoom });
-          return;
-        }
-      }
-
-      // Dragging the image to the right should reveal more of the LEFT side,
-      // so we decrease focusX. Same for Y.
-      const factor = Math.max(1, zoomNow);
-      const nextFocusX = clamp(g.startFocusX - (dx / w) * (100 / factor), 0, 100);
-      const nextFocusY = clamp(g.startFocusY - (dy / h) * (100 / factor), 0, 100);
-
-      onChange({ ...value, focusX: nextFocusX, focusY: nextFocusY, zoom: zoomNow });
+      applyShift(w, h, nextShiftX, nextShiftY, g.startZoom);
     }
   };
 
@@ -225,30 +263,52 @@ export default function ThumbCropper({
     // If we drop from pinch to one pointer, continue as drag using the remaining pointer.
     if (pointers.current.size === 1 && src && !disabled) {
       const only = Array.from(pointers.current.values())[0];
+      // Re-init drag baseline using *current* state.
+      const frame = getFrame();
+      if (!frame) return;
+      const { w, h } = frame;
+      const z = clamp(value.zoom, 1, 2.5);
+      const { maxX, maxY } = getMaxShift(w, h, z);
       gesture.current = {
         mode: "drag",
         startX: only.x,
         startY: only.y,
-        startFocusX: value.focusX,
-        startFocusY: value.focusY,
-        startZoom: value.zoom,
+        startShiftX: focusToShift(value.focusX, maxX),
+        startShiftY: focusToShift(value.focusY, maxY),
+        startZoom: z,
       };
       return;
     }
 
-    if (pointers.current.size === 0) {
-      gesture.current = null;
-    }
+    if (pointers.current.size === 0) gesture.current = null;
   };
 
   const onWheel = (e: React.WheelEvent) => {
     if (disabled || !src) return;
-    // Scroll to zoom.
     e.preventDefault();
+
+    const frame = getFrame();
+    if (!frame) return;
+    const { w, h, cx, cy } = frame;
+
     const dir = e.deltaY > 0 ? -1 : 1;
     const step = e.shiftKey ? 0.1 : 0.05;
-    const nextZoom = clamp(Number((value.zoom + dir * step).toFixed(2)), 1, 2.5);
-    onChange({ ...value, zoom: nextZoom });
+    const curZoom = clamp(value.zoom, 1, 2.5);
+    const nextZoom = clamp(Number((curZoom + dir * step).toFixed(2)), 1, 2.5);
+
+    // Zoom around cursor point (Instagram-like)
+    const px = e.clientX - cx;
+    const py = e.clientY - cy;
+    const ratio = nextZoom / Math.max(1e-6, curZoom);
+
+    const { maxX, maxY } = getMaxShift(w, h, curZoom);
+    const curShiftX = focusToShift(value.focusX, maxX);
+    const curShiftY = focusToShift(value.focusY, maxY);
+
+    const nextShiftX = curShiftX * ratio + px * (1 - ratio);
+    const nextShiftY = curShiftY * ratio + py * (1 - ratio);
+
+    applyShift(w, h, nextShiftX, nextShiftY, nextZoom);
   };
 
   const aspect = aspectClassName || "aspect-[4/3]";
@@ -284,9 +344,15 @@ export default function ThumbCropper({
             alt="Preview"
             className="absolute inset-0 w-full h-full object-cover"
             style={{
-              objectPosition: `${value.focusX}% ${value.focusY}%`,
-              transform: `scale(${value.zoom})`,
+              objectPosition: `${clamp(value.focusX, 0, 100)}% ${clamp(value.focusY, 0, 100)}%`,
+              transform: `scale(${clamp(value.zoom, 1, 2.5)})`,
               transformOrigin: "center",
+            }}
+            onLoad={(e) => {
+              const img = e.currentTarget;
+              const w = img.naturalWidth || 1;
+              const h = img.naturalHeight || 1;
+              setNat((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }));
             }}
             draggable={false}
           />
