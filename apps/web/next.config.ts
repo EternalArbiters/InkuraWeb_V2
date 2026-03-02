@@ -7,16 +7,16 @@ import type { NextConfig } from "next";
 // - IMPORTANT (cost): disable Next.js image optimizer so images are fetched directly from R2/CDN.
 
 const nextConfig: NextConfig = {
-  images: {
-    unoptimized: true,
+  // Helps Vercel deploy stability by reducing trace duplication across many routes/functions.
+  output: "standalone",
+
+  // Next 14: keep Prisma packages external to avoid bundling native engines into every route.
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
   },
 
-  // Reduce serverless function bundle duplication (helps large route trees + Prisma on Vercel).
-  // This often prevents deploy-time "Deploying outputs..." internal errors on Hobby.
-  output: "standalone",
-  experimental: {
-    // Keep Prisma out of RSC bundling/tracing to avoid repeated native engine copies.
-    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
+  images: {
+    unoptimized: true,
   },
 };
 
