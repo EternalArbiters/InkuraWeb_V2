@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Cropper, { Area, MediaSize } from "react-easy-crop";
+import Cropper, { MediaSize } from "react-easy-crop";
 import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 export type ThumbCropState = {
@@ -40,12 +40,27 @@ function round2(n: number) {
 }
 
 /**
- * Convert react-easy-crop croppedArea (percent) -> our focus (percent center).
+ * Compute focus (0..100) from the controlled crop translation + zoom.
+ *
+ * This is the inverse of approxCropFromFocus() and is deterministic,
+ * so clicking ✅ will always save what you see, even on mobile where
+ * onCropComplete may not fire before the click.
  */
-function focusFromCroppedArea(croppedArea: Area): { focusX: number; focusY: number } {
-  const focusX = croppedArea.x + croppedArea.width / 2;
-  const focusY = croppedArea.y + croppedArea.height / 2;
-  return { focusX: clamp(focusX, 0, 100), focusY: clamp(focusY, 0, 100) };
+function focusFromCrop(media: MediaSize | null, crop: { x: number; y: number }, zoom: number) {
+  if (!media) return { focusX: 50, focusY: 50 };
+  const z = Math.max(1, zoom);
+
+  const overflowX = (media.width * z - media.width) / 2;
+  const overflowY = (media.height * z - media.height) / 2;
+
+  // If there's no overflow (zoom≈1), focus is center.
+  const fx = overflowX > 0 ? 0.5 - crop.x / (2 * overflowX) : 0.5;
+  const fy = overflowY > 0 ? 0.5 - crop.y / (2 * overflowY) : 0.5;
+
+  return {
+    focusX: clamp(fx * 100, 0, 100),
+    focusY: clamp(fy * 100, 0, 100),
+  };
 }
 
 /**
@@ -91,7 +106,6 @@ export default function ThumbCropper({
   const [zoom, setZoom] = React.useState<number>(clamp(value.zoom ?? 1, 1, maxZoom));
 
   const mediaRef = React.useRef<MediaSize | null>(null);
-  const latestCroppedAreaRef = React.useRef<Area | null>(null);
   const didInitRef = React.useRef(false);
 
   // Init ONLY when src changes (new image) or on first mount.
@@ -113,34 +127,17 @@ export default function ThumbCropper({
     didInitRef.current = true;
   }, [maxZoom, value.focusX, value.focusY, value.zoom]);
 
-  const onCropComplete = React.useCallback((croppedArea: Area) => {
-    latestCroppedAreaRef.current = croppedArea;
-  }, []);
-
   const applyAndLock = React.useCallback(() => {
-    const area = latestCroppedAreaRef.current;
     const z = clamp(zoom, 1, maxZoom);
 
-    // If we don't have an area yet (e.g. image not loaded), fall back to existing value.
-    if (!area) {
-      onChange({
-        focusX: clamp(value.focusX ?? 50, 0, 100),
-        focusY: clamp(value.focusY ?? 50, 0, 100),
-        zoom: round2(z),
-      });
-      setIsLocked(true);
-      return;
-    }
-
-    const { focusX, focusY } = focusFromCroppedArea(area);
+    const { focusX, focusY } = focusFromCrop(mediaRef.current, crop, z);
     onChange({ focusX: round2(focusX), focusY: round2(focusY), zoom: round2(z) });
     setIsLocked(true);
-  }, [maxZoom, onChange, value.focusX, value.focusY, zoom]);
+  }, [crop, maxZoom, onChange, zoom]);
 
   const reset = React.useCallback(() => {
     setCrop({ x: 0, y: 0 });
     setZoom(1);
-    latestCroppedAreaRef.current = null;
     onChange({ focusX: 50, focusY: 50, zoom: 1 });
     setIsLocked(true);
   }, [onChange]);
@@ -172,11 +169,6 @@ export default function ThumbCropper({
                 if (!canInteract) return;
                 setZoom(clamp(z, 1, maxZoom));
               }}
-              onCropAreaChange={(area) => {
-                // Keep latest area continuously so ✅ can save even if user clicks immediately after dragging.
-                latestCroppedAreaRef.current = area;
-              }}
-              onCropComplete={onCropComplete}
               onMediaLoaded={onMediaLoaded}
               classes={{
                 containerClassName: "rounded-2xl",
