@@ -30,7 +30,7 @@ type Props = {
   /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
 
-  /** max zoom clamp (avatar 6, chapter 2.5) */
+  /** Max zoom clamp (avatar can be higher than chapter thumbs). Default: 6 */
   maxZoom?: number;
 };
 
@@ -50,7 +50,7 @@ function round2(n: number) {
  * Inkura's rendering model (object-position + scale).
  */
 function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { data, imgW, imgH, aspect, maxZoom } = args;
+  const { data, imgW, imgH, aspect } = args;
 
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
@@ -82,7 +82,7 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   // Zoom relative to the "cover" baseline. (>=1)
   const zoomW = baseW / Math.max(1e-6, w);
   const zoomH = baseH / Math.max(1e-6, h);
-  const zoom = clamp((zoomW + zoomH) / 2, 1, maxZoom);
+  const zoom = clamp((zoomW + zoomH) / 2, 1, args.maxZoom);
 
   return { focusX, focusY, zoom };
 }
@@ -91,10 +91,10 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
  * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
  */
 function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { imgW, imgH, aspect, maxZoom } = args;
+  const { imgW, imgH, aspect } = args;
   const focusX = clamp(args.focusX, 0, 100);
   const focusY = clamp(args.focusY, 0, 100);
-  const zoom = clamp(args.zoom, 1, maxZoom);
+  const zoom = clamp(args.zoom, 1, args.maxZoom);
 
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
@@ -225,7 +225,7 @@ export default function ThumbCropper({
     });
 
     cropperRef.current = cropper;
-  }, [aspect, destroyCropperNow, disabled, src, maxZoom]);
+  }, [aspect, destroyCropperNow, disabled, src]);
 
   // Create/destroy cropper based on "editing".
   React.useEffect(() => {
@@ -308,17 +308,20 @@ export default function ThumbCropper({
     const data = c.getData(true);
     const next = toFocusZoom({ data, imgW, imgH, aspect, maxZoom });
 
-    // Create a locked preview from the *exact* current crop so the image does not "jump"
-    // when we switch from Cropper.js to CSS rendering.
+    // Snapshot BEFORE destroying cropper so locked view matches exactly.
     try {
-      const targetW = aspect >= 1 ? 840 : 600;
-      const targetH = Math.max(1, Math.round(targetW / aspect));
-      const canvas = c.getCroppedCanvas({ width: targetW, height: targetH, imageSmoothingEnabled: true } as any);
-      if (canvas) {
-        setLockedPreviewSrc(canvas.toDataURL("image/jpeg", 0.92));
-      }
+      const targetW = Math.min(1400, Math.max(320, Math.floor(imgW)));
+      const targetH = Math.max(1, Math.floor(targetW / aspect));
+      const canvas = c.getCroppedCanvas({
+        width: targetW,
+        height: targetH,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: "high",
+      } as any);
+      const url = canvas?.toDataURL("image/jpeg", 0.92);
+      if (url) setLockedPreviewSrc(url);
     } catch {
-      // ignore
+      setLockedPreviewSrc(null);
     }
 
     onChange({
@@ -354,7 +357,7 @@ export default function ThumbCropper({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
-          src={(isLocked && lockedPreviewSrc) ? lockedPreviewSrc : (src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==")}
+          src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
           alt=""
           className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
           draggable={false}
@@ -362,12 +365,17 @@ export default function ThumbCropper({
             isLocked
               ? {
                   objectPosition: `${value.focusX}% ${value.focusY}%`,
-                  transform: `scale(${value.zoom})`,
+                  transform: `scale(${clamp(value.zoom, 1, maxZoom)})`,
                   transformOrigin: `${value.focusX}% ${value.focusY}%`,
                 }
               : undefined
           }
         />
+
+        {isLocked && lockedPreviewSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={lockedPreviewSrc} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+        ) : null}
 
         {/* Icon buttons */}
         <div className="absolute top-2 right-2 flex gap-2 z-10">
