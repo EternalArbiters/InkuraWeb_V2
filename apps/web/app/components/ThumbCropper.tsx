@@ -55,15 +55,12 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
 
-  // Base crop region (zoom=1) for object-fit: cover at ratio r.
   let baseW = imgW;
   let baseH = imgH;
   if (ri > r) {
-    // Image is wider → cover by height.
     baseH = imgH;
     baseW = imgH * r;
   } else {
-    // Image is taller → cover by width.
     baseW = imgW;
     baseH = imgW / r;
   }
@@ -73,16 +70,28 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const w = clamp(safeNum((data as any).width, baseW), 1, imgW);
   const h = clamp(safeNum((data as any).height, baseH), 1, imgH);
 
-  const cx = x + w / 2;
-  const cy = y + h / 2;
-
-  const focusX = clamp((cx / Math.max(1, imgW)) * 100, 0, 100);
-  const focusY = clamp((cy / Math.max(1, imgH)) * 100, 0, 100);
-
-  // Zoom relative to the "cover" baseline. (>=1)
+  // 1. Hitung Zoom duluan
   const zoomW = baseW / Math.max(1e-6, w);
   const zoomH = baseH / Math.max(1e-6, h);
   const zoom = clamp((zoomW + zoomH) / 2, 1, args.maxZoom);
+
+  // 2. Rumus dewa untuk mengonversi titik tengah (cx,cy) ke sistem CSS object-position
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+
+  const cx_pct = cx / Math.max(1, imgW);
+  const cy_pct = cy / Math.max(1, imgH);
+  const ratioX = baseW / Math.max(1, imgW);
+  const ratioY = baseH / Math.max(1, imgH);
+
+  const denomX = 1 - ratioX / zoom;
+  const focusX_val = denomX <= 0.0001 ? 0.5 : (cx_pct - ratioX / (2 * zoom)) / denomX;
+
+  const denomY = 1 - ratioY / zoom;
+  const focusY_val = denomY <= 0.0001 ? 0.5 : (cy_pct - ratioY / (2 * zoom)) / denomY;
+
+  const focusX = clamp(focusX_val * 100, 0, 100);
+  const focusY = clamp(focusY_val * 100, 0, 100);
 
   return { focusX, focusY, zoom };
 }
@@ -112,8 +121,17 @@ function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; img
   const w = clamp(baseW / zoom, 1, imgW);
   const h = clamp(baseH / zoom, 1, imgH);
 
-  const cx = (focusX / 100) * imgW;
-  const cy = (focusY / 100) * imgH;
+  const fX = focusX / 100;
+  const fY = focusY / 100;
+  const ratioX = baseW / Math.max(1, imgW);
+  const ratioY = baseH / Math.max(1, imgH);
+
+  // Kembalikan ke koordinat asli Cropper.js
+  const cx_pct = fX * (1 - ratioX / zoom) + ratioX / (2 * zoom);
+  const cy_pct = fY * (1 - ratioY / zoom) + ratioY / (2 * zoom);
+
+  const cx = cx_pct * imgW;
+  const cy = cy_pct * imgH;
 
   let x = cx - w / 2;
   let y = cy - h / 2;
@@ -359,6 +377,7 @@ export default function ThumbCropper({
           ref={imgRef}
           src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
           alt=""
+          crossOrigin="anonymous"
           className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
           draggable={false}
           style={
