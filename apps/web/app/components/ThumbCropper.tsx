@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Cropper from "cropperjs";
-import "cropperjs/dist/cropper.css";
+import EasyCropper, { Area, Point } from "react-easy-crop";
 import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 export type ThumbCropState = {
@@ -23,66 +22,6 @@ type Props = {
   maxZoom?: number;
 };
 
-// --- Utils ---
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-function safeNum(v: unknown, def: number) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : def;
-}
-function round2(n: number) {
-  return Math.round(n * 100) / 100;
-}
-
-/**
- * Konversi data Cropper ke format state kita (Focus & Zoom)
- */
-function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { data, imgW, imgH, aspect } = args;
-
-  const w = clamp(safeNum(data.width, imgW), 1, imgW);
-  const h = clamp(safeNum(data.height, imgH), 1, imgH);
-  const x = safeNum(data.x, 0);
-  const y = safeNum(data.y, 0);
-
-  // Hitung baseline zoom (cover)
-  const ri = imgW / Math.max(1, imgH);
-  const r = aspect;
-  let baseW = imgW;
-  if (ri > r) {
-    baseW = imgH * r;
-  }
-
-  const zoom = clamp(baseW / w, 1, args.maxZoom);
-
-  // Fokus adalah titik tengah dari area crop dalam persen (0-100)
-  const focusX = clamp(((x + w / 2) / imgW) * 100, 0, 100);
-  const focusY = clamp(((y + h / 2) / imgH) * 100, 0, 100);
-
-  return { focusX, focusY, zoom };
-}
-
-/**
- * Konversi state kita balik ke koordinat Cropper
- */
-function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { imgW, imgH, aspect, focusX, focusY, zoom } = args;
-
-  const ri = imgW / Math.max(1, imgH);
-  const r = aspect;
-  let baseW = imgW, baseH = imgH;
-  if (ri > r) { baseW = imgH * r; } else { baseH = imgW / r; }
-
-  const w = baseW / zoom;
-  const h = baseH / zoom;
-
-  const x = (focusX / 100) * imgW - w / 2;
-  const y = (focusY / 100) * imgH - h / 2;
-
-  return { x, y, width: w, height: h };
-}
-
 export default function ThumbCropper({
   src,
   value,
@@ -94,111 +33,52 @@ export default function ThumbCropper({
   aspect = 4 / 3,
   maxZoom = 6,
 }: Props) {
-  const imgRef = React.useRef<HTMLImageElement | null>(null);
-  const cropperRef = React.useRef<Cropper | null>(null);
+  // State internal untuk library react-easy-crop
+  const [crop, setCrop] = React.useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = React.useState(value.zoom || 1);
+  const [editing, setEditing] = React.useState(true);
   
-  // Default editing true jika ada src tapi belum ada value (zoom=1)
-  const [editing, setEditing] = React.useState<boolean>(true);
+  // Ref untuk menyimpan hasil kalkulasi terakhir
+  const croppedAreaRef = React.useRef<Area | null>(null);
 
-  // Gunakan ref untuk value agar listener cropper selalu dapat data terbaru
-  const valueRef = React.useRef(value);
+  // Jika src berubah, reset ke mode edit
   React.useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
-
-  const destroyCropper = React.useCallback(() => {
-    if (cropperRef.current) {
-      cropperRef.current.destroy();
-      cropperRef.current = null;
+    if (src) {
+      setEditing(true);
+      setZoom(value.zoom || 1);
+      setCrop({ x: 0, y: 0 }); // Reset offset
     }
+  }, [src, value.zoom]);
+
+  const onCropComplete = React.useCallback((_para: Area, croppedAreaPercentages: Area) => {
+    croppedAreaRef.current = croppedAreaPercentages;
   }, []);
 
-  const initCropper = React.useCallback(() => {
-    const img = imgRef.current;
-    if (!img || !src) return;
-
-    destroyCropper();
-
-    const cropper = new Cropper(img, {
-      aspectRatio: aspect,
-      viewMode: 1,
-      dragMode: "move",
-      autoCropArea: 1,
-      cropBoxMovable: false,
-      cropBoxResizable: false,
-      toggleDragModeOnDblclick: false,
-      guides: false,
-      center: false,
-      highlight: false,
-      background: false,
-      modal: false,
-      responsive: false,
-      ready() {
-        const imgData = cropper.getImageData();
-        const initialData = fromFocusZoom({
-          ...valueRef.current,
-          imgW: imgData.naturalWidth,
-          imgH: imgData.naturalHeight,
-          aspect,
-          maxZoom
-        });
-        cropper.setData(initialData);
-      },
-    });
-
-    cropperRef.current = cropper;
-  }, [src, aspect, maxZoom, destroyCropper]);
-
-  // Effect untuk menangani mount/unmount cropper
-  React.useEffect(() => {
-    if (editing && src) {
-      const img = imgRef.current;
-      if (img) {
-        if (img.complete) initCropper();
-        else img.addEventListener("load", initCropper, { once: true });
-      }
-    } else {
-      destroyCropper();
-    }
-    return () => destroyCropper();
-  }, [editing, src, initCropper, destroyCropper]);
-
   const handleApply = () => {
-    if (!cropperRef.current) return;
-    
-    const c = cropperRef.current;
-    const data = c.getData(true);
-    const imgData = c.getImageData();
+    if (!croppedAreaRef.current) {
+      setEditing(false);
+      return;
+    }
 
-    const next = toFocusZoom({
-      data,
-      imgW: imgData.naturalWidth,
-      imgH: imgData.naturalHeight,
-      aspect,
-      maxZoom
-    });
+    const area = croppedAreaRef.current;
+    // Kalkulasi titik tengah (FocusX/Y) dalam persen
+    const focusX = area.x + area.width / 2;
+    const focusY = area.y + area.height / 2;
 
     onChange({
-      focusX: round2(next.focusX),
-      focusY: round2(next.focusY),
-      zoom: round2(next.zoom),
+      focusX: Math.round(focusX * 100) / 100,
+      focusY: Math.round(focusY * 100) / 100,
+      zoom: Math.round(zoom * 100) / 100,
     });
-    
+
     setEditing(false);
   };
 
   const handleReset = () => {
+    setZoom(1);
+    setCrop({ x: 0, y: 0 });
     if (!editing) {
       onChange({ focusX: 50, focusY: 50, zoom: 1 });
-    } else if (cropperRef.current) {
-      cropperRef.current.reset();
-      const imgData = cropperRef.current.getImageData();
-      cropperRef.current.setData(fromFocusZoom({
-        focusX: 50, focusY: 50, zoom: 1,
-        imgW: imgData.naturalWidth,
-        imgH: imgData.naturalHeight,
-        aspect, maxZoom
-      }));
     }
   };
 
@@ -206,68 +86,108 @@ export default function ThumbCropper({
 
   return (
     <div className={className}>
-      <div 
+      <div
         className={
-          "relative w-full max-w-[420px] rounded-xl border border-gray-200 dark:border-gray-800 bg-black/5 overflow-hidden select-none " + 
-          (disabled ? "opacity-70" : "")
+          "relative w-full max-w-[420px] rounded-xl border border-gray-200 dark:border-gray-800 bg-black/10 overflow-hidden select-none " +
+          (disabled ? "opacity-70 pointer-events-none" : "")
         }
         style={{ aspectRatio: String(aspect) }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          ref={imgRef}
-          src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
-          alt=""
-          className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
-          draggable={false}
-          style={isLocked ? {
-            objectPosition: `${value.focusX}% ${value.focusY}%`,
-            transform: `scale(${value.zoom})`,
-            transformOrigin: "center", // Kunci di tengah agar tidak lari saat scale
-          } : undefined}
-        />
+        {src ? (
+          editing ? (
+            /* MODE EDIT: Menggunakan react-easy-crop */
+            <EasyCropper
+              image={src}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspect}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+              maxZoom={maxZoom}
+              zoomWithScroll={true}
+              showGrid={false}
+              classes={{
+                containerClassName: "bg-black",
+                mediaClassName: "max-w-none", // Penting agar tidak konflik dengan CSS global
+              }}
+            />
+          ) : (
+            /* MODE LOCKED: Preview stabil dengan CSS object-position */
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt="Preview"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                objectPosition: `${value.focusX}% ${value.focusY}%`,
+                transform: `scale(${value.zoom})`,
+                transition: "all 0.2s ease-out", // Smooth transition pas dikunci
+              }}
+            />
+          )
+        ) : (
+          /* Placeholder jika tidak ada gambar */
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+            <ImageIcon className="h-10 w-10 opacity-20" />
+          </div>
+        )}
 
-        {/* Controls Overlay */}
-        <div className="absolute top-2 right-2 flex gap-2 z-10">
+        {/* Floating Controls */}
+        <div className="absolute top-2 right-2 flex gap-2 z-20">
           {onPickImage && (
             <button
               type="button"
               onClick={onPickImage}
-              className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center"
+              className="h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10 hover:bg-black/80 flex items-center justify-center transition-all"
+              title="Ganti Gambar"
             >
               <ImageIcon className="h-4 w-4" />
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={handleReset}
-            className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </button>
+          {src && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="h-9 w-9 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10 hover:bg-black/80 flex items-center justify-center transition-all"
+              title="Reset"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
+          )}
 
           {src && (
             <button
               type="button"
               onClick={() => (editing ? handleApply() : setEditing(true))}
-              disabled={disabled}
-              className="h-9 w-9 rounded-full bg-emerald-500/90 text-white shadow-lg flex items-center justify-center hover:bg-emerald-500"
+              className="h-9 w-9 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-all"
             >
-              {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              {editing ? <Check className="h-5 w-5" /> : <Pencil className="h-4 w-4" />}
             </button>
           )}
 
-          {onRemoveImage && (
+          {onRemoveImage && src && (
             <button
               type="button"
-              onClick={() => { destroyCropper(); onRemoveImage(); setEditing(false); }}
-              className="h-9 w-9 rounded-full bg-red-500/20 text-red-600 hover:bg-red-500/40 flex items-center justify-center"
+              onClick={() => {
+                onRemoveImage();
+                setEditing(false);
+              }}
+              className="h-9 w-9 rounded-full bg-red-500/80 text-white flex items-center justify-center hover:bg-red-500 transition-all"
+              title="Hapus"
             >
               <Trash2 className="h-4 w-4" />
             </button>
           )}
         </div>
+
+        {/* Indikator Zoom (Opsional, muncul saat editing) */}
+        {editing && src && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-white/80 font-medium z-20 pointer-events-none">
+            Zoom: {zoom.toFixed(1)}x
+          </div>
+        )}
       </div>
     </div>
   );
