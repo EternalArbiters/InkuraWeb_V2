@@ -150,6 +150,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           <ThumbCropper
             src={thumbUrl}
             value={{ focusX: thumbFocusX, focusY: thumbFocusY, zoom: thumbZoom }}
+            maxZoom={2.5}
             onChange={(v) => {
               setThumbFocusX(v.focusX);
               setThumbFocusY(v.focusY);

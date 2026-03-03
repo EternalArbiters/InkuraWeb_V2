@@ -29,6 +29,9 @@ type Props = {
 
   /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
+
+  /** max zoom clamp (avatar default 6; chapter thumbs should pass 2.5 to match backend) */
+  maxZoom?: number;
 };
 
 function clamp(n: number, min: number, max: number) {
@@ -46,8 +49,8 @@ function round2(n: number) {
  * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
  * Inkura's rendering model (object-position + scale).
  */
-function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number }) {
-  const { data, imgW, imgH, aspect } = args;
+function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
+  const { data, imgW, imgH, aspect, maxZoom } = args;
 
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
@@ -79,7 +82,7 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   // Zoom relative to the "cover" baseline. (>=1)
   const zoomW = baseW / Math.max(1e-6, w);
   const zoomH = baseH / Math.max(1e-6, h);
-  const zoom = clamp((zoomW + zoomH) / 2, 1, 6);
+  const zoom = clamp((zoomW + zoomH) / 2, 1, maxZoom);
 
   return { focusX, focusY, zoom };
 }
@@ -87,11 +90,11 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
 /**
  * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
  */
-function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number }) {
-  const { imgW, imgH, aspect } = args;
+function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
+  const { imgW, imgH, aspect, maxZoom } = args;
   const focusX = clamp(args.focusX, 0, 100);
   const focusY = clamp(args.focusY, 0, 100);
-  const zoom = clamp(args.zoom, 1, 6);
+  const zoom = clamp(args.zoom, 1, maxZoom);
 
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
@@ -130,6 +133,7 @@ export default function ThumbCropper({
   onPickImage,
   onRemoveImage,
   aspect = 4 / 3,
+  maxZoom = 6,
 }: Props) {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
@@ -200,7 +204,7 @@ export default function ThumbCropper({
           if (!imgW || !imgH) return;
 
           const v = valueRef.current;
-          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect }) as any);
+          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect, maxZoom }) as any);
         } catch {
           // ignore
         }
@@ -273,7 +277,7 @@ export default function ThumbCropper({
       const imgW = Number(imgData?.naturalWidth || 0);
       const imgH = Number(imgData?.naturalHeight || 0);
       if (imgW && imgH) {
-        c.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect }) as any);
+        c.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect, maxZoom }) as any);
       } else {
         c.reset();
       }
@@ -296,7 +300,7 @@ export default function ThumbCropper({
     if (!imgW || !imgH) return;
 
     const data = c.getData(true);
-    const next = toFocusZoom({ data, imgW, imgH, aspect });
+    const next = toFocusZoom({ data, imgW, imgH, aspect, maxZoom });
 
     onChange({
       focusX: round2(next.focusX),
@@ -339,7 +343,7 @@ export default function ThumbCropper({
               ? {
                   objectPosition: `${value.focusX}% ${value.focusY}%`,
                   transform: `scale(${value.zoom})`,
-                  transformOrigin: "center",
+                  transformOrigin: `${value.focusX}% ${value.focusY}%`,
                 }
               : undefined
           }
