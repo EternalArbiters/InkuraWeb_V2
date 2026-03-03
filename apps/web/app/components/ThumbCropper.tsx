@@ -29,9 +29,6 @@ type Props = {
 
   /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
-
-  /** max zoom clamp (avatar default 6; chapter thumbs should pass 2.5 to match backend) */
-  maxZoom?: number;
 };
 
 function clamp(n: number, min: number, max: number) {
@@ -49,34 +46,21 @@ function round2(n: number) {
  * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
  * Inkura's rendering model (object-position + scale).
  */
-function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { data, imgW, imgH, aspect, maxZoom } = args;
+function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number }) {
+  const { data, imgW, imgH, aspect } = args;
 
-  // We store focusX/focusY as CSS `object-position` percentages (0..100),
-  // not "image center" percentages. This makes the locked preview match Cropper.js exactly.
-  //
-  // Locked preview model:
-  // - container ratio = aspect
-  // - image uses `object-fit: cover`
-  // - then we apply `transform: scale(zoom)` with origin at object-position
-  //
-  // Cropper.js gives us the visible crop rect in NATURAL pixels: (x, y, width, height).
-  // We convert that rect into:
-  // - zoom: how much tighter than the baseline "cover" view
-  // - object-position: how the image is aligned inside the container
-
+  const ri = imgW / Math.max(1, imgH);
   const r = aspect;
 
-  // Base visible region (zoom=1) in NATURAL pixels for object-fit: cover at ratio r.
-  const ri = imgW / Math.max(1, imgH);
+  // Base crop region (zoom=1) for object-fit: cover at ratio r.
   let baseW = imgW;
   let baseH = imgH;
   if (ri > r) {
-    // image is wider -> cover by height
+    // Image is wider → cover by height.
     baseH = imgH;
     baseW = imgH * r;
   } else {
-    // image is taller -> cover by width
+    // Image is taller → cover by width.
     baseW = imgW;
     baseH = imgW / r;
   }
@@ -86,73 +70,55 @@ function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; asp
   const w = clamp(safeNum((data as any).width, baseW), 1, imgW);
   const h = clamp(safeNum((data as any).height, baseH), 1, imgH);
 
-  // Zoom relative to the "cover baseline" (>=1).
-  // Cropper rect (w,h) should match (baseW/baseH) scaled by 1/zoom.
-  const zoom = clamp(baseW / Math.max(1e-6, w), 1, maxZoom);
+  const cx = x + w / 2;
+  const cy = y + h / 2;
 
-  // Compute cover scale `s` in arbitrary units (container width = r, height = 1).
-  // This matches CSS object-fit: cover.
-  const cw = r;
-  const ch = 1;
-  const s = Math.max(cw / Math.max(1, imgW), ch / Math.max(1, imgH)); // cover scale
-  const rw = imgW * s * zoom;
-  const rh = imgH * s * zoom;
+  const focusX = clamp((cx / Math.max(1, imgW)) * 100, 0, 100);
+  const focusY = clamp((cy / Math.max(1, imgH)) * 100, 0, 100);
 
-  // CSS object-position uses: offset = (container - rendered) * p
-  // We want container-left to correspond to natural-x, i.e.:
-  //   naturalX_at_containerLeft = (-offsetX) / (s*zoom) = x
-  // => offsetX = -x*s*zoom
-  // => pX = offsetX / (cw - rw)
-  const denomX = cw - rw;
-  const denomY = ch - rh;
+  // Zoom relative to the "cover" baseline. (>=1)
+  const zoomW = baseW / Math.max(1e-6, w);
+  const zoomH = baseH / Math.max(1e-6, h);
+  const zoom = clamp((zoomW + zoomH) / 2, 1, 6);
 
-  const pX = denomX === 0 ? 0.5 : clamp((-x * s * zoom) / denomX, 0, 1);
-  const pY = denomY === 0 ? 0.5 : clamp((-y * s * zoom) / denomY, 0, 1);
-
-  return {
-    focusX: pX * 100,
-    focusY: pY * 100,
-    zoom,
-  };
+  return { focusX, focusY, zoom };
 }
 
 /**
- * Convert Inkura's object-position + zoom back into Cropper.js data (x/y/width/height).
+ * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
  */
-function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { imgW, imgH, aspect, maxZoom } = args;
+function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number }) {
+  const { imgW, imgH, aspect } = args;
   const focusX = clamp(args.focusX, 0, 100);
   const focusY = clamp(args.focusY, 0, 100);
-  const zoom = clamp(args.zoom, 1, maxZoom);
+  const zoom = clamp(args.zoom, 1, 6);
 
+  const ri = imgW / Math.max(1, imgH);
   const r = aspect;
 
-  // Same cover geometry assumptions as toFocusZoom (container width=r, height=1)
-  const cw = r;
-  const ch = 1;
-  const s = Math.max(cw / Math.max(1, imgW), ch / Math.max(1, imgH));
+  let baseW = imgW;
+  let baseH = imgH;
+  if (ri > r) {
+    baseH = imgH;
+    baseW = imgH * r;
+  } else {
+    baseW = imgW;
+    baseH = imgW / r;
+  }
 
-  const rw = imgW * s * zoom;
-  const rh = imgH * s * zoom;
+  const w = clamp(baseW / zoom, 1, imgW);
+  const h = clamp(baseH / zoom, 1, imgH);
 
-  const pX = focusX / 100;
-  const pY = focusY / 100;
+  const cx = (focusX / 100) * imgW;
+  const cy = (focusY / 100) * imgH;
 
-  const ox = (cw - rw) * pX; // rendered offset in container-units
-  const oy = (ch - rh) * pY;
-
-  // Visible rect in NATURAL pixels
-  const w = clamp(cw / Math.max(1e-6, s * zoom), 1, imgW);
-  const h = clamp(ch / Math.max(1e-6, s * zoom), 1, imgH);
-
-  let x = (-ox) / Math.max(1e-6, s * zoom);
-  let y = (-oy) / Math.max(1e-6, s * zoom);
+  let x = cx - w / 2;
+  let y = cy - h / 2;
 
   x = clamp(x, 0, Math.max(0, imgW - w));
   y = clamp(y, 0, Math.max(0, imgH - h));
 
   return { x, y, width: w, height: h };
-};
 }
 
 export default function ThumbCropper({
@@ -164,7 +130,6 @@ export default function ThumbCropper({
   onPickImage,
   onRemoveImage,
   aspect = 4 / 3,
-  maxZoom = 6,
 }: Props) {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
@@ -235,7 +200,7 @@ export default function ThumbCropper({
           if (!imgW || !imgH) return;
 
           const v = valueRef.current;
-          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect, maxZoom }) as any);
+          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect }) as any);
         } catch {
           // ignore
         }
@@ -308,7 +273,7 @@ export default function ThumbCropper({
       const imgW = Number(imgData?.naturalWidth || 0);
       const imgH = Number(imgData?.naturalHeight || 0);
       if (imgW && imgH) {
-        c.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect, maxZoom }) as any);
+        c.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect }) as any);
       } else {
         c.reset();
       }
@@ -331,7 +296,7 @@ export default function ThumbCropper({
     if (!imgW || !imgH) return;
 
     const data = c.getData(true);
-    const next = toFocusZoom({ data, imgW, imgH, aspect, maxZoom });
+    const next = toFocusZoom({ data, imgW, imgH, aspect });
 
     onChange({
       focusX: round2(next.focusX),
@@ -374,7 +339,7 @@ export default function ThumbCropper({
               ? {
                   objectPosition: `${value.focusX}% ${value.focusY}%`,
                   transform: `scale(${value.zoom})`,
-                  transformOrigin: `${value.focusX}% ${value.focusY}%`,
+                  transformOrigin: "center",
                 }
               : undefined
           }
