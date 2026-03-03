@@ -30,7 +30,7 @@ type Props = {
   /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
 
-  /** max zoom clamp (avatar/profile can be higher; chapter thumbs should match backend clamp, e.g. 2.5) */
+  /** max zoom clamp (avatar 6, chapter 2.5) */
   maxZoom?: number;
 };
 
@@ -47,7 +47,7 @@ function round2(n: number) {
 
 /**
  * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
- * Inkura's rendering model (focus as center% + zoom).
+ * Inkura's rendering model (object-position + scale).
  */
 function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
   const { data, imgW, imgH, aspect, maxZoom } = args;
@@ -133,15 +133,14 @@ export default function ThumbCropper({
   onPickImage,
   onRemoveImage,
   aspect = 4 / 3,
-  maxZoom: maxZoomProp,
+  maxZoom = 6,
 }: Props) {
-  const maxZoom = maxZoomProp ?? 6;
-
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
 
-  // Editing means user can move/zoom. Locked means frozen view (but Cropper stays mounted to avoid drift).
+  // Editing means Cropper.js is active. Locked means stable preview.
   const [editing, setEditing] = React.useState<boolean>(true);
+  const [lockedPreviewSrc, setLockedPreviewSrc] = React.useState<string | null>(null);
 
   const valueRef = React.useRef(value);
   React.useEffect(() => {
@@ -150,8 +149,13 @@ export default function ThumbCropper({
 
   // When src changes (new upload / change image), open editor again.
   React.useEffect(() => {
-    if (src) setEditing(true);
-    else setEditing(false);
+    if (src) {
+      setEditing(true);
+      setLockedPreviewSrc(null);
+    } else {
+      setEditing(false);
+      setLockedPreviewSrc(null);
+    }
   }, [src]);
 
   const destroyCropperNow = React.useCallback(() => {
@@ -166,12 +170,12 @@ export default function ThumbCropper({
     }
   }, []);
 
-  const ensureCropper = React.useCallback(() => {
+  const createCropperNow = React.useCallback(() => {
     const img = imgRef.current;
     if (!img || !src) return;
 
-    // Recreate if instance exists but src changed underneath (safest: always destroy then create on src change)
-    if (cropperRef.current) return;
+    // ensure previous instance gone
+    destroyCropperNow();
 
     const cropper = new Cropper(img, {
       aspectRatio: aspect,
@@ -198,23 +202,6 @@ export default function ThumbCropper({
       responsive: false,
       restore: false,
 
-      zoom(e) {
-        // Clamp zoom live so user can never "lock" an out-of-range ratio.
-        try {
-          const ratio = Number((e as any)?.detail?.ratio);
-          if (!Number.isFinite(ratio)) return;
-          if (ratio > maxZoom) {
-            (e as any).preventDefault?.();
-            cropper.zoomTo(maxZoom);
-          } else if (ratio < 1) {
-            (e as any).preventDefault?.();
-            cropper.zoomTo(1);
-          }
-        } catch {
-          // ignore
-        }
-      },
-
       ready() {
         try {
           const imgData = cropper.getImageData();
@@ -229,8 +216,7 @@ export default function ThumbCropper({
         }
 
         try {
-          // Editing state wins; then apply disabled.
-          if (!editing || disabled) cropper.disable();
+          if (disabled) cropper.disable();
           else cropper.enable();
         } catch {
           // ignore
@@ -239,69 +225,56 @@ export default function ThumbCropper({
     });
 
     cropperRef.current = cropper;
-  }, [aspect, disabled, editing, maxZoom, src]);
+  }, [aspect, destroyCropperNow, disabled, src, maxZoom]);
 
-  // Create/destroy cropper only when src disappears/changes; do NOT destroy on lock.
+  // Create/destroy cropper based on "editing".
   React.useEffect(() => {
     const img = imgRef.current;
 
-    if (!src || !img) {
+    if (!editing || !src || !img) {
       destroyCropperNow();
       return;
     }
 
-    // If src changed, we need a fresh instance bound to the new image.
-    destroyCropperNow();
+    const setup = () => createCropperNow();
 
-    const setup = () => ensureCropper();
-
+    // Wait image loaded to avoid later "jump".
     if (img.complete && img.naturalWidth > 0) {
       setup();
-      return;
+      return () => {
+        destroyCropperNow();
+      };
     }
 
     img.addEventListener("load", setup, { once: true });
     return () => {
       img.removeEventListener("load", setup as any);
+      destroyCropperNow();
     };
-  }, [destroyCropperNow, ensureCropper, src]);
+  }, [createCropperNow, destroyCropperNow, editing, src]);
 
-  // Enable/disable cropper interactions based on editing/disabled.
+  // Enable/disable cropper interactions
   React.useEffect(() => {
     const c = cropperRef.current;
     if (!c) return;
     try {
-      if (!editing || disabled) c.disable();
+      if (disabled) c.disable();
       else c.enable();
     } catch {
       // ignore
     }
-  }, [disabled, editing]);
-
-  // If parent updates value while locked (e.g. form reset / server reload), re-apply to cropper.
-  React.useEffect(() => {
-    const c = cropperRef.current;
-    if (!c || !src) return;
-    if (editing) return;
-
-    try {
-      const imgData = c.getImageData();
-      const imgW = Number(imgData?.naturalWidth || 0);
-      const imgH = Number(imgData?.naturalHeight || 0);
-      if (!imgW || !imgH) return;
-      c.setData(fromFocusZoom({ focusX: value.focusX, focusY: value.focusY, zoom: value.zoom, imgW, imgH, aspect, maxZoom }) as any);
-    } catch {
-      // ignore
-    }
-  }, [aspect, editing, maxZoom, src, value.focusX, value.focusY, value.zoom]);
+  }, [disabled]);
 
   const handleReset = () => {
     if (!src) return;
 
     const c = cropperRef.current;
 
-    // Explicit reset should update committed state AND the visible crop (even if locked).
-    onChange({ focusX: 50, focusY: 50, zoom: 1 });
+    // If we're locked, reset committed state immediately (explicit action).
+    if (!editing) {
+      onChange({ focusX: 50, focusY: 50, zoom: 1 });
+      return;
+    }
 
     if (!c) return;
 
@@ -335,18 +308,33 @@ export default function ThumbCropper({
     const data = c.getData(true);
     const next = toFocusZoom({ data, imgW, imgH, aspect, maxZoom });
 
+    // Create a locked preview from the *exact* current crop so the image does not "jump"
+    // when we switch from Cropper.js to CSS rendering.
+    try {
+      const targetW = aspect >= 1 ? 840 : 600;
+      const targetH = Math.max(1, Math.round(targetW / aspect));
+      const canvas = c.getCroppedCanvas({ width: targetW, height: targetH, imageSmoothingEnabled: true } as any);
+      if (canvas) {
+        setLockedPreviewSrc(canvas.toDataURL("image/jpeg", 0.92));
+      }
+    } catch {
+      // ignore
+    }
+
     onChange({
       focusX: round2(next.focusX),
       focusY: round2(next.focusY),
       zoom: round2(next.zoom),
     });
 
-    // Freeze view WITHOUT re-rendering a different preview implementation.
+    // Destroy synchronously BEFORE switching UI to avoid the glitch you recorded.
+    destroyCropperNow();
     setEditing(false);
   };
 
   const handleUnlock = () => {
     if (!src) return;
+    setLockedPreviewSrc(null);
     setEditing(true);
   };
 
@@ -366,10 +354,19 @@ export default function ThumbCropper({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
-          src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
+          src={(isLocked && lockedPreviewSrc) ? lockedPreviewSrc : (src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==")}
           alt=""
           className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
           draggable={false}
+          style={
+            isLocked
+              ? {
+                  objectPosition: `${value.focusX}% ${value.focusY}%`,
+                  transform: `scale(${value.zoom})`,
+                  transformOrigin: `${value.focusX}% ${value.focusY}%`,
+                }
+              : undefined
+          }
         />
 
         {/* Icon buttons */}
