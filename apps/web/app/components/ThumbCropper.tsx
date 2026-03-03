@@ -186,36 +186,48 @@ export default function ThumbCropper({
         aria-label="Image cropper"
       >
         {src ? (
-          <EasyCrop
-            image={src}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspect}
-            onCropChange={setCrop}
-            onZoomChange={(z) => setZoom(clamp(z, 1, maxZoom))}
-            onMediaLoaded={(mediaSize) => {
-              // react-easy-crop passes { width, height, naturalWidth, naturalHeight }
-              const w = Number((mediaSize as any).naturalWidth || (mediaSize as any).width || 0);
-              const h = Number((mediaSize as any).naturalHeight || (mediaSize as any).height || 0);
-              if (w > 0 && h > 0) mediaRef.current = { w, h };
-            }}
-            onCropComplete={(_croppedArea, croppedAreaPixels) => {
-              if (!croppedAreaPixels) return;
-              lastRectRef.current = {
-                x: safeNum((croppedAreaPixels as any).x, 0),
-                y: safeNum((croppedAreaPixels as any).y, 0),
-                width: safeNum((croppedAreaPixels as any).width, 0),
-                height: safeNum((croppedAreaPixels as any).height, 0),
-              };
-            }}
-            disabled={!!disabled || isLocked}
-            cropShape="rect"
-            showGrid={false}
-            classes={{
-              containerClassName: "absolute inset-0",
-              mediaClassName: "select-none",
-            }}
-          />
+          // Note: react-easy-crop does not expose a `disabled` prop.
+          // We disable user interaction via `pointer-events: none` and by gating state updates.
+          <div
+            className="absolute inset-0"
+            style={{ pointerEvents: disabled || isLocked ? "none" : "auto" }}
+          >
+            <EasyCrop
+              image={src}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspect}
+              onCropChange={(next) => {
+                if (disabled || isLocked) return;
+                setCrop(next);
+              }}
+              onZoomChange={(z) => {
+                if (disabled || isLocked) return;
+                setZoom(clamp(z, 1, maxZoom));
+              }}
+              onMediaLoaded={(mediaSize) => {
+                // react-easy-crop passes { width, height, naturalWidth, naturalHeight }
+                const w = Number((mediaSize as any).naturalWidth || (mediaSize as any).width || 0);
+                const h = Number((mediaSize as any).naturalHeight || (mediaSize as any).height || 0);
+                if (w > 0 && h > 0) mediaRef.current = { w, h };
+              }}
+              onCropComplete={(_croppedArea, croppedAreaPixels) => {
+                if (!croppedAreaPixels) return;
+                lastRectRef.current = {
+                  x: safeNum((croppedAreaPixels as any).x, 0),
+                  y: safeNum((croppedAreaPixels as any).y, 0),
+                  width: safeNum((croppedAreaPixels as any).width, 0),
+                  height: safeNum((croppedAreaPixels as any).height, 0),
+                };
+              }}
+              cropShape="rect"
+              showGrid={false}
+              classes={{
+                containerClassName: "absolute inset-0",
+                mediaClassName: "select-none",
+              }}
+            />
+          </div>
         ) : null}
 
         {/* Icon buttons */}
