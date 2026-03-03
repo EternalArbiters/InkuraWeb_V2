@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.css";
 import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 export type ThumbCropState = {
@@ -13,27 +14,16 @@ export type ThumbCropState = {
 type Props = {
   src: string | null;
   value: ThumbCropState;
-
-  /**
-   * IMPORTANT:
-   * onChange is ONLY called when user presses the ✅ (apply/lock) button
-   * (so the crop won't "auto-save" while you are still adjusting).
-   */
   onChange: (next: ThumbCropState) => void;
-
   disabled?: boolean;
   className?: string;
-
   onPickImage?: () => void;
   onRemoveImage?: () => void;
-
-  /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
   aspect?: number;
-
-  /** Max zoom clamp (avatar can be higher than chapter thumbs). Default: 6 */
   maxZoom?: number;
 };
 
+// --- Utils ---
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
@@ -46,98 +36,49 @@ function round2(n: number) {
 }
 
 /**
- * Convert Cropper.js "data" (x/y/width/height in natural image pixels) into
- * Inkura's rendering model (object-position + scale).
+ * Konversi data Cropper ke format state kita (Focus & Zoom)
  */
 function toFocusZoom(args: { data: Cropper.Data; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
   const { data, imgW, imgH, aspect } = args;
 
+  const w = clamp(safeNum(data.width, imgW), 1, imgW);
+  const h = clamp(safeNum(data.height, imgH), 1, imgH);
+  const x = safeNum(data.x, 0);
+  const y = safeNum(data.y, 0);
+
+  // Hitung baseline zoom (cover)
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
-
   let baseW = imgW;
-  let baseH = imgH;
   if (ri > r) {
-    baseH = imgH;
     baseW = imgH * r;
-  } else {
-    baseW = imgW;
-    baseH = imgW / r;
   }
 
-  const x = clamp(safeNum((data as any).x, 0), 0, Math.max(0, imgW - 1));
-  const y = clamp(safeNum((data as any).y, 0), 0, Math.max(0, imgH - 1));
-  const w = clamp(safeNum((data as any).width, baseW), 1, imgW);
-  const h = clamp(safeNum((data as any).height, baseH), 1, imgH);
+  const zoom = clamp(baseW / w, 1, args.maxZoom);
 
-  // 1. Hitung Zoom duluan
-  const zoomW = baseW / Math.max(1e-6, w);
-  const zoomH = baseH / Math.max(1e-6, h);
-  const zoom = clamp((zoomW + zoomH) / 2, 1, args.maxZoom);
-
-  // 2. Rumus dewa untuk mengonversi titik tengah (cx,cy) ke sistem CSS object-position
-  const cx = x + w / 2;
-  const cy = y + h / 2;
-
-  const cx_pct = cx / Math.max(1, imgW);
-  const cy_pct = cy / Math.max(1, imgH);
-  const ratioX = baseW / Math.max(1, imgW);
-  const ratioY = baseH / Math.max(1, imgH);
-
-  const denomX = 1 - ratioX / zoom;
-  const focusX_val = denomX <= 0.0001 ? 0.5 : (cx_pct - ratioX / (2 * zoom)) / denomX;
-
-  const denomY = 1 - ratioY / zoom;
-  const focusY_val = denomY <= 0.0001 ? 0.5 : (cy_pct - ratioY / (2 * zoom)) / denomY;
-
-  const focusX = clamp(focusX_val * 100, 0, 100);
-  const focusY = clamp(focusY_val * 100, 0, 100);
+  // Fokus adalah titik tengah dari area crop dalam persen (0-100)
+  const focusX = clamp(((x + w / 2) / imgW) * 100, 0, 100);
+  const focusY = clamp(((y + h / 2) / imgH) * 100, 0, 100);
 
   return { focusX, focusY, zoom };
 }
 
 /**
- * Convert Inkura's focus/zoom back into Cropper.js data (x/y/width/height).
+ * Konversi state kita balik ke koordinat Cropper
  */
 function fromFocusZoom(args: { focusX: number; focusY: number; zoom: number; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { imgW, imgH, aspect } = args;
-  const focusX = clamp(args.focusX, 0, 100);
-  const focusY = clamp(args.focusY, 0, 100);
-  const zoom = clamp(args.zoom, 1, args.maxZoom);
+  const { imgW, imgH, aspect, focusX, focusY, zoom } = args;
 
   const ri = imgW / Math.max(1, imgH);
   const r = aspect;
+  let baseW = imgW, baseH = imgH;
+  if (ri > r) { baseW = imgH * r; } else { baseH = imgW / r; }
 
-  let baseW = imgW;
-  let baseH = imgH;
-  if (ri > r) {
-    baseH = imgH;
-    baseW = imgH * r;
-  } else {
-    baseW = imgW;
-    baseH = imgW / r;
-  }
+  const w = baseW / zoom;
+  const h = baseH / zoom;
 
-  const w = clamp(baseW / zoom, 1, imgW);
-  const h = clamp(baseH / zoom, 1, imgH);
-
-  const fX = focusX / 100;
-  const fY = focusY / 100;
-  const ratioX = baseW / Math.max(1, imgW);
-  const ratioY = baseH / Math.max(1, imgH);
-
-  // Kembalikan ke koordinat asli Cropper.js
-  const cx_pct = fX * (1 - ratioX / zoom) + ratioX / (2 * zoom);
-  const cy_pct = fY * (1 - ratioY / zoom) + ratioY / (2 * zoom);
-
-  const cx = cx_pct * imgW;
-  const cy = cy_pct * imgH;
-
-  let x = cx - w / 2;
-  let y = cy - h / 2;
-
-  x = clamp(x, 0, Math.max(0, imgW - w));
-  y = clamp(y, 0, Math.max(0, imgH - h));
+  const x = (focusX / 100) * imgW - w / 2;
+  const y = (focusY / 100) * imgH - h / 2;
 
   return { x, y, width: w, height: h };
 }
@@ -155,318 +96,177 @@ export default function ThumbCropper({
 }: Props) {
   const imgRef = React.useRef<HTMLImageElement | null>(null);
   const cropperRef = React.useRef<Cropper | null>(null);
-
-  // Editing means Cropper.js is active. Locked means stable preview.
+  
+  // Default editing true jika ada src tapi belum ada value (zoom=1)
   const [editing, setEditing] = React.useState<boolean>(true);
-  const [lockedPreviewSrc, setLockedPreviewSrc] = React.useState<string | null>(null);
 
+  // Gunakan ref untuk value agar listener cropper selalu dapat data terbaru
   const valueRef = React.useRef(value);
   React.useEffect(() => {
     valueRef.current = value;
   }, [value]);
 
-  // When src changes (new upload / change image), open editor again.
-  React.useEffect(() => {
-    if (src) {
-      setEditing(true);
-      setLockedPreviewSrc(null);
-    } else {
-      setEditing(false);
-      setLockedPreviewSrc(null);
-    }
-  }, [src]);
-
-  const destroyCropperNow = React.useCallback(() => {
-    const c = cropperRef.current;
-    if (c) {
-      try {
-        c.destroy();
-      } catch {
-        // ignore
-      }
+  const destroyCropper = React.useCallback(() => {
+    if (cropperRef.current) {
+      cropperRef.current.destroy();
       cropperRef.current = null;
     }
   }, []);
 
-  const createCropperNow = React.useCallback(() => {
+  const initCropper = React.useCallback(() => {
     const img = imgRef.current;
     if (!img || !src) return;
 
-    // ensure previous instance gone
-    destroyCropperNow();
+    destroyCropper();
 
     const cropper = new Cropper(img, {
       aspectRatio: aspect,
       viewMode: 1,
       dragMode: "move",
       autoCropArea: 1,
-      movable: true,
-      zoomable: true,
-      zoomOnTouch: true,
-      zoomOnWheel: true,
-      wheelZoomRatio: 0.08,
       cropBoxMovable: false,
       cropBoxResizable: false,
       toggleDragModeOnDblclick: false,
-
-      // hide all chrome via CSS in globals.css
       guides: false,
       center: false,
       highlight: false,
       background: false,
       modal: false,
-
-      // Prevent random reposition on mobile.
       responsive: false,
-      restore: false,
-
       ready() {
-        try {
-          const imgData = cropper.getImageData();
-          const imgW = Number(imgData?.naturalWidth || 0);
-          const imgH = Number(imgData?.naturalHeight || 0);
-          if (!imgW || !imgH) return;
-
-          const v = valueRef.current;
-          cropper.setData(fromFocusZoom({ focusX: v.focusX, focusY: v.focusY, zoom: v.zoom, imgW, imgH, aspect, maxZoom }) as any);
-        } catch {
-          // ignore
-        }
-
-        try {
-          if (disabled) cropper.disable();
-          else cropper.enable();
-        } catch {
-          // ignore
-        }
+        const imgData = cropper.getImageData();
+        const initialData = fromFocusZoom({
+          ...valueRef.current,
+          imgW: imgData.naturalWidth,
+          imgH: imgData.naturalHeight,
+          aspect,
+          maxZoom
+        });
+        cropper.setData(initialData);
       },
     });
 
     cropperRef.current = cropper;
-  }, [aspect, destroyCropperNow, disabled, src]);
+  }, [src, aspect, maxZoom, destroyCropper]);
 
-  // Create/destroy cropper based on "editing".
+  // Effect untuk menangani mount/unmount cropper
   React.useEffect(() => {
-    const img = imgRef.current;
-
-    if (!editing || !src || !img) {
-      destroyCropperNow();
-      return;
-    }
-
-    const setup = () => createCropperNow();
-
-    // Wait image loaded to avoid later "jump".
-    if (img.complete && img.naturalWidth > 0) {
-      setup();
-      return () => {
-        destroyCropperNow();
-      };
-    }
-
-    img.addEventListener("load", setup, { once: true });
-    return () => {
-      img.removeEventListener("load", setup as any);
-      destroyCropperNow();
-    };
-  }, [createCropperNow, destroyCropperNow, editing, src]);
-
-  // Enable/disable cropper interactions
-  React.useEffect(() => {
-    const c = cropperRef.current;
-    if (!c) return;
-    try {
-      if (disabled) c.disable();
-      else c.enable();
-    } catch {
-      // ignore
-    }
-  }, [disabled]);
-
-  const handleReset = () => {
-    if (!src) return;
-
-    const c = cropperRef.current;
-
-    // If we're locked, reset committed state immediately (explicit action).
-    if (!editing) {
-      onChange({ focusX: 50, focusY: 50, zoom: 1 });
-      return;
-    }
-
-    if (!c) return;
-
-    try {
-      const imgData = c.getImageData();
-      const imgW = Number(imgData?.naturalWidth || 0);
-      const imgH = Number(imgData?.naturalHeight || 0);
-      if (imgW && imgH) {
-        c.setData(fromFocusZoom({ focusX: 50, focusY: 50, zoom: 1, imgW, imgH, aspect, maxZoom }) as any);
-      } else {
-        c.reset();
+    if (editing && src) {
+      const img = imgRef.current;
+      if (img) {
+        if (img.complete) initCropper();
+        else img.addEventListener("load", initCropper, { once: true });
       }
-    } catch {
-      // ignore
+    } else {
+      destroyCropper();
     }
-  };
+    return () => destroyCropper();
+  }, [editing, src, initCropper, destroyCropper]);
 
-  const handleApplyLock = () => {
-    if (!src) return;
+  const handleApply = () => {
+    if (!cropperRef.current) return;
+    
     const c = cropperRef.current;
-    if (!c) {
-      setEditing(false);
-      return;
-    }
-
-    const imgData = c.getImageData();
-    const imgW = Number(imgData?.naturalWidth || 0);
-    const imgH = Number(imgData?.naturalHeight || 0);
-    if (!imgW || !imgH) return;
-
     const data = c.getData(true);
-    const next = toFocusZoom({ data, imgW, imgH, aspect, maxZoom });
+    const imgData = c.getImageData();
 
-    // Snapshot BEFORE destroying cropper so locked view matches exactly.
-    try {
-      const targetW = Math.min(1400, Math.max(320, Math.floor(imgW)));
-      const targetH = Math.max(1, Math.floor(targetW / aspect));
-      const canvas = c.getCroppedCanvas({
-        width: targetW,
-        height: targetH,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: "high",
-      } as any);
-      const url = canvas?.toDataURL("image/jpeg", 0.92);
-      if (url) setLockedPreviewSrc(url);
-    } catch {
-      setLockedPreviewSrc(null);
-    }
+    const next = toFocusZoom({
+      data,
+      imgW: imgData.naturalWidth,
+      imgH: imgData.naturalHeight,
+      aspect,
+      maxZoom
+    });
 
     onChange({
       focusX: round2(next.focusX),
       focusY: round2(next.focusY),
       zoom: round2(next.zoom),
     });
-
-    // Destroy synchronously BEFORE switching UI to avoid the glitch you recorded.
-    destroyCropperNow();
+    
     setEditing(false);
   };
 
-  const handleUnlock = () => {
-    if (!src) return;
-    setLockedPreviewSrc(null);
-    setEditing(true);
+  const handleReset = () => {
+    if (!editing) {
+      onChange({ focusX: 50, focusY: 50, zoom: 1 });
+    } else if (cropperRef.current) {
+      cropperRef.current.reset();
+      const imgData = cropperRef.current.getImageData();
+      cropperRef.current.setData(fromFocusZoom({
+        focusX: 50, focusY: 50, zoom: 1,
+        imgW: imgData.naturalWidth,
+        imgH: imgData.naturalHeight,
+        aspect, maxZoom
+      }));
+    }
   };
 
   const isLocked = !!src && !editing;
 
   return (
     <div className={className}>
-      <div
+      <div 
         className={
-          "inkura-cropper relative w-full max-w-[420px] rounded-xl border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden select-none " +
+          "relative w-full max-w-[420px] rounded-xl border border-gray-200 dark:border-gray-800 bg-black/5 overflow-hidden select-none " + 
           (disabled ? "opacity-70" : "")
         }
         style={{ aspectRatio: String(aspect) }}
-        aria-label="Image cropper"
       >
-        {/* Single image node (never unmounted) to prevent Cropper.js DOM glitches */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
           src={src || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
           alt=""
-          crossOrigin="anonymous"
           className={"absolute inset-0 w-full h-full object-cover " + (!src ? "opacity-0" : "")}
           draggable={false}
-          style={
-            isLocked
-              ? {
-                  objectPosition: `${value.focusX}% ${value.focusY}%`,
-                  transform: `scale(${clamp(value.zoom, 1, maxZoom)})`,
-                  transformOrigin: `${value.focusX}% ${value.focusY}%`,
-                }
-              : undefined
-          }
+          style={isLocked ? {
+            objectPosition: `${value.focusX}% ${value.focusY}%`,
+            transform: `scale(${value.zoom})`,
+            transformOrigin: "center", // Kunci di tengah agar tidak lari saat scale
+          } : undefined}
         />
 
-        {isLocked && lockedPreviewSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={lockedPreviewSrc} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-        ) : null}
-
-        {/* Icon buttons */}
+        {/* Controls Overlay */}
         <div className="absolute top-2 right-2 flex gap-2 z-10">
-          {onPickImage ? (
+          {onPickImage && (
             <button
               type="button"
-              onClick={() => {
-                onPickImage();
-              }}
-              disabled={!!disabled}
-              className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
-              title="Change image"
-              aria-label="Change image"
+              onClick={onPickImage}
+              className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center"
             >
               <ImageIcon className="h-4 w-4" />
             </button>
-          ) : null}
+          )}
 
           <button
             type="button"
             onClick={handleReset}
-            disabled={!!disabled || !src}
-            className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
-            title="Reset"
-            aria-label="Reset"
+            className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center"
           >
             <RotateCcw className="h-4 w-4" />
           </button>
 
-          {onRemoveImage ? (
+          {src && (
             <button
               type="button"
-              onClick={() => {
-                destroyCropperNow();
-                onRemoveImage();
-                setEditing(false);
-              }}
-              disabled={!!disabled || !src}
-              className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
-              title="Remove"
-              aria-label="Remove"
+              onClick={() => (editing ? handleApply() : setEditing(true))}
+              disabled={disabled}
+              className="h-9 w-9 rounded-full bg-emerald-500/90 text-white shadow-lg flex items-center justify-center hover:bg-emerald-500"
+            >
+              {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            </button>
+          )}
+
+          {onRemoveImage && (
+            <button
+              type="button"
+              onClick={() => { destroyCropper(); onRemoveImage(); setEditing(false); }}
+              className="h-9 w-9 rounded-full bg-red-500/20 text-red-600 hover:bg-red-500/40 flex items-center justify-center"
             >
               <Trash2 className="h-4 w-4" />
             </button>
-          ) : null}
-
-          {/* ✅ Apply/Lock (and ✏️ Unlock/Edit) */}
-          {src ? (
-            isLocked ? (
-              <button
-                type="button"
-                onClick={handleUnlock}
-                disabled={!!disabled}
-                className="h-9 w-9 rounded-full bg-emerald-500/85 text-white backdrop-blur border border-white/10 hover:bg-emerald-500 flex items-center justify-center disabled:opacity-60"
-                title="Edit position"
-                aria-label="Edit position"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleApplyLock}
-                disabled={!!disabled}
-                className="h-9 w-9 rounded-full bg-emerald-500/85 text-white backdrop-blur border border-white/10 hover:bg-emerald-500 flex items-center justify-center disabled:opacity-60"
-                title="Apply & Lock"
-                aria-label="Apply & Lock"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-            )
-          ) : null}
+          )}
         </div>
       </div>
     </div>
