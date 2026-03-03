@@ -124,23 +124,31 @@ export default function ThumbCropper({
   }, [value]);
 
   // When src changes (new upload / change image), open editor again and reset local state.
-  React.useEffect(() => {
-    if (!src) {
-      setEditing(false);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      mediaRef.current = null;
-      lastRectRef.current = null;
-      return;
-    }
+// IMPORTANT: we intentionally do NOT re-initialize local crop position on every `value` change,
+// because parent updates (after pressing ✅) would otherwise "snap" the crop back to center.
+React.useEffect(() => {
+  if (!src) {
+    setEditing(false);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    mediaRef.current = null;
+    lastRectRef.current = null;
+    return;
+  }
 
-    setEditing(true);
+  setEditing(true);
 
-    // Start near the persisted focus/zoom (approx). Exact matching uses croppedAreaPixels on lock.
-    const z = clamp(value.zoom, 1, maxZoom);
-    setZoom(z);
-    setCrop({ x: (50 - clamp(value.focusX, 0, 100)) * z, y: (50 - clamp(value.focusY, 0, 100)) * z });
-  }, [maxZoom, src, value.focusX, value.focusY, value.zoom]);
+  // Start near the persisted focus/zoom (approx).
+  // Exact focus/zoom is computed from `croppedAreaPixels` only when user presses ✅.
+  const persisted = valueRef.current;
+  const z = clamp(persisted.zoom, 1, maxZoom);
+  setZoom(z);
+  setCrop({
+    x: (50 - clamp(persisted.focusX, 0, 100)) * z,
+    y: (50 - clamp(persisted.focusY, 0, 100)) * z,
+  });
+}, [src, maxZoom]);
+
 
   const handleReset = () => {
     if (!src) return;
