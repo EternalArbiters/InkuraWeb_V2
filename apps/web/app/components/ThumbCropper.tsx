@@ -15,15 +15,16 @@ type Props = {
   value: ThumbCropState;
 
   /**
-   * IMPORTANT:
-   * onChange is ONLY called when user clicks ✅ Apply & Lock, or when user resets/removes.
-   * During live dragging/zooming, state is kept locally to avoid "snap to center" loops.
+   * NOTE (Fix for "edited thumbnail not saved"):
+   * This component now calls onChange while the user is editing (drag/zoom),
+   * so the parent form state stays in sync even if the user clicks "Save"
+   * without pressing "Lock".
    */
   onChange: (next: ThumbCropState) => void;
 
   aspect?: number; // default 4/3
   cropShape?: "rect" | "round"; // default rect
-  maxZoom?: number; // default 6 (chapter thumb should use 2.5 to match backend clamp)
+  maxZoom?: number; // default 2.5 (matches backend clamp for chapter thumbnails)
 
   disabled?: boolean;
   onPickImage?: () => void;
@@ -40,11 +41,8 @@ function round2(n: number) {
 }
 
 /**
- * Compute focus (0..100) from the controlled crop translation + zoom.
- *
- * This is the inverse of approxCropFromFocus() and is deterministic,
- * so clicking ✅ will always save what you see, even on mobile where
- * onCropComplete may not fire before the click.
+ * Convert react-easy-crop's translation (crop.x/y) + zoom -> focus (0..100).
+ * Deterministic and doesn't depend on cropSize, good enough for our stored "focus".
  */
 function focusFromCrop(media: MediaSize | null, crop: { x: number; y: number }, zoom: number) {
   if (!media) return { focusX: 50, focusY: 50 };
@@ -53,7 +51,6 @@ function focusFromCrop(media: MediaSize | null, crop: { x: number; y: number }, 
   const overflowX = (media.width * z - media.width) / 2;
   const overflowY = (media.height * z - media.height) / 2;
 
-  // If there's no overflow (zoom≈1), focus is center.
   const fx = overflowX > 0 ? 0.5 - crop.x / (2 * overflowX) : 0.5;
   const fy = overflowY > 0 ? 0.5 - crop.y / (2 * overflowY) : 0.5;
 
@@ -65,8 +62,6 @@ function focusFromCrop(media: MediaSize | null, crop: { x: number; y: number }, 
 
 /**
  * Best-effort initial crop positioning from stored focus.
- * react-easy-crop crop.x/y are pixel translations; mapping from a saved "focus" is not exact
- * without knowing cropSize. This approximation is stable and avoids re-centering loops.
  */
 function approxCropFromFocus(
   media: MediaSize | null,
@@ -78,7 +73,6 @@ function approxCropFromFocus(
   const fx = clamp(focusX, 0, 100) / 100;
   const fy = clamp(focusY, 0, 100) / 100;
 
-  // Translate proportional to image size and zoom overflow.
   const overflowX = (media.width * zoom - media.width) / 2;
   const overflowY = (media.height * zoom - media.height) / 2;
 
@@ -93,56 +87,111 @@ export default function ThumbCropper({
   onChange,
   aspect = 4 / 3,
   cropShape = "rect",
-  maxZoom = 6,
+  maxZoom = 2.5,
   disabled,
   onPickImage,
   onRemoveImage,
   className,
 }: Props) {
-  const [isLocked, setIsLocked] = React.useState(true);
+  // "Locked" view is default (prevents accidental drags), but edits are now saved LIVE while editing.
+  const [isEditing, setIsEditing] = React.useState(false);
 
-  // local live state (do NOT mirror props on every change; that's what caused snap-to-center)
   const [crop, setCrop] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [zoom, setZoom] = React.useState<number>(clamp(value.zoom ?? 1, 1, maxZoom));
 
   const mediaRef = React.useRef<MediaSize | null>(null);
   const didInitRef = React.useRef(false);
 
-  // Init ONLY when src changes (new image) or on first mount.
+  // Refs for debounced commits
+  const cropRef = React.useRef(crop);
+  const zoomRef = React.useRef(zoom);
+  const lastSentRef = React.useRef<ThumbCropState>({
+    focusX: Number.isFinite(value.focusX) ? value.focusX : 50,
+    focusY: Number.isFinite(value.focusY) ? value.focusY : 50,
+    zoom: Number.isFinite(value.zoom) ? value.zoom : 1,
+  });
+
+  React.useEffect(() => {
+    cropRef.current = crop;
+  }, [crop]);
+
+  React.useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  // Init ONLY when src changes (new image) or first mount.
   React.useEffect(() => {
     didInitRef.current = false;
-    setIsLocked(true);
+    setIsEditing(false);
     setCrop({ x: 0, y: 0 });
     setZoom(clamp(value.zoom ?? 1, 1, maxZoom));
-  }, [src, maxZoom]); // intentionally NOT depending on value.* to avoid recentering
+    // keep lastSent in sync with incoming props on new image
+    lastSentRef.current = {
+      focusX: Number.isFinite(value.focusX) ? value.focusX : 50,
+      focusY: Number.isFinite(value.focusY) ? value.focusY : 50,
+      zoom: Number.isFinite(value.zoom) ? value.zoom : 1,
+    };
+  }, [src, maxZoom]); // intentionally NOT depending on value.* (avoids recenter loops)
 
-  const onMediaLoaded = React.useCallback((mediaSize: MediaSize) => {
-    mediaRef.current = mediaSize;
-    if (didInitRef.current) return;
+  const onMediaLoaded = React.useCallback(
+    (mediaSize: MediaSize) => {
+      mediaRef.current = mediaSize;
+      if (didInitRef.current) return;
 
-    const z = clamp(value.zoom ?? 1, 1, maxZoom);
-    setZoom(z);
-    setCrop(approxCropFromFocus(mediaSize, value.focusX ?? 50, value.focusY ?? 50, z));
+      const z = clamp(value.zoom ?? 1, 1, maxZoom);
+      setZoom(z);
+      setCrop(approxCropFromFocus(mediaSize, value.focusX ?? 50, value.focusY ?? 50, z));
 
-    didInitRef.current = true;
-  }, [maxZoom, value.focusX, value.focusY, value.zoom]);
+      didInitRef.current = true;
+    },
+    [maxZoom, value.focusX, value.focusY, value.zoom]
+  );
 
-  const applyAndLock = React.useCallback(() => {
-    const z = clamp(zoom, 1, maxZoom);
+  const commitNow = React.useCallback(() => {
+    const z = clamp(zoomRef.current, 1, maxZoom);
+    const { focusX, focusY } = focusFromCrop(mediaRef.current, cropRef.current, z);
 
-    const { focusX, focusY } = focusFromCrop(mediaRef.current, crop, z);
-    onChange({ focusX: round2(focusX), focusY: round2(focusY), zoom: round2(z) });
-    setIsLocked(true);
-  }, [crop, maxZoom, onChange, zoom]);
+    const next: ThumbCropState = { focusX: round2(focusX), focusY: round2(focusY), zoom: round2(z) };
+
+    const prev = lastSentRef.current;
+    // tiny tolerance to avoid spamming parent state
+    const changed =
+      Math.abs((prev.focusX ?? 0) - next.focusX) > 0.01 ||
+      Math.abs((prev.focusY ?? 0) - next.focusY) > 0.01 ||
+      Math.abs((prev.zoom ?? 0) - next.zoom) > 0.01;
+
+    if (!changed) return;
+
+    lastSentRef.current = next;
+    onChange(next);
+  }, [maxZoom, onChange]);
+
+  // Throttled commit while dragging/zooming (at most once per animation frame)
+  const rafRef = React.useRef<number | null>(null);
+  const queueCommit = React.useCallback(() => {
+    if (!isEditing || disabled) return;
+    if (rafRef.current != null) return;
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null;
+      commitNow();
+    });
+  }, [commitNow, disabled, isEditing]);
+
+  React.useEffect(() => {
+    return () => {
+      if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   const reset = React.useCallback(() => {
     setCrop({ x: 0, y: 0 });
     setZoom(1);
+    lastSentRef.current = { focusX: 50, focusY: 50, zoom: 1 };
     onChange({ focusX: 50, focusY: 50, zoom: 1 });
-    setIsLocked(true);
+    setIsEditing(false);
   }, [onChange]);
 
-  const canInteract = !!src && !disabled && !isLocked;
+  const canInteract = !!src && !disabled && isEditing;
 
   return (
     <div className={className}>
@@ -164,10 +213,12 @@ export default function ThumbCropper({
               onCropChange={(c) => {
                 if (!canInteract) return;
                 setCrop(c);
+                queueCommit();
               }}
               onZoomChange={(z) => {
                 if (!canInteract) return;
                 setZoom(clamp(z, 1, maxZoom));
+                queueCommit();
               }}
               onMediaLoaded={onMediaLoaded}
               classes={{
@@ -185,6 +236,13 @@ export default function ThumbCropper({
             <span className="text-xs">Pick image</span>
           </button>
         )}
+
+        {/* subtle badge when editing */}
+        {src && isEditing && !disabled && (
+          <div className="pointer-events-none absolute left-2 top-2 rounded-xl bg-black/60 px-2 py-1 text-[10px] text-white">
+            Editing (auto-save)
+          </div>
+        )}
       </div>
 
       {/* Controls */}
@@ -194,7 +252,7 @@ export default function ThumbCropper({
             <>
               <button
                 type="button"
-                onClick={() => setIsLocked(false)}
+                onClick={() => setIsEditing(true)}
                 disabled={disabled}
                 className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 px-2 py-1 text-xs text-gray-800 dark:text-gray-200 disabled:opacity-50"
                 title="Edit"
@@ -205,10 +263,14 @@ export default function ThumbCropper({
 
               <button
                 type="button"
-                onClick={applyAndLock}
-                disabled={disabled || isLocked}
+                onClick={() => {
+                  // Make sure the latest drag/zoom is committed, then lock.
+                  commitNow();
+                  setIsEditing(false);
+                }}
+                disabled={disabled || !isEditing}
                 className="inline-flex items-center gap-1 rounded-xl border border-green-200 bg-green-50 px-2 py-1 text-xs text-green-800 disabled:opacity-50 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-200"
-                title="Apply & Lock"
+                title="Lock"
               >
                 <Check className="h-3.5 w-3.5" />
                 Lock
@@ -248,7 +310,7 @@ export default function ThumbCropper({
         </button>
       </div>
 
-      {/* Zoom slider (matches the demos the user provided) */}
+      {/* Zoom slider */}
       {src && (
         <div className="mt-2">
           <input
@@ -259,15 +321,13 @@ export default function ThumbCropper({
             step={0.05}
             aria-labelledby="Zoom"
             onChange={(e) => {
+              if (!canInteract) return;
               const next = clamp(Number(e.target.value), 1, maxZoom);
               setZoom(next);
-              // allow changing zoom only when editing; otherwise it should reflect locked state
-              if (!isLocked && !disabled) {
-                // keep local only
-              }
+              queueCommit();
             }}
             className="w-full"
-            disabled={disabled}
+            disabled={disabled || !isEditing}
           />
         </div>
       )}
