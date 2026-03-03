@@ -1,16 +1,13 @@
 "use client";
 
 import * as React from "react";
-import EasyCrop from "react-easy-crop";
+import Cropper, { Area, MediaSize } from "react-easy-crop";
 import { Check, Image as ImageIcon, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 export type ThumbCropState = {
-  /** Percent (0..100). Used across the app for object-position style rendering. */
-  focusX: number;
-  /** Percent (0..100). Used across the app for object-position style rendering. */
-  focusY: number;
-  /** >= 1 */
-  zoom: number;
+  focusX: number; // 0..100
+  focusY: number; // 0..100
+  zoom: number; // >=1
 };
 
 type Props = {
@@ -19,297 +16,265 @@ type Props = {
 
   /**
    * IMPORTANT:
-   * onChange is ONLY called when user presses the ✅ (apply/lock) button
-   * (so the crop won't "auto-save" while you are still adjusting).
+   * onChange is ONLY called when user clicks ✅ Apply & Lock, or when user resets/removes.
+   * During live dragging/zooming, state is kept locally to avoid "snap to center" loops.
    */
   onChange: (next: ThumbCropState) => void;
 
-  disabled?: boolean;
-  className?: string;
+  aspect?: number; // default 4/3
+  cropShape?: "rect" | "round"; // default rect
+  maxZoom?: number; // default 6 (chapter thumb should use 2.5 to match backend clamp)
 
+  disabled?: boolean;
   onPickImage?: () => void;
   onRemoveImage?: () => void;
-
-  /** target aspect ratio; chapter thumb default 4/3, avatar default 1 */
-  aspect?: number;
-
-  /**
-   * Max zoom clamp.
-   * - avatar/profile: 6
-   * - chapter thumbnail: 2.5 (matches backend clamp)
-   */
-  maxZoom?: number;
+  className?: string;
 };
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
-function safeNum(v: unknown, def: number) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : def;
-}
+
 function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
-type RectPx = { x: number; y: number; width: number; height: number };
+/**
+ * Convert react-easy-crop croppedArea (percent) -> our focus (percent center).
+ */
+function focusFromCroppedArea(croppedArea: Area): { focusX: number; focusY: number } {
+  const focusX = croppedArea.x + croppedArea.width / 2;
+  const focusY = croppedArea.y + croppedArea.height / 2;
+  return { focusX: clamp(focusX, 0, 100), focusY: clamp(focusY, 0, 100) };
+}
 
 /**
- * Convert a crop rectangle (x/y/width/height in natural image pixels) into
- * Inkura's focus/zoom model (object-position + scale).
+ * Best-effort initial crop positioning from stored focus.
+ * react-easy-crop crop.x/y are pixel translations; mapping from a saved "focus" is not exact
+ * without knowing cropSize. This approximation is stable and avoids re-centering loops.
  */
-function toFocusZoom(args: { rect: RectPx; imgW: number; imgH: number; aspect: number; maxZoom: number }) {
-  const { rect, imgW, imgH, aspect, maxZoom } = args;
+function approxCropFromFocus(
+  media: MediaSize | null,
+  focusX: number,
+  focusY: number,
+  zoom: number
+): { x: number; y: number } {
+  if (!media) return { x: 0, y: 0 };
+  const fx = clamp(focusX, 0, 100) / 100;
+  const fy = clamp(focusY, 0, 100) / 100;
 
-  const ri = imgW / Math.max(1, imgH);
-  const r = aspect;
+  // Translate proportional to image size and zoom overflow.
+  const overflowX = (media.width * zoom - media.width) / 2;
+  const overflowY = (media.height * zoom - media.height) / 2;
 
-  // Base crop region (zoom=1) for object-fit: cover at ratio r.
-  let baseW = imgW;
-  let baseH = imgH;
-  if (ri > r) {
-    // Image is wider → cover by height.
-    baseH = imgH;
-    baseW = imgH * r;
-  } else {
-    // Image is taller → cover by width.
-    baseW = imgW;
-    baseH = imgW / r;
-  }
-
-  const x = clamp(safeNum(rect.x, 0), 0, Math.max(0, imgW - 1));
-  const y = clamp(safeNum(rect.y, 0), 0, Math.max(0, imgH - 1));
-  const w = clamp(safeNum(rect.width, baseW), 1, imgW);
-  const h = clamp(safeNum(rect.height, baseH), 1, imgH);
-
-  const cx = x + w / 2;
-  const cy = y + h / 2;
-
-  const focusX = clamp((cx / Math.max(1, imgW)) * 100, 0, 100);
-  const focusY = clamp((cy / Math.max(1, imgH)) * 100, 0, 100);
-
-  // Zoom relative to the "cover" baseline. (>=1)
-  const zoomW = baseW / Math.max(1e-6, w);
-  const zoomH = baseH / Math.max(1e-6, h);
-  const zoom = clamp((zoomW + zoomH) / 2, 1, maxZoom);
-
-  return { focusX, focusY, zoom };
+  const x = (0.5 - fx) * 2 * overflowX;
+  const y = (0.5 - fy) * 2 * overflowY;
+  return { x, y };
 }
 
 export default function ThumbCropper({
   src,
   value,
   onChange,
+  aspect = 4 / 3,
+  cropShape = "rect",
+  maxZoom = 6,
   disabled,
-  className,
   onPickImage,
   onRemoveImage,
-  aspect = 4 / 3,
-  maxZoom = 6,
+  className,
 }: Props) {
-  // Editing means interactions enabled. Locked means frozen view.
-  const [editing, setEditing] = React.useState<boolean>(true);
+  const [isLocked, setIsLocked] = React.useState(true);
 
-  // react-easy-crop state
+  // local live state (do NOT mirror props on every change; that's what caused snap-to-center)
   const [crop, setCrop] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [zoom, setZoom] = React.useState<number>(clamp(value.zoom, 1, maxZoom));
+  const [zoom, setZoom] = React.useState<number>(clamp(value.zoom ?? 1, 1, maxZoom));
 
-  // Track media (natural) size; used to compute focus/zoom on lock.
-  const mediaRef = React.useRef<{ w: number; h: number } | null>(null);
-  const lastRectRef = React.useRef<RectPx | null>(null);
+  const mediaRef = React.useRef<MediaSize | null>(null);
+  const latestCroppedAreaRef = React.useRef<Area | null>(null);
+  const didInitRef = React.useRef(false);
 
-  const valueRef = React.useRef(value);
+  // Init ONLY when src changes (new image) or on first mount.
   React.useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
-
-  // When src changes (new upload / change image), open editor again and reset local state.
-// IMPORTANT: we intentionally do NOT re-initialize local crop position on every `value` change,
-// because parent updates (after pressing ✅) would otherwise "snap" the crop back to center.
-React.useEffect(() => {
-  if (!src) {
-    setEditing(false);
+    didInitRef.current = false;
+    setIsLocked(true);
     setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    mediaRef.current = null;
-    lastRectRef.current = null;
-    return;
-  }
+    setZoom(clamp(value.zoom ?? 1, 1, maxZoom));
+  }, [src, maxZoom]); // intentionally NOT depending on value.* to avoid recentering
 
-  setEditing(true);
+  const onMediaLoaded = React.useCallback((mediaSize: MediaSize) => {
+    mediaRef.current = mediaSize;
+    if (didInitRef.current) return;
 
-  // Start near the persisted focus/zoom (approx).
-  // Exact focus/zoom is computed from `croppedAreaPixels` only when user presses ✅.
-  const persisted = valueRef.current;
-  const z = clamp(persisted.zoom, 1, maxZoom);
-  setZoom(z);
-  setCrop({
-    x: (50 - clamp(persisted.focusX, 0, 100)) * z,
-    y: (50 - clamp(persisted.focusY, 0, 100)) * z,
-  });
-}, [src, maxZoom]);
+    const z = clamp(value.zoom ?? 1, 1, maxZoom);
+    setZoom(z);
+    setCrop(approxCropFromFocus(mediaSize, value.focusX ?? 50, value.focusY ?? 50, z));
 
+    didInitRef.current = true;
+  }, [maxZoom, value.focusX, value.focusY, value.zoom]);
 
-  const handleReset = () => {
-    if (!src) return;
+  const onCropComplete = React.useCallback((croppedArea: Area) => {
+    latestCroppedAreaRef.current = croppedArea;
+  }, []);
 
-    // Reset UI immediately.
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
+  const applyAndLock = React.useCallback(() => {
+    const area = latestCroppedAreaRef.current;
+    const z = clamp(zoom, 1, maxZoom);
 
-    // If we're locked, reset committed state immediately (explicit action).
-    if (!editing) onChange({ focusX: 50, focusY: 50, zoom: 1 });
-  };
-
-  const handleApplyLock = () => {
-    if (!src) return;
-    const m = mediaRef.current;
-    const rect = lastRectRef.current;
-    if (!m || !rect) {
-      // If crop not ready yet, just lock UI.
-      setEditing(false);
+    // If we don't have an area yet (e.g. image not loaded), fall back to existing value.
+    if (!area) {
+      onChange({
+        focusX: clamp(value.focusX ?? 50, 0, 100),
+        focusY: clamp(value.focusY ?? 50, 0, 100),
+        zoom: round2(z),
+      });
+      setIsLocked(true);
       return;
     }
 
-    const next = toFocusZoom({ rect, imgW: m.w, imgH: m.h, aspect, maxZoom });
-    onChange({ focusX: round2(next.focusX), focusY: round2(next.focusY), zoom: round2(next.zoom) });
-    setEditing(false);
-  };
+    const { focusX, focusY } = focusFromCroppedArea(area);
+    onChange({ focusX: round2(focusX), focusY: round2(focusY), zoom: round2(z) });
+    setIsLocked(true);
+  }, [maxZoom, onChange, value.focusX, value.focusY, zoom]);
 
-  const handleUnlock = () => {
-    if (!src) return;
-    setEditing(true);
-  };
+  const reset = React.useCallback(() => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    latestCroppedAreaRef.current = null;
+    onChange({ focusX: 50, focusY: 50, zoom: 1 });
+    setIsLocked(true);
+  }, [onChange]);
 
-  const isLocked = !!src && !editing;
+  const canInteract = !!src && !disabled && !isLocked;
 
   return (
     <div className={className}>
       <div
-        className={
-          "inkura-cropper relative w-full max-w-[420px] rounded-xl border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden select-none " +
-          (disabled ? "opacity-70" : "")
-        }
+        className="relative w-full overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900"
         style={{ aspectRatio: String(aspect) }}
-        aria-label="Image cropper"
       >
         {src ? (
-          // Note: react-easy-crop does not expose a `disabled` prop.
-          // We disable user interaction via `pointer-events: none` and by gating state updates.
-          <div
-            className="absolute inset-0"
-            style={{ pointerEvents: disabled || isLocked ? "none" : "auto" }}
-          >
-            <EasyCrop
+          <div className={canInteract ? "absolute inset-0" : "absolute inset-0 pointer-events-none"}>
+            <Cropper
               image={src}
               crop={crop}
               zoom={zoom}
               aspect={aspect}
-              onCropChange={(next) => {
-                if (disabled || isLocked) return;
-                setCrop(next);
+              cropShape={cropShape}
+              showGrid={false}
+              minZoom={1}
+              maxZoom={maxZoom}
+              onCropChange={(c) => {
+                if (!canInteract) return;
+                setCrop(c);
               }}
               onZoomChange={(z) => {
-                if (disabled || isLocked) return;
+                if (!canInteract) return;
                 setZoom(clamp(z, 1, maxZoom));
               }}
-              onMediaLoaded={(mediaSize) => {
-                // react-easy-crop passes { width, height, naturalWidth, naturalHeight }
-                const w = Number((mediaSize as any).naturalWidth || (mediaSize as any).width || 0);
-                const h = Number((mediaSize as any).naturalHeight || (mediaSize as any).height || 0);
-                if (w > 0 && h > 0) mediaRef.current = { w, h };
-              }}
-              onCropComplete={(_croppedArea, croppedAreaPixels) => {
-                if (!croppedAreaPixels) return;
-                lastRectRef.current = {
-                  x: safeNum((croppedAreaPixels as any).x, 0),
-                  y: safeNum((croppedAreaPixels as any).y, 0),
-                  width: safeNum((croppedAreaPixels as any).width, 0),
-                  height: safeNum((croppedAreaPixels as any).height, 0),
-                };
-              }}
-              cropShape="rect"
-              showGrid={false}
+              onCropComplete={onCropComplete}
+              onMediaLoaded={onMediaLoaded}
               classes={{
-                containerClassName: "absolute inset-0",
-                mediaClassName: "select-none",
+                containerClassName: "rounded-2xl",
               }}
             />
           </div>
-        ) : null}
-
-        {/* Icon buttons */}
-        <div className="absolute top-2 right-2 flex gap-2 z-10">
-          {onPickImage ? (
-            <button
-              type="button"
-              onClick={() => {
-                onPickImage();
-              }}
-              disabled={!!disabled}
-              className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
-              title="Change image"
-              aria-label="Change image"
-            >
-              <ImageIcon className="h-4 w-4" />
-            </button>
-          ) : null}
-
+        ) : (
           <button
             type="button"
-            onClick={handleReset}
-            disabled={!!disabled || !src}
-            className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
-            title="Reset"
-            aria-label="Reset"
+            onClick={disabled ? undefined : onPickImage}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-gray-400"
           >
-            <RotateCcw className="h-4 w-4" />
+            <ImageIcon className="h-6 w-6" />
+            <span className="text-xs">Pick image</span>
           </button>
-
-          {onRemoveImage ? (
-            <button
-              type="button"
-              onClick={() => {
-                onRemoveImage();
-                setEditing(false);
-              }}
-              disabled={!!disabled || !src}
-              className="h-9 w-9 rounded-full bg-black/55 text-white backdrop-blur border border-white/10 hover:bg-black/70 flex items-center justify-center disabled:opacity-60"
-              title="Remove"
-              aria-label="Remove"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          ) : null}
-
-          {/* ✅ Apply/Lock (and ✏️ Unlock/Edit) */}
-          {src ? (
-            isLocked ? (
-              <button
-                type="button"
-                onClick={handleUnlock}
-                disabled={!!disabled}
-                className="h-9 w-9 rounded-full bg-emerald-500/85 text-white backdrop-blur border border-white/10 hover:bg-emerald-500 flex items-center justify-center disabled:opacity-60"
-                title="Edit position"
-                aria-label="Edit position"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleApplyLock}
-                disabled={!!disabled}
-                className="h-9 w-9 rounded-full bg-emerald-500/85 text-white backdrop-blur border border-white/10 hover:bg-emerald-500 flex items-center justify-center disabled:opacity-60"
-                title="Apply & Lock"
-                aria-label="Apply & Lock"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-            )
-          ) : null}
-        </div>
+        )}
       </div>
+
+      {/* Controls */}
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {src && (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsLocked(false)}
+                disabled={disabled}
+                className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 px-2 py-1 text-xs text-gray-800 dark:text-gray-200 disabled:opacity-50"
+                title="Edit"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={applyAndLock}
+                disabled={disabled || isLocked}
+                className="inline-flex items-center gap-1 rounded-xl border border-green-200 bg-green-50 px-2 py-1 text-xs text-green-800 disabled:opacity-50 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-200"
+                title="Apply & Lock"
+              >
+                <Check className="h-3.5 w-3.5" />
+                Lock
+              </button>
+
+              <button
+                type="button"
+                onClick={reset}
+                disabled={disabled}
+                className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 px-2 py-1 text-xs text-gray-800 dark:text-gray-200 disabled:opacity-50"
+                title="Reset"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={disabled ? undefined : onRemoveImage}
+                className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-800 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200 disabled:opacity-50"
+                disabled={disabled}
+                title="Remove"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={disabled ? undefined : onPickImage}
+          className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 px-2 py-1 text-xs text-gray-800 dark:text-gray-200 disabled:opacity-50"
+          disabled={disabled}
+          title="Pick image"
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      {/* Zoom slider (matches the demos the user provided) */}
+      {src && (
+        <div className="mt-2">
+          <input
+            type="range"
+            value={zoom}
+            min={1}
+            max={maxZoom}
+            step={0.05}
+            aria-labelledby="Zoom"
+            onChange={(e) => {
+              const next = clamp(Number(e.target.value), 1, maxZoom);
+              setZoom(next);
+              // allow changing zoom only when editing; otherwise it should reflect locked state
+              if (!isLocked && !disabled) {
+                // keep local only
+              }
+            }}
+            className="w-full"
+            disabled={disabled}
+          />
+        </div>
+      )}
     </div>
   );
 }

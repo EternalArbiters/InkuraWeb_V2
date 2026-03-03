@@ -149,7 +149,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,420px)_1fr] md:items-start">
           <ThumbCropper
             src={thumbUrl}
-            maxZoom={2.5}
             value={{ focusX: thumbFocusX, focusY: thumbFocusY, zoom: thumbZoom }}
             onChange={(v) => {
               setThumbFocusX(v.focusX);

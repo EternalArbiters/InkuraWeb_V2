@@ -161,6 +161,7 @@ export default function ProfileForm({ initial }: { initial: Profile }) {
           <ThumbCropper
             src={avatar || null}
             aspect={1}
+            cropShape="round"
             maxZoom={6}
             value={{ focusX: avatarFocusX, focusY: avatarFocusY, zoom: avatarZoom }}
             onChange={(v) => {
