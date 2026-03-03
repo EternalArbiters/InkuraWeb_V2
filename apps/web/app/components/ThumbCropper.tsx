@@ -172,6 +172,10 @@ export default function ThumbCropper({
                 if (!canInteract) return;
                 setZoom(clamp(z, 1, maxZoom));
               }}
+              onCropAreaChange={(area) => {
+                // Keep latest area continuously so ✅ can save even if user clicks immediately after dragging.
+                latestCroppedAreaRef.current = area;
+              }}
               onCropComplete={onCropComplete}
               onMediaLoaded={onMediaLoaded}
               classes={{
