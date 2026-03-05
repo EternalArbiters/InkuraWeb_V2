@@ -1,5 +1,9 @@
 # Inkura V15 – Sanity Checklist (Regression Guard)
 
+
+> Catatan (repo cleaned): checklist regresi yang jadi **sumber utama** sekarang ada di `../../docs/REGRESSION_CHECKLIST.md`.
+> Dokumen ini tetap disimpan sebagai catatan historis khusus V15.
+
 Tujuan: memastikan **fitur user tidak rusak** saat kita menambahkan **Admin Taxonomy Panel**.
 
 > Prinsip: V15 itu *additive*. Halaman user & public API yang sudah ada **tidak boleh hilang / berubah kontrak**.

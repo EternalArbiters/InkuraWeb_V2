@@ -33,11 +33,26 @@ Set di Vercel: Project Settings → Environment Variables (Production)
 Kalau kosong, beberapa fitur upload akan error.
 
 ### Cloudflare R2
+- `R2_PUBLIC_BASE_URL` (base URL untuk akses publik file/cover)
+
+Inkura support dua style penamaan env (lihat `apps/web/server/storage/r2.ts`):
+
+**Style A (explicit endpoint, cocok untuk local/dev):**
+- `R2_ENDPOINT` (contoh: `https://<accountId>.r2.cloudflarestorage.com`)
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET`
+- `R2_PUBLIC_BASE_URL`
+
+**Style B (account id, endpoint dihitung otomatis):**
 - `R2_ACCOUNT_ID`
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
 - `R2_BUCKET_NAME`
-- `R2_PUBLIC_BASE_URL` (base URL untuk akses publik file/cover)
+- `R2_PUBLIC_BASE_URL`
+
+> Catatan: di Vercel, cukup pilih salah satu style. Jangan commit credentials ke repo.
+
 
 ## 4) Preview deployments (PENTING)
 Secara default, patch V15 **TIDAK menjalankan** `prisma migrate deploy` di preview.

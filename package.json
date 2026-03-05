@@ -2,7 +2,7 @@
   "name": "inkura",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/web"
   ],
   "scripts": {
     "dev": "npm --workspace apps/web run dev",

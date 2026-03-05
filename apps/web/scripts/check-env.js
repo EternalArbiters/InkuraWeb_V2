@@ -26,14 +26,9 @@ function checkEnv() {
   ];
 
   // Optional but strongly recommended for Inkura features
-  const recommended = [
-    'R2_ACCOUNT_ID',
-    'R2_ACCESS_KEY_ID',
-    'R2_SECRET_ACCESS_KEY',
-    'R2_BUCKET_NAME',
-    'R2_PUBLIC_BASE_URL',
-  ];
-
+  // R2 env vars support multiple naming styles (see server/storage/r2.ts):
+  // - R2_ENDPOINT or R2_ACCOUNT_ID (endpoint derived from account id)
+  // - R2_BUCKET or R2_BUCKET_NAME
   const optional = [
     'RESEND_API_KEY',
     'GOOGLE_CLIENT_ID',
@@ -43,7 +38,36 @@ function checkEnv() {
   ];
 
   const missingRequired = required.filter((k) => !isTruthy(process.env[k]));
-  const missingRecommended = recommended.filter((k) => !isTruthy(process.env[k]));
+  const r2EndpointPresent =
+    isTruthy(process.env.R2_ENDPOINT) ||
+    isTruthy(process.env.CLOUDFLARE_R2_ENDPOINT) ||
+    isTruthy(process.env.R2_ACCOUNT_ID) ||
+    isTruthy(process.env.CLOUDFLARE_R2_ACCOUNT_ID);
+
+  const r2BucketPresent =
+    isTruthy(process.env.R2_BUCKET) ||
+    isTruthy(process.env.CLOUDFLARE_R2_BUCKET) ||
+    isTruthy(process.env.R2_BUCKET_NAME) ||
+    isTruthy(process.env.CLOUDFLARE_R2_BUCKET_NAME);
+
+  const r2AccessPresent =
+    isTruthy(process.env.R2_ACCESS_KEY_ID) ||
+    isTruthy(process.env.CLOUDFLARE_R2_ACCESS_KEY_ID);
+
+  const r2SecretPresent =
+    isTruthy(process.env.R2_SECRET_ACCESS_KEY) ||
+    isTruthy(process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY);
+
+  const r2PublicPresent =
+    isTruthy(process.env.R2_PUBLIC_BASE_URL) ||
+    isTruthy(process.env.CLOUDFLARE_R2_PUBLIC_BASE_URL);
+
+  const missingRecommended = [];
+  if (!r2EndpointPresent) missingRecommended.push('R2_ENDPOINT (or R2_ACCOUNT_ID)');
+  if (!r2AccessPresent) missingRecommended.push('R2_ACCESS_KEY_ID');
+  if (!r2SecretPresent) missingRecommended.push('R2_SECRET_ACCESS_KEY');
+  if (!r2BucketPresent) missingRecommended.push('R2_BUCKET (or R2_BUCKET_NAME)');
+  if (!r2PublicPresent) missingRecommended.push('R2_PUBLIC_BASE_URL');
 
   console.log(`[deploy:check-env] VERCEL_ENV=${vercelEnv} NODE_ENV=${nodeEnv}`);
 

@@ -1,7 +1,7 @@
 # Tahap 0 – Safety Net (sebelum refactor besar)
 
-Tujuan Tahap 0:
-- Kita bisa rapihin/pecah file besar tanpa takut fitur hilang diam‑diam.
+> Lihat index dokumen: `docs/README.md`
+
 - Setiap perubahan wajib lewat *gate* otomatis (`verify`) + checklist manual regresi.
 
 > Repo ZIP ini sudah mencakup Tahap 0: `apps/web/.env.example`, update `verify`, dan dokumen checklist.

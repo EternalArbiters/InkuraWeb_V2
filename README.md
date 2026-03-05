@@ -88,6 +88,16 @@ Tujuan: saat delete/replace asset, server bisa delete object R2 dengan aman.
 
 ---
 
+---
+
+## Tooling & struktur repo
+
+Repo ini memakai **npm + npm workspaces** (lockfile: `package-lock.json`).
+
+- App runtime hanya ada di: `apps/web`
+- Dokumen stage/guard ada di: `docs/` (mulai dari `docs/README.md`)
+
+
 ## Setup lokal
 
 ### 1) Install
