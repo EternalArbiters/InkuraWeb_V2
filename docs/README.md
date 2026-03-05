@@ -17,4 +17,8 @@ Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
    - lint (Next/ESLint)
    - conventions import & struktur server/client
 
+5) `03-server-client-boundary.md`
+   - aturan folder `server/` vs `lib/`
+   - marker `server-only` / `client-only`
+
 Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.

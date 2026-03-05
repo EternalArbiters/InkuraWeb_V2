@@ -3,8 +3,8 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import prisma from "@/server/db/prisma";
+import { authOptions } from "@/server/auth/options";
 
 export const runtime = "nodejs";
 

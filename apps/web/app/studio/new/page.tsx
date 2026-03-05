@@ -1,6 +1,6 @@
 import BackButton from "@/app/components/BackButton";
 import { redirect } from "next/navigation";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 import NewWorkForm from "./NewWorkForm";
 
 export const dynamic = "force-dynamic";

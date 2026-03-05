@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 

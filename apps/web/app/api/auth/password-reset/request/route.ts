@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/server/mail/resend";
 

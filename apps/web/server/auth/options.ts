@@ -1,12 +1,17 @@
 import "server-only";
 
-// Originally copied from legacy v12 auth (apps/api was removed in v13+ cleanup).
+// NextAuth configuration (server-only).
+//
+// Stage 3 structure note:
+// - Server-only auth logic lives under `server/auth/*`.
+// - App Router route handlers should import from `@/server/auth/options`.
+
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import bcrypt from "bcryptjs";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
 
 function slugUsername(input: string) {
@@ -42,7 +47,16 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
 
   const existing = await prisma.user.findUnique({
     where: { email: emailLower },
-    select: { id: true, role: true, name: true, image: true, username: true, avatarFocusX: true, avatarFocusY: true, avatarZoom: true },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      image: true,
+      username: true,
+      avatarFocusX: true,
+      avatarFocusY: true,
+      avatarZoom: true,
+    },
   });
 
   if (!existing) {
@@ -203,9 +217,9 @@ export const authOptions: NextAuthOptions = {
           token.role = enforcedRoleFromEmail(email);
           token.name = dbUser.name ?? null;
           token.picture = dbUser.image ?? null;
-            (token as any).avatarFocusX = (dbUser as any).avatarFocusX ?? null;
-            (token as any).avatarFocusY = (dbUser as any).avatarFocusY ?? null;
-            (token as any).avatarZoom = (dbUser as any).avatarZoom ?? null;
+          (token as any).avatarFocusX = (dbUser as any).avatarFocusX ?? null;
+          (token as any).avatarFocusY = (dbUser as any).avatarFocusY ?? null;
+          (token as any).avatarZoom = (dbUser as any).avatarZoom ?? null;
         }
         return token;
       }

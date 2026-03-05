@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderChrome from "@/app/components/reader/ReaderChrome";

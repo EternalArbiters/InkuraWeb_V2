@@ -1,3 +1,5 @@
+import "client-only";
+
 import { create } from "zustand";
 
 type ModalType = "login" | "signup" | null;

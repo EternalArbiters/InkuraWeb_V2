@@ -1,3 +1,5 @@
+import "client-only";
+
 // Client-side helpers for Cloudflare R2 presigned uploads.
 
 export type PresignResponse = {

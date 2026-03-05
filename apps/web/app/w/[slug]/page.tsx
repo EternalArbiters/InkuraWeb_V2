@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 import WorkCoverBadges from "../../components/WorkCoverBadges";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";

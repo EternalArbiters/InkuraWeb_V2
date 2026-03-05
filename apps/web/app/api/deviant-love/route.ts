@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prisma";
 import { uniqueDeviantLoveCatalog } from "@/lib/deviantLoveCatalog";
 import { slugify } from "@/lib/slugify";
 import { getActiveDeviantLoveTagsBase } from "@/server/cache/taxonomy";

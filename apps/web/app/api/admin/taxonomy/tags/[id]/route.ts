@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { adminGuard, asOptionalBool, asString, getClientMeta, isUniqueViolation, safeJson, toJsonSafe } from "../../_shared";
 import { revalidateTag } from "next/cache";

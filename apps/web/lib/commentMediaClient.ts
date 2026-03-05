@@ -1,3 +1,5 @@
+import "client-only";
+
 // v16: client helpers for comment media (image/gif) with SHA-256 de-dup.
 
 export type CommentMediaKind = "gif" | "image";

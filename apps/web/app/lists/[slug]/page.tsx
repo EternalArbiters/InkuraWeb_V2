@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 import ShareButton from "@/app/components/work/ShareButton";
 import ListOwnerControls from "./ownerControls";
 import ListWorksGrid from "./listWorksGrid";

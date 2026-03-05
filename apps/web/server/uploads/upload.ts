@@ -1,7 +1,14 @@
 import "server-only";
 
 import crypto from "crypto";
-import { makeObjectKey, putBuffer, deleteObject, tryExtractKeyFromUrl, publicUrlForKey, safeFilename } from "@/server/storage/r2";
+import {
+  makeObjectKey,
+  putBuffer,
+  deleteObject,
+  tryExtractKeyFromUrl,
+  publicUrlForKey,
+  safeFilename,
+} from "@/server/storage/r2";
 
 function guessContentTypeFromName(name: string) {
   const n = name.toLowerCase();
@@ -35,7 +42,9 @@ export async function savePublicUpload(
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const scope = opts?.scope || (subdir === "covers" ? "covers" : subdir === "pages" ? "pages" : "files");
+  const scope =
+    opts?.scope ||
+    (subdir === "covers" ? "covers" : subdir === "pages" ? "pages" : "files");
   const userId = opts?.userId || "anonymous";
   const key = makeObjectKey({
     userId,

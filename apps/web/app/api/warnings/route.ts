@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prisma";
 import { NSFW_TAG_CATALOG, slugifyTag } from "@/lib/warningCatalog";
 import { getActiveWarningTagsBase } from "@/server/cache/taxonomy";
 

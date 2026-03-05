@@ -66,6 +66,8 @@ cp apps/web/.env.example apps/web/.env.local
 - Apa pun yang menyentuh DB / credentials / storage harus tinggal di `apps/web/server/*` atau `apps/web/app/api/*`.
 - Modul server-only sebaiknya memasang marker `server-only` untuk mencegah kebawa ke client.
 
+Detail lengkap aturan boundary ada di `03-server-client-boundary.md`.
+
 ## Definition of done – Stage 1
 
 Stage 1 dianggap selesai jika:

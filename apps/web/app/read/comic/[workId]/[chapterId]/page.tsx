@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 
 export const dynamic = "force-dynamic";
 

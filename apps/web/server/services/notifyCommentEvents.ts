@@ -1,6 +1,6 @@
 import "server-only";
 
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prisma";
 
 type TargetType = "WORK" | "CHAPTER";
 

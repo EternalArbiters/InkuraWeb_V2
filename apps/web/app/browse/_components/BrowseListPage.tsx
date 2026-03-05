@@ -1,6 +1,6 @@
 import ActionLink from "@/app/components/ActionLink";
 import WorkRowCard from "@/app/components/work/WorkRowCard";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 
 export const dynamic = "force-dynamic";
 

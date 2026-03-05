@@ -1,15 +1,8 @@
+import "server-only";
+
 // NOTE:
 // `server-only` is a Next.js marker module that helps prevent accidental client imports.
-// When running Node scripts (e.g. `tsx scripts/...`), this module may not be resolvable.
-// We try to load it when available, and safely ignore otherwise.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const require: any;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require("server-only");
-} catch {
-  // ignore outside Next.js bundler/runtime
-}
+// If you run ad-hoc Node scripts that import this module, make sure dependencies are installed.
 
 import crypto from "crypto";
 import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";

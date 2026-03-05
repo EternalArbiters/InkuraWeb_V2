@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
-import { savePublicUpload } from "@/lib/upload";
+import prisma from "@/server/db/prisma";
+import { authOptions } from "@/server/auth/options";
+import { savePublicUpload } from "@/server/uploads/upload";
 import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 
 export const runtime = "nodejs";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 
 export const dynamic = "force-dynamic";
 

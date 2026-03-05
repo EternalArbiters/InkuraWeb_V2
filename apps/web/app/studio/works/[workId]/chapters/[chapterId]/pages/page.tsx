@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import ComicPagesManager from "./ComicPagesManager";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 import BackButton from "@/app/components/BackButton";
 
 export const dynamic = "force-dynamic";

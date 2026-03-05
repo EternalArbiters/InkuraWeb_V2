@@ -6,7 +6,7 @@ import WorkCoverBadges from "../components/WorkCoverBadges";
 import LockLabel from "@/app/components/LockLabel";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 
 export const dynamic = "force-dynamic";
 

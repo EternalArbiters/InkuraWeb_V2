@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import prisma from "@/server/db/prisma";
+import { authOptions } from "@/server/auth/options";
 import { slugify } from "@/lib/slugify";
-import { deletePublicUpload, saveCoverUpload } from "@/lib/upload";
+import { deletePublicUpload, saveCoverUpload } from "@/server/uploads/upload";
 import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
 
 export const runtime = "nodejs";

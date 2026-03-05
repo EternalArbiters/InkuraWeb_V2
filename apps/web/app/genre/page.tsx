@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PageScaffold from "../components/PageScaffold";
-import { apiJson } from "@/lib/serverApi";
+import { apiJson } from "@/server/http/apiJson";
 
 export const dynamic = "force-dynamic";
 

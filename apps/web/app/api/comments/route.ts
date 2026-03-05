@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import prisma from "@/server/db/prisma";
+import { authOptions } from "@/server/auth/options";
 import { notifyCommentEvents } from "@/server/services/notifyCommentEvents";
 
 export const runtime = "nodejs";

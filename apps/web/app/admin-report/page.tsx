@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/server/auth/options";
 import AdminReportClient from "@/app/admin-report/ui/AdminReportClient";
 import { isAdminEmail } from "@/server/auth/adminEmail";
 
