@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import { requireUser } from "@/server/auth/requireUser";
 import { isAdminEmail } from "@/server/auth/adminEmail";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -10,7 +10,7 @@ function clamp(s: string, max: number) {
   return t.length > max ? t.slice(0, max) : t;
 }
 
-export async function GET() {
+export const GET = apiRoute(async () => {
   try {
     const { me } = await requireUser();
     const isAdmin = me.role === "ADMIN" && isAdminEmail((me as any).email);
@@ -57,13 +57,13 @@ export async function GET() {
       return r;
     });
 
-    return NextResponse.json({ reports, isAdmin });
+    return json({ reports, isAdmin });
   } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const { me } = await requireUser();
     const body = await req.json().catch(() => ({} as any));
@@ -72,8 +72,8 @@ export async function POST(req: Request) {
     const message = clamp(body?.message, 2000);
     const pageUrl = clamp(body?.pageUrl, 400) || null;
 
-    if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    if (!title) return json({ error: "Title is required" }, { status: 400 });
+    if (!message) return json({ error: "Message is required" }, { status: 400 });
 
     const created = await prisma.adminInboxReport.create({
       data: {
@@ -87,8 +87,8 @@ export async function POST(req: Request) {
       select: { id: true },
     });
 
-    return NextResponse.json({ ok: true, id: created.id });
+    return json({ ok: true, id: created.id });
   } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
-}
+});

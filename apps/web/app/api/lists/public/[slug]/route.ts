@@ -1,13 +1,12 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 async function getViewer() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -16,7 +15,7 @@ async function getViewer() {
   return user;
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
 
   const list = await prisma.readingList.findUnique({
@@ -52,7 +51,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     },
   });
 
-  if (!list) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!list) return json({ error: "Not found" }, { status: 404 });
 
   const viewer = await getViewer();
   const isOwner = !!viewer?.id && viewer.id === list.ownerId;
@@ -60,7 +59,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   const canViewDeviantLove = isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
 
   if (!list.isPublic && !isOwner && viewer?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return json({ error: "Not found" }, { status: 404 });
   }
 
   const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
@@ -80,7 +79,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     return !(requiresMatureGate || requiresDeviantGate);
   });
 
-  return NextResponse.json({
+  return json({
     list: {
       id: list.id,
       slug: list.slug,
@@ -111,4 +110,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
         }
       : null,
   });
-}
+});

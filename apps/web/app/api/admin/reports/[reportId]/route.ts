@@ -1,13 +1,12 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ reportId: string }> }) {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ reportId: string }> }) => {
   const { reportId } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -16,11 +15,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ report
   const hideComment = !!body?.hideComment;
 
   if (statusRaw !== "RESOLVED" && statusRaw !== "DISMISSED") {
-    return NextResponse.json({ error: "status must be RESOLVED or DISMISSED" }, { status: 400 });
+    return json({ error: "status must be RESOLVED or DISMISSED" }, { status: 400 });
   }
 
   const report = await prisma.report.findUnique({ where: { id: reportId } });
-  if (!report) return NextResponse.json({ error: "Report not found" }, { status: 404 });
+  if (!report) return json({ error: "Report not found" }, { status: 404 });
 
   if (hideComment && report.targetType === "COMMENT") {
     await prisma.comment.updateMany({
@@ -39,5 +38,5 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ report
     },
   });
 
-  return NextResponse.json({ ok: true, report: updated });
-}
+  return json({ ok: true, report: updated });
+});

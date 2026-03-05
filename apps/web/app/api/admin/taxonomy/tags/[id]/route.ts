@@ -1,17 +1,16 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { adminGuard, asOptionalBool, asString, getClientMeta, isUniqueViolation, safeJson, toJsonSafe } from "../../_shared";
 import { revalidateTag } from "next/cache";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 const NAME_MAX = 60;
 const SLUG_MAX = 80;
 
-export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const PATCH = apiRoute(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const guard = await adminGuard();
-  if (guard instanceof NextResponse) return guard;
   const { adminId } = guard;
   const { id } = await ctx.params;
   const body = await safeJson(req);
@@ -54,19 +53,18 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     });
 
     revalidateTag("taxonomy");
-    return NextResponse.json({ ok: true, item: updated });
+    return json({ ok: true, item: updated });
   } catch (e: any) {
     const msg = String(e?.message || "");
-    if (msg === "NOT_FOUND") return NextResponse.json({ error: "Not found" }, { status: 404 });
-    if (msg === "LOCKED") return NextResponse.json({ error: "Locked" }, { status: 400 });
-    if (isUniqueViolation(e)) return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
-    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+    if (msg === "NOT_FOUND") return json({ error: "Not found" }, { status: 404 });
+    if (msg === "LOCKED") return json({ error: "Locked" }, { status: 400 });
+    if (isUniqueViolation(e)) return json({ error: "Slug already exists" }, { status: 409 });
+    return json({ error: "Failed to update" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const DELETE = apiRoute(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const guard = await adminGuard();
-  if (guard instanceof NextResponse) return guard;
   const { adminId } = guard;
   const { id } = await ctx.params;
   const { ip, userAgent } = getClientMeta(req);
@@ -93,11 +91,11 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
     });
 
     revalidateTag("taxonomy");
-    return NextResponse.json({ ok: true, item: updated });
+    return json({ ok: true, item: updated });
   } catch (e: any) {
     const msg = String(e?.message || "");
-    if (msg === "NOT_FOUND") return NextResponse.json({ error: "Not found" }, { status: 404 });
-    if (msg === "LOCKED") return NextResponse.json({ error: "Locked" }, { status: 400 });
-    return NextResponse.json({ error: "Failed to deactivate" }, { status: 500 });
+    if (msg === "NOT_FOUND") return json({ error: "Not found" }, { status: 404 });
+    if (msg === "LOCKED") return json({ error: "Locked" }, { status: 400 });
+    return json({ error: "Failed to deactivate" }, { status: 500 });
   }
-}
+});

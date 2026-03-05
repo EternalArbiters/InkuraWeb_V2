@@ -1,23 +1,22 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function POST(_req: Request, { params }: { params: Promise<{ commentId: string }> }) {
+export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ commentId: string }> }) => {
   const { commentId } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const comment = await prisma.comment.findUnique({ where: { id: commentId }, select: { id: true, isHidden: true } });
-  if (!comment) return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+  if (!comment) return json({ error: "Comment not found" }, { status: 404 });
 
   // Disallow reactions on hidden comments for non-admins.
   if (comment.isHidden && session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Comment is hidden" }, { status: 403 });
+    return json({ error: "Comment is hidden" }, { status: 403 });
   }
 
   const userId = session.user.id;
@@ -61,9 +60,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ commen
       return { liked: true, likeCount: updated.likeCount, dislikeCount: Math.max(0, updated.dislikeCount) };
     });
 
-    return NextResponse.json({ ok: true, ...result });
+    return json({ ok: true, ...result });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

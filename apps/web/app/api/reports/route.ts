@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -15,18 +14,18 @@ export async function POST(req: Request) {
   const reason = String(body?.reason || "").trim();
 
   if (targetType !== "COMMENT") {
-    return NextResponse.json({ error: "Only COMMENT reports supported" }, { status: 400 });
+    return json({ error: "Only COMMENT reports supported" }, { status: 400 });
   }
   if (!targetId || !reason) {
-    return NextResponse.json({ error: "targetId and reason are required" }, { status: 400 });
+    return json({ error: "targetId and reason are required" }, { status: 400 });
   }
   if (reason.length > 500) {
-    return NextResponse.json({ error: "Reason too long" }, { status: 400 });
+    return json({ error: "Reason too long" }, { status: 400 });
   }
 
   const comment = await prisma.comment.findUnique({ where: { id: targetId }, select: { id: true } });
   if (!comment) {
-    return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    return json({ error: "Comment not found" }, { status: 404 });
   }
 
   const report = await prisma.report.create({
@@ -38,5 +37,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, report }, { status: 201 });
-}
+  return json({ ok: true, report }, { status: 201 });
+});

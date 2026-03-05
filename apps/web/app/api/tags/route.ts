@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { getActiveTagsBase } from "@/server/cache/taxonomy";
+import { apiRoute, json } from "@/server/http";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export const GET = apiRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").trim();
   const take = Math.min(25, Math.max(1, parseInt(searchParams.get("take") || "20", 10) || 20));
@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
   const tags = filtered.slice(0, take).map((t) => ({ id: t.id, name: t.name, slug: t.slug }));
 
-  return NextResponse.json(
+  return json(
     { tags },
     {
       headers: {
@@ -24,4 +24,4 @@ export async function GET(req: Request) {
       },
     }
   );
-}
+});

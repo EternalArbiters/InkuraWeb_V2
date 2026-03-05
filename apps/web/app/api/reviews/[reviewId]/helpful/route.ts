@@ -1,22 +1,21 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function POST(_req: Request, { params }: { params: Promise<{ reviewId: string }> }) {
+export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const userId = session.user.id;
 
   const review = await prisma.review.findUnique({ where: { id: reviewId }, select: { id: true, userId: true } });
-  if (!review) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!review) return json({ error: "Not found" }, { status: 404 });
 
   if (review.userId === userId) {
-    return NextResponse.json({ error: "You can't vote your own review" }, { status: 400 });
+    return json({ error: "You can't vote your own review" }, { status: 400 });
   }
 
   try {
@@ -37,9 +36,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ review
       return { voted: true, helpfulCount: updated.helpfulCount };
     });
 
-    return NextResponse.json({ ok: true, voted: result.voted, helpfulCount: result.helpfulCount });
+    return json({ ok: true, voted: result.voted, helpfulCount: result.helpfulCount });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

@@ -1,18 +1,17 @@
-import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { adminGuard, asOptionalBool, asString, getClientMeta, isUniqueViolation, parseSearchParams, safeJson, toJsonSafe } from "../_shared";
 import { revalidateTag } from "next/cache";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 const NAME_MAX = 60;
 const SLUG_MAX = 80;
 
-export async function GET(req: Request) {
+export const GET = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
-  if (guard instanceof NextResponse) return guard;
 
   const { q, includeInactive } = parseSearchParams(req.url);
 
@@ -45,21 +44,20 @@ export async function GET(req: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, items });
-}
+  return json({ ok: true, items });
+});
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
-  if (guard instanceof NextResponse) return guard;
   const { adminId } = guard;
 
   const body = await safeJson(req);
   const name = asString(body?.name).slice(0, NAME_MAX);
-  if (!name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  if (!name) return json({ error: "Name is required" }, { status: 400 });
 
   const slugRaw = asString(body?.slug).slice(0, SLUG_MAX);
   const slug = (slugRaw || slugify(name)).slice(0, SLUG_MAX);
-  if (!slug) return NextResponse.json({ error: "Slug is required" }, { status: 400 });
+  if (!slug) return json({ error: "Slug is required" }, { status: 400 });
 
   const isLocked = asOptionalBool(body?.isLocked) ?? false;
   const isActive = asOptionalBool(body?.isActive) ?? true;
@@ -97,11 +95,11 @@ export async function POST(req: Request) {
     });
 
     revalidateTag("taxonomy");
-    return NextResponse.json({ ok: true, item: created });
+    return json({ ok: true, item: created });
   } catch (e) {
     if (isUniqueViolation(e)) {
-      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+      return json({ error: "Slug already exists" }, { status: 409 });
     }
-    return NextResponse.json({ error: "Failed to create" }, { status: 500 });
+    return json({ error: "Failed to create" }, { status: 500 });
   }
-}
+});

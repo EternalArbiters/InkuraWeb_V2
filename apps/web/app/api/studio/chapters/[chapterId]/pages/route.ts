@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { savePublicUpload, deletePublicUpload } from "@/server/uploads/upload";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -38,22 +37,22 @@ function normalizeReplace(v: unknown): boolean {
   return s === "1" || s === "true" || s === "yes" || s === "on" || s === "replace";
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getMe(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
     include: { work: { select: { id: true, authorId: true } } },
   });
 
-  if (!chapter) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!chapter) return json({ error: "Not found" }, { status: 404 });
   if (!isOwnerOrAdmin(me.role, session.user.id, chapter.work.authorId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
@@ -100,7 +99,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
     }
 
     if (!files.length && !pagesMeta.length) {
-      return NextResponse.json({ error: "No pages provided" }, { status: 400 });
+      return json({ error: "No pages provided" }, { status: 400 });
     }
 
     // Replace mode: delete existing page rows and best-effort delete their R2 objects.
@@ -156,9 +155,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
 
     await renumberChapterPages(chapterId);
 
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

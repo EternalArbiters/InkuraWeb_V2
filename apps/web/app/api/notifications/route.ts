@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export const GET = apiRoute(async () => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ unreadCount: 0, notifications: [] });
+    return json({ unreadCount: 0, notifications: [] });
   }
 
   const [unreadCount, notifications] = await Promise.all([
@@ -18,13 +17,13 @@ export async function GET() {
     }),
   ]);
 
-  return NextResponse.json({ unreadCount, notifications });
-}
+  return json({ unreadCount, notifications });
+});
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -36,11 +35,11 @@ export async function POST(req: Request) {
       where: { userId: session.user.id, isRead: false },
       data: { isRead: true },
     });
-    return NextResponse.json({ ok: true, markAll: true });
+    return json({ ok: true, markAll: true });
   }
 
   if (!id) {
-    return NextResponse.json({ error: "id required" }, { status: 400 });
+    return json({ error: "id required" }, { status: 400 });
   }
 
   await prisma.notification.updateMany({
@@ -48,5 +47,5 @@ export async function POST(req: Request) {
     data: { isRead: true },
   });
 
-  return NextResponse.json({ ok: true });
-}
+  return json({ ok: true });
+});

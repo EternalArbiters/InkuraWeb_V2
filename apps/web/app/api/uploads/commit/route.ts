@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { headObject, publicUrlForKey } from "@/server/storage/r2";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -34,9 +33,9 @@ function keyMatches(scope: Scope, sha256: string, key: string) {
   return k.startsWith(`media/comment/image/${sha256}.`);
 }
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({} as any));
   const scope = safeScope(body?.scope);
@@ -45,19 +44,19 @@ export async function POST(req: Request) {
   const contentType = String(body?.contentType || "").trim();
   const sizeBytes = Number(body?.sizeBytes ?? body?.size ?? 0);
 
-  if (!scope) return NextResponse.json({ error: "Invalid scope" }, { status: 400 });
-  if (!sha256) return NextResponse.json({ error: "sha256 is required" }, { status: 400 });
-  if (!key) return NextResponse.json({ error: "key is required" }, { status: 400 });
-  if (!keyMatches(scope, sha256, key)) return NextResponse.json({ error: "key does not match sha256" }, { status: 400 });
+  if (!scope) return json({ error: "Invalid scope" }, { status: 400 });
+  if (!sha256) return json({ error: "sha256 is required" }, { status: 400 });
+  if (!key) return json({ error: "key is required" }, { status: 400 });
+  if (!keyMatches(scope, sha256, key)) return json({ error: "key does not match sha256" }, { status: 400 });
 
   const maxBytes = maxBytesForScope(scope);
   if (sizeBytes && sizeBytes > maxBytes) {
-    return NextResponse.json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
+    return json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
   }
 
   // Verify object exists in R2
   const head = await headObject(key);
-  if (!head.exists) return NextResponse.json({ error: "Object not found in storage" }, { status: 404 });
+  if (!head.exists) return json({ error: "Object not found in storage" }, { status: 404 });
   if (sizeBytes && head.contentLength && head.contentLength !== sizeBytes) {
     // Not fatal, but helps catch mismatch.
     // If you want strict, change to 400.
@@ -87,5 +86,5 @@ export async function POST(req: Request) {
     select: { id: true, sha256: true, type: true, contentType: true, sizeBytes: true, key: true, url: true },
   });
 
-  return NextResponse.json({ ok: true, media });
-}
+  return json({ ok: true, media });
+});

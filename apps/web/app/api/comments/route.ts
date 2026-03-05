@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { notifyCommentEvents } from "@/server/services/notifyCommentEvents";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -123,7 +122,7 @@ async function canModerateForTarget(session: any, targetType: TargetType, target
   return !!ch && ch.work.authorId === userId;
 }
 
-export async function GET(req: Request) {
+export const GET = apiRoute(async (req: Request) => {
   const url = new URL(req.url);
   const scope = String(url.searchParams.get("scope") || "")
     .trim()
@@ -138,12 +137,12 @@ export async function GET(req: Request) {
 
   const includeUserRating = url.searchParams.get("includeUserRating") === "1";
 
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
 
   // Special scope: all comments from all chapters in a work.
   if (scope === "workchapters") {
     const wid = workId || targetId;
-    if (!wid) return NextResponse.json({ error: "workId is required" }, { status: 400 });
+    if (!wid) return json({ error: "workId is required" }, { status: 400 });
 
     const canModerate = await canModerateForTarget(session, "WORK", wid);
     const chapterIds = (
@@ -154,7 +153,7 @@ export async function GET(req: Request) {
     ).map((c) => c.id);
 
     if (!chapterIds.length) {
-      return NextResponse.json({ ok: true, canModerate, comments: [] });
+      return json({ ok: true, canModerate, comments: [] });
     }
 
     const where: any = {
@@ -192,11 +191,11 @@ export async function GET(req: Request) {
     }
 
     const roots = sortRoots(sort, buildTree(enriched)).slice(0, take);
-    return NextResponse.json({ ok: true, canModerate, comments: roots });
+    return json({ ok: true, canModerate, comments: roots });
   }
 
   if (!targetType || !targetId) {
-    return NextResponse.json({ error: "targetType and targetId are required" }, { status: 400 });
+    return json({ error: "targetType and targetId are required" }, { status: 400 });
   }
 
   const canModerate = await canModerateForTarget(session, targetType, targetId);
@@ -247,12 +246,12 @@ export async function GET(req: Request) {
 
   const roots = sortRoots(sort, buildTree(enriched)).slice(0, take);
 
-  return NextResponse.json({ ok: true, canModerate, comments: roots });
-}
+  return json({ ok: true, canModerate, comments: roots });
+});
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({} as any));
   const targetType = safeTargetType(body?.targetType);
@@ -261,17 +260,17 @@ export async function POST(req: Request) {
   const text = String(body?.body || "").trim();
   const isSpoiler = !!body?.isSpoiler;
 
-  if (!targetType || !targetId) return NextResponse.json({ error: "targetType and targetId are required" }, { status: 400 });
-  if (!text) return NextResponse.json({ error: "Comment body is required" }, { status: 400 });
-  if (text.length > 2000) return NextResponse.json({ error: "Comment too long" }, { status: 400 });
+  if (!targetType || !targetId) return json({ error: "targetType and targetId are required" }, { status: 400 });
+  if (!text) return json({ error: "Comment body is required" }, { status: 400 });
+  if (text.length > 2000) return json({ error: "Comment too long" }, { status: 400 });
 
   // Validate target exists
   if (targetType === "WORK") {
     const w = await prisma.work.findUnique({ where: { id: targetId }, select: { id: true } });
-    if (!w) return NextResponse.json({ error: "Work not found" }, { status: 404 });
+    if (!w) return json({ error: "Work not found" }, { status: 404 });
   } else {
     const ch = await prisma.chapter.findUnique({ where: { id: targetId }, select: { id: true } });
-    if (!ch) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+    if (!ch) return json({ error: "Chapter not found" }, { status: 404 });
   }
 
   // Validate parent (if reply)
@@ -280,17 +279,17 @@ export async function POST(req: Request) {
       where: { id: parentId },
       select: { id: true, targetType: true, targetId: true, parentId: true, isHidden: true },
     });
-    if (!parent) return NextResponse.json({ error: "Parent comment not found" }, { status: 404 });
-    if (parent.isHidden) return NextResponse.json({ error: "Cannot reply to hidden comment" }, { status: 403 });
+    if (!parent) return json({ error: "Parent comment not found" }, { status: 404 });
+    if (parent.isHidden) return json({ error: "Cannot reply to hidden comment" }, { status: 403 });
     if (parent.targetType !== targetType || parent.targetId !== targetId) {
-      return NextResponse.json({ error: "Invalid parent for this target" }, { status: 400 });
+      return json({ error: "Invalid parent for this target" }, { status: 400 });
     }
     // Limit reply depth to avoid abuse (max 5 levels)
     let depth = 1;
     let cur: string | null = parent.parentId ? String(parent.parentId) : null;
     while (cur) {
       depth += 1;
-      if (depth > 5) return NextResponse.json({ error: "Reply thread too deep" }, { status: 400 });
+      if (depth > 5) return json({ error: "Reply thread too deep" }, { status: 400 });
       const next = await prisma.comment.findUnique({ where: { id: cur }, select: { parentId: true } });
       cur = next?.parentId ? String(next.parentId) : null;
     }
@@ -311,12 +310,12 @@ export async function POST(req: Request) {
     : [];
 
   if (mediaRows.length !== uniqueMediaIds.length) {
-    return NextResponse.json({ error: "One or more attachments not found" }, { status: 400 });
+    return json({ error: "One or more attachments not found" }, { status: 400 });
   }
 
   for (const m of mediaRows) {
     if (m.type !== "COMMENT_IMAGE" && m.type !== "COMMENT_GIF") {
-      return NextResponse.json({ error: "Invalid attachment type" }, { status: 400 });
+      return json({ error: "Invalid attachment type" }, { status: 400 });
     }
   }
 
@@ -370,5 +369,5 @@ export async function POST(req: Request) {
     console.error("notifyCommentEvents failed", e);
   }
 
-  return NextResponse.json({ ok: true, comment: created }, { status: 201 });
-}
+  return json({ ok: true, comment: created }, { status: 201 });
+});

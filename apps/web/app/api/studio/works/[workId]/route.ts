@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { slugify } from "@/lib/slugify";
 import { deletePublicUpload, saveCoverUpload } from "@/server/uploads/upload";
 import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -62,13 +61,13 @@ function isOwnerOrAdmin(meRole: string, sessionUserId: string, ownerId: string) 
   return meRole === "ADMIN" || ownerId === sessionUserId;
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ workId: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const work = await prisma.work.findUnique({
     where: { id: workId },
@@ -96,21 +95,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ workId:
     },
   });
 
-  if (!work) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!work) return json({ error: "Not found" }, { status: 404 });
   if (!isOwnerOrAdmin(me.role, session.user.id, work.authorId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ work });
-}
+  return json({ work });
+});
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ workId: string }> }) {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const existing = await prisma.work.findUnique({
     where: { id: workId },
@@ -134,9 +133,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     },
   });
 
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing) return json({ error: "Not found" }, { status: 404 });
   if (!isOwnerOrAdmin(me.role, session.user.id, existing.authorId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
@@ -153,7 +152,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
         select: { id: true, slug: true, status: true },
       });
 
-      return NextResponse.json({ ok: true, work: updated });
+      return json({ ok: true, work: updated });
     }
 
     // FormData PATCH (metadata edit)
@@ -188,7 +187,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ workId
     const prevArcUrlRaw = String(fd.get("prevArcUrl") || "").trim();
     const nextArcUrlRaw = String(fd.get("nextArcUrl") || "").trim();
 
-    if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    if (!title) return json({ error: "Title is required" }, { status: 400 });
 
     // Slug is optional; if provided, make sure unique.
     const slugInput = String(fd.get("slug") || "").trim();
@@ -212,13 +211,13 @@ const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
     const nextUploaderNote = publishType === "REUPLOAD" ? uploaderNoteRaw : null;
 
     if (needsSource) {
-      if (!String(nextOriginalAuthorCredit || "").trim()) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
-      if (!String(nextSourceUrl || "").trim()) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
+      if (!String(nextOriginalAuthorCredit || "").trim()) return json({ error: "Original author credit is required" }, { status: 400 });
+      if (!String(nextSourceUrl || "").trim()) return json({ error: "Source URL is required" }, { status: 400 });
     }
 
     if (publishType === "REUPLOAD") {
       if (!String(nextOriginalTranslatorCredit || "").trim()) {
-        return NextResponse.json({ error: "Original translator credit is required for Reupload" }, { status: 400 });
+        return json({ error: "Original translator credit is required for Reupload" }, { status: 400 });
       }
     }
 
@@ -325,21 +324,21 @@ const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
       select: { id: true, title: true, slug: true, status: true },
     });
 
-    return NextResponse.json({ ok: true, work: updated });
+    return json({ ok: true, work: updated });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});
 
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ workId: string }> }) {
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const work = await prisma.work.findUnique({
     where: { id: workId },
@@ -358,8 +357,8 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ work
       },
     },
   });
-  if (!work) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (!isOwnerOrAdmin(me.role, session.user.id, work.authorId)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!work) return json({ error: "Not found" }, { status: 404 });
+  if (!isOwnerOrAdmin(me.role, session.user.id, work.authorId)) return json({ error: "Forbidden" }, { status: 403 });
 
   try {
     const chapterIds = (work.chapters || []).map((c) => c.id);
@@ -417,9 +416,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ work
     const uniq = Array.from(new Set(toDelete)).filter(Boolean);
     await Promise.all(uniq.map((x) => deletePublicUpload(x)));
 
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

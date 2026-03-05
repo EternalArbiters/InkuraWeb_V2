@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -16,11 +15,11 @@ async function isWorkOwner(userId: string, targetType: TargetType, targetId: str
   return !!ch && ch.work.authorId === userId;
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ commentId: string }> }) {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ commentId: string }> }) => {
   const { commentId } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -30,12 +29,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ comment
     where: { id: commentId },
     select: { id: true, isHidden: true, targetType: true, targetId: true },
   });
-  if (!comment) return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+  if (!comment) return json({ error: "Comment not found" }, { status: 404 });
 
   const isAdmin = session.user.role === "ADMIN";
   const owner = await isWorkOwner(session.user.id, comment.targetType as TargetType, comment.targetId);
   if (!owner && !isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   const updated = await prisma.comment.update({
@@ -47,5 +46,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ comment
     },
   });
 
-  return NextResponse.json({ ok: true, isHidden: updated.isHidden });
-}
+  return json({ ok: true, isHidden: updated.isHidden });
+});

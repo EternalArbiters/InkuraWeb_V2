@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -28,9 +27,9 @@ function normalizeImage(raw: unknown) {
   return v.slice(0, 500);
 }
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = apiRoute(async () => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -48,13 +47,13 @@ export async function GET() {
     },
   });
 
-  if (!me) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ profile: me });
-}
+  if (!me) return json({ error: "Not found" }, { status: 404 });
+  return json({ profile: me });
+});
 
-export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const PATCH = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({} as any));
   const data: any = {};
@@ -86,9 +85,9 @@ export async function PATCH(req: Request) {
 
   if ("username" in body) {
     const next = normalizeUsername(body.username);
-    if (!next) return NextResponse.json({ error: "Username is required" }, { status: 400 });
+    if (!next) return json({ error: "Username is required" }, { status: 400 });
     if (!isValidUsername(next)) {
-      return NextResponse.json(
+      return json(
         {
           error:
             "Invalid username. Use 3–24 chars: letters/numbers, dash (-) or underscore (_). Must start with a letter/number.",
@@ -101,13 +100,13 @@ export async function PATCH(req: Request) {
       where: { username: next, NOT: { id: session.user.id } },
       select: { id: true },
     });
-    if (clash) return NextResponse.json({ error: "Username already in use" }, { status: 409 });
+    if (clash) return json({ error: "Username already in use" }, { status: 409 });
 
     data.username = next;
   }
 
   if (!Object.keys(data).length) {
-    return NextResponse.json({ ok: true, unchanged: true });
+    return json({ ok: true, unchanged: true });
   }
 
   try {
@@ -126,13 +125,13 @@ export async function PATCH(req: Request) {
         role: true,
       },
     });
-    return NextResponse.json({ ok: true, profile: updated });
+    return json({ ok: true, profile: updated });
   } catch (e: any) {
     const msg = String(e?.message || "");
     if (msg.includes("P2002") || msg.toLowerCase().includes("unique")) {
-      return NextResponse.json({ error: "Username already in use" }, { status: 409 });
+      return json({ error: "Username already in use" }, { status: 409 });
     }
     console.error("[api/me/profile] PATCH error", e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

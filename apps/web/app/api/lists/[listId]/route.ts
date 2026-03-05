@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 async function getViewer() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) return null;
 
   return prisma.user.findUnique({
@@ -15,10 +14,10 @@ async function getViewer() {
   });
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ listId: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
-  if (!viewer?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
@@ -51,32 +50,32 @@ export async function GET(_req: Request, { params }: { params: Promise<{ listId:
     },
   });
 
-  if (!list) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!list) return json({ error: "Not found" }, { status: 404 });
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
   if (!isOwner && !isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ list });
-}
+  return json({ list });
+});
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ listId: string }> }) {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
-  if (!viewer?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
     select: { id: true, ownerId: true },
   });
 
-  if (!list) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!list) return json({ error: "Not found" }, { status: 404 });
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
-  if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json().catch(() => ({} as any));
   const title = body?.title != null ? String(body.title).trim() : undefined;
@@ -84,7 +83,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ listId
   const isPublic = typeof body?.isPublic === "boolean" ? body.isPublic : undefined;
 
   if (title !== undefined && !title) {
-    return NextResponse.json({ error: "title cannot be empty" }, { status: 400 });
+    return json({ error: "title cannot be empty" }, { status: 400 });
   }
 
   const updated = await prisma.readingList.update({
@@ -97,25 +96,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ listId
     include: { _count: { select: { items: true } } },
   });
 
-  return NextResponse.json({ ok: true, list: updated });
-}
+  return json({ ok: true, list: updated });
+});
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ listId: string }> }) {
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
-  if (!viewer?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
     select: { id: true, ownerId: true },
   });
 
-  if (!list) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!list) return json({ error: "Not found" }, { status: 404 });
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
-  if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
 
   await prisma.readingList.delete({ where: { id: listId } });
-  return NextResponse.json({ ok: true });
-}
+  return json({ ok: true });
+});

@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -11,10 +10,10 @@ function cleanHandle(v: unknown) {
   return s.startsWith("@") ? s.slice(1) : s;
 }
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -24,8 +23,8 @@ export async function POST(req: Request) {
   const message = String(body?.message || body?.body || "").trim();
   const href = String(body?.href || "/notifications").trim() || "/notifications";
 
-  if (!to) return NextResponse.json({ error: "Target user is required" }, { status: 400 });
-  if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  if (!to) return json({ error: "Target user is required" }, { status: 400 });
+  if (!message) return json({ error: "Message is required" }, { status: 400 });
 
   const user = await prisma.user.findFirst({
     where: {
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return json({ error: "User not found" }, { status: 404 });
   }
 
   const notif = await prisma.notification.create({
@@ -53,5 +52,5 @@ export async function POST(req: Request) {
     select: { id: true },
   });
 
-  return NextResponse.json({ ok: true, notificationId: notif.id });
-}
+  return json({ ok: true, notificationId: notif.id });
+});

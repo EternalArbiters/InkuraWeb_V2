@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { savePublicUpload } from "@/server/uploads/upload";
 import { notifyNewChapter } from "@/server/services/notifyNewChapter";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -53,12 +52,12 @@ async function canEditWork(userId: string, role: string, workId: string) {
 
 type PageMeta = { url: string; key?: string | null; order?: number | null };
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const ct = req.headers.get("content-type") || "";
@@ -116,17 +115,17 @@ export async function POST(req: Request) {
       }
     }
 
-    if (!workId) return NextResponse.json({ error: "workId is required" }, { status: 400 });
-    if (!title) return NextResponse.json({ error: "title is required" }, { status: 400 });
+    if (!workId) return json({ error: "workId is required" }, { status: 400 });
+    if (!title) return json({ error: "title is required" }, { status: 400 });
 
     const ok = await canEditWork(session.user.id, me.role, workId);
-    if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!ok) return json({ error: "Forbidden" }, { status: 403 });
 
     const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true, type: true } });
-    if (!work) return NextResponse.json({ error: "Work not found" }, { status: 404 });
+    if (!work) return json({ error: "Work not found" }, { status: 404 });
 
     if (work.type === "NOVEL" && !content.trim()) {
-      return NextResponse.json({ error: "content is required for NOVEL" }, { status: 400 });
+      return json({ error: "content is required for NOVEL" }, { status: 400 });
     }
 
     // Create chapter first (so we have chapterId for R2 key prefixes)
@@ -190,9 +189,9 @@ export async function POST(req: Request) {
       await notifyNewChapter({ workId, chapterId: chapter.id, actorId: session.user.id });
     }
 
-    return NextResponse.json({ ok: true, chapter }, { status: 201 });
+    return json({ ok: true, chapter }, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

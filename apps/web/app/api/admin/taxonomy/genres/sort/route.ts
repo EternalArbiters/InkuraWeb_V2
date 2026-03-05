@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import { adminGuard, bulkSortOrderUpdateSql, getClientMeta, safeJson } from "../../_shared";
 import { revalidateTag } from "next/cache";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -20,9 +20,8 @@ function alphaCmp(a: string, b: string) {
   return a.localeCompare(b, undefined, { sensitivity: "base" });
 }
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
-  if (guard instanceof NextResponse) return guard;
   const { adminId } = guard;
 
   const body = await safeJson(req);
@@ -84,10 +83,10 @@ export async function POST(req: Request) {
     const result = { by, dir, count: ordered.length };
 
     revalidateTag("taxonomy");
-    return NextResponse.json({ ok: true, ...result });
+    return json({ ok: true, ...result });
   } catch (e: any) {
     console.error("[taxonomy][genres][sort] failed", e);
     const msg = String(e?.message || "").trim();
-    return NextResponse.json({ error: msg ? `Failed to sort: ${msg}` : "Failed to sort" }, { status: 500 });
+    return json({ error: msg ? `Failed to sort: ${msg}` : "Failed to sort" }, { status: 500 });
   }
-}
+});

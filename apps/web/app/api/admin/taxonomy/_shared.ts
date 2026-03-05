@@ -1,43 +1,28 @@
-import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/server/auth/requireUser";
+import { asOptionalBool as _asOptionalBool, asString as _asString, getClientMeta as _getClientMeta, readJsonObject, toJsonSafe as _toJsonSafe } from "@/server/http";
 
 export type AdminGuardOk = { adminId: string };
 
-export async function adminGuard(): Promise<AdminGuardOk | NextResponse> {
-  try {
-    const { me } = await requireAdmin();
-    return { adminId: me.id };
-  } catch (e: any) {
-    const msg = String(e?.message || "");
-    if (msg === "UNAUTHORIZED") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    if (msg === "FORBIDDEN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function adminGuard(): Promise<AdminGuardOk> {
+  const { me } = await requireAdmin();
+  return { adminId: me.id };
 }
 
 export function getClientMeta(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
-  const userAgent = req.headers.get("user-agent") || null;
-  return { ip, userAgent };
+  return _getClientMeta(req);
 }
 
 export async function safeJson(req: Request) {
-  return (await req.json().catch(() => ({}))) as any;
+  return (await readJsonObject(req)) as any;
 }
 
 export function asString(v: any) {
-  return typeof v === "string" ? v.trim() : "";
+  return _asString(v);
 }
 
 export function asOptionalBool(v: any): boolean | undefined {
-  if (v === true || v === false) return v;
-  if (typeof v === "string") {
-    const t = v.trim().toLowerCase();
-    if (t === "true" || t === "1" || t === "yes") return true;
-    if (t === "false" || t === "0" || t === "no") return false;
-  }
-  return undefined;
+  return _asOptionalBool(v);
 }
 
 export function parseSearchParams(url: string) {
@@ -52,12 +37,7 @@ export function isUniqueViolation(e: unknown) {
 }
 
 export function toJsonSafe(value: any) {
-  if (value == null) return null;
-  try {
-    return JSON.parse(JSON.stringify(value));
-  } catch {
-    return null;
-  }
+  return _toJsonSafe(value);
 }
 
 /**

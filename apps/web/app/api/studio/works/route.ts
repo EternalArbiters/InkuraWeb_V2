@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { slugify } from "@/lib/slugify";
 import { saveCoverUpload } from "@/server/uploads/upload";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -42,12 +41,12 @@ async function getCreator(sessionUserId: string) {
   return prisma.user.findUnique({ where: { id: sessionUserId }, select: { role: true } });
 }
 
-export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(req.url);
   const all = url.searchParams.get("all") === "1" || url.searchParams.get("scope") === "all";
@@ -68,20 +67,20 @@ export async function GET(req: Request) {
     },
   });
 
-  return NextResponse.json({ works });
-}
+  return json({ works });
+});
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const ct = req.headers.get("content-type") || "";
     if (!ct.includes("multipart/form-data")) {
-      return NextResponse.json({ error: "Use multipart/form-data for create work" }, { status: 400 });
+      return json({ error: "Use multipart/form-data for create work" }, { status: 400 });
     }
 
     const fd = await req.formData();
@@ -117,19 +116,19 @@ export async function POST(req: Request) {
     const cover = fd.get("cover");
     const coverFile = cover && typeof cover !== "string" ? (cover as File) : null;
 
-    if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    if (!coverFile || coverFile.size <= 0) return NextResponse.json({ error: "Cover is required (max 2MB)." }, { status: 400 });
-    if (coverFile.size > 2 * 1024 * 1024) return NextResponse.json({ error: "Cover too large (max 2MB)." }, { status: 400 });
+    if (!title) return json({ error: "Title is required" }, { status: 400 });
+    if (!coverFile || coverFile.size <= 0) return json({ error: "Cover is required (max 2MB)." }, { status: 400 });
+    if (coverFile.size > 2 * 1024 * 1024) return json({ error: "Cover too large (max 2MB)." }, { status: 400 });
 
     const needsSource = publishType !== "ORIGINAL";
     if (needsSource) {
-      if (!originalAuthorCredit) return NextResponse.json({ error: "Original author credit is required" }, { status: 400 });
-      if (!sourceUrl) return NextResponse.json({ error: "Source URL is required" }, { status: 400 });
+      if (!originalAuthorCredit) return json({ error: "Original author credit is required" }, { status: 400 });
+      if (!sourceUrl) return json({ error: "Source URL is required" }, { status: 400 });
     }
 
     if (publishType === "REUPLOAD") {
       if (!originalTranslatorCredit) {
-        return NextResponse.json({ error: "Original translator credit is required for Reupload" }, { status: 400 });
+        return json({ error: "Original translator credit is required for Reupload" }, { status: 400 });
       }
     }
 
@@ -187,9 +186,9 @@ export async function POST(req: Request) {
     }
 
     const full = await prisma.work.findUnique({ where: { id: created.id } });
-    return NextResponse.json({ ok: true, work: full }, { status: 201 });
+    return json({ ok: true, work: full }, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

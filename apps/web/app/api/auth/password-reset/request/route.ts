@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/server/mail/resend";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -14,13 +14,13 @@ function baseUrl() {
   ).replace(/\/$/, "");
 }
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({} as any));
     const identifier = String(body?.identifier || "").trim();
 
     // Always return ok to avoid account enumeration.
-    if (!identifier) return NextResponse.json({ ok: true });
+    if (!identifier) return json({ ok: true });
 
     const identifierLower = identifier.toLowerCase();
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       select: { id: true, email: true },
     });
 
-    if (!user) return NextResponse.json({ ok: true });
+    if (!user) return json({ ok: true });
 
     // Cleanup old tokens for this user (best-effort)
     await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
@@ -51,12 +51,12 @@ export async function POST(req: Request) {
     await sendPasswordResetEmail({ to: user.email, resetUrl });
 
     const expose = process.env.SHOW_RESET_TOKEN === "1" || process.env.NODE_ENV !== "production";
-    return NextResponse.json({
+    return json({
       ok: true,
       ...(expose ? { resetToken: token, expiresAt, resetUrl } : {}),
     });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   }
-}
+});

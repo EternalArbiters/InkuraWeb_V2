@@ -1,10 +1,9 @@
 // Deprecated (v16): chapter comments are now polymorphic via /api/comments.
 // This route is kept for backward compatibility.
 
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -15,9 +14,9 @@ async function canModerate(session: any, chapterId: string) {
   return !!ch && ch.work.authorId === session.user.id;
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   const canMod = await canModerate(session, chapterId);
 
   const comments = await prisma.comment.findMany({
@@ -34,24 +33,24 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
     },
   });
 
-  return NextResponse.json({ ok: true, canModerate: canMod, comments });
-}
+  return json({ ok: true, canModerate: canMod, comments });
+});
 
-export async function POST(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({} as any));
   const text = String(body?.body || "").trim();
   const isSpoiler = !!body?.isSpoiler;
   const attachments: unknown[] = Array.isArray(body?.attachments) ? (body.attachments as unknown[]) : [];
 
-  if (!text) return NextResponse.json({ error: "Comment body is required" }, { status: 400 });
-  if (text.length > 2000) return NextResponse.json({ error: "Comment too long" }, { status: 400 });
+  if (!text) return json({ error: "Comment body is required" }, { status: 400 });
+  if (text.length > 2000) return json({ error: "Comment too long" }, { status: 400 });
 
   const ch = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { id: true } });
-  if (!ch) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+  if (!ch) return json({ error: "Chapter not found" }, { status: 404 });
 
   const mediaIds: string[] = attachments
     .map((a) => String((a as any)?.mediaId || (a as any)?.id || "").trim())
@@ -62,11 +61,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
     : [];
 
   if (mediaRows.length !== uniqueMediaIds.length) {
-    return NextResponse.json({ error: "One or more attachments not found" }, { status: 400 });
+    return json({ error: "One or more attachments not found" }, { status: 400 });
   }
   for (const m of mediaRows) {
     if (m.type !== "COMMENT_IMAGE" && m.type !== "COMMENT_GIF") {
-      return NextResponse.json({ error: "Invalid attachment type" }, { status: 400 });
+      return json({ error: "Invalid attachment type" }, { status: 400 });
     }
   }
 
@@ -101,5 +100,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ chapter
     });
   });
 
-  return NextResponse.json({ ok: true, comment: created }, { status: 201 });
-}
+  return json({ ok: true, comment: created }, { status: 201 });
+});

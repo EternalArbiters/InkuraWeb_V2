@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { headObject, makeObjectKey, presignPutObject, publicUrlForKey, safeFilename } from "@/server/storage/r2";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -106,12 +105,12 @@ async function canEditChapter(userId: string, role: string, chapterId: string) {
   return ch.work.authorId === userId;
 }
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   let body: any = {};
   try {
@@ -127,34 +126,34 @@ export async function POST(req: Request) {
   const workId = body?.workId ? String(body.workId) : undefined;
   const chapterId = body?.chapterId ? String(body.chapterId) : undefined;
 
-  if (!filename) return NextResponse.json({ error: "filename is required" }, { status: 400 });
+  if (!filename) return json({ error: "filename is required" }, { status: 400 });
 
   // Guardrails (cost & abuse prevention)
   if (!isAllowedContentType(scope, contentType)) {
-    return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
+    return json({ error: "Unsupported file type" }, { status: 400 });
   }
   const maxBytes = maxBytesForScope(scope);
   if (size && size > maxBytes) {
-    return NextResponse.json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
+    return json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
   }
 
   // Ownership checks (covers/pages)
   if (scope === "covers") {
-    if (!workId) return NextResponse.json({ error: "workId is required for covers" }, { status: 400 });
+    if (!workId) return json({ error: "workId is required for covers" }, { status: 400 });
     const ok = await canEditWork(session.user.id, me.role, workId);
-    if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!ok) return json({ error: "Forbidden" }, { status: 403 });
   }
 
   if (scope === "pages") {
     // Prefer chapterId (more strict), but allow workId fallback.
     if (chapterId) {
       const ok = await canEditChapter(session.user.id, me.role, chapterId);
-      if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      if (!ok) return json({ error: "Forbidden" }, { status: 403 });
     } else if (workId) {
       const ok = await canEditWork(session.user.id, me.role, workId);
-      if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      if (!ok) return json({ error: "Forbidden" }, { status: 403 });
     } else {
-      return NextResponse.json({ error: "chapterId or workId is required for pages" }, { status: 400 });
+      return json({ error: "chapterId or workId is required for pages" }, { status: 400 });
     }
   }
 
@@ -165,14 +164,14 @@ export async function POST(req: Request) {
 
   if (isCommentMedia) {
     sha256 = normalizeSha256(body?.sha256 ?? body?.hash);
-    if (!sha256) return NextResponse.json({ error: "sha256 is required for comment media" }, { status: 400 });
+    if (!sha256) return json({ error: "sha256 is required for comment media" }, { status: 400 });
     const ext = extFromContentType(contentType, filename);
     key = makeCommentMediaKey({ sha256, scope: scope as any, ext });
 
     // De-dup: if already exists in R2, do NOT issue a new presign.
     const exists = await headObject(key);
     if (exists.exists) {
-      return NextResponse.json({ ok: true, exists: true, sha256, key, publicUrl: publicUrlForKey(key) });
+      return json({ ok: true, exists: true, sha256, key, publicUrl: publicUrlForKey(key) });
     }
   } else {
     key = makeObjectKey({ userId: session.user.id, workId, chapterId, scope: scope as any, filename });
@@ -180,7 +179,7 @@ export async function POST(req: Request) {
 
   const signed = await presignPutObject({ key, contentType });
 
-  return NextResponse.json({
+  return json({
     ok: true,
     exists: false,
     sha256,
@@ -188,4 +187,4 @@ export async function POST(req: Request) {
     key: signed.key,
     publicUrl: signed.publicUrl,
   });
-}
+});

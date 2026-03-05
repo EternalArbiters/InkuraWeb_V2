@@ -21,4 +21,9 @@ Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
    - aturan folder `server/` vs `lib/`
    - marker `server-only` / `client-only`
 
+
+6) `04-api-route-helpers.md`
+   - helper & konvensi untuk Next.js route handlers (API)
+   - error handling konsisten via `apiRoute(...)`
+
 Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.

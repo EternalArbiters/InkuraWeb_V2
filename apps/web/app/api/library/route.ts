@@ -1,14 +1,13 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export const GET = apiRoute(async () => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const [bookmarks, progress, favorites, lists] = await Promise.all([
@@ -98,6 +97,6 @@ export async function GET() {
     }),
   ]);
 
-  return NextResponse.json({ bookmarks, progress, favorites, lists });
+  return json({ bookmarks, progress, favorites, lists });
 
-}
+});

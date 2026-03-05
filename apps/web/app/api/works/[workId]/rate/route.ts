@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 function clampRating(v: number) {
   if (!Number.isFinite(v)) return null;
@@ -10,23 +9,23 @@ function clampRating(v: number) {
   return n;
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ workId: string }> }) {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
   const value = clampRating(Number(body?.value));
   if (!value) {
-    return NextResponse.json({ error: "value must be 1..5" }, { status: 400 });
+    return json({ error: "value must be 1..5" }, { status: 400 });
   }
 
   const userId = session.user.id;
 
   const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true } });
-  if (!work) return NextResponse.json({ error: "Work not found" }, { status: 404 });
+  if (!work) return json({ error: "Work not found" }, { status: 404 });
 
   try {
     await prisma.workRating.upsert({
@@ -49,9 +48,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ workId:
       data: { ratingAvg, ratingCount },
     });
 
-    return NextResponse.json({ ok: true, myRating: value, ratingAvg, ratingCount });
+    return json({ ok: true, myRating: value, ratingAvg, ratingCount });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

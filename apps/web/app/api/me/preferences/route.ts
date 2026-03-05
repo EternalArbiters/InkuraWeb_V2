@@ -1,15 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { parseJsonStringArray, stringifyJsonStringArray } from "@/lib/prefs";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export const GET = apiRoute(async () => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
@@ -25,9 +24,9 @@ export async function GET() {
     },
   });
 
-  if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!user) return json({ error: "Not found" }, { status: 404 });
 
-  return NextResponse.json({
+  return json({
     prefs: {
       adultConfirmed: user.adultConfirmed,
       deviantLoveConfirmed: user.deviantLoveConfirmed,
@@ -37,12 +36,12 @@ export async function GET() {
       blockedDeviantLoveIds: user.blockedDeviantLove.map((d) => d.id),
     },
   });
-}
+});
 
-export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
+export const PATCH = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -70,7 +69,7 @@ export async function PATCH(req: Request) {
 
   // Cannot enable deviant love without adult gate.
   if (nextDeviant && !nextAdult) {
-    return NextResponse.json({ error: "Deviant Love requires 18+ confirmation" }, { status: 400 });
+    return json({ error: "Deviant Love requires 18+ confirmation" }, { status: 400 });
   }
 
   if (adultConfirmed !== undefined) data.adultConfirmed = nextAdult;
@@ -86,5 +85,5 @@ export async function PATCH(req: Request) {
 
   await prisma.user.update({ where: { id: session.user.id }, data });
 
-  return NextResponse.json({ ok: true });
-}
+  return json({ ok: true });
+});

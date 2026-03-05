@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import { requireUser } from "@/server/auth/requireUser";
 import { isAdminEmail } from "@/server/auth/adminEmail";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export const GET = apiRoute(async () => {
   try {
     const { me } = await requireUser();
     const isAdmin = me.role === "ADMIN" && isAdminEmail((me as any).email);
@@ -14,8 +14,8 @@ export async function GET() {
       ? await prisma.adminInboxReport.count({ where: { status: "OPEN", adminReadAt: null } })
       : await prisma.adminInboxReport.count({ where: { reporterId: me.id, status: "OPEN" } });
 
-    return NextResponse.json({ count });
+    return json({ count });
   } catch {
-    return NextResponse.json({ count: 0 });
+    return json({ count: 0 });
   }
-}
+});

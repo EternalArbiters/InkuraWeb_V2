@@ -1,14 +1,13 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+export const GET = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -24,13 +23,13 @@ export async function GET(req: Request) {
     },
   });
 
-  return NextResponse.json({ progress });
-}
+  return json({ progress });
+});
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
   const chapterId = String(body?.chapterId || "");
   const progress = body?.progress == null ? null : Number(body.progress);
   if (!workId || !chapterId) {
-    return NextResponse.json({ error: "workId and chapterId required" }, { status: 400 });
+    return json({ error: "workId and chapterId required" }, { status: 400 });
   }
 
   const chapter = await prisma.chapter.findUnique({
@@ -46,7 +45,7 @@ export async function POST(req: Request) {
     select: { id: true, workId: true },
   });
   if (!chapter || chapter.workId !== workId) {
-    return NextResponse.json({ error: "Chapter mismatch" }, { status: 400 });
+    return json({ error: "Chapter mismatch" }, { status: 400 });
   }
 
   await prisma.readingProgress.upsert({
@@ -64,5 +63,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true });
-}
+  return json({ ok: true });
+});

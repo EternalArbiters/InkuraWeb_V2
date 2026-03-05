@@ -1,16 +1,15 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 type TargetType = "WORK" | "CHAPTER";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export const GET = apiRoute(async () => {
+  const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   const reports = await prisma.report.findMany({
@@ -66,11 +65,11 @@ export async function GET() {
     })
   );
 
-  return NextResponse.json({
+  return json({
     ok: true,
     reports: reports.map((r) => ({
       ...r,
       comment: commentMap.get(r.targetId) || null,
     })),
   });
-}
+});

@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const body = await req.json();
     const name = (body?.name ?? "").trim();
@@ -15,11 +15,11 @@ export async function POST(req: Request) {
     const password = body?.password as string;
 
     if (!username || !email || !password) {
-      return NextResponse.json({ error: "username, email, and password are required" }, { status: 400 });
+      return json({ error: "username, email, and password are required" }, { status: 400 });
     }
 
     if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+      return json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
     const existing = await prisma.user.findFirst({
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     });
 
     if (existing) {
-      return NextResponse.json({ error: "Email or username already in use" }, { status: 409 });
+      return json({ error: "Email or username already in use" }, { status: 409 });
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -51,9 +51,9 @@ export async function POST(req: Request) {
       select: { id: true, email: true, username: true },
     });
 
-    return NextResponse.json({ ok: true, user }, { status: 201 });
+    return json({ ok: true, user }, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

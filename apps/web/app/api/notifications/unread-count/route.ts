@@ -1,13 +1,12 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ count: 0 });
+export const GET = apiRoute(async () => {
+  const session = await getSession();
+  if (!session?.user?.id) return json({ count: 0 });
   const count = await prisma.notification.count({ where: { userId: session.user.id, isRead: false } });
-  return NextResponse.json({ count });
-}
+  return json({ count });
+});

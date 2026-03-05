@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { parseJsonStringArray } from "@/lib/prefs";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -46,7 +45,7 @@ function legacyDeviantGenreSlugs() {
 }
 
 async function getViewerWithPrefs() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) return null;
 
   const user = await prisma.user.findUnique({
@@ -77,7 +76,7 @@ async function getViewerWithPrefs() {
   };
 }
 
-export async function GET(req: Request) {
+export const GET = apiRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
 
   // Basic
@@ -372,7 +371,7 @@ export async function GET(req: Request) {
   }
 
 
-  return NextResponse.json({
+  return json({
     works: worksWithViewer,
     viewer: viewer
       ? {
@@ -384,4 +383,4 @@ export async function GET(req: Request) {
         }
       : null,
   });
-}
+});

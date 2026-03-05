@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import bcrypt from "bcryptjs";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({} as any));
     const token = String(body?.token || "").trim();
     const password = String(body?.password || "");
 
     if (!token || !password) {
-      return NextResponse.json({ error: "token and password are required" }, { status: 400 });
+      return json({ error: "token and password are required" }, { status: 400 });
     }
     if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+      return json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
     const rec = await prisma.passwordResetToken.findUnique({
@@ -23,13 +23,13 @@ export async function POST(req: Request) {
     });
 
     if (!rec) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+      return json({ error: "Invalid token" }, { status: 400 });
     }
     if (rec.usedAt) {
-      return NextResponse.json({ error: "Token already used" }, { status: 400 });
+      return json({ error: "Token already used" }, { status: 400 });
     }
     if (rec.expiresAt.getTime() < Date.now()) {
-      return NextResponse.json({ error: "Token expired" }, { status: 400 });
+      return json({ error: "Token expired" }, { status: 400 });
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -40,9 +40,9 @@ export async function POST(req: Request) {
       prisma.passwordResetToken.deleteMany({ where: { userId: rec.userId, NOT: { token } } }),
     ]);
 
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

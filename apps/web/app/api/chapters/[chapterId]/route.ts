@@ -1,13 +1,12 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 async function getViewer() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -16,7 +15,7 @@ async function getViewer() {
   return user;
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
 
   const chapter = await prisma.chapter.findUnique({
@@ -59,7 +58,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
   });
 
   if (!chapter || chapter.status !== "PUBLISHED" || chapter.work.status !== "PUBLISHED") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return json({ error: "Not found" }, { status: 404 });
   }
 
   const viewer = await getViewer();
@@ -79,7 +78,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
   const requiresDeviant = (hasDeviantTags || hasLegacyDeviantGenre) && !canViewDeviantLove;
 
   if (requiresMature || requiresDeviant) {
-    return NextResponse.json({
+    return json({
       gated: true,
       gateReason: requiresMature && requiresDeviant ? "BOTH" : requiresDeviant ? "DEVIANT_LOVE" : "MATURE",
       viewer: viewer
@@ -114,7 +113,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
     });
   }
 
-  return NextResponse.json({
+  return json({
     gated: false,
     viewer: viewer
       ? {
@@ -149,4 +148,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ chapter
       chapters: chapter.work.chapters,
     },
   });
-}
+});

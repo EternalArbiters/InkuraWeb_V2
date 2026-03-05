@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import { uniqueDeviantLoveCatalog } from "@/lib/deviantLoveCatalog";
 import { slugify } from "@/lib/slugify";
 import { getActiveDeviantLoveTagsBase } from "@/server/cache/taxonomy";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ async function ensureDeviantLoveTagsExist() {
   }
 }
 
-export async function GET(req: Request) {
+export const GET = apiRoute(async (req: Request) => {
   // Ensure base tags exist for older DBs.
   await ensureDeviantLoveTagsExist();
 
@@ -47,7 +47,7 @@ export async function GET(req: Request) {
 
   const deviantLoveTags = filtered.slice(0, take).map((t) => ({ id: t.id, name: t.name, slug: t.slug }));
 
-  return NextResponse.json(
+  return json(
     { deviantLoveTags },
     {
       headers: {
@@ -55,4 +55,4 @@ export async function GET(req: Request) {
       },
     }
   );
-}
+});

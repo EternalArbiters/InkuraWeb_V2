@@ -1,15 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function POST(_req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const chapter = await prisma.chapter.findUnique({
@@ -17,7 +16,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ chapte
     select: { id: true, status: true, work: { select: { status: true } } },
   });
   if (!chapter || chapter.status !== "PUBLISHED" || chapter.work.status !== "PUBLISHED") {
-    return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+    return json({ error: "Chapter not found" }, { status: 404 });
   }
 
   const userId = session.user.id;
@@ -47,9 +46,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ chapte
       return { liked: true, likeCount: updated.likeCount };
     });
 
-    return NextResponse.json({ ok: true, ...result });
+    return json({ ok: true, ...result });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

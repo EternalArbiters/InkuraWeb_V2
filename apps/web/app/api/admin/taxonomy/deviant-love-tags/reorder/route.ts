@@ -1,20 +1,19 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prisma";
 import { adminGuard, bulkSortOrderUpdateSql, getClientMeta, safeJson } from "../../_shared";
 import { revalidateTag } from "next/cache";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+export const POST = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
-  if (guard instanceof NextResponse) return guard;
   const { adminId } = guard;
 
   const body = await safeJson(req);
   const ids: string[] = Array.isArray(body?.ids) ? body.ids.map((x: any) => String(x)) : [];
-  if (!ids.length) return NextResponse.json({ error: "ids is required" }, { status: 400 });
+  if (!ids.length) return json({ error: "ids is required" }, { status: 400 });
   const uniq = new Set(ids);
-  if (uniq.size !== ids.length) return NextResponse.json({ error: "ids must be unique" }, { status: 400 });
+  if (uniq.size !== ids.length) return json({ error: "ids must be unique" }, { status: 400 });
   const { ip, userAgent } = getClientMeta(req);
 
   try {
@@ -42,10 +41,10 @@ export async function POST(req: Request) {
     const result = pairs;
 
     revalidateTag("taxonomy");
-    return NextResponse.json({ ok: true, items: result });
+    return json({ ok: true, items: result });
   } catch (e: any) {
     console.error("[taxonomy][deviant-love-tags][reorder] failed", e);
     const msg = String(e?.message || "").trim();
-    return NextResponse.json({ error: msg ? `Failed to reorder: ${msg}` : "Failed to reorder" }, { status: 500 });
+    return json({ error: msg ? `Failed to reorder: ${msg}` : "Failed to reorder" }, { status: 500 });
   }
-}
+});

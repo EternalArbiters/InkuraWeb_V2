@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { deletePublicUpload } from "@/server/uploads/upload";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -28,13 +27,13 @@ function isOwnerOrAdmin(role: string, userId: string, ownerId: string) {
   return role === "ADMIN" || userId === ownerId;
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ pageId: string }> }) {
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
   const { pageId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getMe(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const page = await prisma.comicPage.findUnique({
     where: { id: pageId },
@@ -47,9 +46,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ page
     },
   });
 
-  if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!page) return json({ error: "Not found" }, { status: 404 });
   if (!isOwnerOrAdmin(me.role, session.user.id, page.chapter.work.authorId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   await prisma.comicPage.delete({ where: { id: pageId } });
@@ -60,34 +59,34 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ page
 
   await renumberChapterPages(page.chapterId);
 
-  return NextResponse.json({ ok: true });
-}
+  return json({ ok: true });
+});
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ pageId: string }> }) {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
   const { pageId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getMe(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({} as any));
   const order = typeof body?.order === "number" ? body.order : parseInt(String(body?.order || ""), 10);
 
-  if (!order || order < 1) return NextResponse.json({ error: "Invalid order" }, { status: 400 });
+  if (!order || order < 1) return json({ error: "Invalid order" }, { status: 400 });
 
   const page = await prisma.comicPage.findUnique({
     where: { id: pageId },
     select: { id: true, chapterId: true, chapter: { select: { work: { select: { authorId: true } } } } },
   });
 
-  if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!page) return json({ error: "Not found" }, { status: 404 });
   if (!isOwnerOrAdmin(me.role, session.user.id, page.chapter.work.authorId)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return json({ error: "Forbidden" }, { status: 403 });
   }
 
   await prisma.comicPage.update({ where: { id: pageId }, data: { order } });
   await renumberChapterPages(page.chapterId);
 
-  return NextResponse.json({ ok: true });
-}
+  return json({ ok: true });
+});

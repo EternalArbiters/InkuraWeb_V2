@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -23,7 +22,7 @@ function cleanText(v: unknown, max = 5000) {
 }
 
 async function getViewer() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -85,12 +84,12 @@ function safeSort(v: unknown): SortMode {
   return "helpful";
 }
 
-export async function GET(req: Request, { params }: { params: Promise<{ workId: string }> }) {
+export const GET = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const url = new URL(req.url);
 
   const gate = await ensureCanViewWork(workId);
-  if (!gate.ok) return NextResponse.json(gate.payload, { status: gate.status });
+  if (!gate.ok) return json(gate.payload, { status: gate.status });
 
   const viewer = gate.viewer;
   const sort = safeSort(url.searchParams.get("sort"));
@@ -133,7 +132,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ workId: 
     myReviewId = mine?.id ?? null;
   }
 
-  return NextResponse.json({
+  return json({
     ok: true,
     sort,
     myReviewId,
@@ -151,15 +150,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ workId: 
       isMine: viewer?.id ? r.userId === viewer.id : false,
     })),
   });
-}
+});
 
-export async function POST(req: Request, { params }: { params: Promise<{ workId: string }> }) {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const gate = await ensureCanViewWork(workId);
-  if (!gate.ok) return NextResponse.json(gate.payload, { status: gate.status });
+  if (!gate.ok) return json(gate.payload, { status: gate.status });
 
   const bodyJson = await req.json().catch(() => ({} as any));
   const rating = clampRating(Number(bodyJson?.rating));
@@ -167,8 +166,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ workId:
   const body = cleanText(bodyJson?.body, 10000);
   const isSpoiler = !!bodyJson?.isSpoiler;
 
-  if (!rating) return NextResponse.json({ error: "rating must be 1..5" }, { status: 400 });
-  if (!body) return NextResponse.json({ error: "body is required" }, { status: 400 });
+  if (!rating) return json({ error: "rating must be 1..5" }, { status: 400 });
+  if (!body) return json({ error: "body is required" }, { status: 400 });
 
   const userId = session.user.id;
 
@@ -202,9 +201,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ workId:
       return { review, ratingAvg, ratingCount };
     });
 
-    return NextResponse.json({ ok: true, review: result.review, ratingAvg: result.ratingAvg, ratingCount: result.ratingCount });
+    return json({ ok: true, review: result.review, ratingAvg: result.ratingAvg, ratingCount: result.ratingCount });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

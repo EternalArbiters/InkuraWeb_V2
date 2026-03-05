@@ -1,15 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { slugify } from "@/lib/slugify";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export const GET = apiRoute(async () => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const lists = await prisma.readingList.findMany({
@@ -27,13 +26,13 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json({ lists });
-}
+  return json({ lists });
+});
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+export const POST = apiRoute(async (req: Request) => {
+  const session = await getSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -42,7 +41,7 @@ export async function POST(req: Request) {
   const isPublic = !!body?.isPublic;
 
   if (!title) {
-    return NextResponse.json({ error: "title required" }, { status: 400 });
+    return json({ error: "title required" }, { status: 400 });
   }
 
   const baseSlug = slugify(title) || "list";
@@ -66,5 +65,5 @@ export async function POST(req: Request) {
     include: { _count: { select: { items: true } } },
   });
 
-  return NextResponse.json({ ok: true, list }, { status: 201 });
-}
+  return json({ ok: true, list }, { status: 201 });
+});

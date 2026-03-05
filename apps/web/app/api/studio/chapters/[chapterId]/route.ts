@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 import { deletePublicUpload } from "@/server/uploads/upload";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -12,7 +11,7 @@ async function getCreator(sessionUserId: string) {
 }
 
 function badRequest(msg: string) {
-  return NextResponse.json({ error: msg }, { status: 400 });
+  return json({ error: msg }, { status: 400 });
 }
 
 function safeJsonArray(v: unknown): string[] {
@@ -53,32 +52,32 @@ async function loadChapterForEdit(userId: string, role: string, chapterId: strin
   return { kind: "ok" as const, chapter };
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const res = await loadChapterForEdit(session.user.id, me.role, chapterId);
-  if (res.kind === "not_found") return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (res.kind === "forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (res.kind === "not_found") return json({ error: "Not found" }, { status: 404 });
+  if (res.kind === "forbidden") return json({ error: "Forbidden" }, { status: 403 });
 
-  return NextResponse.json({ chapter: res.chapter });
-}
+  return json({ chapter: res.chapter });
+});
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ chapterId: string }> }) {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getCreator(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const owned = await loadChapterForEdit(session.user.id, me.role, chapterId);
-  if (owned.kind === "not_found") return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
-  if (owned.kind === "forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (owned.kind === "not_found") return json({ error: "Chapter not found" }, { status: 404 });
+  if (owned.kind === "forbidden") return json({ error: "Forbidden" }, { status: 403 });
 
   try {
     const body = await req.json().catch(() => ({} as any));
@@ -152,9 +151,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ chapte
       await notifyNewChapter({ workId: updated.workId, chapterId: updated.id, actorId: session.user.id });
     }
 
-    return NextResponse.json({ ok: true, chapter: updated });
+    return json({ ok: true, chapter: updated });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});

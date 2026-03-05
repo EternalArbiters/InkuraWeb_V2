@@ -1,14 +1,13 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { publicUrlForKey } from "@/server/uploads/upload";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 async function getViewer() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -33,7 +32,7 @@ function resolveChapterThumb(ch: any) {
   return stablePick(String(ch.id), candidates);
 }
 
-export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
 
   const viewer = await getViewer();
@@ -103,7 +102,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   });
 
   if (!work || work.status !== "PUBLISHED") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return json({ error: "Not found" }, { status: 404 });
   }
 
   const isOwner = !!viewer?.id && viewer.id === work.authorId;
@@ -117,7 +116,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   const requiresDeviantGate = (hasDeviantTags || hasLegacyDeviantGenre) && !canViewDeviantLove;
 
   if (requiresMatureGate || requiresDeviantGate) {
-    return NextResponse.json({
+    return json({
       gated: true,
       gateReason: requiresMatureGate && requiresDeviantGate ? "BOTH" : requiresDeviantGate ? "DEVIANT_LOVE" : "MATURE",
       viewer: viewer
@@ -183,7 +182,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     chapters: visibleChapters,
   };
 
-  return NextResponse.json({
+  return json({
     gated: false,
     viewer: viewer
       ? {
@@ -203,4 +202,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     },
     work: workOut,
   });
-}
+});

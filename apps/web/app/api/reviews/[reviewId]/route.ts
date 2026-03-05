@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/server/db/prisma";
-import { authOptions } from "@/server/auth/options";
+import { getSession } from "@/server/auth/session";
+import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -23,28 +22,28 @@ async function getMe(userId: string) {
   return prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ reviewId: string }> }) {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getMe(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const existing = await prisma.review.findUnique({ where: { id: reviewId }, select: { id: true, userId: true, workId: true, rating: true } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (me.role !== "ADMIN" && existing.userId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!existing) return json({ error: "Not found" }, { status: 404 });
+  if (me.role !== "ADMIN" && existing.userId !== me.id) return json({ error: "Forbidden" }, { status: 403 });
 
   const bodyJson = await req.json().catch(() => ({} as any));
 
   const ratingMaybe = bodyJson?.rating !== undefined ? clampRating(Number(bodyJson.rating)) : null;
-  if (bodyJson?.rating !== undefined && !ratingMaybe) return NextResponse.json({ error: "rating must be 1..5" }, { status: 400 });
+  if (bodyJson?.rating !== undefined && !ratingMaybe) return json({ error: "rating must be 1..5" }, { status: 400 });
 
   const title = bodyJson?.title !== undefined ? (cleanText(bodyJson.title, 120) || null) : undefined;
   const body = bodyJson?.body !== undefined ? cleanText(bodyJson.body, 10000) : undefined;
   const isSpoiler = bodyJson?.isSpoiler !== undefined ? !!bodyJson.isSpoiler : undefined;
 
-  if (bodyJson?.body !== undefined && !body) return NextResponse.json({ error: "body is required" }, { status: 400 });
+  if (bodyJson?.body !== undefined && !body) return json({ error: "body is required" }, { status: 400 });
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -84,24 +83,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ review
       return updated;
     });
 
-    return NextResponse.json({ ok: true, review: result });
+    return json({ ok: true, review: result });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ reviewId: string }> }) {
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
   const me = await getMe(session.user.id);
-  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
   const existing = await prisma.review.findUnique({ where: { id: reviewId }, select: { id: true, userId: true, workId: true } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (me.role !== "ADMIN" && existing.userId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!existing) return json({ error: "Not found" }, { status: 404 });
+  if (me.role !== "ADMIN" && existing.userId !== me.id) return json({ error: "Forbidden" }, { status: 403 });
 
   try {
     await prisma.review.delete({ where: { id: reviewId } });
@@ -109,9 +108,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ revi
     // NOTE: We intentionally keep WorkRating as-is; ratings and reviews are related but not identical.
     // (The user can adjust rating separately via RatingStars.)
 
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return json({ error: "Internal error" }, { status: 500 });
   }
-}
+});
