@@ -10,12 +10,7 @@
     "build": "npm --workspace apps/web run build",
     "verify": "npm --workspace apps/web run verify",
     "sanity:db": "npm --workspace apps/web run sanity:db",
-    "dev:legacy": "npx concurrently -n api,web \"npm --workspace apps/api run dev\" \"npm --workspace apps/web run dev\"",
-    "build:legacy": "npm --workspace apps/api run build && npm --workspace apps/web run build",
     "vercel-build": "npm --workspace apps/web run vercel-build",
     "db:taxonomy-alpha": "npm --workspace apps/web run db:taxonomy-alpha"
-  },
-  "devDependencies": {
-    "concurrently": "^9.0.0"
   }
 }

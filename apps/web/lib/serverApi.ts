@@ -45,7 +45,7 @@ async function getCookieHeader(): Promise<string> {
 
 /**
  * Server-side fetch helper.
- * - Uses relative URL ("/api/...") so it goes through apps/web rewrites to apps/api.
+ * - Uses relative URL ("/api/...") against the current origin (apps/web).
  * - Forces no-store to avoid stale auth-dependent cache.
  */
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {

@@ -1,6 +1,6 @@
 import "server-only";
 
-// Copied from apps/api/lib/auth.ts (v12) and hosted in apps/web for v13.
+// Originally copied from legacy v12 auth (apps/api was removed in v13+ cleanup).
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";

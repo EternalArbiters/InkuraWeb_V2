@@ -1,4 +1,2 @@
 # speed up uploads
-apps/api/**
-apps/web/prisma/migrations_sqlite_backup/**
 **/*.zip

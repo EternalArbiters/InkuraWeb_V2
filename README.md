@@ -84,7 +84,7 @@ Tujuan: saat delete/replace asset, server bisa delete object R2 dengan aman.
   - `server/` → server-only services (R2, dll)
   - `prisma/` → schema + migrations + seed
 
-> Folder `apps/api` masih ada sebagai **legacy** (bisa dihapus kalau sudah yakin). v13 **tidak membutuhkan** deploy `apps/api`.
+> Folder `apps/api` (legacy) **sudah dihapus** di versi repo yang dirapikan ini. v13 memang **tidak membutuhkan** deploy backend terpisah.
 
 ---
 
