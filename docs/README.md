@@ -12,4 +12,9 @@ Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
 3) `01-repo-structure.md`
    - struktur folder repo, konvensi, dan tooling yang dipakai
 
+4) `02-code-style.md`
+   - formatting (Prettier)
+   - lint (Next/ESLint)
+   - conventions import & struktur server/client
+
 Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.

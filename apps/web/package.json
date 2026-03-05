@@ -26,7 +26,11 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "deploy:check-env": "node scripts/check-env.js",
     "vercel-build": "node scripts/vercel-build.js",
-    "db:taxonomy-alpha": "tsx prisma/reorderTaxonomyAlphabetical.ts"
+    "db:taxonomy-alpha": "tsx prisma/reorderTaxonomyAlphabetical.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:fix": "next lint --fix",
+    "check": "npm run format:check && npm run lint && npm run typecheck"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -74,6 +78,10 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
-    "prisma": "6.19.2"
+    "prisma": "6.19.2",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "15.5.12",
+    "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.6.0"
   }
 }

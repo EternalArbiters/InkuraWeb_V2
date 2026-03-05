@@ -11,6 +11,11 @@
     "verify": "npm --workspace apps/web run verify",
     "sanity:db": "npm --workspace apps/web run sanity:db",
     "vercel-build": "npm --workspace apps/web run vercel-build",
-    "db:taxonomy-alpha": "npm --workspace apps/web run db:taxonomy-alpha"
+    "db:taxonomy-alpha": "npm --workspace apps/web run db:taxonomy-alpha",
+    "lint": "npm --workspace apps/web run lint",
+    "lint:fix": "npm --workspace apps/web run lint:fix",
+    "format": "npm --workspace apps/web run format",
+    "format:check": "npm --workspace apps/web run format:check",
+    "check": "npm --workspace apps/web run check"
   }
 }

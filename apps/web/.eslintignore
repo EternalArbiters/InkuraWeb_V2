@@ -1,0 +1,9 @@
+# Next build output
+.next
+out
+
+# Dependencies
+node_modules
+
+# Generated / vendor
+prisma/generated

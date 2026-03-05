@@ -147,6 +147,18 @@ npm run verify
 Checklist regresi manual:
 - `docs/REGRESSION_CHECKLIST.md`
 
+### 6) Code style (format/lint)
+
+Perintah berguna saat mulai refactor/rapihin:
+
+```bash
+npm run format
+npm run lint
+npm run check
+```
+
+Detailnya ada di: `docs/02-code-style.md`
+
 ---
 
 ## Deploy ke Vercel (Hobby)
@@ -176,4 +188,3 @@ Set Env Vars (Production + Preview):
 - Semua endpoint mutasi harus cek:
   - `ADMIN` **atau** owner (authorId)
 - Presign upload juga harus cek ownership work/chapter.
-

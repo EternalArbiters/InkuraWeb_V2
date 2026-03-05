@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+
+# Next.js
+.next
+out
+
+# Builds
+build
+dist
+coverage
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Vercel
+.vercel
+
+# Lockfiles (keep stable unless intentionally updated)
+package-lock.json
+
+# Prisma generated artifacts
+apps/web/prisma/generated
+
+# OS/Editor noise
+.DS_Store
