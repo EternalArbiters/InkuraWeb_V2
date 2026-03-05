@@ -99,7 +99,7 @@ npm install
 ### 2) ENV
 
 Copy:
-- `apps/web/.env.example` → `apps/web/.env`
+- `apps/web/.env.example` → `apps/web/.env.local`
 
 Isi minimal:
 - `NEXTAUTH_URL`
@@ -123,8 +123,19 @@ npm run dev
 Web: http://localhost:3000
 
 **Seed default admin (dev):**
-- Email: `admin@inkura.local`
+- Email: `noelephgoddess.game@gmail.com`
 - Password: `admin123`
+
+> Catatan: di versi ini, role **ADMIN** di-*enforce* berdasarkan email (lihat `apps/web/server/auth/adminEmail.ts`).
+
+### 5) Verify (recommended sebelum/ sesudah perubahan besar)
+
+```bash
+npm run verify
+```
+
+Checklist regresi manual:
+- `docs/REGRESSION_CHECKLIST.md`
 
 ---
 

@@ -5,3 +5,4 @@ apps/**/.next
 dist
 .env
 .env.*
+!.env.example
