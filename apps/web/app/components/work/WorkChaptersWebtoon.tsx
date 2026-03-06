@@ -103,12 +103,12 @@ export default function WorkChaptersWebtoon({
                 key={c.id}
                 href={`/w/${slug}/read/${c.id}`}
                 className={
-                  "flex gap-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/20 hover:bg-gray-50 dark:hover:bg-gray-900 transition p-3 rounded-xl " +
+                  "flex min-h-[90px] items-stretch gap-3 overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/20 hover:bg-gray-50 dark:hover:bg-gray-900 transition p-3 rounded-xl " +
                   (read ? "opacity-60" : "")
                 }
               >
-                <div className="relative w-[120px] shrink-0">
-                  <div className="relative aspect-[3/2] bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-lg">
+                <div className="relative w-[120px] shrink-0 self-stretch">
+                  <div className="relative h-full bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-lg">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -133,10 +133,10 @@ export default function WorkChaptersWebtoon({
                   </div>
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-extrabold truncate">Chapter {c.number}</div>
-                  <div className="mt-0.5 text-sm text-gray-800 dark:text-gray-100 line-clamp-2">{c.title}</div>
-                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                <div className="min-w-0 flex-1 self-center">
+                  <div className="text-sm font-extrabold leading-tight truncate">Chapter {c.number}</div>
+                  <div className="mt-0.5 text-sm leading-tight text-gray-800 dark:text-gray-100 truncate">{c.title}</div>
+                  <div className="mt-1 text-xs leading-tight text-gray-600 dark:text-gray-300 flex items-center gap-2">
                     {c.isMature ? <span className="px-2 py-1 rounded-full bg-black/70 text-white">18+</span> : null}
                     {c.publishedAt ? <span>{new Date(c.publishedAt).toLocaleDateString()}</span> : null}
                     {c.status && c.status !== "PUBLISHED" ? (
