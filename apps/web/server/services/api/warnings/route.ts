@@ -3,7 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { NSFW_TAG_CATALOG, slugifyTag } from "@/lib/warningCatalog";
 import { getActiveWarningTagsBase } from "@/server/cache/taxonomy";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ async function ensureNsfwTagsExist() {
   }
 }
 
-export const GET = async (req: Request) => {
+export const GET = apiRoute(async (req: Request) => {
   // Make the endpoint robust for existing DBs that still have NSFW tags in genres.
   // This ensures NSFW tags are present in WarningTag without requiring a manual reseed.
   await ensureNsfwTagsExist();
@@ -61,4 +61,4 @@ export const GET = async (req: Request) => {
       },
     }
   );
-};
+});

@@ -2,7 +2,7 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
 function clampRating(v: number) {
   if (!Number.isFinite(v)) return null;
@@ -11,7 +11,7 @@ function clampRating(v: number) {
   return n;
 }
 
-export const POST = async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const session = await getSession();
   if (!session?.user?.id) {
@@ -55,4 +55,4 @@ export const POST = async (req: Request, { params }: { params: Promise<{ workId:
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

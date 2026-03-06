@@ -6,8 +6,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function canModerate(session: any, chapterId: string) {
   if (!session?.user?.id) return false;
@@ -16,7 +17,7 @@ async function canModerate(session: any, chapterId: string) {
   return !!ch && ch.work.authorId === session.user.id;
 }
 
-export const GET = async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
   const session = await getSession();
   const canMod = await canModerate(session, chapterId);
@@ -33,8 +34,9 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ chapter
   });
 
   return json({ ok: true, canModerate: canMod, comments });
-};
-export const POST = async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
+});
+
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -96,4 +98,4 @@ export const POST = async (req: Request, { params }: { params: Promise<{ chapter
   });
 
   return json({ ok: true, comment: created }, { status: 201 });
-};
+});

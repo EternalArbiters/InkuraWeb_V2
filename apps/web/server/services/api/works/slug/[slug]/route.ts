@@ -4,8 +4,9 @@ import prisma from "@/server/db/prisma";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { publicUrlForKey } from "@/server/uploads/upload";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function getViewer() {
   const session = await getSession();
@@ -33,7 +34,7 @@ function resolveChapterThumb(ch: any) {
   return stablePick(String(ch.id), candidates);
 }
 
-export const GET = async (_req: Request, { params }: { params: Promise<{ slug: string }> }) => {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
 
   const viewer = await getViewer();
@@ -203,4 +204,4 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ slug: s
     },
     work: workOut,
   });
-};
+});

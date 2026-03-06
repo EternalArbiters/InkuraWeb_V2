@@ -3,10 +3,11 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ error: "Unauthorized" }, { status: 401 });
@@ -28,8 +29,9 @@ export const GET = async () => {
   });
 
   return json({ lists });
-};
-export const POST = async (req: Request) => {
+});
+
+export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ error: "Unauthorized" }, { status: 401 });
@@ -66,4 +68,4 @@ export const POST = async (req: Request) => {
   });
 
   return json({ ok: true, list }, { status: 201 });
-};
+});

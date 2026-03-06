@@ -4,8 +4,9 @@ import prisma from "@/server/db/prisma";
 import { chapterListItemSelect, comicPageSelect, nameSlugSelect, userPublicSelect } from "@/server/db/selectors";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function getViewer() {
   const session = await getSession();
@@ -17,7 +18,7 @@ async function getViewer() {
   return user;
 }
 
-export const GET = async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
 
   const chapter = await prisma.chapter.findUnique({
@@ -150,4 +151,4 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ chapter
       chapters: chapter.work.chapters,
     },
   });
-};
+});

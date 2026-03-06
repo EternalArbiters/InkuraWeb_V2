@@ -3,8 +3,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { userPublicSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 function clampRating(v: number) {
   if (!Number.isFinite(v)) return null;
@@ -24,7 +25,7 @@ async function getMe(userId: string) {
   return prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
 }
 
-export const PATCH = async (req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -90,8 +91,9 @@ export const PATCH = async (req: Request, { params }: { params: Promise<{ review
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
-export const DELETE = async (_req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
+});
+
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -114,4 +116,4 @@ export const DELETE = async (_req: Request, { params }: { params: Promise<{ revi
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

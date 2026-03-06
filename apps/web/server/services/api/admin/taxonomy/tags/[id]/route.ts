@@ -4,13 +4,14 @@ import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { adminGuard, asOptionalBool, asString, getClientMeta, isUniqueViolation, safeJson, toJsonSafe } from "../../_shared";
 import { revalidateTag } from "next/cache";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 const NAME_MAX = 60;
 const SLUG_MAX = 80;
 
-export const PATCH = async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+export const PATCH = apiRoute(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const guard = await adminGuard();
   const { adminId } = guard;
   const { id } = await ctx.params;
@@ -62,8 +63,9 @@ export const PATCH = async (req: Request, ctx: { params: Promise<{ id: string }>
     if (isUniqueViolation(e)) return json({ error: "Slug already exists" }, { status: 409 });
     return json({ error: "Failed to update" }, { status: 500 });
   }
-};
-export const DELETE = async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+});
+
+export const DELETE = apiRoute(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const guard = await adminGuard();
   const { adminId } = guard;
   const { id } = await ctx.params;
@@ -98,4 +100,4 @@ export const DELETE = async (req: Request, ctx: { params: Promise<{ id: string }
     if (msg === "LOCKED") return json({ error: "Locked" }, { status: 400 });
     return json({ error: "Failed to deactivate" }, { status: 500 });
   }
-};
+});

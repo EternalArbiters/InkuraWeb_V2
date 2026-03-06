@@ -2,10 +2,11 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ error: "Unauthorized" }, { status: 401 });
@@ -100,4 +101,4 @@ export const GET = async () => {
 
   return json({ bookmarks, progress, favorites, lists });
 
-};
+});

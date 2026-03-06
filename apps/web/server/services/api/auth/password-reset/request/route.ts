@@ -3,8 +3,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/server/mail/resend";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 function baseUrl() {
   return (
@@ -15,7 +16,7 @@ function baseUrl() {
   ).replace(/\/$/, "");
 }
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({} as any));
     const identifier = String(body?.identifier || "").trim();
@@ -60,4 +61,4 @@ export const POST = async (req: Request) => {
     console.error(e);
     return json({ ok: true });
   }
-};
+});

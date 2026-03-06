@@ -3,10 +3,11 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { requireUser } from "@/server/auth/requireUser";
 import { isAdminEmail } from "@/server/auth/adminEmail";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   try {
     const { me } = await requireUser();
     const isAdmin = me.role === "ADMIN" && isAdminEmail((me as any).email);
@@ -19,4 +20,4 @@ export const GET = async () => {
   } catch {
     return json({ count: 0 });
   }
-};
+});

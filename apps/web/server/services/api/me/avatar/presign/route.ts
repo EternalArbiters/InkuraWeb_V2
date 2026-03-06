@@ -3,15 +3,16 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { makeObjectKey, presignPutObject } from "@/server/storage/r2";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 function isAllowedImageType(ct: string) {
   const c = (ct || "").toLowerCase();
   return c === "image/webp" || c === "image/png" || c === "image/jpeg";
 }
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
@@ -59,4 +60,4 @@ export const POST = async (req: Request) => {
     const message = error instanceof Error && error.message ? error.message : "R2 is not configured";
     return json({ error: message }, { status: 500 });
   }
-};
+});

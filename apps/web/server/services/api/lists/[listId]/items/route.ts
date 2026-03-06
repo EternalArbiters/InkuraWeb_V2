@@ -2,8 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function getViewer() {
   const session = await getSession();
@@ -11,7 +12,7 @@ async function getViewer() {
   return prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, role: true } });
 }
 
-export const POST = async (req: Request, { params }: { params: Promise<{ listId: string }> }) => {
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
 
   const viewer = await getViewer();
@@ -60,4 +61,4 @@ export const POST = async (req: Request, { params }: { params: Promise<{ listId:
   await prisma.readingList.update({ where: { id: listId }, data: { updatedAt: new Date() } });
 
   return json({ ok: true, added: true });
-};
+});

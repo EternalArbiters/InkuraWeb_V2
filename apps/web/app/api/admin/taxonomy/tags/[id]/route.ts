@@ -1,7 +1,1 @@
-import { apiRoute } from "@/server/http";
-import { PATCH as PATCH_HANDLER, DELETE as DELETE_HANDLER } from "@/server/services/api/admin/taxonomy/tags/[id]/route";
-
-export const runtime = "nodejs";
-
-export const PATCH = apiRoute(PATCH_HANDLER);
-export const DELETE = apiRoute(DELETE_HANDLER);
+export { runtime, PATCH, DELETE } from "@/server/services/api/admin/taxonomy/tags/[id]/route";

@@ -4,8 +4,9 @@ import prisma from "@/server/db/prisma";
 import { userPublicSelect } from "@/server/db/selectors";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 type SortMode = "helpful" | "top" | "bottom" | "newest" | "oldest";
 
@@ -86,7 +87,7 @@ function safeSort(v: unknown): SortMode {
   return "helpful";
 }
 
-export const GET = async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
+export const GET = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const url = new URL(req.url);
 
@@ -152,8 +153,9 @@ export const GET = async (req: Request, { params }: { params: Promise<{ workId: 
       isMine: viewer?.id ? r.userId === viewer.id : false,
     })),
   });
-};
-export const POST = async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
+});
+
+export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -207,4 +209,4 @@ export const POST = async (req: Request, { params }: { params: Promise<{ workId:
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

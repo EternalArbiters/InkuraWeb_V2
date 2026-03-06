@@ -3,8 +3,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { deletePublicUpload } from "@/server/uploads/upload";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function renumberChapterPages(chapterId: string) {
   const pages = await prisma.comicPage.findMany({
@@ -28,7 +29,7 @@ function isOwnerOrAdmin(role: string, userId: string, ownerId: string) {
   return role === "ADMIN" || userId === ownerId;
 }
 
-export const DELETE = async (_req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
   const { pageId } = await params;
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -61,8 +62,9 @@ export const DELETE = async (_req: Request, { params }: { params: Promise<{ page
   await renumberChapterPages(page.chapterId);
 
   return json({ ok: true });
-};
-export const PATCH = async (req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
+});
+
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
   const { pageId } = await params;
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -89,4 +91,4 @@ export const PATCH = async (req: Request, { params }: { params: Promise<{ pageId
   await renumberChapterPages(page.chapterId);
 
   return json({ ok: true });
-};
+});

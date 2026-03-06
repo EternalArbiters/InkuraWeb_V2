@@ -3,10 +3,11 @@ import "server-only";
 import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const body = await req.json();
     const name = (body?.name ?? "").trim();
@@ -57,4 +58,4 @@ export const POST = async (req: Request) => {
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

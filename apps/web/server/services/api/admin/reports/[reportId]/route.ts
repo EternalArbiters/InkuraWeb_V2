@@ -2,9 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
-export const PATCH = async (req: Request, { params }: { params: Promise<{ reportId: string }> }) => {
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ reportId: string }> }) => {
   const { reportId } = await params;
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
@@ -41,4 +41,4 @@ export const PATCH = async (req: Request, { params }: { params: Promise<{ report
   });
 
   return json({ ok: true, report: updated });
-};
+});

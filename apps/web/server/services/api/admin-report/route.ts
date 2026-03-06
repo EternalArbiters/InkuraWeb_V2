@@ -3,15 +3,16 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { requireUser } from "@/server/auth/requireUser";
 import { isAdminEmail } from "@/server/auth/adminEmail";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 function clamp(s: string, max: number) {
   const t = String(s || "").trim();
   return t.length > max ? t.slice(0, max) : t;
 }
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   try {
     const { me } = await requireUser();
     const isAdmin = me.role === "ADMIN" && isAdminEmail((me as any).email);
@@ -62,8 +63,9 @@ export const GET = async () => {
   } catch {
     return json({ error: "Unauthorized" }, { status: 401 });
   }
-};
-export const POST = async (req: Request) => {
+});
+
+export const POST = apiRoute(async (req: Request) => {
   try {
     const { me } = await requireUser();
     const body = await req.json().catch(() => ({} as any));
@@ -91,4 +93,4 @@ export const POST = async (req: Request) => {
   } catch {
     return json({ error: "Unauthorized" }, { status: 401 });
   }
-};
+});

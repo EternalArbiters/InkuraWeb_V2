@@ -2,8 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 function cleanHandle(v: unknown) {
   const s = String(v || "").trim();
@@ -11,7 +12,7 @@ function cleanHandle(v: unknown) {
   return s.startsWith("@") ? s.slice(1) : s;
 }
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return json({ error: "Forbidden" }, { status: 403 });
@@ -54,4 +55,4 @@ export const POST = async (req: Request) => {
   });
 
   return json({ ok: true, notificationId: notif.id });
-};
+});

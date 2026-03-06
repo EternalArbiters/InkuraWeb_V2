@@ -1,11 +1,11 @@
 import "server-only";
 
 import { getActiveTagsBase } from "@/server/cache/taxonomy";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
 export const dynamic = "force-dynamic";
 
-export const GET = async (req: Request) => {
+export const GET = apiRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").trim();
   const take = Math.min(25, Math.max(1, parseInt(searchParams.get("take") || "20", 10) || 20));
@@ -26,4 +26,4 @@ export const GET = async (req: Request) => {
       },
     }
   );
-};
+});

@@ -2,9 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
-export const POST = async (_req: Request, { params }: { params: Promise<{ workId: string }> }) => {
+export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const session = await getSession();
   if (!session?.user?.id) {
@@ -46,4 +46,4 @@ export const POST = async (_req: Request, { params }: { params: Promise<{ workId
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

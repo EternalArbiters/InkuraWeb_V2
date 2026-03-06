@@ -2,8 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function getViewer() {
   const session = await getSession();
@@ -15,7 +16,7 @@ async function getViewer() {
   });
 }
 
-export const GET = async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
   if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -60,8 +61,9 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ listId:
   }
 
   return json({ list });
-};
-export const PATCH = async (req: Request, { params }: { params: Promise<{ listId: string }> }) => {
+});
+
+export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
   if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -97,8 +99,9 @@ export const PATCH = async (req: Request, { params }: { params: Promise<{ listId
   });
 
   return json({ ok: true, list: updated });
-};
-export const DELETE = async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
+});
+
+export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
   if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
@@ -116,4 +119,4 @@ export const DELETE = async (_req: Request, { params }: { params: Promise<{ list
 
   await prisma.readingList.delete({ where: { id: listId } });
   return json({ ok: true });
-};
+});

@@ -2,8 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 function normalizeUsername(raw: unknown) {
   return String(raw ?? "").trim().toLowerCase();
@@ -28,7 +29,7 @@ function normalizeImage(raw: unknown) {
   return v.slice(0, 500);
 }
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
@@ -50,8 +51,9 @@ export const GET = async () => {
 
   if (!me) return json({ error: "Not found" }, { status: 404 });
   return json({ profile: me });
-};
-export const PATCH = async (req: Request) => {
+});
+
+export const PATCH = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
@@ -134,4 +136,4 @@ export const PATCH = async (req: Request) => {
     console.error("[api/me/profile] PATCH error", e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

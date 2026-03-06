@@ -1,11 +1,12 @@
 import "server-only";
 
 import { getActiveGenresBase } from "@/server/cache/taxonomy";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const GET = async (req: Request) => {
+export const GET = apiRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").trim();
   const take = Math.min(200, Math.max(1, parseInt(searchParams.get("take") || "200", 10) || 200));
@@ -32,4 +33,4 @@ export const GET = async (req: Request) => {
       },
     }
   );
-};
+});

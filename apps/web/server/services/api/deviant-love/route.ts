@@ -4,8 +4,9 @@ import prisma from "@/server/db/prisma";
 import { uniqueDeviantLoveCatalog } from "@/lib/deviantLoveCatalog";
 import { slugify } from "@/lib/slugify";
 import { getActiveDeviantLoveTagsBase } from "@/server/cache/taxonomy";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 let ensured = false;
@@ -32,7 +33,7 @@ async function ensureDeviantLoveTagsExist() {
   }
 }
 
-export const GET = async (req: Request) => {
+export const GET = apiRoute(async (req: Request) => {
   // Ensure base tags exist for older DBs.
   await ensureDeviantLoveTagsExist();
 
@@ -56,4 +57,4 @@ export const GET = async (req: Request) => {
       },
     }
   );
-};
+});

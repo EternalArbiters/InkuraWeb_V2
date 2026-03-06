@@ -2,9 +2,9 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
-export const POST = async (_req: Request, { params }: { params: Promise<{ userId: string }> }) => {
+export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ userId: string }> }) => {
   const { userId } = await params;
   const session = await getSession();
   if (!session?.user?.id) {
@@ -35,4 +35,4 @@ export const POST = async (_req: Request, { params }: { params: Promise<{ userId
   });
 
   return json({ ok: true, following: true });
-};
+});

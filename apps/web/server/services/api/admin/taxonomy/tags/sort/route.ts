@@ -3,8 +3,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { adminGuard, bulkSortOrderUpdateSql, getClientMeta, safeJson } from "../../_shared";
 import { revalidateTag } from "next/cache";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 type SortBy = "alpha" | "count";
 type SortDir = "asc" | "desc";
@@ -21,7 +22,7 @@ function alphaCmp(a: string, b: string) {
   return a.localeCompare(b, undefined, { sensitivity: "base" });
 }
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
   const { adminId } = guard;
 
@@ -89,4 +90,4 @@ export const POST = async (req: Request) => {
     const msg = String(e?.message || "").trim();
     return json({ error: msg ? `Failed to sort: ${msg}` : "Failed to sort" }, { status: 500 });
   }
-};
+});

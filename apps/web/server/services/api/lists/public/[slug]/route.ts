@@ -3,8 +3,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function getViewer() {
   const session = await getSession();
@@ -16,7 +17,7 @@ async function getViewer() {
   return user;
 }
 
-export const GET = async (_req: Request, { params }: { params: Promise<{ slug: string }> }) => {
+export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
 
   const list = await prisma.readingList.findUnique({
@@ -111,4 +112,4 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ slug: s
         }
       : null,
   });
-};
+});

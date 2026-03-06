@@ -2,10 +2,11 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import bcrypt from "bcryptjs";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({} as any));
     const token = String(body?.token || "").trim();
@@ -46,4 +47,4 @@ export const POST = async (req: Request) => {
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });
   }
-};
+});

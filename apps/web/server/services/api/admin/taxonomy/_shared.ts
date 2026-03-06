@@ -1,3 +1,5 @@
+import "server-only";
+
 import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/server/auth/requireUser";
 import { asOptionalBool as _asOptionalBool, asString as _asString, getClientMeta as _getClientMeta, readJsonObject, toJsonSafe as _toJsonSafe } from "@/server/http";

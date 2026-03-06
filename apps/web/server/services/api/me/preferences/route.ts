@@ -4,10 +4,11 @@ import prisma from "@/server/db/prisma";
 import { idNameSlugSelect } from "@/server/db/selectors";
 import { parseJsonStringArray, stringifyJsonStringArray } from "@/lib/prefs";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ error: "Unauthorized" }, { status: 401 });
@@ -38,8 +39,9 @@ export const GET = async () => {
       blockedDeviantLoveIds: user.blockedDeviantLove.map((d) => d.id),
     },
   });
-};
-export const PATCH = async (req: Request) => {
+});
+
+export const PATCH = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ error: "Unauthorized" }, { status: 401 });
@@ -87,4 +89,4 @@ export const PATCH = async (req: Request) => {
   await prisma.user.update({ where: { id: session.user.id }, data });
 
   return json({ ok: true });
-};
+});

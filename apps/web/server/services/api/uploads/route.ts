@@ -3,8 +3,9 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { deleteObject } from "@/server/storage/r2";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 async function canEditWork(userId: string, role: string, workId: string) {
   if (role === "ADMIN") return true;
@@ -25,7 +26,7 @@ async function canEditChapter(userId: string, role: string, chapterId: string) {
 
 // Optional helper endpoint (v13): delete an R2 object by key.
 // NOTE: prefer to delete through specific resources (cover/page delete). This is for cleanup tools.
-export const DELETE = async (req: Request) => {
+export const DELETE = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
@@ -52,4 +53,4 @@ export const DELETE = async (req: Request) => {
 
   await deleteObject(key);
   return json({ ok: true });
-};
+});

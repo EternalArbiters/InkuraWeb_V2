@@ -3,12 +3,13 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { userPublicSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 type TargetType = "WORK" | "CHAPTER";
 
-export const GET = async () => {
+export const GET = apiRoute(async () => {
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return json({ error: "Forbidden" }, { status: 403 });
@@ -74,4 +75,4 @@ export const GET = async () => {
       comment: commentMap.get(r.targetId) || null,
     })),
   });
-};
+});

@@ -2,7 +2,7 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 import { headObject, makeObjectKey, presignPutObject, publicUrlForKey } from "@/server/storage/r2";
 import {
   extFromUploadContentType,
@@ -14,6 +14,7 @@ import {
   normalizeUploadScope,
 } from "@/server/uploads/presignRules";
 
+export const runtime = "nodejs";
 
 // NOTE (v16 prep): comment media presign supports SHA-256 de-dup keys.
 // - comment_images: image/webp|png|jpeg (2MB)
@@ -37,7 +38,7 @@ async function canEditChapter(userId: string, role: string, chapterId: string) {
   return ch.work.authorId === userId;
 }
 
-export const POST = async (req: Request) => {
+export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
@@ -119,4 +120,4 @@ export const POST = async (req: Request) => {
     key: signed.key,
     publicUrl: signed.publicUrl,
   });
-};
+});

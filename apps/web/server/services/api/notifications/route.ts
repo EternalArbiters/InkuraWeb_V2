@@ -4,9 +4,9 @@ import prisma from "@/server/db/prisma";
 import { parseCursor, parseTake, nextCursorFromRows } from "@/server/db/pagination";
 import { notificationSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
-export const GET = async (req: Request) => {
+export const GET = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ unreadCount: 0, notifications: [], nextCursor: null });
@@ -36,8 +36,9 @@ export const GET = async (req: Request) => {
   const nextCursor = nextCursorFromRows(notifications as any, take);
 
   return json({ unreadCount, notifications, nextCursor });
-};
-export const POST = async (req: Request) => {
+});
+
+export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
     return json({ error: "Unauthorized" }, { status: 401 });
@@ -65,4 +66,4 @@ export const POST = async (req: Request) => {
   });
 
   return json({ ok: true });
-};
+});

@@ -5,13 +5,14 @@ import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { adminGuard, asOptionalBool, asString, getClientMeta, isUniqueViolation, parseSearchParams, safeJson, toJsonSafe } from "../_shared";
 import { revalidateTag } from "next/cache";
-import { json } from "@/server/http";
+import { apiRoute, json } from "@/server/http";
 
+export const runtime = "nodejs";
 
 const NAME_MAX = 80;
 const SLUG_MAX = 100;
 
-export const GET = async (req: Request) => {
+export const GET = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
 
   const { q, includeInactive } = parseSearchParams(req.url);
@@ -45,8 +46,9 @@ export const GET = async (req: Request) => {
   });
 
   return json({ ok: true, items });
-};
-export const POST = async (req: Request) => {
+});
+
+export const POST = apiRoute(async (req: Request) => {
   const guard = await adminGuard();
   const { adminId } = guard;
 
@@ -98,4 +100,4 @@ export const POST = async (req: Request) => {
     if (isUniqueViolation(e)) return json({ error: "Slug already exists" }, { status: 409 });
     return json({ error: "Failed to create" }, { status: 500 });
   }
-};
+});
