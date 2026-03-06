@@ -18,12 +18,14 @@ export const POST = apiRoute(async (req: Request) => {
   const me = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true } });
   if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: any = {};
-  try {
-    body = await req.json();
-  } catch {
-    body = {};
-  }
+  const body = (await req.json().catch(() => null)) as
+    | {
+        filename?: unknown;
+        contentType?: unknown;
+        type?: unknown;
+        size?: unknown;
+      }
+    | null;
 
   const filename = String(body?.filename || "avatar").trim() || "avatar";
   const contentType = String(body?.contentType || body?.type || "").trim() || "application/octet-stream";
@@ -44,14 +46,16 @@ export const POST = apiRoute(async (req: Request) => {
     scope: "files",
     filename: `avatar-${filename}`,
   });
+
   try {
-    const uploadUrl = await presignPutObject({
+    const signed = await presignPutObject({
       key,
       contentType,
     });
 
-    return json({ ok: true, uploadUrl, key: uploadUrl.key, publicUrl: uploadUrl.publicUrl });
-  } catch (e: any) {
-    return json({ error: e?.message || "R2 is not configured" }, { status: 500 });
+    return json({ ok: true, uploadUrl: signed.uploadUrl, key: signed.key, publicUrl: signed.publicUrl });
+  } catch (error: unknown) {
+    const message = error instanceof Error && error.message ? error.message : "R2 is not configured";
+    return json({ error: message }, { status: 500 });
   }
 });

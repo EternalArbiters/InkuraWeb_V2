@@ -2,9 +2,6 @@
 
 import * as React from "react";
 
-import { presignAndUpload } from "@/lib/r2UploadClient";
-import { apiJson } from "@/server/http/apiJson";
-
 import AvatarPickerCard from "./components/AvatarPickerCard";
 import ProfileAlerts from "./components/ProfileAlerts";
 import ProfileFieldsCard from "./components/ProfileFieldsCard";
@@ -19,13 +16,92 @@ type Initial = {
   avatarZoom?: number | null;
 };
 
+type AvatarPresignResponse = {
+  uploadUrl: string;
+  publicUrl: string;
+};
+
+type ApiErrorPayload = {
+  error?: string;
+};
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "string" && error.trim()) return error;
+  return fallback;
+}
+
+async function parseResponsePayload(res: Response): Promise<unknown> {
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json().catch(() => null);
+  }
+  return res.text().catch(() => "");
+}
+
+function readApiError(payload: unknown, fallback: string) {
+  if (payload && typeof payload === "object") {
+    const error = (payload as ApiErrorPayload).error;
+    if (typeof error === "string" && error.trim()) return error;
+  }
+  return fallback;
+}
+
+async function presignAvatarUpload(file: File): Promise<AvatarPresignResponse> {
+  const res = await fetch("/api/me/avatar/presign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      contentType: file.type,
+      size: file.size,
+    }),
+  });
+
+  const payload = await parseResponsePayload(res);
+  if (!res.ok) {
+    throw new Error(readApiError(payload, "Upload failed"));
+  }
+
+  if (!payload || typeof payload !== "object") {
+    throw new Error("Upload failed");
+  }
+
+  const { uploadUrl, publicUrl } = payload as Partial<AvatarPresignResponse>;
+  if (typeof uploadUrl !== "string" || typeof publicUrl !== "string") {
+    throw new Error("Upload failed");
+  }
+
+  return { uploadUrl, publicUrl };
+}
+
+async function saveProfile(payload: {
+  name: string;
+  username: string;
+  image: string | null;
+  avatarFocusX: number;
+  avatarFocusY: number;
+  avatarZoom: number;
+}) {
+  const res = await fetch("/api/me/profile", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const responsePayload = await parseResponsePayload(res);
+  if (!res.ok) {
+    throw new Error(readApiError(responsePayload, "Failed to save"));
+  }
+}
+
 export default function ProfileForm({ initial }: { initial: Initial }) {
   const [name, setName] = React.useState(initial.name || "");
   const [username, setUsername] = React.useState(initial.username || "");
   const [image, setImage] = React.useState(initial.image || "");
 
-  const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 0.5);
-  const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 0.5);
+  const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 50);
+  const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 50);
   const [avatarZoom, setAvatarZoom] = React.useState<number>(initial.avatarZoom ?? 1);
 
   const [avatarUploading, setAvatarUploading] = React.useState(false);
@@ -42,11 +118,17 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
     setErr(null);
     setOk(null);
     try {
-      const { publicUrl } = await presignAndUpload(file, "avatar");
+      const { uploadUrl, publicUrl } = await presignAvatarUpload(file);
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: file.type ? { "Content-Type": file.type } : undefined,
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
       setImage(publicUrl);
       setOk("Avatar uploaded");
-    } catch (e: any) {
-      setErr(String(e?.message || e || "Upload failed"));
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error, "Upload failed"));
     } finally {
       setAvatarUploading(false);
     }
@@ -58,21 +140,17 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
     setErr(null);
     setOk(null);
     try {
-      const res = await apiJson<{ ok: true }>("/api/me/profile", {
-        method: "PATCH",
-        body: {
-          name,
-          username,
-          image: image || null,
-          avatarFocusX,
-          avatarFocusY,
-          avatarZoom,
-        },
+      await saveProfile({
+        name,
+        username,
+        image: image || null,
+        avatarFocusX,
+        avatarFocusY,
+        avatarZoom,
       });
-      if (!res.ok) throw new Error(res.error || "Failed to save");
       setOk("Saved");
-    } catch (e: any) {
-      setErr(String(e?.message || e || "Failed"));
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error, "Failed"));
     } finally {
       setSaving(false);
     }
@@ -101,8 +179,8 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         }}
         onRemoveImage={() => {
           setImage("");
-          setAvatarFocusX(0.5);
-          setAvatarFocusY(0.5);
+          setAvatarFocusX(50);
+          setAvatarFocusY(50);
           setAvatarZoom(1);
         }}
       />
