@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { newChapterNotificationDedupeKey } from "@/server/services/notifications/helpers";
 
 export type NotifyNewChapterArgs = {
   workId: string;
@@ -78,7 +79,7 @@ export async function notifyNewChapter({ workId, chapterId, actorId }: NotifyNew
   const href = `/w/${work.slug}/read/${chapter.id}`;
   const title = `New chapter: ${work.title}`;
   const body = `Chapter ${chapter.number}: ${chapter.title}`;
-  const dedupeKey = `new_chapter:${chapter.id}`;
+  const dedupeKey = newChapterNotificationDedupeKey(chapter.id);
 
   const data = Array.from(recipients).map((userId) => ({
     userId,

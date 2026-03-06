@@ -22,7 +22,7 @@
     "db:push": "prisma db push",
     "db:cleanup-taxonomy": "tsx prisma/cleanupTaxonomy.ts",
     "sanity:db": "tsx scripts/sanity-db.ts",
-    "verify": "npm run prisma:validate && npm run db:generate && npm run typecheck && npm run build",
+    "verify": "npm run prisma:validate && npm run db:generate && npm run typecheck && npm run test:unit && npm run build",
     "db:migrate:deploy": "prisma migrate deploy",
     "deploy:check-env": "node scripts/check-env.js",
     "vercel-build": "node scripts/vercel-build.js",
@@ -30,7 +30,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:fix": "next lint --fix",
-    "check": "npm run format:check && npm run lint && npm run typecheck"
+    "check": "npm run format:check && npm run lint && npm run typecheck",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium",
+    "test:smoke": "npm run test:unit && npm run test:e2e"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -82,6 +89,8 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "15.5.12",
     "prettier": "^3.0.0",
-    "prettier-plugin-tailwindcss": "^0.6.0"
+    "prettier-plugin-tailwindcss": "^0.6.0",
+    "@playwright/test": "^1.55.0",
+    "vitest": "^2.1.8"
   }
 }

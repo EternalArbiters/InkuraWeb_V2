@@ -16,6 +16,13 @@
     "lint:fix": "npm --workspace apps/web run lint:fix",
     "format": "npm --workspace apps/web run format",
     "format:check": "npm --workspace apps/web run format:check",
-    "check": "npm --workspace apps/web run check"
+    "check": "npm --workspace apps/web run check",
+    "test": "npm --workspace apps/web run test",
+    "test:unit": "npm --workspace apps/web run test:unit",
+    "test:unit:watch": "npm --workspace apps/web run test:unit:watch",
+    "test:e2e": "npm --workspace apps/web run test:e2e",
+    "test:e2e:headed": "npm --workspace apps/web run test:e2e:headed",
+    "test:e2e:install": "npm --workspace apps/web run test:e2e:install",
+    "test:smoke": "npm --workspace apps/web run test:smoke"
   }
 }

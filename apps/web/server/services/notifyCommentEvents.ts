@@ -1,27 +1,13 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import {
+  canSeeGatedNotificationContent,
+  commentNotificationDedupeKey,
+  extractMentionUsernames,
+} from "@/server/services/notifications/helpers";
 
 type TargetType = "WORK" | "CHAPTER";
-
-function extractMentions(body: string): string[] {
-  // Matches @username where username is [A-Za-z0-9_] and length 2-32
-  const re = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_]{2,32})/g;
-  const out: string[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(body)) !== null) {
-    const u = String(m[2] || "").trim();
-    if (u) out.push(u);
-  }
-  return Array.from(new Set(out));
-}
-
-function canSeeGatedContent(user: { role: string; adultConfirmed: boolean; deviantLoveConfirmed: boolean }, req: { adult: boolean; deviant: boolean }) {
-  if (user.role === "ADMIN") return true;
-  if (req.deviant) return user.adultConfirmed && user.deviantLoveConfirmed;
-  if (req.adult) return user.adultConfirmed;
-  return true;
-}
 
 export async function notifyCommentEvents(args: {
   commentId: string;
@@ -115,7 +101,7 @@ export async function notifyCommentEvents(args: {
       workId: work.id,
       chapterId: targetType === "CHAPTER" ? chapterCtx!.id : null,
       actorId,
-      dedupeKey: `comment_new:${commentId}:${work.authorId}`,
+      dedupeKey: commentNotificationDedupeKey("COMMENT_NEW", commentId, work.authorId),
     });
   }
 
@@ -134,13 +120,13 @@ export async function notifyCommentEvents(args: {
         workId: work.id,
         chapterId: targetType === "CHAPTER" ? chapterCtx!.id : null,
         actorId,
-        dedupeKey: `comment_reply:${commentId}:${parent.userId}`,
+        dedupeKey: commentNotificationDedupeKey("COMMENT_REPLY", commentId, parent.userId),
       });
     }
   }
 
   // 3) Mention notifications
-  const mentions = extractMentions(body);
+  const mentions = extractMentionUsernames(body);
   if (mentions.length) {
     const users = await prisma.user.findMany({
       where: { username: { in: mentions } },
@@ -160,7 +146,7 @@ export async function notifyCommentEvents(args: {
         workId: work.id,
         chapterId: targetType === "CHAPTER" ? chapterCtx!.id : null,
         actorId,
-        dedupeKey: `comment_mention:${commentId}:${u.id}`,
+        dedupeKey: commentNotificationDedupeKey("COMMENT_MENTION", commentId, u.id),
       });
     }
   }
@@ -178,7 +164,7 @@ export async function notifyCommentEvents(args: {
   const filtered = events.filter((e) => {
     const u = gateMap.get(e.userId);
     if (!u) return false;
-    return canSeeGatedContent(u, gatingReq);
+    return canSeeGatedNotificationContent(u, gatingReq);
   });
 
   if (!filtered.length) return { ok: true as const, notified: 0 };

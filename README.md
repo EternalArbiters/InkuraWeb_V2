@@ -159,6 +159,22 @@ npm run check
 
 Detailnya ada di: `docs/02-code-style.md`
 
+### 7) Test automation (stage 9)
+
+Suite otomatis yang ditambahkan di stage 9:
+
+```bash
+npm run test:unit
+npm run test:e2e
+npm run test:smoke
+```
+
+Catatan cepat:
+- unit tests memakai **Vitest**
+- smoke E2E memakai **Playwright**
+- untuk install browser lokal: `npm run test:e2e:install`
+- panduan detail: `docs/stage-09-test-automation.md`
+
 ---
 
 ## Deploy ke Vercel (Hobby)

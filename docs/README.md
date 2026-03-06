@@ -40,3 +40,7 @@ Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
    - UI error boundaries konsisten
 
 Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.
+
+11) `stage-09-test-automation.md`
+   - unit tests (Vitest) untuk service/helper kritikal
+   - smoke E2E (Playwright) untuk auth, browse/read/comment, studio, dan admin taxonomy
