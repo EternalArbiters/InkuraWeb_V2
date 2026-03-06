@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Share2, Link2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export default function ShareButton({ title }: { title: string }) {
+export default function ShareButton({ title, className }: { title: string; className?: string }) {
   const [copied, setCopied] = useState(false);
 
   const [url, setUrl] = useState<string>("");
@@ -44,11 +45,14 @@ export default function ShareButton({ title }: { title: string }) {
     <button
       type="button"
       onClick={share}
-      className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800",
+        className,
+      )}
       aria-label="Share"
     >
       {copied ? <Link2 size={18} /> : <Share2 size={18} />}
-      <span>{copied ? "Copied" : "Share"}</span>
+      <span className="whitespace-nowrap">{copied ? "Copied" : "Share"}</span>
     </button>
   );
 }

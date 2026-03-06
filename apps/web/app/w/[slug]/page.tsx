@@ -170,16 +170,30 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{work.title}</h1>
 
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 md:flex-wrap md:overflow-visible">
-              <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
-              <BookmarkButton workId={work.id} initialBookmarked={!!interactions.bookmarked} />
-              <AddToListButton workId={work.id} />
-              <ShareButton title={work.title} />
+            <div className="mt-4 grid grid-cols-3 gap-2 md:flex md:items-center md:gap-2">
+              <LikeButton
+                workId={work.id}
+                initialLiked={!!interactions.liked}
+                initialCount={Number(work.likeCount ?? 0)}
+                className="w-full justify-center px-3 md:w-auto md:justify-start md:px-5"
+              />
+              <BookmarkButton
+                workId={work.id}
+                initialBookmarked={!!interactions.bookmarked}
+                className="w-full justify-center px-3 md:w-auto md:justify-start md:px-5"
+              />
+              <AddToListButton
+                workId={work.id}
+                className="w-full md:w-auto"
+                buttonClassName="w-full justify-center px-3 md:w-auto md:justify-start md:px-5"
+              />
+              <ShareButton title={work.title} className="w-full justify-center px-3 md:w-auto md:justify-start md:px-5" />
               <RatingStars
                 workId={work.id}
                 initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
                 ratingAvg={Number(work.ratingAvg ?? 0)}
                 ratingCount={Number(work.ratingCount ?? 0)}
+                className="col-span-2 w-full justify-center px-3 md:col-auto md:w-auto md:justify-start md:px-5"
               />
             </div>
 

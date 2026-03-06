@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ListPlus, Check, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ListLite = {
   id: string;
@@ -12,7 +13,15 @@ type ListLite = {
   _count?: { items: number };
 };
 
-export default function AddToListButton({ workId }: { workId: string }) {
+export default function AddToListButton({
+  workId,
+  className,
+  buttonClassName,
+}: {
+  workId: string;
+  className?: string;
+  buttonClassName?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [lists, setLists] = useState<ListLite[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -75,15 +84,18 @@ export default function AddToListButton({ workId }: { workId: string }) {
   }, [open]);
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800",
+          buttonClassName,
+        )}
         aria-label="Add to List"
       >
         <ListPlus size={18} />
-        <span>{label}</span>
+        <span className="whitespace-nowrap">{label}</span>
       </button>
 
       {open ? (

@@ -3,17 +3,20 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function RatingStars({
   workId,
   initialMyRating,
   ratingAvg,
   ratingCount,
+  className,
 }: {
   workId: string;
   initialMyRating: number | null;
   ratingAvg: number;
   ratingCount: number;
+  className?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -55,7 +58,10 @@ export default function RatingStars({
   };
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-950/30">
+    <div className={cn(
+      "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-950/30",
+      className,
+    )}>
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((v) => {
           const active = (myRating ?? 0) >= v;
@@ -74,7 +80,7 @@ export default function RatingStars({
         })}
       </div>
 
-      <div className="text-xs text-gray-700 dark:text-gray-200">
+      <div className="text-xs text-gray-700 dark:text-gray-200 whitespace-nowrap">
         <span className="font-bold">{avgLabel}</span>
         <span className="opacity-70"> ({count})</span>
       </div>
