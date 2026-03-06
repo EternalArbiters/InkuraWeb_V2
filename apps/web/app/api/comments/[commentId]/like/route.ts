@@ -1,10 +1,6 @@
-import { apiRoute, json } from "@/server/http";
-import { toggleCommentLike } from "@/server/services/comments/mutations";
+import { apiRoute } from "@/server/http";
+import { POST as POST_HANDLER } from "@/server/services/api/comments/[commentId]/like/route";
 
 export const runtime = "nodejs";
 
-export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ commentId: string }> }) => {
-  const { commentId } = await params;
-  const res = await toggleCommentLike(commentId);
-  return json(res.body, { status: res.status });
-});
+export const POST = apiRoute(POST_HANDLER);

@@ -1,21 +1,6 @@
-import prisma from "@/server/db/prisma";
-import { requireUser } from "@/server/auth/requireUser";
-import { isAdminEmail } from "@/server/auth/adminEmail";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute } from "@/server/http";
+import { GET as GET_HANDLER } from "@/server/services/api/admin-report/unread-count/route";
 
 export const runtime = "nodejs";
 
-export const GET = apiRoute(async () => {
-  try {
-    const { me } = await requireUser();
-    const isAdmin = me.role === "ADMIN" && isAdminEmail((me as any).email);
-
-    const count = isAdmin
-      ? await prisma.adminInboxReport.count({ where: { status: "OPEN", adminReadAt: null } })
-      : await prisma.adminInboxReport.count({ where: { reporterId: me.id, status: "OPEN" } });
-
-    return json({ count });
-  } catch {
-    return json({ count: 0 });
-  }
-});
+export const GET = apiRoute(GET_HANDLER);

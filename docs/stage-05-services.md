@@ -44,3 +44,16 @@ Lokasi utama:
 - Response shape dan status code dipertahankan semirip mungkin dengan stage sebelumnya.
 - Side-effect notifications untuk comment/pin/new chapter tetap **best-effort** (error tidak menggagalkan request utama).
 
+
+
+## Cakupan penuh route API
+
+Pada tahap lanjutan ini, seluruh file `app/api/**/route.ts` non-NextAuth sudah ditipiskan menjadi delegator yang memanggil handler di `apps/web/server/services/api/**/route.ts`.
+
+Artinya:
+
+- route file hanya memegang `runtime` dan `apiRoute(...)` wrapper
+- business logic route dipindahkan ke service-backed handlers
+- domain services lama seperti `works/*`, `comments/*`, dan `studio/*` tetap dipakai di bawah layer ini
+
+Tujuannya bukan menambah fitur baru, tetapi memastikan **100% route domain sudah service-backed** dan konsisten secara struktur.

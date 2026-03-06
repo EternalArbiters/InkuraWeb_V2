@@ -1,12 +1,6 @@
-import prisma from "@/server/db/prisma";
-import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute } from "@/server/http";
+import { GET as GET_HANDLER } from "@/server/services/api/notifications/unread-count/route";
 
 export const runtime = "nodejs";
 
-export const GET = apiRoute(async () => {
-  const session = await getSession();
-  if (!session?.user?.id) return json({ count: 0 });
-  const count = await prisma.notification.count({ where: { userId: session.user.id, isRead: false } });
-  return json({ count });
-});
+export const GET = apiRoute(GET_HANDLER);

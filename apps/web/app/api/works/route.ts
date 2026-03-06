@@ -1,9 +1,6 @@
-import { apiRoute, json } from "@/server/http";
-import { listPublishedWorks } from "@/server/services/works/listPublishedWorks";
+import { apiRoute } from "@/server/http";
+import { GET as GET_HANDLER } from "@/server/services/api/works/route";
 
 export const runtime = "nodejs";
 
-export const GET = apiRoute(async (req: Request) => {
-  const data = await listPublishedWorks(req);
-  return json(data);
-});
+export const GET = apiRoute(GET_HANDLER);

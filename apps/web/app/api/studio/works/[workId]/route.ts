@@ -1,26 +1,8 @@
-import { apiRoute, json } from "@/server/http";
-import {
-  deleteStudioWorkById,
-  getStudioWorkById,
-  patchStudioWorkById,
-} from "@/server/services/studio/workById";
+import { apiRoute } from "@/server/http";
+import { GET as GET_HANDLER, PATCH as PATCH_HANDLER, DELETE as DELETE_HANDLER } from "@/server/services/api/studio/works/[workId]/route";
 
 export const runtime = "nodejs";
 
-export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ workId: string }> }) => {
-  const { workId } = await params;
-  const data = await getStudioWorkById(workId);
-  return json(data);
-});
-
-export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
-  const { workId } = await params;
-  const res = await patchStudioWorkById(req, workId);
-  return json(res.body, { status: res.status });
-});
-
-export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ workId: string }> }) => {
-  const { workId } = await params;
-  const data = await deleteStudioWorkById(workId);
-  return json(data);
-});
+export const GET = apiRoute(GET_HANDLER);
+export const PATCH = apiRoute(PATCH_HANDLER);
+export const DELETE = apiRoute(DELETE_HANDLER);

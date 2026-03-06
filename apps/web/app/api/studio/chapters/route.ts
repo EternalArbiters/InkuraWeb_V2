@@ -1,9 +1,6 @@
-import { apiRoute, json } from "@/server/http";
-import { createStudioChapter } from "@/server/services/studio/chapters";
+import { apiRoute } from "@/server/http";
+import { POST as POST_HANDLER } from "@/server/services/api/studio/chapters/route";
 
 export const runtime = "nodejs";
 
-export const POST = apiRoute(async (req: Request) => {
-  const res = await createStudioChapter(req);
-  return json(res.body, { status: res.status });
-});
+export const POST = apiRoute(POST_HANDLER);

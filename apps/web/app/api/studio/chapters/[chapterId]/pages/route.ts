@@ -1,10 +1,6 @@
-import { apiRoute, json } from "@/server/http";
-import { uploadOrReplaceChapterPages } from "@/server/services/studio/chapterPages";
+import { apiRoute } from "@/server/http";
+import { POST as POST_HANDLER } from "@/server/services/api/studio/chapters/[chapterId]/pages/route";
 
 export const runtime = "nodejs";
 
-export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
-  const { chapterId } = await params;
-  const res = await uploadOrReplaceChapterPages(req, chapterId);
-  return json(res.body, { status: res.status });
-});
+export const POST = apiRoute(POST_HANDLER);

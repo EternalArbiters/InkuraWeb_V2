@@ -1,14 +1,7 @@
-import { apiRoute, json } from "@/server/http";
-import { createStudioWork, listStudioWorks } from "@/server/services/studio/works";
+import { apiRoute } from "@/server/http";
+import { GET as GET_HANDLER, POST as POST_HANDLER } from "@/server/services/api/studio/works/route";
 
 export const runtime = "nodejs";
 
-export const GET = apiRoute(async (req: Request) => {
-  const data = await listStudioWorks(req);
-  return json(data);
-});
-
-export const POST = apiRoute(async (req: Request) => {
-  const res = await createStudioWork(req);
-  return json(res.body, { status: res.status });
-});
+export const GET = apiRoute(GET_HANDLER);
+export const POST = apiRoute(POST_HANDLER);

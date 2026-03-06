@@ -1,16 +1,7 @@
-import { apiRoute, json } from "@/server/http";
-import { getStudioChapterForEdit, patchStudioChapter } from "@/server/services/studio/chapters";
+import { apiRoute } from "@/server/http";
+import { GET as GET_HANDLER, PATCH as PATCH_HANDLER } from "@/server/services/api/studio/chapters/[chapterId]/route";
 
 export const runtime = "nodejs";
 
-export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
-  const { chapterId } = await params;
-  const data = await getStudioChapterForEdit(chapterId);
-  return json(data);
-});
-
-export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
-  const { chapterId } = await params;
-  const res = await patchStudioChapter(req, chapterId);
-  return json(res.body, { status: res.status });
-});
+export const GET = apiRoute(GET_HANDLER);
+export const PATCH = apiRoute(PATCH_HANDLER);
