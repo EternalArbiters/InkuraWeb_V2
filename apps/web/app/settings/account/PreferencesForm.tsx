@@ -11,13 +11,29 @@ import DeviantLoveCard from "./components/preferences/DeviantLoveCard";
 import PreferenceAlerts from "./components/preferences/PreferenceAlerts";
 import PreferredLanguagesCard from "./components/preferences/PreferredLanguagesCard";
 
+type TaxonomyOption = {
+  id: string;
+  name: string;
+  slug?: string;
+};
+
 type Prefs = {
   adultConfirmed: boolean;
   deviantLoveConfirmed: boolean;
   preferredLanguages: string[];
+  blockedGenreIds?: string[];
+  blockedWarningIds?: string[];
+  blockedDeviantLoveIds?: string[];
 };
 
-export default function PreferencesForm({ initial }: { initial: Prefs }) {
+type PreferencesFormProps = {
+  initial: Prefs;
+  genres?: TaxonomyOption[];
+  warnings?: TaxonomyOption[];
+  deviantLoveTags?: TaxonomyOption[];
+};
+
+export default function PreferencesForm({ initial }: PreferencesFormProps) {
   const [adultConfirmed, setAdultConfirmed] = React.useState(!!initial.adultConfirmed);
   const [deviantLoveConfirmed, setDeviantLoveConfirmed] = React.useState(!!initial.deviantLoveConfirmed);
   const [preferredLanguages, setPreferredLanguages] = React.useState<string[]>(initial.preferredLanguages || []);
