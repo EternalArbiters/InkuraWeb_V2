@@ -24,5 +24,9 @@
     "test:e2e:headed": "npm --workspace apps/web run test:e2e:headed",
     "test:e2e:install": "npm --workspace apps/web run test:e2e:install",
     "test:smoke": "npm --workspace apps/web run test:smoke"
+  },
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": "20.x"
   }
 }
