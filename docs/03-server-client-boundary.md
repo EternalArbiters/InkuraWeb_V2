@@ -44,4 +44,4 @@ Kalau sebuah modul butuh Prisma/R2/headers/cookies/bcrypt, **pindahkan ke `serve
 
 1) Tidak ada import Prisma/NextAuth server session/R2 dari komponen client (`"use client"`).
 2) Tidak ada modul `server/*` yang di-import ke client.
-3) Jalankan `npm run verify` dan `docs/REGRESSION_CHECKLIST.md`.
+3) Jalankan `npm run verify` dan `REGRESSION_CHECKLIST.md`.

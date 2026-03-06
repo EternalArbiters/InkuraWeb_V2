@@ -1,6 +1,6 @@
 # Tahap 0 – Safety Net (sebelum refactor besar)
 
-> Lihat index dokumen: `docs/README.md`
+> Lihat index dokumen: `README.md`
 
 - Setiap perubahan wajib lewat *gate* otomatis (`verify`) + checklist manual regresi.
 
@@ -60,9 +60,10 @@ Jalankan ini setiap sebelum/ sesudah perubahan besar:
 npm run verify
 ```
 
-`verify` akan menjalankan:
+`verify` pada snapshot final ini akan menjalankan:
 - Prisma schema validation + generate client
 - Typecheck (tsc)
+- Unit tests (Vitest)
 - Next.js production build
 
 Opsional tapi disarankan (butuh DB terkoneksi):
@@ -75,5 +76,5 @@ npm run sanity:db
 
 ## 4) Checklist regresi manual (wajib sebelum merge)
 
-Lihat: `docs/REGRESSION_CHECKLIST.md`
+Lihat: `REGRESSION_CHECKLIST.md`
 

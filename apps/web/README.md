@@ -1,10 +1,15 @@
-# Inkura Web (apps/web) — v13
+# Inkura Web (`apps/web`)
 
-Ini adalah app utama yang di-deploy ke Vercel.
+Ini adalah satu-satunya app runtime aktif di repo cleaned stage 10.
 
-- Next.js App Router (Web + API routes)
-- NextAuth (single-origin)
-- Prisma (Neon Postgres)
-- Upload storage: Cloudflare R2 (presigned)
+Isi utama folder ini:
 
-Lihat setup lengkap di `../../README.md`.
+- `app/` — UI routes dan API routes Next.js
+- `server/` — server-only code (auth, Prisma, services, storage, observability)
+- `prisma/` — schema, migrations, seed
+- `tests/` — Vitest dan Playwright
+
+Baca dokumen utama dari root repo:
+
+- `../../README.md`
+- `../../docs/README.md`

@@ -76,5 +76,5 @@ Lokasi: `apps/web/server/http/request.ts`
 - Semua route handlers memakai `apiRoute(...)` (error handling konsisten).
 - Semua response JSON memakai helper `json(...)` (mengurangi boilerplate `NextResponse.json`).
 - Akses session menggunakan `getSession()` wrapper (bukan `getServerSession(authOptions)`).
-- Tidak ada perubahan fitur: jalankan `docs/REGRESSION_CHECKLIST.md`.
+- Tidak ada perubahan fitur: jalankan `REGRESSION_CHECKLIST.md`.
 

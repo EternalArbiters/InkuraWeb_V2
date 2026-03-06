@@ -71,7 +71,7 @@ Dengan **user biasa**:
 
 Forgot password (opsional):
 - Request reset.
-- Jika `NEXT_PUBLIC_SHOW_RESET_TOKEN=1`, UI menampilkan token (dev).
+- Jika `SHOW_RESET_TOKEN=1`, endpoint forgot-password menampilkan token/reset URL (dev).
 - Confirm reset → password berubah → bisa login pakai password baru.
 
 PASS jika: tidak ada redirect loop (khususnya di route protected: `/home`, `/library`, `/studio`).

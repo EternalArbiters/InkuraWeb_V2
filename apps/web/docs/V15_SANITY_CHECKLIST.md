@@ -24,10 +24,11 @@ Atau dari `apps/web`:
 npm run verify
 ```
 
-Isi `verify`:
+Isi `verify` pada snapshot final ini:
 - `prisma validate`
 - `prisma generate`
 - `tsc --noEmit`
+- `vitest run`
 - `next build`
 
 DB schema check (opsional, but recommended):

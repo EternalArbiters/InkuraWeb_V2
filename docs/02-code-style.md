@@ -21,8 +21,8 @@ Semua perintah dijalankan dari **root repo**:
 - Gabungan check yang aman (format-check + lint + typecheck):
   - `npm run check`
 
-> Catatan: `npm run verify` tetap dipertahankan sebagai gate build/typecheck/migrate.
-> Lint/format **tidak** dimasukkan ke `verify` agar refactor bertahap tetap nyaman.
+> Catatan: pada snapshot final stage 10, `npm run verify` dipakai sebagai gate build/typecheck/test dan **tetap tidak** memasukkan lint/format.
+> Jadi lint/format tetap dijalankan terpisah lewat `npm run check`, `npm run lint`, atau `npm run format:check`.
 
 ## Formatting
 

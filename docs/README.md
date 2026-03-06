@@ -1,46 +1,75 @@
 # Docs index
 
-Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
+Folder `docs/` adalah pusat dokumentasi kerja untuk repo cleaned ini. Kalau baru mulai, baca dokumen di bawah dengan urutan ini.
 
-1) `00-stage0-safety-net.md`
-   - aturan main sebelum refactor besar
-   - cara menjalankan `verify`
+## Start here
 
-2) `REGRESSION_CHECKLIST.md`
-   - checklist manual untuk memastikan **fitur tidak hilang** setelah refactor
+1. `../README.md`
+   - overview repo final stage 0–10
+   - quick start lokal
+   - command utama dan arsitektur singkat
 
-3) `01-repo-structure.md`
-   - struktur folder repo, konvensi, dan tooling yang dipakai
+2. `REGRESSION_CHECKLIST.md`
+   - checklist manual untuk memastikan fitur tidak hilang setelah refactor
 
-4) `02-code-style.md`
-   - formatting (Prettier)
-   - lint (Next/ESLint)
-   - conventions import & struktur server/client
+3. `stage-10-documentation-runbook.md`
+   - penutup stage 10
+   - panduan onboarding dan definition of done dokumentasi final
 
-5) `03-server-client-boundary.md`
-   - aturan folder `server/` vs `lib/`
-   - marker `server-only` / `client-only`
+## Operasional harian
 
+4. `env-vars.md`
+   - sumber kebenaran env vars yang dipakai repo
+   - mana yang wajib, mana yang opsional, dan contoh konfigurasi lokal
 
-6) `04-api-route-helpers.md`
-   - helper & konvensi untuk Next.js route handlers (API)
-   - error handling konsisten via `apiRoute(...)`
+5. `deployment-runbook.md`
+   - deploy ke Vercel + Neon + R2
+   - guardrails untuk migration dan post-deploy checks
 
-7) `stage-05-services.md`
-   - pemindahan business logic ke service layer (route handler jadi tipis)
+6. `database-reset-and-seeding.md`
+   - reset database lokal
+   - seed, sanity check, dan catatan migrasi
 
-8) `stage-06-ui-split.md`
-   - pemecahan komponen UI besar ("monster files") menjadi modul & hooks
+7. `debug-upload-issues.md`
+   - cara melacak masalah presign upload, R2, commit, ownership, dan public URL
 
-9) `stage-07-data-access.md`
-   - standarisasi select/include Prisma + pagination helper + index hygiene
+## Riwayat perapian stage 0–9
 
-10) `stage-08-observability.md`
-   - structured logging (request id, route, status, userId bila ada)
-   - UI error boundaries konsisten
+8. `00-stage0-safety-net.md`
+   - safety net awal, verify, dan baseline kerja
 
-Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.
+9. `01-repo-structure.md`
+   - struktur repo dan penegasan npm workspace
 
-11) `stage-09-test-automation.md`
-   - unit tests (Vitest) untuk service/helper kritikal
-   - smoke E2E (Playwright) untuk auth, browse/read/comment, studio, dan admin taxonomy
+10. `02-code-style.md`
+    - formatting, lint, dan conventions dasar
+
+11. `03-server-client-boundary.md`
+    - aturan boundary server vs client
+
+12. `04-api-route-helpers.md`
+    - helper layer untuk route handlers API
+
+13. `stage-05-services.md`
+    - service layer dan penipisan route handler
+
+14. `stage-06-ui-split.md`
+    - pemecahan file UI besar menjadi modul kecil
+
+15. `stage-07-data-access.md`
+    - selectors, pagination, dan index hygiene
+
+16. `stage-08-observability.md`
+    - structured logging dan error boundary
+
+17. `stage-09-test-automation.md`
+    - unit tests dan smoke E2E
+
+## Dokumen legacy yang masih berguna
+
+- `../DEPLOYMENT.md`
+  - shortcut deploy singkat
+- `../apps/web/docs/V15_DEPLOYMENT_NOTES.md`
+  - catatan deploy historis yang masih relevan untuk Vercel/Neon
+- `../apps/web/docs/V15_SANITY_CHECKLIST.md`
+  - checklist historis khusus patch V15

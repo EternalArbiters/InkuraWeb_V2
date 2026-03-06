@@ -1,167 +1,141 @@
-# Inkura v13 (Vercel + Neon + Cloudflare R2 + optional Resend)
+# Inkura_cleaned — Stage 10 Final Snapshot
 
-Target stack & biaya (umumnya):
-- **Vercel Hobby**: $0 (ada limit ketat)
-- **Neon Free (Postgres)**: $0
-- **Cloudflare R2**: bisa $0 kalau masih dalam free quota
-- **Resend Free (email)**: $0 (opsional)
-- **Total**: seringnya **$0 – $5**
+Snapshot ini adalah versi **paling lengkap dan utuh** dari repo hasil perapian bertahap **stage 0 sampai stage 10**.
 
-> v13 fokus: **Auth stabil** + **1 deployment saja** (web + API + NextAuth dalam satu Next.js app) + **upload file langsung ke R2** (hemat Vercel).
+Tujuan utamanya tetap sama sejak awal: **repo makin rapi tanpa menghilangkan fitur**. Semua tahap sebelumnya sudah terakumulasi di snapshot ini, jadi stage 10 adalah titik referensi final untuk kerja lanjut, audit, handoff, atau baseline refactor berikutnya.
 
----
+## Ringkasnya, repo ini sekarang seperti apa
 
-## Perubahan utama v13 (dibanding v11/v12 monorepo 2-backend)
+- Runtime app tinggal **satu**: `apps/web`
+- Stack utama: **Next.js App Router + NextAuth + Prisma + Neon Postgres + Cloudflare R2**
+- API route hidup di `apps/web/app/api/*`
+- Business logic server dipusatkan ke `apps/web/server/*`
+- Upload file memakai **presigned upload ke R2**, bukan filesystem lokal
+- Repo memakai **npm + npm workspaces**
+- Tahap safety net, struktur, style, boundary, helper API, services, UI split, data access, observability, test automation, dan dokumentasi final sudah masuk semua
 
-### 1) Single deployment (FIX: login sering "logout" / session nggak kebaca)
-- **Semua API route dipindah ke `apps/web/app/api/*`**
-- **Hapus proxy rewrite `/api/*` ke backend lain**
-- NextAuth + middleware + API sekarang **satu origin** → cookie/session jauh lebih stabil
+## Cakupan stage 0–10 dalam snapshot ini
 
-### 2) "Server-only" dipisah jelas
-- Semua yang rahasia (DB, R2 keys, admin actions) ada di sisi server:
-  - `apps/web/server/*` dan `apps/web/app/api/*`
-- Modul server diberi `import "server-only"` supaya kalau ke-import client langsung error.
+- **Stage 0** — safety net, env example, regression checklist, verify baseline
+- **Stage 1** — repo/tooling hygiene dan penegasan npm workspace
+- **Stage 2** — Prettier, ESLint, conventions dasar
+- **Stage 3** — boundary server vs client dipertegas
+- **Stage 4** — helper layer untuk route handler API
+- **Stage 5** — business logic dipindah ke service layer
+- **Stage 6 / 6b / 6c** — pemecahan file UI besar menjadi modul kecil dan hooks
+- **Stage 7** — selector/pagination/index hygiene untuk data access
+- **Stage 8** — observability, request id, error boundary
+- **Stage 9** — unit tests dan smoke E2E scaffold
+- **Stage 10** — dokumentasi final, runbook operasional, onboarding, dan panduan debugging
 
-### 3) Upload production-ready (tanpa filesystem Vercel)
-- Upload **tidak lagi** ke `public/uploads`.
-- Upload memakai **Cloudflare R2**:
-  - **Presigned URL**: client upload langsung ke R2
-  - Server hanya membuat presign + validasi ownership
+## Struktur repo
 
-### 4) RBAC + Ownership (Batoto-like)
-- **USER**: create/edit/delete **punya sendiri**
-- **ADMIN**: bisa edit/delete **semua**
-- Enforcement ada di endpoint mutasi (server), bukan cuma di UI.
+```text
+.
+├─ apps/
+│  └─ web/
+│     ├─ app/                 # UI routes + API routes
+│     ├─ components/          # reusable components lintas page
+│     ├─ hooks/               # reusable hooks
+│     ├─ lib/                 # pure/shared helpers
+│     ├─ prisma/              # schema, migrations, seed
+│     ├─ server/              # server-only code
+│     ├─ tests/               # Vitest + Playwright
+│     └─ docs/                # catatan legacy V15 yang masih relevan
+├─ docs/                      # docs kerja & runbook final repo cleaned
+├─ package.json               # root workspace scripts
+└─ package-lock.json          # source of truth dependency tree
+```
 
-### 5) DB tambahan untuk R2 keys
-- `Work.coverKey` (opsional)
-- `ComicPage.imageKey` (opsional)
+## Arsitektur singkat
 
-Tujuan: saat delete/replace asset, server bisa delete object R2 dengan aman.
+### App runtime
 
----
+`apps/web` adalah satu-satunya app yang dipakai untuk dev dan deploy. Di dalamnya:
 
-## Status implementasi (DONE)
+- `app/**` menangani UI routes dan API routes Next.js
+- `server/**` menangani auth server, Prisma, services, storage R2, observability, dan HTTP helpers
+- `lib/**` dipakai untuk util yang aman dipakai lintas sisi, atau client helper yang eksplisit
 
-- [x] NextAuth handler di `apps/web/app/api/auth/[...nextauth]`
-- [x] Hapus proxy `/api/*` (single-origin)
-- [x] Cloudflare R2 adapter (`apps/web/server/storage/r2.ts`)
-- [x] Endpoint presign: `POST /api/uploads/presign`
-- [x] Frontend cover edit menggunakan presign upload (WorkEditForm)
-- [x] Frontend comic pages manager menggunakan presign upload (ComicPagesManager)
-- [x] **Create chapter** (COMIC) bisa upload pages saat create (flow 2-step: create chapter → presign upload → commit pages)
-- [x] Endpoint commit pages: `POST /api/studio/chapters/[chapterId]/pages`
-- [x] Endpoint delete page: delete DB + best-effort delete object R2 via `imageKey`
-- [x] Permission checks (owner/admin) untuk route studio penting
+### Server vs client
 
----
+- Semua yang menyentuh **DB, session, bcrypt, email, storage, headers, cookies** harus tinggal di `server/**` atau `app/api/**`
+- Modul sensitif memakai marker `server-only`
+- Helper browser-only memakai `client-only`
 
-## TODO / opsional (disiapkan di README, bisa dilanjutkan)
+### Upload
 
-> Ini sengaja ditulis sebagai checklist biar kamu bisa lanjut bertahap tanpa ngulang desain.
+- Cover dan comic pages memakai flow **presign → upload langsung ke R2 → commit / persist ke DB**
+- Comment media memakai flow serupa, dengan **SHA-256 dedupe** untuk menghindari object duplikat
 
-### Resend (email) — opsional
-- [x] Forgot password + reset token (endpoint + UI + Resend best-effort)
-- [ ] Verify email (kalau perlu)
+### Testing
 
-### Optimasi biaya & kuota (recommended)
-- [ ] Batasi ukuran upload (cover ~2MB, page ~5MB)
-- [ ] Kompres cover/pages (client-side) sebelum upload
-- [ ] Pagination untuk list (works/chapters/comments) biar query Neon ringan
-- [ ] Pakai custom domain / CDN untuk R2 (supaya bandwidth nggak lewat Vercel)
+- Unit tests: **Vitest**
+- Smoke E2E: **Playwright**
 
-### Moderation/Audit (opsional)
-- [ ] AuditLog untuk aksi admin
-- [ ] Report queue (minimal)
+## Quick start lokal
 
----
-
-## Struktur repo (yang dipakai v13)
-
-- `apps/web` → **utama** (deploy ke Vercel)
-  - `app/` → pages + API routes
-  - `server/` → server-only services (R2, dll)
-  - `prisma/` → schema + migrations + seed
-
-> Folder `apps/api` (legacy) **sudah dihapus** di versi repo yang dirapikan ini. v13 memang **tidak membutuhkan** deploy backend terpisah.
-
----
-
----
-
-## Tooling & struktur repo
-
-Repo ini memakai **npm + npm workspaces** (lockfile: `package-lock.json`).
-
-- App runtime hanya ada di: `apps/web`
-- Dokumen stage/guard ada di: `docs/` (mulai dari `docs/README.md`)
-
-
-## Setup lokal
-
-### 1) Install
+### 1) Install dependency
 
 ```bash
 npm install
 ```
 
-### 2) ENV
+### 2) Siapkan env
 
-Copy:
-- `apps/web/.env.example` → `apps/web/.env.local`
-
-Isi minimal:
-- `NEXTAUTH_URL`
-- `NEXTAUTH_SECRET`
-- `DATABASE_URL` (Neon pooled)
-- `DIRECT_URL` (Neon direct)
-- `R2_*`
-
-### 3) Init DB
+Copy file contoh:
 
 ```bash
-npm --workspace apps/web run db:init
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-### 4) Run dev
+Isi minimal:
+
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL`
+- `R2_ENDPOINT` atau `R2_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET` atau `R2_BUCKET_NAME`
+- `R2_PUBLIC_BASE_URL`
+
+Dokumen lengkap env vars ada di `docs/env-vars.md`.
+
+### 3) Init database lokal
+
+```bash
+npm run db:init
+```
+
+Perintah ini akan generate Prisma Client, reset schema lokal, lalu menjalankan seed.
+
+### 4) Jalankan app
 
 ```bash
 npm run dev
 ```
 
-Web: http://localhost:3000
+Default URL lokal:
 
-**Seed default admin (dev):**
-- Email: `noelephgoddess.game@gmail.com`
-- Password: `admin123`
+- `http://localhost:3000`
 
-> Catatan: di versi ini, role **ADMIN** di-*enforce* berdasarkan email (lihat `apps/web/server/auth/adminEmail.ts`).
-
-### 5) Verify (recommended sebelum/ sesudah perubahan besar)
+### 5) Jalankan gate otomatis
 
 ```bash
 npm run verify
 ```
 
-Checklist regresi manual:
-- `docs/REGRESSION_CHECKLIST.md`
+State saat ini, `verify` menjalankan:
 
-### 6) Code style (format/lint)
+- `prisma validate`
+- `prisma generate`
+- `tsc --noEmit`
+- `vitest run`
+- `next build`
 
-Perintah berguna saat mulai refactor/rapihin:
-
-```bash
-npm run format
-npm run lint
-npm run check
-```
-
-Detailnya ada di: `docs/02-code-style.md`
-
-### 7) Test automation (stage 9)
-
-Suite otomatis yang ditambahkan di stage 9:
+### 6) Jalankan test tambahan bila diperlukan
 
 ```bash
 npm run test:unit
@@ -169,38 +143,86 @@ npm run test:e2e
 npm run test:smoke
 ```
 
-Catatan cepat:
-- unit tests memakai **Vitest**
-- smoke E2E memakai **Playwright**
-- untuk install browser lokal: `npm run test:e2e:install`
-- panduan detail: `docs/stage-09-test-automation.md`
+Untuk browser Playwright lokal pertama kali:
 
----
+```bash
+npm run test:e2e:install
+```
 
-## Deploy ke Vercel (Hobby)
+## Seed default lokal
 
-Buat **1 project**:
-- Root Directory: `apps/web`
-- Install Command: `npm install`
-- Build Command: `npm run build`
-- Output: default Next.js
+Seed bawaan membuat admin default berikut:
 
-Set Env Vars (Production + Preview):
-- `NEXTAUTH_URL`
-- `NEXTAUTH_SECRET`
-- `DATABASE_URL`
-- `DIRECT_URL`
-- `R2_ENDPOINT`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET`
-- `R2_PUBLIC_BASE_URL`
+- Email: `noelephgoddess.game@gmail.com`
+- Password: `admin123`
 
----
+Catatan penting:
 
-## Catatan penting keamanan
+- Role admin di repo ini di-*enforce* berdasarkan email tersebut
+- Jangan pakai kredensial ini apa adanya untuk environment publik
 
-- UI boleh menyembunyikan tombol, tapi **keamanan wajib** di server.
-- Semua endpoint mutasi harus cek:
-  - `ADMIN` **atau** owner (authorId)
-- Presign upload juga harus cek ownership work/chapter.
+## Perintah kerja yang paling sering dipakai
+
+Dari root repo:
+
+```bash
+npm run dev
+npm run verify
+npm run check
+npm run lint
+npm run format
+npm run db:init
+npm run sanity:db
+npm run test:unit
+npm run test:e2e
+```
+
+## Dokumen yang perlu dibaca dulu
+
+Mulai dari sini:
+
+1. `docs/README.md`
+2. `docs/REGRESSION_CHECKLIST.md`
+3. `docs/stage-10-documentation-runbook.md`
+4. `docs/env-vars.md`
+5. `docs/deployment-runbook.md`
+6. `docs/database-reset-and-seeding.md`
+7. `docs/debug-upload-issues.md`
+
+## Deploy singkat
+
+Target deploy utama repo ini adalah:
+
+- **Vercel** untuk app runtime
+- **Neon Postgres** untuk database
+- **Cloudflare R2** untuk asset upload
+
+Ringkasan deploy:
+
+- Root Directory boleh repo root atau `apps/web`
+- Build pipeline memakai `vercel-build`
+- Production akan menjalankan `prisma migrate deploy`
+- Preview **tidak** auto-migrate kecuali `INKURA_MIGRATE_PREVIEW=1`
+
+Panduan deploy lengkap ada di `docs/deployment-runbook.md`.
+
+## Operasional & debugging
+
+Kalau ada masalah yang paling umum:
+
+- masalah env / auth / origin → `docs/env-vars.md`
+- masalah deploy Vercel / Neon / migrate → `docs/deployment-runbook.md`
+- masalah reset DB / seed / sanity check → `docs/database-reset-and-seeding.md`
+- masalah upload presign / R2 / commit media → `docs/debug-upload-issues.md`
+
+## Guardrails yang tetap wajib dijaga
+
+- Jangan campur package manager lain; repo ini pakai **npm**
+- Jangan pindahkan server-only code ke komponen client
+- Jangan ubah behavior fitur tanpa lewat regression checklist
+- Semua refactor signifikan harus lolos `npm run verify`
+- Untuk perubahan sensitif, cek juga `docs/REGRESSION_CHECKLIST.md`
+
+## Catatan akhir
+
+Stage 10 dimaksudkan sebagai **snapshot final dokumentasi dan runbook**. Jadi kalau perlu melanjutkan pekerjaan setelah repo ini, baseline yang dipakai sebaiknya adalah snapshot ini, bukan stage sebelumnya.
