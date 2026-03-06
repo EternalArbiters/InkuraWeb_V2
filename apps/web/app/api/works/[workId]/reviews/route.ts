@@ -1,4 +1,5 @@
 import prisma from "@/server/db/prisma";
+import { userPublicSelect } from "@/server/db/selectors";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
@@ -113,7 +114,7 @@ export const GET = apiRoute(async (req: Request, { params }: { params: Promise<{
     orderBy,
     take,
     include: {
-      user: { select: { id: true, username: true, name: true, image: true } },
+      user: { select: userPublicSelect },
     },
   });
 
@@ -177,7 +178,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
         where: { workId_userId: { workId, userId } },
         update: { rating, title, body, isSpoiler },
         create: { workId, userId, rating, title, body, isSpoiler },
-        include: { user: { select: { id: true, username: true, name: true, image: true } } },
+        include: { user: { select: userPublicSelect } },
       });
 
       // Keep WorkRating in sync (used by existing RatingStars)

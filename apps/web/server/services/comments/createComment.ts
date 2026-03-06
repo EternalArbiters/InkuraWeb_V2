@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { commentListInclude, mediaObjectSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { notifyCommentEvents } from "@/server/services/notifyCommentEvents";
 
@@ -72,7 +73,7 @@ export async function createCommentFromRequest(req: Request) {
   const mediaRows = uniqueMediaIds.length
     ? await prisma.mediaObject.findMany({
         where: { id: { in: uniqueMediaIds } },
-        select: { id: true, type: true, url: true, contentType: true, sizeBytes: true },
+        select: mediaObjectSelect,
       })
     : [];
 
@@ -111,14 +112,7 @@ export async function createCommentFromRequest(req: Request) {
 
     return tx.comment.findUnique({
       where: { id: comment.id },
-      include: {
-        user: { select: { id: true, username: true, name: true, image: true } },
-        attachments: {
-          include: {
-            media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } },
-          },
-        },
-      },
+      include: commentListInclude,
     });
   });
 

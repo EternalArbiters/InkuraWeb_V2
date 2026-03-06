@@ -1,4 +1,5 @@
 import prisma from "@/server/db/prisma";
+import { idNameSlugSelect } from "@/server/db/selectors";
 import { parseJsonStringArray, stringifyJsonStringArray } from "@/lib/prefs";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
@@ -18,9 +19,9 @@ export const GET = apiRoute(async () => {
       adultConfirmed: true,
       deviantLoveConfirmed: true,
       preferredLanguagesJson: true,
-      blockedGenres: { select: { id: true, name: true, slug: true } },
-      blockedWarnings: { select: { id: true, name: true, slug: true } },
-      blockedDeviantLove: { select: { id: true, name: true, slug: true } },
+      blockedGenres: { select: idNameSlugSelect },
+      blockedWarnings: { select: idNameSlugSelect },
+      blockedDeviantLove: { select: idNameSlugSelect },
     },
   });
 

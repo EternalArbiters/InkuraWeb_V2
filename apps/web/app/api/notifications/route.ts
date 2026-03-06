@@ -1,23 +1,39 @@
 import prisma from "@/server/db/prisma";
+import { parseCursor, parseTake, nextCursorFromRows } from "@/server/db/pagination";
+import { notificationSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 
-export const GET = apiRoute(async () => {
+export const GET = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
-    return json({ unreadCount: 0, notifications: [] });
+    return json({ unreadCount: 0, notifications: [], nextCursor: null });
+  }
+
+  const url = new URL(req.url);
+  const take = parseTake(url.searchParams, { def: 20, min: 1, max: 50 });
+  const cursor = parseCursor(url.searchParams);
+
+  const query: any = {
+    where: { userId: session.user.id },
+    orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }],
+    take,
+    select: notificationSelect,
+  };
+
+  if (cursor) {
+    query.cursor = { id: cursor };
+    query.skip = 1;
   }
 
   const [unreadCount, notifications] = await Promise.all([
     prisma.notification.count({ where: { userId: session.user.id, isRead: false } }),
-    prisma.notification.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
+    prisma.notification.findMany(query),
   ]);
 
-  return json({ unreadCount, notifications });
+  const nextCursor = nextCursorFromRows(notifications as any, take);
+
+  return json({ unreadCount, notifications, nextCursor });
 });
 
 export const POST = apiRoute(async (req: Request) => {

@@ -1,4 +1,5 @@
 import prisma from "@/server/db/prisma";
+import { userPublicSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 
@@ -55,7 +56,7 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
           ...(body !== undefined ? { body } : {}),
           ...(isSpoiler !== undefined ? { isSpoiler } : {}),
         },
-        include: { user: { select: { id: true, username: true, name: true, image: true } } },
+        include: { user: { select: userPublicSelect } },
       });
 
       if (ratingMaybe && ratingMaybe !== existing.rating) {

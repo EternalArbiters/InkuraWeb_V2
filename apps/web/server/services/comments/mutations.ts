@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { canModerateForTarget } from "./moderation";
 
@@ -29,14 +30,7 @@ export async function updateCommentFromRequest(req: Request, commentId: string) 
   const updated = await prisma.comment.update({
     where: { id: commentId },
     data: { body: text, editedAt: new Date() },
-    include: {
-      user: { select: { id: true, username: true, name: true, image: true } },
-      attachments: {
-        include: {
-          media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } },
-        },
-      },
-    },
+    include: commentListInclude,
   });
 
   return { status: 200, body: { ok: true, comment: updated } };

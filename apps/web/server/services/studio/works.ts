@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { studioWorkRowSelect } from "@/server/db/selectors";
 import { slugify } from "@/lib/slugify";
 import { saveCoverUpload } from "@/server/uploads/upload";
 import { requireCreatorSession } from "./session";
@@ -45,17 +46,7 @@ export async function listStudioWorks(req: Request) {
   const works = await prisma.work.findMany({
     where: role === "ADMIN" && all ? {} : { authorId: userId },
     orderBy: { updatedAt: "desc" },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      type: true,
-      status: true,
-      updatedAt: true,
-      publishType: true,
-      authorId: true,
-      coverImage: true,
-    },
+    select: studioWorkRowSelect,
   });
 
   return { works };

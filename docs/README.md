@@ -26,4 +26,13 @@ Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
    - helper & konvensi untuk Next.js route handlers (API)
    - error handling konsisten via `apiRoute(...)`
 
+7) `stage-05-services.md`
+   - pemindahan business logic ke service layer (route handler jadi tipis)
+
+8) `stage-06-ui-split.md`
+   - pemecahan komponen UI besar ("monster files") menjadi modul & hooks
+
+9) `stage-07-data-access.md`
+   - standarisasi select/include Prisma + pagination helper + index hygiene
+
 Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.

@@ -1,4 +1,5 @@
 import prisma from "@/server/db/prisma";
+import { userPublicSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 
@@ -17,7 +18,7 @@ export const GET = apiRoute(async () => {
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {
-      reporter: { select: { id: true, username: true, name: true, image: true } },
+      reporter: { select: userPublicSelect },
     },
   });
 
@@ -33,7 +34,7 @@ export const GET = apiRoute(async () => {
           createdAt: true,
           targetType: true,
           targetId: true,
-          user: { select: { id: true, username: true, name: true, image: true } },
+          user: { select: userPublicSelect },
         },
       })
     : [];

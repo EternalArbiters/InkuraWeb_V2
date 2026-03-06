@@ -2,6 +2,7 @@
 // This route is kept for backward compatibility.
 
 import prisma from "@/server/db/prisma";
+import { commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 
@@ -27,10 +28,7 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: 100,
-    include: {
-      user: { select: { id: true, username: true, name: true, image: true } },
-      attachments: { include: { media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } } } },
-    },
+    include: commentListInclude,
   });
 
   return json({ ok: true, canModerate: canMod, comments });
@@ -93,10 +91,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
 
     return tx.comment.findUnique({
       where: { id: comment.id },
-      include: {
-        user: { select: { id: true, username: true, name: true, image: true } },
-        attachments: { include: { media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } } } },
-      },
+      include: commentListInclude,
     });
   });
 

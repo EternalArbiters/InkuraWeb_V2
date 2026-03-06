@@ -1,4 +1,5 @@
 import prisma from "@/server/db/prisma";
+import { chapterListItemSelect, comicPageSelect, nameSlugSelect, userPublicSelect } from "@/server/db/selectors";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
@@ -29,9 +30,9 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
       isMature: true,
       likeCount: true,
       authorNote: true,
-      warningTags: { select: { name: true, slug: true } },
+      warningTags: { select: nameSlugSelect },
       text: { select: { content: true } },
-      pages: { orderBy: { order: "asc" }, select: { id: true, imageUrl: true, order: true } },
+      pages: { orderBy: { order: "asc" }, select: comicPageSelect },
       work: {
         select: {
           id: true,
@@ -42,15 +43,15 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
           publishType: true,
           isMature: true,
           authorId: true,
-          author: { select: { id: true, username: true, name: true, image: true } },
-          translator: { select: { id: true, username: true, name: true, image: true } },
-          warningTags: { select: { name: true, slug: true } },
-          deviantLoveTags: { select: { name: true, slug: true } },
+          author: { select: userPublicSelect },
+          translator: { select: userPublicSelect },
+          warningTags: { select: nameSlugSelect },
+          deviantLoveTags: { select: nameSlugSelect },
           genres: { select: { slug: true } },
           chapters: {
             where: { status: "PUBLISHED" },
             orderBy: [{ number: "asc" }, { createdAt: "asc" }],
-            select: { id: true, number: true, title: true },
+            select: chapterListItemSelect,
           },
         },
       },

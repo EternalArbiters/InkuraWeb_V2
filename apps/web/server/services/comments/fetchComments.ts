@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { canModerateForTarget, CommentTargetTypeString } from "./moderation";
 import { buildCommentTree, safeCommentSort, sortRootComments } from "./tree";
@@ -71,16 +72,7 @@ export async function fetchCommentsFromRequest(req: Request) {
       where,
       orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
       take: clampInt(url.searchParams.get("max"), 500, 1, 800),
-      include: {
-        user: { select: { id: true, username: true, name: true, image: true } },
-        attachments: {
-          include: {
-            media: {
-              select: { id: true, type: true, url: true, contentType: true, sizeBytes: true },
-            },
-          },
-        },
-      },
+      include: commentListInclude,
     };
 
     const rows = await prisma.comment.findMany(query);
@@ -131,14 +123,7 @@ export async function fetchCommentsFromRequest(req: Request) {
     where,
     orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
     take: clampInt(url.searchParams.get("max"), 500, 1, 800),
-    include: {
-      user: { select: { id: true, username: true, name: true, image: true } },
-      attachments: {
-        include: {
-          media: { select: { id: true, type: true, url: true, contentType: true, sizeBytes: true } },
-        },
-      },
-    },
+    include: commentListInclude,
   };
 
   const rows = await prisma.comment.findMany(query);

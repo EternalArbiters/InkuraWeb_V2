@@ -203,6 +203,8 @@ model Work {
   @@index([language])
   @@index([publishType])
   @@index([translatorId])
+  @@index([status, updatedAt])
+  @@index([status, likeCount])
 }
 
 model Chapter {
@@ -552,6 +554,7 @@ model Notification {
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([userId, isRead, createdAt])
   @@unique([userId, dedupeKey])
   @@index([workId, createdAt])
   @@index([chapterId, createdAt])

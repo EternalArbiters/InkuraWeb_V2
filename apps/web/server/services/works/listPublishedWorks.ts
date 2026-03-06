@@ -2,6 +2,8 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { parseCursor, parseSkip, parseTake, nextCursorFromRows } from "@/server/db/pagination";
+import { workCardSelect } from "@/server/db/selectors";
 import { getViewerWithPrefs } from "./viewer";
 
 function splitCsv(v: string | null): string[] {
@@ -17,12 +19,6 @@ function getAllCsv(searchParams: URLSearchParams, key: string): string[] {
   return merged
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-}
-
-function numParam(v: string | null, def: number, min: number, max: number) {
-  const n = v ? parseInt(v, 10) : def;
-  if (!Number.isFinite(n)) return def;
-  return Math.min(max, Math.max(min, n));
 }
 
 function upperEnum(v: string | null) {
@@ -95,8 +91,9 @@ export async function listPublishedWorks(req: Request) {
   const comicType = upperEnum(searchParams.get("comicType")); // MANGA | MANHWA | MANHUA | WEBTOON | ...
 
   // Pagination
-  const take = numParam(searchParams.get("take"), 24, 1, 60);
-  const skip = numParam(searchParams.get("skip"), 0, 0, 5000);
+  const take = parseTake(searchParams, { def: 24, min: 1, max: 60 });
+  const skip = parseSkip(searchParams, { def: 0, min: 0, max: 5000 });
+  const cursor = parseCursor(searchParams);
 
   // Sorting
   const sort = (searchParams.get("sort") || "newest").toLowerCase(); // newest|liked|rated
@@ -304,37 +301,28 @@ export async function listPublishedWorks(req: Request) {
 
   if (AND.length) where.AND = AND;
 
-  let orderBy: any = { updatedAt: "desc" };
-  if (sort === "liked") orderBy = { likeCount: "desc" };
+  let orderBy: any = [{ updatedAt: "desc" }, { id: "desc" }];
+  if (sort === "liked") orderBy = [{ likeCount: "desc" }, { id: "desc" }];
   if (sort === "rated")
-    orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { updatedAt: "desc" }];
+    orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { updatedAt: "desc" }, { id: "desc" }];
 
-  const works = await prisma.work.findMany({
+  const query: any = {
     where,
     orderBy,
     take,
-    skip,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      coverImage: true,
-      updatedAt: true,
-      type: true,
-      comicType: true,
-      likeCount: true,
-      ratingAvg: true,
-      ratingCount: true,
-      isMature: true,
-      language: true,
-      completion: true,
-      chapterCount: true,
-      publishType: true,
-      warningTags: { select: { name: true, slug: true } },
-      author: { select: { username: true, name: true } },
-      translator: { select: { username: true, name: true } },
-    },
-  });
+    select: workCardSelect,
+  };
+
+  // Cursor pagination (optional). Falls back to offset pagination (skip).
+  if (cursor) {
+    query.cursor = { id: cursor };
+    query.skip = 1;
+  } else {
+    query.skip = skip;
+  }
+
+  const works = await prisma.work.findMany(query);
+  const nextCursor = nextCursorFromRows(works as any, take);
 
   // Add viewer interaction flags for list rows (bookmark/favorite)
   let worksWithViewer: any[] = works as any;
@@ -363,6 +351,7 @@ export async function listPublishedWorks(req: Request) {
 
   return {
     works: worksWithViewer,
+    nextCursor,
     viewer: viewer
       ? {
           adultConfirmed: viewer.adultConfirmed,
