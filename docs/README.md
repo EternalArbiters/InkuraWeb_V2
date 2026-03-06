@@ -35,4 +35,8 @@ Dokumen yang dianggap **paling relevan** untuk kerja sehari-hari:
 9) `stage-07-data-access.md`
    - standarisasi select/include Prisma + pagination helper + index hygiene
 
+10) `stage-08-observability.md`
+   - structured logging (request id, route, status, userId bila ada)
+   - UI error boundaries konsisten
+
 Dokumen deployment singkat ada di `../DEPLOYMENT.md` (root) dan detailnya ada di `apps/web/docs/`.

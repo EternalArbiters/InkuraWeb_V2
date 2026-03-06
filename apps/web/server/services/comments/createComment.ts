@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { commentListInclude, mediaObjectSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { notifyCommentEvents } from "@/server/services/notifyCommentEvents";
+import { errorToMeta, logWarn } from "@/server/observability/logger";
 
 export type CommentTargetTypeString = "WORK" | "CHAPTER";
 
@@ -129,7 +130,14 @@ export async function createCommentFromRequest(req: Request) {
       });
     }
   } catch (e) {
-    console.error("notifyCommentEvents failed", e);
+    logWarn("comments.notify_comment_events_failed", {
+      commentId: created?.id || null,
+      actorId: session.user.id,
+      targetType,
+      targetId,
+      parentId: parentId || null,
+      ...errorToMeta(e),
+    });
   }
 
   return { status: 201, body: { ok: true, comment: created } };

@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { canModerateForTarget } from "./moderation";
+import { errorToMeta, logWarn } from "@/server/observability/logger";
 
 function clampText(s: unknown): string {
   return String(s ?? "").trim();
@@ -267,7 +268,13 @@ export async function setCommentPinned(req: Request, commentId: string) {
       }
     }
   } catch (e) {
-    console.error("notify pinned failed", e);
+    logWarn("comments.notify_pinned_failed", {
+      actorId: session.user.id,
+      commentId: updated.id,
+      targetType: updated.targetType,
+      targetId: updated.targetId,
+      ...errorToMeta(e),
+    });
   }
 
   return { status: 200, body: { ok: true, isPinned: updated.isPinned } };
