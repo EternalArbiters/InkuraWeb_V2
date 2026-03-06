@@ -3,40 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Menu, X, Search, Upload, Settings, LogOut, Users, History, ListOrdered, Bookmark, Layers,
-  Bell,
-  Sun,
-  Moon,
-  ChevronDown,
-} from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 import IconButton from "./IconButton";
-import NavCountBadge from "./NavCountBadge";
 import MobileNav from "./MobileNav";
-
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isActive = pathname === href;
-
-  return (
-    <Link
-      href={href}
-      // Disable prefetch for stability with auth-gated routes.
-      // Prefetch can cache an unauthenticated server response (redirect to /auth/signin)
-      // which then persists even after the user logs in.
-      prefetch={false}
-      className={`text-sm font-medium px-3 py-1 rounded transition-all ${isActive
-        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-        : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-800 dark:text-gray-200"
-        }`}
-    >
-      {children}
-    </Link>
-  );
-}
+import DesktopNavLinks from "./dashboardNavbar/DesktopNavLinks";
+import DesktopSearch from "./dashboardNavbar/DesktopSearch";
+import DesktopActions from "./dashboardNavbar/DesktopActions";
+import SearchOverlay from "./dashboardNavbar/SearchOverlay";
+import ProgressBar from "./dashboardNavbar/ProgressBar";
+import { useThemeToggle } from "./dashboardNavbar/useThemeToggle";
+import { useMobileHeaderVisibility } from "./dashboardNavbar/useMobileHeaderVisibility";
+import { useNavigationProgress } from "./dashboardNavbar/useNavigationProgress";
 
 export default function DashboardNavbar() {
   const { data: session } = useSession();
@@ -44,94 +23,31 @@ export default function DashboardNavbar() {
   const pathname = usePathname();
   const isAuthed = !!session?.user?.id;
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, toggleDarkMode } = useThemeToggle();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showMobileNav, setShowMobileNav] = useState(true);
   const [dropdown, setDropdown] = useState("");
   const [searchType, setSearchType] = useState("title");
   const [searchQuery, setSearchQuery] = useState("");
-  const [scrollY, setScrollY] = useState(0);
 
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [navProgress, setNavProgress] = useState(0);
-  const navFallbackTimer = useRef<number | null>(null);
-  const navProgressTimer = useRef<number | null>(null);
+  const { showMobileNav } = useMobileHeaderVisibility({ isMenuOpen, setIsMenuOpen });
+  const { isNavigating, navProgress, startNavigation } = useNavigationProgress(pathname);
 
-  const displayName = session?.user?.name || session?.user?.email?.split("@")[0] || (isAuthed ? "User" : "Guest");
+  const displayName =
+    session?.user?.name ||
+    session?.user?.email?.split("@")[0] ||
+    (isAuthed ? "User" : "Guest");
+
   const userImage = session?.user?.image || "/images/default-avatar.png";
-  const avatarFocusX = Number.isFinite(Number((session?.user as any)?.avatarFocusX)) ? Number((session?.user as any)?.avatarFocusX) : 50;
-  const avatarFocusY = Number.isFinite(Number((session?.user as any)?.avatarFocusY)) ? Number((session?.user as any)?.avatarFocusY) : 50;
-  const avatarZoom = Number.isFinite(Number((session?.user as any)?.avatarZoom)) ? Math.max(1, Number((session?.user as any)?.avatarZoom)) : 1;
-
-  // Set theme
-  useEffect(() => {
-    const dark = localStorage.getItem("theme") === "dark";
-    setIsDarkMode(dark);
-    document.documentElement.classList.toggle("dark", dark);
-  }, []);
-
-
-  // Hide scroll button if menu open
-  useEffect(() => {
-    const scrollBtn = document.getElementById("scrollToTop");
-    if (scrollBtn) {
-      scrollBtn.style.display = isMenuOpen ? "none" : "block";
-    }
-  }, [isMenuOpen]);
-
-  // Hide navbar on scroll down (only mobile)
-  useEffect(() => {
-    let lastY = window.scrollY;
-    const handleScroll = () => {
-      const current = window.scrollY;
-      setScrollY(current);
-      if (current <= 10) {
-        setShowMobileNav(true);
-      } else if (current > lastY) {
-        setShowMobileNav(false);
-      } else {
-        setShowMobileNav(true);
-      }
-      lastY = current;
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const handleTap = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-
-      const clickedInsideSidebar = target.closest("aside");
-      const clickedInsideHeader = target.closest("header");
-
-      // Kalau klik terjadi di dalam sidebar atau header, jangan tutup
-      if (clickedInsideSidebar || clickedInsideHeader) return;
-
-      // Kalau klik terjadi di luar sidebar dan header
-      if (isMenuOpen && !showMobileNav) {
-        setIsMenuOpen(false);
-        setShowMobileNav(true);
-      } else if (isMenuOpen) {
-        setIsMenuOpen(false);
-      } else if (!isMenuOpen && !showMobileNav && scrollY > 20) {
-        setShowMobileNav(true);
-      } else if (!isMenuOpen && showMobileNav && scrollY > 20) {
-        setShowMobileNav(false);
-      }
-    };
-
-    document.addEventListener("click", handleTap);
-    return () => document.removeEventListener("click", handleTap);
-  }, [isMenuOpen, showMobileNav, scrollY]);
-
-
-  const toggleDarkMode = useCallback(() => {
-    const newTheme = !isDarkMode;
-    setIsDarkMode(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", newTheme);
-  }, [isDarkMode]);
+  const avatarFocusX = Number.isFinite(Number((session?.user as any)?.avatarFocusX))
+    ? Number((session?.user as any)?.avatarFocusX)
+    : 50;
+  const avatarFocusY = Number.isFinite(Number((session?.user as any)?.avatarFocusY))
+    ? Number((session?.user as any)?.avatarFocusY)
+    : 50;
+  const avatarZoom = Number.isFinite(Number((session?.user as any)?.avatarZoom))
+    ? Math.max(1, Number((session?.user as any)?.avatarZoom))
+    : 1;
 
   const toggleDropdown = useCallback((id: string) => {
     setDropdown((prev) => (prev === id ? "" : id));
@@ -142,314 +58,79 @@ export default function DashboardNavbar() {
       e.preventDefault();
       if (searchQuery.trim()) {
         startNavigation();
-        router.push(`/search?type=${searchType}&q=${encodeURIComponent(searchQuery.trim())}`);
+        router.push(
+          `/search?type=${searchType}&q=${encodeURIComponent(searchQuery.trim())}`
+        );
       }
     },
-    [router, searchType, searchQuery]
+    [router, searchType, searchQuery, startNavigation]
   );
 
   const handleLogout = useCallback(() => {
     signOut();
   }, []);
 
-  const clearNavTimers = useCallback(() => {
-    if (navFallbackTimer.current) {
-      window.clearTimeout(navFallbackTimer.current);
-      navFallbackTimer.current = null;
-    }
-    if (navProgressTimer.current) {
-      window.clearInterval(navProgressTimer.current);
-      navProgressTimer.current = null;
-    }
-  }, []);
-
-  const startNavigation = useCallback(() => {
-    setIsNavigating(true);
-    setNavProgress((p) => (p > 0 ? p : 12));
-
-    // Clear any previous timers
-    clearNavTimers();
-
-    // Simulated loading: ease towards 80% while waiting for the new route to paint
-    navProgressTimer.current = window.setInterval(() => {
-      setNavProgress((p) => {
-        if (p >= 80) return p;
-        const inc = Math.max(1, (80 - p) * 0.08);
-        return Math.min(80, p + inc);
-      });
-    }, 120);
-
-    // Fallback stop (in case navigation fails)
-    navFallbackTimer.current = window.setTimeout(() => {
-      clearNavTimers();
-      setIsNavigating(false);
-      setNavProgress(0);
-    }, 6000);
-  }, [clearNavTimers]);
-
-  // Make the navbar divider show a loading-like progress during navigation.
-  useEffect(() => {
-    const onClickCapture = (e: MouseEvent) => {
-      if (e.defaultPrevented) return;
-      // only primary clicks
-      if (e.button !== 0) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-      const target = e.target as HTMLElement | null;
-      const a = target?.closest?.("a") as HTMLAnchorElement | null;
-      if (!a) return;
-      const rawHref = a.getAttribute("href") || "";
-      if (!rawHref || rawHref.startsWith("#")) return;
-      if (a.hasAttribute("download")) return;
-      if (a.target && a.target !== "_self") return;
-
-      // internal only
-      try {
-        const url = new URL(a.href, window.location.href);
-        if (url.origin !== window.location.origin) return;
-        if (url.href === window.location.href) return;
-      } catch {
-        return;
-      }
-
-      startNavigation();
-    };
-
-    document.addEventListener("click", onClickCapture, true);
-    return () => {
-      document.removeEventListener("click", onClickCapture, true);
-      clearNavTimers();
-    };
-  }, [startNavigation, clearNavTimers]);
-
-  useEffect(() => {
-    // When route changes, complete the loading bar, then fade back to dim.
-    if (!isNavigating) return;
-
-    // Stop the simulated progress timer and clear fallback
-    if (navProgressTimer.current) {
-      window.clearInterval(navProgressTimer.current);
-      navProgressTimer.current = null;
-    }
-    if (navFallbackTimer.current) {
-      window.clearTimeout(navFallbackTimer.current);
-      navFallbackTimer.current = null;
-    }
-
-    setNavProgress(100);
-    const t1 = window.setTimeout(() => setIsNavigating(false), 220);
-    const t2 = window.setTimeout(() => setNavProgress(0), 650);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [pathname, isNavigating]);
-
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b dark:border-gray-800 ${showMobileNav ? "" : "translate-y-[-100%] md:translate-y-0"
-          }`}
+        className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b dark:border-gray-800 ${
+          showMobileNav ? "" : "translate-y-[-100%] md:translate-y-0"
+        }`}
       >
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between space-x-4">
           {/* Left (Logo + Menu button) */}
           <div className="flex items-center justify-between w-full md:w-auto">
             <Link href="/home" className="flex items-center gap-2">
               <Image src="/logo-inkura.png" alt="Inkura" width={36} height={36} />
-              <span className="text-2xl font-bold text-gray-800 dark:text-white">INKURA</span>
+              <span className="text-2xl font-bold text-gray-800 dark:text-white">
+                INKURA
+              </span>
             </Link>
             <div className="flex items-center gap-2 md:hidden ml-2">
-              <IconButton icon={<Search size={22} />} onClick={() => setDropdown("search")} />
+              <IconButton
+                icon={<Search size={22} />}
+                onClick={() => setDropdown("search")}
+              />
               <button onClick={() => setIsMenuOpen((prev) => !prev)}>
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
-
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1 mx-auto">
-            {["All", "Novel", "Comic", "Film"].map((item) => (
-              <NavLink key={item} href={`/${item.toLowerCase()}`}>
-                {item}
-              </NavLink>
-            ))}
+            <DesktopNavLinks />
 
-            {/* Search */}
-            <form onSubmit={handleSearch} className="flex items-center w-[420px]">
-              <div className="flex flex-1 border border-blue-500 bg-white dark:bg-gray-800 rounded-full overflow-hidden shadow-md">
-                <select
-                  value={searchType}
-                  onChange={(e) => setSearchType(e.target.value)}
-                  className="px-3 text-sm border-r bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
-                >
-                  {["title", "tags", "authors", "translator", "users"].map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt[0].toUpperCase() + opt.slice(1)}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  placeholder={`Search ${searchType}...`}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-4 bg-transparent text-gray-800 dark:text-white focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                >
-                  <Search size={18} strokeWidth={2.5} />
-                </button>
-              </div>
-            </form>
+            <DesktopSearch
+              searchType={searchType}
+              setSearchType={setSearchType}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onSubmit={handleSearch}
+            />
 
-            {/* Icons */}
-            <div className="flex items-center gap-0 pl-6 h-10">
-              <IconButton icon={<Upload size={22} />} label="Upload" href="/studio" />
-              <div className="relative">
-                <IconButton icon={<ListOrdered size={22} />} label="Category" onClick={() => toggleDropdown("category")} />
-                {dropdown === "category" && (
-                  <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg">
-                    {["genre", "region", "translated"].map((path) => (
-                      <Link
-                        key={path}
-                        href={`/${path}`}
-                        className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
-                      >
-                        {path[0].toUpperCase() + path.slice(1)}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <IconButton icon={<Users size={22} />} label="Community" href="/community" />
-              <div className="relative">
-                <IconButton
-                  icon={
-                    <div className="relative">
-                      <Bell size={22} />
-                      <NavCountBadge endpoint="/api/notifications/unread-count" />
-                    </div>
-                  }
-                  label="Notifications"
-                  href="/notifications"
-                />
-              </div>
-              <IconButton icon={<Bookmark size={22} />} label="Library" href="/library" />
-              <IconButton icon={<Layers size={22} />} label="Lists" href="/lists" />
-              <IconButton icon={<History size={22} />} label="History" href="/settings/history" />
-              <div className="relative">
-                <IconButton icon={<Settings size={22} />} label="Settings" onClick={() => toggleDropdown("settings")} />
-                {dropdown === "settings" && (
-                  <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg w-48">
-                    {isAuthed ? (
-                      <Link
-                        href="/settings/profile"
-                        prefetch={false}
-                        className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
-                      >
-                        Edit Profile
-                      </Link>
-                    ) : null}
-                    <Link href="/settings/account" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">Account</Link>
-                    {isAuthed ? (
-                      <Link href="/admin-report" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
-                        <span className="inline-flex items-center gap-2">
-                          Admin Report
-                          <NavCountBadge endpoint="/api/admin-report/unread-count" variant="inline" />
-                        </span>
-                      </Link>
-                    ) : null}
-                    {session?.user?.role === "ADMIN" ? (
-                      <Link href="/admin/reports" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
-                        Content Reports
-                      </Link>
-                    ) : null}
-                    {session?.user?.role === "ADMIN" ? (
-                      <Link href="/admin/taxonomy" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
-                        Taxonomy
-                      </Link>
-                    ) : null}
-                    <div className="px-4 py-2">
-                      <button
-                        onClick={toggleDarkMode}
-                        className={`w-14 h-8 rounded-full flex items-center px-1 shadow-inner ${isDarkMode ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end" : "bg-gray-300 justify-start"
-                          }`}
-                      >
-                        <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
-                          {isDarkMode ? <Moon size={14} className="text-indigo-700" /> : <Sun size={14} className="text-yellow-600" />}
-                        </div>
-                      </button>
-                    </div>
-                    <div className="px-4 pb-2">
-                      <Link
-                        href="/donate"
-                        prefetch={false}
-                        className="block w-full text-center px-3 py-2 rounded-full text-sm font-semibold bg-red-600 text-white shadow-md hover:bg-red-700 transition"
-                      >
-                        Donate For Inkura
-                      </Link>
-                    </div>
-                    {isAuthed ? (
-                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                        <LogOut size={16} /> Logout
-                      </button>
-                    ) : (
-                      <Link href="/auth/signin" className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white">
-                        Sign In
-                      </Link>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Profile Info (Desktop Only) */}
-              {isAuthed ? (
-                <Link href="/settings/profile" prefetch={false} className="ml-4 hidden md:flex items-center gap-2 group">
-                  <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">
-                    {displayName}
-                  </span>
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={userImage}
-                      alt="pp"
-                      className="absolute inset-0 w-full h-full object-cover"
-                      style={{
-                        objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
-                        transform: `scale(${avatarZoom})`,
-                        transformOrigin: "center",
-                      }}
-                    />
-                  </div>
-                </Link>
-              ) : (
-                <div className="ml-4 hidden md:flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{displayName}</span>
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={userImage} alt="pp" className="absolute inset-0 w-full h-full object-cover" />
-                  </div>
-                </div>
-              )}
-            </div>
+            <DesktopActions
+              dropdown={dropdown}
+              toggleDropdown={toggleDropdown}
+              isAuthed={isAuthed}
+              userRole={session?.user?.role}
+              displayName={displayName}
+              userImage={userImage}
+              avatarFocusX={avatarFocusX}
+              avatarFocusY={avatarFocusY}
+              avatarZoom={avatarZoom}
+              isDarkMode={isDarkMode}
+              toggleDarkMode={toggleDarkMode}
+              handleLogout={handleLogout}
+            />
           </div>
         </div>
 
-        {!isMenuOpen && (
-          <div className="relative h-1 w-full">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-25" />
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 origin-left transition-opacity duration-200 shadow-[0_0_12px_rgba(59,130,246,0.25)]"
-              style={{
-                transform: `scaleX(${Math.max(0.06, navProgress / 100)})`,
-                opacity: isNavigating ? 1 : 0,
-              }}
-            />
-          </div>
-        )}
+        <ProgressBar
+          isMenuOpen={isMenuOpen}
+          isNavigating={isNavigating}
+          navProgress={navProgress}
+        />
       </header>
 
       <MobileNav
@@ -467,73 +148,15 @@ export default function DashboardNavbar() {
         isAdmin={session?.user?.role === "ADMIN"}
       />
 
-      <AnimatePresence>
-        {dropdown === "search" && (
-          <motion.div
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-6 px-4"
-            onClick={() => setDropdown("")}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="w-full max-w-md bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-2xl border border-white/20 dark:border-white/10 relative"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -10, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            >
-              <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-white">
-              Search anything on <span className="text-pink-500 font-bold">Inkura</span>
-              </h2>
-              <form
-                onSubmit={handleSearch}
-                className="relative flex w-full items-stretch overflow-hidden rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-              >
-                <div className="relative w-[120px] shrink-0">
-                  <select
-                    value={searchType}
-                    onChange={(e) => setSearchType(e.target.value)}
-                    className="h-full w-full appearance-none bg-transparent pl-4 pr-9 py-2 text-sm text-gray-700 dark:text-white outline-none"
-                  >
-                    {["title", "tags", "authors", "translator", "users"].map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt[0].toUpperCase() + opt.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={16}
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
-                  />
-                </div>
-
-                <div className="w-px bg-gray-300/80 dark:bg-gray-700" />
-
-                <input
-                  autoFocus
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={`Search ${searchType}...`}
-                  className="min-w-0 flex-1 bg-transparent px-4 py-2 pr-20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white"
-                />
-
-                <button
-                  type="submit"
-                  className="absolute right-0 inset-y-0 w-16 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110 flex items-center justify-center"
-                  aria-label="Search"
-                  title="Search"
-                >
-                  <Search size={16} />
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      <SearchOverlay
+        open={dropdown === "search"}
+        onClose={() => setDropdown("")}
+        searchType={searchType}
+        setSearchType={setSearchType}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleSearch}
+      />
     </>
   );
 }

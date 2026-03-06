@@ -1,0 +1,105 @@
+"use client";
+
+export default function CreditsSourceFields({
+  needsSource,
+  publishType,
+  originalAuthorCredit,
+  setOriginalAuthorCredit,
+  originalTranslatorCredit,
+  setOriginalTranslatorCredit,
+  sourceUrl,
+  setSourceUrl,
+  uploaderNote,
+  setUploaderNote,
+  translatorCredit,
+  setTranslatorCredit,
+  companyCredit,
+  setCompanyCredit,
+}: {
+  needsSource: boolean;
+  publishType: string;
+  originalAuthorCredit: string;
+  setOriginalAuthorCredit: (v: string) => void;
+  originalTranslatorCredit: string;
+  setOriginalTranslatorCredit: (v: string) => void;
+  sourceUrl: string;
+  setSourceUrl: (v: string) => void;
+  uploaderNote: string;
+  setUploaderNote: (v: string) => void;
+  translatorCredit: string;
+  setTranslatorCredit: (v: string) => void;
+  companyCredit: string;
+  setCompanyCredit: (v: string) => void;
+}) {
+  if (!needsSource) return null;
+
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+      <div className="text-sm font-semibold">Credit & source</div>
+
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold">Original author credit (required)</span>
+        <input
+          value={originalAuthorCredit}
+          onChange={(e) => setOriginalAuthorCredit(e.target.value)}
+          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        />
+      </label>
+
+      {publishType === "REUPLOAD" ? (
+        <label className="grid gap-2">
+          <span className="text-sm font-semibold">Original translator credit (required)</span>
+          <input
+            value={originalTranslatorCredit}
+            onChange={(e) => setOriginalTranslatorCredit(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            placeholder="Contoh: Nama translator / group"
+          />
+        </label>
+      ) : null}
+
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold">Source URL (required)</span>
+        <input
+          value={sourceUrl}
+          onChange={(e) => setSourceUrl(e.target.value)}
+          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        />
+      </label>
+
+      {publishType === "TRANSLATION" ? (
+        <label className="grid gap-2">
+          <span className="text-sm font-semibold">Translator credit (optional)</span>
+          <input
+            value={translatorCredit}
+            onChange={(e) => setTranslatorCredit(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            placeholder="Contoh: Eternal Scans"
+          />
+        </label>
+      ) : null}
+
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold">Publisher (optional)</span>
+        <input
+          value={companyCredit}
+          onChange={(e) => setCompanyCredit(e.target.value)}
+          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          placeholder="Contoh: Kakao, Naver, Shueisha, dll"
+        />
+      </label>
+
+      {publishType === "REUPLOAD" ? (
+        <label className="grid gap-2">
+          <span className="text-sm font-semibold">Uploader note (optional)</span>
+          <textarea
+            value={uploaderNote}
+            onChange={(e) => setUploaderNote(e.target.value)}
+            rows={3}
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          />
+        </label>
+      ) : null}
+    </div>
+  );
+}
