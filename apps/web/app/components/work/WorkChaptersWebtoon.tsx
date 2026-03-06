@@ -108,7 +108,7 @@ export default function WorkChaptersWebtoon({
                 }
               >
                 <div className="relative w-[120px] shrink-0">
-                  <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-lg">
+                  <div className="relative aspect-[3/2] bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-lg">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
