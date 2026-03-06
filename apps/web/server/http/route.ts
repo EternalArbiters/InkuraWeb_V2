@@ -60,9 +60,9 @@ function statusCodeToName(status: number) {
  * - Attach `x-request-id` to all responses (best-effort)
  * - Structured JSON logs for server-side errors (request id + route + status + userId when available)
  */
-export function apiRoute<TCtx = any>(
-  handler: (req: Request, ctx?: TCtx) => Promise<Response>,
-): (req: Request, ctx?: TCtx) => Promise<Response> {
+export function apiRoute(handler: (req: Request) => Promise<Response>): (req: Request) => Promise<Response>;
+export function apiRoute<TCtx>(handler: (req: Request, ctx: TCtx) => Promise<Response>): (req: Request, ctx: TCtx) => Promise<Response>;
+export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Response>) {
   return async (req: Request, ctx?: TCtx) => {
     const requestId = getOrCreateRequestId(req);
     const startedAt = Date.now();
