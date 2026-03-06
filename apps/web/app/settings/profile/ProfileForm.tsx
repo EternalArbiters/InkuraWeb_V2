@@ -1,250 +1,125 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
-import ThumbCropper from "@/app/components/ThumbCropper";
+import * as React from "react";
 
-type Profile = {
+import { presignAndUpload } from "@/lib/r2UploadClient";
+import { apiJson } from "@/server/http/apiJson";
+
+import AvatarPickerCard from "./components/AvatarPickerCard";
+import ProfileAlerts from "./components/ProfileAlerts";
+import ProfileFieldsCard from "./components/ProfileFieldsCard";
+
+type Initial = {
   email: string;
-  username: string | null;
-  name: string | null;
-  image: string | null;
+  name: string;
+  username: string;
+  image?: string | null;
   avatarFocusX?: number | null;
   avatarFocusY?: number | null;
   avatarZoom?: number | null;
 };
 
-export default function ProfileForm({ initial }: { initial: Profile }) {
-  const { update } = useSession();
+export default function ProfileForm({ initial }: { initial: Initial }) {
+  const [name, setName] = React.useState(initial.name || "");
+  const [username, setUsername] = React.useState(initial.username || "");
+  const [image, setImage] = React.useState(initial.image || "");
 
-  const [name, setName] = useState(initial.name ?? "");
-  const [username, setUsername] = useState(initial.username ?? "");
-  const [image, setImage] = useState(initial.image ?? "");
+  const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 0.5);
+  const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 0.5);
+  const [avatarZoom, setAvatarZoom] = React.useState<number>(initial.avatarZoom ?? 1);
 
-  const [avatarFocusX, setAvatarFocusX] = useState<number>(
-    Number.isFinite(Number(initial.avatarFocusX)) ? Number(initial.avatarFocusX) : 50
-  );
-  const [avatarFocusY, setAvatarFocusY] = useState<number>(
-    Number.isFinite(Number(initial.avatarFocusY)) ? Number(initial.avatarFocusY) : 50
-  );
-  const [avatarZoom, setAvatarZoom] = useState<number>(
-    Number.isFinite(Number(initial.avatarZoom)) ? Math.max(1, Number(initial.avatarZoom)) : 1
-  );
+  const [avatarUploading, setAvatarUploading] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [err, setErr] = React.useState<string | null>(null);
+  const [ok, setOk] = React.useState<string | null>(null);
 
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [ok, setOk] = useState<string | null>(null);
-  const [avatarUploading, setAvatarUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const avatar = useMemo(() => {
-    const v = (image || initial.image || "").trim();
-    return v || "";
-  }, [image, initial.image]);
+  const avatarPreview = image || initial.image || null;
 
-  useEffect(() => {
-    setName(initial.name ?? "");
-    setUsername(initial.username ?? "");
-    setImage(initial.image ?? "");
-    setAvatarFocusX(Number.isFinite(Number(initial.avatarFocusX)) ? Number(initial.avatarFocusX) : 50);
-    setAvatarFocusY(Number.isFinite(Number(initial.avatarFocusY)) ? Number(initial.avatarFocusY) : 50);
-    setAvatarZoom(Number.isFinite(Number(initial.avatarZoom)) ? Math.max(1, Number(initial.avatarZoom)) : 1);
-  }, [initial]);
-
-  const uploadAvatarFile = async (file: File) => {
-    setError(null);
-    setOk(null);
-
-    // Basic client guards
-    if (!file.type || !file.type.startsWith("image/")) {
-      setError("Please choose an image file (PNG/JPG/WebP)." );
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Avatar too large. Max 2MB.");
-      return;
-    }
-
+  const uploadAvatar = async (file: File) => {
     setAvatarUploading(true);
-
+    setErr(null);
+    setOk(null);
     try {
-      const presignRes = await fetch("/api/me/avatar/presign", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
-      });
-
-      const presignData = await presignRes.json().catch(() => ({} as any));
-      if (!presignRes.ok) {
-        throw new Error(String(presignData?.error || "Failed to prepare upload"));
-      }
-
-      const putUrl = presignData?.uploadUrl?.uploadUrl || presignData?.uploadUrl || "";
-      const publicUrl = presignData?.publicUrl || presignData?.uploadUrl?.publicUrl || "";
-      if (!putUrl || !publicUrl) throw new Error("Upload URL missing");
-
-      const putRes = await fetch(putUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!putRes.ok) throw new Error("Upload failed");
-
+      const { publicUrl } = await presignAndUpload(file, "avatar");
       setImage(publicUrl);
-      // Reset crop defaults for a new upload
-      setAvatarFocusX(50);
-      setAvatarFocusY(50);
-      setAvatarZoom(1);
-      setOk("Avatar uploaded. Click 'Save changes' to apply.");
+      setOk("Avatar uploaded");
     } catch (e: any) {
-      setError(e?.message || "Failed to upload avatar");
+      setErr(String(e?.message || e || "Upload failed"));
     } finally {
       setAvatarUploading(false);
     }
   };
 
-  const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // reset input so selecting same file again still triggers change
-    e.target.value = "";
-    await uploadAvatarFile(file);
-  };
-
-  const onSubmit = async (e: React.FormEvent) => {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setError(null);
+    setErr(null);
     setOk(null);
-
-    const res = await fetch("/api/me/profile", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        name,
-        username,
-        image,
-        avatarFocusX,
-        avatarFocusY,
-        avatarZoom,
-      }),
-    }).catch(() => null);
-
-    if (!res) {
-      setSaving(false);
-      setError("Network error. Please try again.");
-      return;
-    }
-
-    const data = await res.json().catch(() => ({} as any));
-    if (!res.ok) {
-      setSaving(false);
-      setError(String(data?.error || "Failed to save"));
-      return;
-    }
-
-    setSaving(false);
-    setOk("Saved.");
-
-    // Refresh NextAuth session so navbar updates name/image without re-login.
     try {
-      await update();
-    } catch {
-      // ignore
+      const res = await apiJson<{ ok: true }>("/api/me/profile", {
+        method: "PATCH",
+        body: {
+          name,
+          username,
+          image: image || null,
+          avatarFocusX,
+          avatarFocusY,
+          avatarZoom,
+        },
+      });
+      if (!res.ok) throw new Error(res.error || "Failed to save");
+      setOk("Saved");
+    } catch (e: any) {
+      setErr(String(e?.message || e || "Failed"));
+    } finally {
+      setSaving(false);
     }
-  };
+  }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 p-6 shadow-sm">
-      <div className="flex items-center gap-4">
-        <div className="w-24 max-w-[120px]">
-          <ThumbCropper
-            src={avatar || null}
-            aspect={1}
-            cropShape="round"
-            maxZoom={6}
-            value={{ focusX: avatarFocusX, focusY: avatarFocusY, zoom: avatarZoom }}
-            onChange={(v) => {
-              setAvatarFocusX(v.focusX);
-              setAvatarFocusY(v.focusY);
-              setAvatarZoom(v.zoom);
-            }}
-            disabled={avatarUploading}
-            onPickImage={() => fileInputRef.current?.click()}
-            onRemoveImage={() => {
-              setImage("");
-              setAvatarFocusX(50);
-              setAvatarFocusY(50);
-              setAvatarZoom(1);
-            }}
-            className="max-w-[120px]"
-          />
-        </div>
-        <div className="min-w-0">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Signed in as</div>
-          <div className="font-semibold text-gray-900 dark:text-white truncate">{initial.email}</div>
-        </div>
-      </div>
+    <form onSubmit={onSubmit} className="max-w-xl mx-auto grid gap-6">
+      <ProfileAlerts err={err} ok={ok} />
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        className="hidden"
-        onChange={onAvatarChange}
+      <AvatarPickerCard
+        initialEmail={initial.email}
+        avatar={avatarPreview}
+        avatarUploading={avatarUploading}
+        avatarFocusX={avatarFocusX}
+        setAvatarFocusX={setAvatarFocusX}
+        avatarFocusY={avatarFocusY}
+        setAvatarFocusY={setAvatarFocusY}
+        avatarZoom={avatarZoom}
+        setAvatarZoom={setAvatarZoom}
+        fileInputRef={fileInputRef}
+        onAvatarChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          void uploadAvatar(file);
+          e.target.value = "";
+        }}
+        onRemoveImage={() => {
+          setImage("");
+          setAvatarFocusX(0.5);
+          setAvatarFocusY(0.5);
+          setAvatarZoom(1);
+        }}
       />
 
-      {error ? (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
-          {error}
-        </div>
-      ) : null}
-
-      {ok ? (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-200">
-          {ok}
-        </div>
-      ) : null}
-
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="block">
-          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">Display name</div>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-            className="mt-2 w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">This is shown in the navbar.</div>
-        </label>
-
-        <label className="block">
-          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">Username</div>
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            placeholder="username"
-            className="mt-2 w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">3–24 chars: letters/numbers, - or _</div>
-        </label>
-
-        <label className="block md:col-span-2">
-          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">Avatar URL (optional)</div>
-          <input
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            placeholder="https://... or /images/..."
-            className="mt-2 w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">If left blank, Inkura will keep your current avatar.</div>
-        </label>
-      </div>
+      <ProfileFieldsCard
+        name={name}
+        onNameChange={setName}
+        username={username}
+        onUsernameChange={(v) => setUsername(v.replace(/\s+/g, "").toLowerCase())}
+        image={image}
+        onImageChange={setImage}
+      />
 
       <div className="mt-6 flex items-center justify-end gap-3">
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || avatarUploading}
           className="rounded-full px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save changes"}
