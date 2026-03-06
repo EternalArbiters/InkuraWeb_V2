@@ -36,7 +36,6 @@ export default function PagesGrid({
               className="border border-gray-200 dark:border-gray-800 overflow-hidden bg-white/70 dark:bg-gray-900/40"
             >
               <div className="relative aspect-[3/4] bg-black/5 dark:bg-white/5">
-                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={p.imageUrl}
                   alt={`Page ${p.order}`}

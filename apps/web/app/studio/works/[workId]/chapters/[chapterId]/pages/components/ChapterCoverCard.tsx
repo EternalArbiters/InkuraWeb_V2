@@ -32,7 +32,6 @@ export default function ChapterCoverCard({
       <div className="mt-3 grid grid-cols-[96px_1fr] gap-3 items-start">
         <div className="relative aspect-[4/3] border border-gray-200 dark:border-gray-800 bg-black/5 dark:bg-white/5 overflow-hidden">
           {thumbnailImage ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={thumbnailImage}
               alt="chapter thumb"

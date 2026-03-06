@@ -32,7 +32,6 @@ export default function WorkCoverCard({
       <div className="mt-3 grid grid-cols-[120px_1fr] gap-3 items-start">
         <div className="relative aspect-[3/4] border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden">
           {coverImage && !removeCover ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={coverImage}
               alt={title}

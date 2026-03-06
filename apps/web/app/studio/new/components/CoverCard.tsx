@@ -18,7 +18,6 @@ export default function CoverCard({
       <div className="grid md:grid-cols-[140px,1fr] gap-4 items-start">
         <div className="border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden aspect-[2/3]">
           {coverPreview ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={coverPreview}
               alt="cover preview"
