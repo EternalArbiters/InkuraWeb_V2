@@ -17,7 +17,7 @@ type Props = {
   avatarZoom: number;
   setAvatarZoom: (v: number) => void;
 
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: () => void;
 };
