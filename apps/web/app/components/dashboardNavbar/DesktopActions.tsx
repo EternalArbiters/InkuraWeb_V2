@@ -18,6 +18,15 @@ import IconButton from "../IconButton";
 import NavCountBadge from "../NavCountBadge";
 import { CATEGORY_PATHS } from "./constants";
 
+function formatNavDisplayName(displayName: string, maxChars = 10) {
+  const normalized = String(displayName || "").trim().replace(/\s+/g, " ");
+  if (!normalized) return "User";
+
+  const [firstWord, ...rest] = normalized.split(" ");
+  const base = firstWord.length > maxChars ? `${firstWord.slice(0, maxChars)}...` : firstWord;
+  return rest.length ? `${base}...` : base;
+}
+
 export default function DesktopActions({
   dropdown,
   toggleDropdown,
@@ -45,6 +54,8 @@ export default function DesktopActions({
   toggleDarkMode: () => void;
   handleLogout: () => void;
 }) {
+  const navDisplayName = formatNavDisplayName(displayName);
+
   return (
     <div className="flex items-center gap-0 pl-6 h-10">
       <IconButton icon={<Upload size={22} />} label="Upload" href="/studio" />
@@ -188,10 +199,10 @@ export default function DesktopActions({
         <Link
           href="/settings/profile"
           prefetch={false}
-          className="ml-4 hidden md:flex items-center gap-2 group"
+          className="ml-4 hidden md:flex items-center gap-2 group max-w-[132px] shrink-0"
         >
-          <span className="text-sm font-medium text-gray-800 dark:text-white truncate group-hover:underline">
-            {displayName}
+          <span title={displayName} className="max-w-[92px] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white group-hover:underline xl:max-w-[108px]">
+            {navDisplayName}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -208,9 +219,9 @@ export default function DesktopActions({
           </div>
         </Link>
       ) : (
-        <div className="ml-4 hidden md:flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-800 dark:text-white truncate">
-            {displayName}
+        <div className="ml-4 hidden md:flex items-center gap-2 max-w-[132px] shrink-0">
+          <span title={displayName} className="max-w-[92px] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white xl:max-w-[108px]">
+            {navDisplayName}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
             {/* eslint-disable-next-line @next/next/no-img-element */}

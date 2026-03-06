@@ -5,8 +5,16 @@ function row(label: string, value: ReactNode) {
   return (
     <div className="grid grid-cols-[120px_1fr] gap-3 py-2 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
       <div className="text-xs font-semibold text-gray-600 dark:text-gray-300">{label}</div>
-      <div className="text-sm text-gray-900 dark:text-white break-words">{value}</div>
+      <div className="min-w-0 text-sm text-gray-900 dark:text-white">{value}</div>
     </div>
+  );
+}
+
+function ellipsisText(value: ReactNode, title?: string) {
+  return (
+    <span title={title} className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+      {value}
+    </span>
   );
 }
 
@@ -40,33 +48,61 @@ export default function WorkInfoPanel({ work }: { work: any }) {
           ))}
 
           {row("Status", completion)}
-          {row("Origin", origin)}
-          {row("Language", language)}
-          {row("Publish", publishType)}
-          {row("Up by", uploader)}
+          {row("Origin", ellipsisText(origin, origin))}
+          {row("Language", ellipsisText(language, language))}
+          {row("Publish", ellipsisText(publishType, publishType))}
+          {row("Up by", ellipsisText(uploader, uploader))}
 
-          {translatorUser || translatorCredit ? row("Translator", translatorCredit || translatorUser) : null}
+          {translatorUser || translatorCredit ? row("Translator", ellipsisText(translatorCredit || translatorUser, String(translatorCredit || translatorUser))) : null}
 
-          {work?.originalAuthorCredit ? row("Original author", work.originalAuthorCredit) : null}
+          {work?.originalAuthorCredit ? row("Original author", ellipsisText(work.originalAuthorCredit, work.originalAuthorCredit)) : null}
 
-          {work?.originalTranslatorCredit ? row("Original translator", work.originalTranslatorCredit) : null}
-          {companyCredit ? row("Company", companyCredit) : null}
+          {work?.originalTranslatorCredit ? row("Original translator", ellipsisText(work.originalTranslatorCredit, work.originalTranslatorCredit)) : null}
+          {companyCredit ? row("Company", ellipsisText(companyCredit, companyCredit)) : null}
           {work?.sourceUrl ? row(
             "Source",
-            <Link className="underline text-blue-700 dark:text-blue-300 block max-w-full truncate" href={work.sourceUrl} target="_blank" rel="noreferrer">
+            <Link
+              className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap underline text-blue-700 dark:text-blue-300"
+              href={work.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={work.sourceUrl}
+            >
               {work.sourceUrl}
             </Link>
           ) : null}
 
           {work?.uploaderNote ? row("Note", <span className="whitespace-pre-wrap">{work.uploaderNote}</span>) : null}
 
-          {work?.prevArcUrl ? row("Prev arc", <Link className="underline text-blue-700 dark:text-blue-300 block max-w-full truncate" href={work.prevArcUrl} target="_blank" rel="noreferrer">{work.prevArcUrl}</Link>) : null}
-          {work?.nextArcUrl ? row("Next arc", <Link className="underline text-blue-700 dark:text-blue-300 block max-w-full truncate" href={work.nextArcUrl} target="_blank" rel="noreferrer">{work.nextArcUrl}</Link>) : null}
+          {work?.prevArcUrl ? row(
+            "Prev arc",
+            <Link
+              className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap underline text-blue-700 dark:text-blue-300"
+              href={work.prevArcUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={work.prevArcUrl}
+            >
+              {work.prevArcUrl}
+            </Link>
+          ) : null}
+          {work?.nextArcUrl ? row(
+            "Next arc",
+            <Link
+              className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap underline text-blue-700 dark:text-blue-300"
+              href={work.nextArcUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={work.nextArcUrl}
+            >
+              {work.nextArcUrl}
+            </Link>
+          ) : null}
 
-          {row("Chapters", String(work?.chapterCount ?? 0))}
-          {row("Favorites", String(work?.likeCount ?? 0))}
-          {row("Rating", `${(Math.round(Number(work?.ratingAvg ?? 0) * 10) / 10).toFixed(1)} (${work?.ratingCount ?? 0})`)}
-          {row("Updated", updatedLabel)}
+          {row("Chapters", ellipsisText(String(work?.chapterCount ?? 0), String(work?.chapterCount ?? 0)))}
+          {row("Favorites", ellipsisText(String(work?.likeCount ?? 0), String(work?.likeCount ?? 0)))}
+          {row("Rating", ellipsisText(`${(Math.round(Number(work?.ratingAvg ?? 0) * 10) / 10).toFixed(1)} (${work?.ratingCount ?? 0})`, `${(Math.round(Number(work?.ratingAvg ?? 0) * 10) / 10).toFixed(1)} (${work?.ratingCount ?? 0})`))}
+          {row("Updated", ellipsisText(updatedLabel, updatedLabel))}
         </div>
       </div>
     </div>
