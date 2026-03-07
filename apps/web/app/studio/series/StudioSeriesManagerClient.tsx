@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 type WorkLite = {
   id: string;
@@ -243,11 +244,23 @@ export default function StudioSeriesManagerClient({
                     <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{work.type} • {work.status}</div>
                   </div>
                   <div className="flex shrink-0 gap-2">
-                    <button type="button" onClick={() => moveWork(work.id, "up")} className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold dark:border-gray-800">
-                      Up
+                    <button
+                      type="button"
+                      onClick={() => moveWork(work.id, "up")}
+                      aria-label="Move up"
+                      title="Move up"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800"
+                    >
+                      <ArrowUp className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => moveWork(work.id, "down")} className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold dark:border-gray-800">
-                      Down
+                    <button
+                      type="button"
+                      onClick={() => moveWork(work.id, "down")}
+                      aria-label="Move down"
+                      title="Move down"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800"
+                    >
+                      <ArrowDown className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={() => removeWork(work.id)} className="rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 dark:border-red-900 dark:text-red-300">
                       Remove

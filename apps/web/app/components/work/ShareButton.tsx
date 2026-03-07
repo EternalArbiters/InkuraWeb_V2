@@ -45,10 +45,10 @@ export default function ShareButton({ title, className = "" }: Props) {
     <button
       type="button"
       onClick={share}
-      className={`inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 px-5 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 px-5 py-2 text-sm font-semibold leading-none hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${className}`.trim()}
       aria-label="Share"
     >
-      {copied ? <Link2 size={18} /> : <Share2 size={18} />}
+      {copied ? <Link2 size={20} className="h-5 w-5 shrink-0" /> : <Share2 size={20} className="h-5 w-5 shrink-0" />}
       <span className="whitespace-nowrap">{copied ? "Copied" : "Share"}</span>
     </button>
   );

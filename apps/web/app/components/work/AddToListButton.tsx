@@ -79,10 +79,10 @@ export default function AddToListButton({ workId, className = "" }: { workId: st
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${className}`.trim()}
+        className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold leading-none border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${className}`.trim()}
         aria-label="Add to List"
       >
-        <ListPlus size={18} />
+        <ListPlus size={20} className="h-5 w-5 shrink-0" />
         <span className="whitespace-nowrap">{label}</span>
       </button>
 

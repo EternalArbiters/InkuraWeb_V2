@@ -42,16 +42,16 @@ export default function LikeButton({ workId, initialLiked, initialCount, classNa
     <button
       onClick={toggle}
       disabled={isPending}
-      className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+      className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold leading-none transition disabled:opacity-60 ${
         liked
           ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
           : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
       } ${className}`.trim()}
       aria-label="Favorite"
     >
-      <Heart size={18} className={liked ? "fill-current" : ""} />
+      <Heart size={20} className={`h-5 w-5 shrink-0 ${liked ? "fill-current" : ""}`.trim()} />
       <span className="whitespace-nowrap">Favorite</span>
-      <span className="text-xs opacity-70">{count}</span>
+      <span className="text-sm opacity-70">{count}</span>
     </button>
   );
 }
