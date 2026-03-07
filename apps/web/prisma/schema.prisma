@@ -30,8 +30,8 @@ model User {
 
   // Content
   works      Work[]
-  series     Series[]
   translatedWorks Work[] @relation("WorkTranslator")
+  workSeries WorkSeries[]
   likes      WorkLike[]
   chapterLikes ChapterLike[]
   commentLikes CommentLike[]
@@ -133,21 +133,18 @@ enum WorkCompletion {
   CANCELLED
 }
 
-model Series {
-  id              String   @id @default(cuid())
-  title           String
-  normalizedTitle String
+model WorkSeries {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  works     Work[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  authorId        String
-  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  works           Work[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([authorId, normalizedTitle])
-  @@index([authorId])
+  @@unique([ownerId, slug])
+  @@index([ownerId, updatedAt])
 }
 
 model Work {
@@ -172,14 +169,15 @@ model Work {
   sourceUrl String?
   uploaderNote String?
 
-  // v16.3: additional credits + series arcs
+  // v16.3: additional credits + legacy arc links
   translatorCredit String?
   companyCredit String?
   prevArcUrl String?
   nextArcUrl String?
 
-  seriesId   String?
-  series     Series? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  // v17: full series management
+  seriesId    String?
+  series      WorkSeries? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   seriesOrder Int?
 
   translatorId String?
@@ -225,9 +223,9 @@ model Work {
   @@index([language])
   @@index([publishType])
   @@index([translatorId])
-  @@index([seriesId, seriesOrder])
   @@index([status, updatedAt])
   @@index([status, likeCount])
+  @@index([seriesId, seriesOrder])
 }
 
 model Chapter {

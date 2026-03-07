@@ -325,8 +325,8 @@ export async function patchStudioWorkById(req: Request, workId: string) {
             translatorCredit: null,
             companyCredit: null,
           }),
-      prevArcUrl: prevArcUrlRaw || null,
-      nextArcUrl: nextArcUrlRaw || null,
+      prevArcUrl: seriesTitleRaw ? null : (prevArcUrlRaw || null),
+      nextArcUrl: seriesTitleRaw ? null : (nextArcUrlRaw || null),
 
       genres: { set: genreIds.map((id) => ({ id })) },
       warningTags: { set: warningTagIds.map((id) => ({ id })) },
