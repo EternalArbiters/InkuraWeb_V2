@@ -223,6 +223,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                     slug={work.slug}
                     chapters={Array.isArray(work.chapters) ? work.chapters : []}
                     lastReadChapterNumber={typeof progress?.lastReadChapterNumber === "number" ? progress.lastReadChapterNumber : null}
+                    maxVisible={5}
+                    viewAllHref={`/w/${work.slug}/chapters`}
                   />
                 </div>
               </ContentWarningsGate>

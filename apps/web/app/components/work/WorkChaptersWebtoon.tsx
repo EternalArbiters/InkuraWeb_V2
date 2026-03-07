@@ -46,10 +46,14 @@ export default function WorkChaptersWebtoon({
   slug,
   chapters,
   lastReadChapterNumber,
+  maxVisible,
+  viewAllHref,
 }: {
   slug: string;
   chapters: ChapterLite[];
   lastReadChapterNumber: number | null;
+  maxVisible?: number;
+  viewAllHref?: string;
 }) {
   const [sort, setSort] = React.useState<"newest" | "oldest">("newest");
 
@@ -62,9 +66,12 @@ export default function WorkChaptersWebtoon({
     return arr;
   }, [chapters, sort]);
 
+  const visible = typeof maxVisible === "number" ? sorted.slice(0, Math.max(0, maxVisible)) : sorted;
+  const hasMore = typeof maxVisible === "number" && sorted.length > maxVisible;
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-semibold">Chapters</div>
           <div className="text-xs text-gray-600 dark:text-gray-300">{chapters.length} total</div>
@@ -73,20 +80,19 @@ export default function WorkChaptersWebtoon({
         <button
           type="button"
           onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
-          className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-          title="Sort"
-          aria-label="Sort"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+          title={sort === "newest" ? "Sort by newest" : "Sort by oldest"}
+          aria-label={sort === "newest" ? "Sort by newest" : "Sort by oldest"}
         >
           <ArrowDownUp className="h-4 w-4" />
-          <span className="text-xs">{sort === "newest" ? "Newest" : "Oldest"}</span>
         </button>
       </div>
 
       <div className="mt-4 grid gap-3">
-        {sorted.length === 0 ? (
+        {visible.length === 0 ? (
           <div className="text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
         ) : (
-          sorted.map((c) => {
+          visible.map((c) => {
             const candidates = (c.pages || []).map((p) => p.imageUrl).filter(Boolean);
             const thumb = c.thumbnailUrl || c.thumbnailImage || stablePick(String(c.id), candidates) || null;
 
@@ -148,6 +154,17 @@ export default function WorkChaptersWebtoon({
           })
         )}
       </div>
+
+      {hasMore && viewAllHref ? (
+        <div className="mt-4">
+          <Link
+            href={viewAllHref}
+            className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+          >
+            All Chapters
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }
