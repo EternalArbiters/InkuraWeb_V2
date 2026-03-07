@@ -63,24 +63,21 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
       companyCredit: true,
       prevArcUrl: true,
       nextArcUrl: true,
+      seriesId: true,
       seriesOrder: true,
       series: {
         select: {
           id: true,
           title: true,
-          slug: true,
           works: {
             where: { status: "PUBLISHED" },
-            orderBy: [{ seriesOrder: "asc" }, { updatedAt: "desc" }],
+            orderBy: [{ seriesOrder: "asc" }, { createdAt: "asc" }],
             select: {
               id: true,
               slug: true,
               title: true,
               coverImage: true,
-              type: true,
-              status: true,
               seriesOrder: true,
-              updatedAt: true,
             },
           },
         },
@@ -201,25 +198,34 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
         }))
     : [];
 
-  const orderedSeriesWorks = Array.isArray(work.series?.works)
-    ? work.series.works.slice().sort((a: any, b: any) => {
-        const ao = typeof a.seriesOrder === "number" ? a.seriesOrder : Number.MAX_SAFE_INTEGER;
-        const bo = typeof b.seriesOrder === "number" ? b.seriesOrder : Number.MAX_SAFE_INTEGER;
-        if (ao !== bo) return ao - bo;
-        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-      })
+  const seriesWorks = Array.isArray(work.series?.works)
+    ? work.series.works.filter((item: any) => String(item.id) !== String(work.id))
     : [];
-  const currentSeriesIndex = orderedSeriesWorks.findIndex((item: any) => item.id === work.id);
-  const previousArc = currentSeriesIndex > 0 ? orderedSeriesWorks[currentSeriesIndex - 1] : null;
-  const nextArc = currentSeriesIndex >= 0 && currentSeriesIndex < orderedSeriesWorks.length - 1
-    ? orderedSeriesWorks[currentSeriesIndex + 1]
-    : null;
+
+  const orderedSeries = Array.isArray(work.series?.works) ? work.series.works : [];
+  const currentIndex = orderedSeries.findIndex((item: any) => String(item.id) === String(work.id));
+  const previousSeriesWork = currentIndex > 0 ? orderedSeries[currentIndex - 1] : null;
+  const nextSeriesWork = currentIndex >= 0 && currentIndex < orderedSeries.length - 1 ? orderedSeries[currentIndex + 1] : null;
+
+  const previousArc = previousSeriesWork
+    ? { href: `/w/${previousSeriesWork.slug}`, title: previousSeriesWork.title, coverImage: previousSeriesWork.coverImage, label: "Previous Arc" }
+    : work.prevArcUrl
+      ? { href: work.prevArcUrl, title: "Previous Arc", coverImage: null, label: "Previous Arc" }
+      : null;
+
+  const nextArc = nextSeriesWork
+    ? { href: `/w/${nextSeriesWork.slug}`, title: nextSeriesWork.title, coverImage: nextSeriesWork.coverImage, label: "Next Arc" }
+    : work.nextArcUrl
+      ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: "Next Arc" }
+      : null;
 
   const workOut = {
     ...work,
+    chapters: visibleChapters,
+    seriesTitle: work.series?.title || null,
+    seriesWorks,
     previousArc,
     nextArc,
-    chapters: visibleChapters,
   };
 
   return json({

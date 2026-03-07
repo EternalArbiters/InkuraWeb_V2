@@ -3,21 +3,22 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+type Props = {
+  workId: string;
+  initialMyRating: number | null;
+  ratingAvg: number;
+  ratingCount: number;
+  className?: string;
+};
 
 export default function RatingStars({
   workId,
   initialMyRating,
   ratingAvg,
   ratingCount,
-  className,
-}: {
-  workId: string;
-  initialMyRating: number | null;
-  ratingAvg: number;
-  ratingCount: number;
-  className?: string;
-}) {
+  className = "",
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -58,10 +59,7 @@ export default function RatingStars({
   };
 
   return (
-    <div className={cn(
-      "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-950/30",
-      className,
-    )}>
+    <div className={`inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 bg-white/70 px-5 py-2 text-sm font-semibold dark:border-gray-700 dark:bg-gray-950/30 ${className}`.trim()}>
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((v) => {
           const active = (myRating ?? 0) >= v;
@@ -71,7 +69,7 @@ export default function RatingStars({
               type="button"
               onClick={() => setRating(v)}
               disabled={isPending}
-              className={`p-0.5 rounded ${active ? "text-yellow-600 dark:text-yellow-300" : "text-gray-400 dark:text-gray-500"} hover:brightness-110 disabled:opacity-60`}
+              className={`rounded p-0.5 ${active ? "text-yellow-600 dark:text-yellow-300" : "text-gray-400 dark:text-gray-500"} hover:brightness-110 disabled:opacity-60`}
               aria-label={`Rate ${v}`}
             >
               <Star size={18} className={active ? "fill-current" : ""} />
@@ -80,7 +78,7 @@ export default function RatingStars({
         })}
       </div>
 
-      <div className="text-xs text-gray-700 dark:text-gray-200 whitespace-nowrap">
+      <div className="whitespace-nowrap text-xs text-gray-700 dark:text-gray-200">
         <span className="font-bold">{avgLabel}</span>
         <span className="opacity-70"> ({count})</span>
       </div>

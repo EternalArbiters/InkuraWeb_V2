@@ -209,29 +209,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         onTagsRawChange={syncTags}
       />
 
-
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
-        <div className="text-sm font-semibold">Series (optional)</div>
-        <div className="text-xs text-gray-600 dark:text-gray-300">
-          Give the same series title to works that belong together, then set the arc order for this work.
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-[1.6fr_180px] gap-3">
-          <input
-            value={seriesTitle}
-            onChange={(e) => setSeriesTitle(e.target.value)}
-            placeholder="Series title"
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          />
-          <input
-            inputMode="numeric"
-            value={seriesOrder}
-            onChange={(e) => setSeriesOrder(e.target.value.replace(/[^0-9]/g, ""))}
-            placeholder="Arc order"
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          />
-        </div>
-      </div>
-
       <MultiSelectPicker
         title="Genres"
         items={genres}
@@ -252,6 +229,32 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         deviantLoveTagIds={deviantLoveTagIds}
         setDeviantLoveTagIds={setDeviantLoveTagIds}
       />
+
+      <div className="rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
+        <div className="text-sm font-semibold">Series (optional)</div>
+        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Use the same series title across works, then set the arc order.</div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <label className="grid gap-2 text-sm">
+            <span className="font-medium">Series title</span>
+            <input
+              value={seriesTitle}
+              onChange={(e) => setSeriesTitle(e.target.value)}
+              placeholder="Example: The Eruption Saga"
+              className="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
+            />
+          </label>
+          <label className="grid gap-2 text-sm">
+            <span className="font-medium">Arc order</span>
+            <input
+              value={seriesOrder}
+              onChange={(e) => setSeriesOrder(e.target.value.replace(/[^0-9]/g, ""))}
+              inputMode="numeric"
+              placeholder="1"
+              className="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
+            />
+          </label>
+        </div>
+      </div>
 
       <SubmitRow loading={loading} />
     </form>

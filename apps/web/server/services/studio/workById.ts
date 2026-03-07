@@ -7,6 +7,7 @@ import { ApiError } from "@/server/http";
 import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
 import { isOwnerOrAdmin } from "./creator";
 import { requireCreatorSession } from "./session";
+import { assignWorkToSeries } from "./series";
 
 function safeJsonArray(v: unknown): string[] {
   if (typeof v !== "string") return [];
@@ -81,14 +82,9 @@ export async function getStudioWorkById(workId: string) {
       companyCredit: true,
       prevArcUrl: true,
       nextArcUrl: true,
+      seriesId: true,
       seriesOrder: true,
-      series: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-        },
-      },
+      series: { select: { id: true, title: true } },
       genres: true,
       tags: true,
       warningTags: true,
@@ -142,7 +138,6 @@ export async function patchStudioWorkById(req: Request, workId: string) {
       nextArcUrl: true,
       seriesId: true,
       seriesOrder: true,
-      series: { select: { id: true, title: true, slug: true } },
     },
   });
 
@@ -151,6 +146,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
 
   const contentType = req.headers.get("content-type") || "";
 
+  // JSON PATCH (used by PublishToggle)
   if (contentType.includes("application/json")) {
     const body = await req.json().catch(() => ({} as any));
     const status = safeStatus(body?.status);
@@ -164,6 +160,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     return { status: 200, body: { ok: true, work: updated } };
   }
 
+  // FormData PATCH (metadata edit)
   const fd = await req.formData();
 
   const title = String(fd.get("title") || "").trim();
@@ -196,9 +193,11 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   const nextArcUrlRaw = String(fd.get("nextArcUrl") || "").trim();
   const seriesTitleRaw = String(fd.get("seriesTitle") || "").trim();
   const seriesOrderRaw = String(fd.get("seriesOrder") || "").trim();
+  const seriesOrder = seriesOrderRaw ? Number(seriesOrderRaw) : null;
 
   if (!title) return { status: 400, body: { error: "Title is required" } };
 
+  // Slug is optional; if provided, make sure unique.
   const slugInput = String(fd.get("slug") || "").trim();
   let nextSlug = existing.slug;
   if (slugInput) {
@@ -206,6 +205,10 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     nextSlug = await ensureUniqueSlug(base, workId);
   }
 
+  // publishType rules:
+  // - ORIGINAL: no credit/source
+  // - TRANSLATION: original author + source required, uploader becomes translator
+  // - REUPLOAD: original author + source required, uploader becomes reuploader
   const publishTypeRaw = String(fd.get("publishType") || "").toUpperCase().trim();
   const publishType =
     publishTypeRaw === "ORIGINAL" || publishTypeRaw === "TRANSLATION" || publishTypeRaw === "REUPLOAD"
@@ -218,7 +221,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     ? originalAuthorCreditRaw || existing.originalAuthorCredit || ""
     : null;
   const nextOriginalTranslatorCredit = publishType === "REUPLOAD"
-    ? originalTranslatorCreditRaw || existing.originalTranslatorCredit || ""
+    ? originalTranslatorCreditRaw || (existing as any).originalTranslatorCredit || ""
     : null;
   const nextSourceUrl = needsSource ? sourceUrlRaw || existing.sourceUrl || "" : null;
   const nextUploaderNote = publishType === "REUPLOAD" ? uploaderNoteRaw : null;
@@ -238,6 +241,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     }
   }
 
+  // Cover updates (R2)
   const removeCover = String(fd.get("removeCover") || "").toLowerCase() === "true";
   const coverUrl = String(fd.get("coverUrl") || (fd.get("coverImage") as any) || "").trim();
   const coverKey = String(fd.get("coverKey") || "").trim();
@@ -245,6 +249,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   let nextCoverImage: string | null | undefined = undefined;
   let nextCoverKey: string | null | undefined = undefined;
 
+  // File upload fallback
   const cover = fd.get("cover");
   if (cover && typeof cover !== "string") {
     const file = cover as File;
@@ -255,6 +260,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     }
   }
 
+  // Presigned commit (client uploaded to R2)
   if (!nextCoverImage && coverUrl) {
     nextCoverImage = coverUrl;
     nextCoverKey = coverKey || null;
@@ -265,9 +271,11 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     nextCoverKey = null;
   }
 
+  // Delete old cover if replaced/removed.
   if (nextCoverImage !== undefined) {
     const oldKeyOrUrl = existing.coverKey || existing.coverImage;
     if (oldKeyOrUrl) {
+      // best-effort: don't delete if it's exactly the same key/url
       if (nextCoverKey && oldKeyOrUrl === nextCoverKey) {
         // no-op
       } else if (nextCoverImage && oldKeyOrUrl === nextCoverImage) {
@@ -278,83 +286,69 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     }
   }
 
-  const parsedSeriesOrder = seriesOrderRaw ? Number(seriesOrderRaw) : null;
-  const nextSeriesOrder = parsedSeriesOrder != null && Number.isFinite(parsedSeriesOrder)
-    ? Math.max(1, Math.floor(parsedSeriesOrder))
-    : null;
+  const updated = await prisma.work.update({
+    where: { id: workId },
+    data: {
+      title,
+      slug: nextSlug,
+      description: description || null,
+      ...(type ? { type } : {}),
+      ...(type
+        ? { comicType: type === "COMIC" ? comicType : "UNKNOWN" }
+        : hasComicType
+          ? { comicType }
+          : {}),
 
-  const updated = await prisma.$transaction(async (tx) => {
-    let nextSeriesId: string | null = null;
-    if (seriesTitleRaw) {
-      const seriesSlug = slugify(seriesTitleRaw);
-      const series = await tx.workSeries.upsert({
-        where: { ownerId_slug: { ownerId: existing.authorId, slug: seriesSlug } },
-        update: { title: seriesTitleRaw },
-        create: { ownerId: existing.authorId, title: seriesTitleRaw, slug: seriesSlug },
-        select: { id: true },
-      });
-      nextSeriesId = series.id;
-    }
+      ...(nextCoverImage !== undefined ? { coverImage: nextCoverImage, coverKey: nextCoverKey } : {}),
 
-    return tx.work.update({
-      where: { id: workId },
-      data: {
-        title,
-        slug: nextSlug,
-        description: description || null,
-        ...(type ? { type } : {}),
-        ...(type
-          ? { comicType: type === "COMIC" ? comicType : "UNKNOWN" }
-          : hasComicType
-            ? { comicType }
-            : {}),
+      ...(language ? { language } : {}),
+      ...(origin ? { origin: origin as any } : {}),
+      ...(completion ? { completion: completion as any } : {}),
+      ...(isMature !== undefined ? { isMature } : {}),
 
-        ...(nextCoverImage !== undefined ? { coverImage: nextCoverImage, coverKey: nextCoverKey } : {}),
+      publishType: publishType as any,
+      translatorId: publishType === "TRANSLATION" ? userId : null,
+      ...(needsSource
+        ? {
+            originalAuthorCredit: nextOriginalAuthorCredit,
+            originalTranslatorCredit: publishType === "REUPLOAD" ? nextOriginalTranslatorCredit : null,
+            sourceUrl: nextSourceUrl,
+            uploaderNote: nextUploaderNote,
+            translatorCredit: publishType === "TRANSLATION" ? translatorCreditRaw || null : null,
+            companyCredit: companyCreditRaw || null,
+          }
+        : {
+            originalAuthorCredit: null,
+            originalTranslatorCredit: null,
+            sourceUrl: null,
+            uploaderNote: null,
+            translatorCredit: null,
+            companyCredit: null,
+          }),
+      prevArcUrl: prevArcUrlRaw || null,
+      nextArcUrl: nextArcUrlRaw || null,
 
-        ...(language ? { language } : {}),
-        ...(origin ? { origin: origin as any } : {}),
-        ...(completion ? { completion: completion as any } : {}),
-        ...(isMature !== undefined ? { isMature } : {}),
-
-        publishType: publishType as any,
-        translatorId: publishType === "TRANSLATION" ? userId : null,
-        ...(needsSource
-          ? {
-              originalAuthorCredit: nextOriginalAuthorCredit,
-              originalTranslatorCredit: publishType === "REUPLOAD" ? nextOriginalTranslatorCredit : null,
-              sourceUrl: nextSourceUrl,
-              uploaderNote: nextUploaderNote,
-              translatorCredit: publishType === "TRANSLATION" ? translatorCreditRaw || null : null,
-              companyCredit: companyCreditRaw || null,
-            }
-          : {
-              originalAuthorCredit: null,
-              originalTranslatorCredit: null,
-              sourceUrl: null,
-              uploaderNote: null,
-              translatorCredit: null,
-              companyCredit: null,
+      genres: { set: genreIds.map((id) => ({ id })) },
+      warningTags: { set: warningTagIds.map((id) => ({ id })) },
+      deviantLoveTags: { set: deviantLoveTagIds.map((id) => ({ id })) },
+      tags: tagNames.length
+        ? {
+            set: [],
+            connectOrCreate: tagNames.slice(0, 50).map((name) => {
+              const s = slugify(name);
+              return { where: { slug: s }, create: { name, slug: s } };
             }),
-        prevArcUrl: seriesTitleRaw ? null : (prevArcUrlRaw || null),
-        nextArcUrl: seriesTitleRaw ? null : (nextArcUrlRaw || null),
-        seriesId: nextSeriesId,
-        seriesOrder: nextSeriesId ? nextSeriesOrder : null,
+          }
+        : { set: [] },
+    },
+    select: { id: true, title: true, slug: true, status: true },
+  });
 
-        genres: { set: genreIds.map((id) => ({ id })) },
-        warningTags: { set: warningTagIds.map((id) => ({ id })) },
-        deviantLoveTags: { set: deviantLoveTagIds.map((id) => ({ id })) },
-        tags: tagNames.length
-          ? {
-              set: [],
-              connectOrCreate: tagNames.slice(0, 50).map((name) => {
-                const s = slugify(name);
-                return { where: { slug: s }, create: { name, slug: s } };
-              }),
-            }
-          : { set: [] },
-      },
-      select: { id: true, title: true, slug: true, status: true },
-    });
+  await assignWorkToSeries(prisma, {
+    workId,
+    userId: existing.authorId,
+    seriesTitle: seriesTitleRaw,
+    seriesOrder,
   });
 
   return { status: 200, body: { ok: true, work: updated } };
@@ -370,14 +364,6 @@ export async function deleteStudioWorkById(workId: string) {
       authorId: true,
       coverKey: true,
       coverImage: true,
-      series: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-        },
-      },
-      seriesOrder: true,
       chapters: {
         select: {
           id: true,

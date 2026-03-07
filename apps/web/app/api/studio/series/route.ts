@@ -1,1 +1,1 @@
-export { runtime, GET, POST } from "@/server/services/api/studio/series/route";
+export { runtime, GET, POST, PATCH } from "@/server/services/api/studio/series/route";

@@ -38,8 +38,9 @@ type Work = {
   companyCredit?: string | null;
   prevArcUrl?: string | null;
   nextArcUrl?: string | null;
+  seriesId?: string | null;
   seriesOrder?: number | null;
-  series?: { id: string; title: string; slug: string } | null;
+  series?: { id: string; title: string } | null;
   genres: { id: string; name: string; slug: string }[];
   warningTags: { id: string; name: string; slug: string }[];
   deviantLoveTags?: { id: string; name: string; slug: string }[];
@@ -52,6 +53,10 @@ type Props = {
   warningTags: PickerItem[];
   deviantLoveTags: PickerItem[];
 };
+
+function hrefForWorkSlug(slug: string) {
+  return slug ? `/w/${slug}` : "";
+}
 
 export default function WorkEditForm({ work, genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
@@ -79,10 +84,10 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [translatorCredit, setTranslatorCredit] = React.useState(work.translatorCredit || "");
   const [companyCredit, setCompanyCredit] = React.useState(work.companyCredit || "");
 
-  const [seriesTitle, setSeriesTitle] = React.useState(work.series?.title || "");
-  const [seriesOrder, setSeriesOrder] = React.useState(work.seriesOrder ? String(work.seriesOrder) : "");
   const [prevArcUrl, setPrevArcUrl] = React.useState(work.prevArcUrl || "");
   const [nextArcUrl, setNextArcUrl] = React.useState(work.nextArcUrl || "");
+  const [seriesTitle, setSeriesTitle] = React.useState(work.series?.title || "");
+  const [seriesOrder, setSeriesOrder] = React.useState(work.seriesOrder ? String(work.seriesOrder) : "");
 
   const { myWorks, loadingWorks } = useMyWorksLite(work.id);
 
@@ -101,6 +106,17 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  function setPrevFromWorkId(id: string) {
+    const w = myWorks.find((x) => x.id === id);
+    if (!w) return;
+    setPrevArcUrl(hrefForWorkSlug(w.slug));
+  }
+
+  function setNextFromWorkId(id: string) {
+    const w = myWorks.find((x) => x.id === id);
+    if (!w) return;
+    setNextArcUrl(hrefForWorkSlug(w.slug));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -146,10 +162,11 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         fd.append("translatorCredit", translatorCredit);
       }
 
-      fd.append("prevArcUrl", prevArcUrl.trim());
-      fd.append("nextArcUrl", nextArcUrl.trim());
+      // series + legacy arcs
       fd.append("seriesTitle", seriesTitle.trim());
       fd.append("seriesOrder", seriesOrder.trim());
+      fd.append("prevArcUrl", prevArcUrl.trim());
+      fd.append("nextArcUrl", nextArcUrl.trim());
 
       if (coverFile && !removeCover) {
         const up = await presignAndUpload({ scope: "covers", file: coverFile, workId: work.id });
@@ -204,6 +221,12 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         setSeriesTitle={setSeriesTitle}
         seriesOrder={seriesOrder}
         setSeriesOrder={setSeriesOrder}
+        prevArcUrl={prevArcUrl}
+        setPrevArcUrl={setPrevArcUrl}
+        nextArcUrl={nextArcUrl}
+        setNextArcUrl={setNextArcUrl}
+        onPickPrevWorkId={setPrevFromWorkId}
+        onPickNextWorkId={setNextFromWorkId}
       />
 
       <WorkBasicsFields

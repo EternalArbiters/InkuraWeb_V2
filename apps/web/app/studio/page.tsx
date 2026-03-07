@@ -24,18 +24,18 @@ export default async function StudioPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Upload</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/studio/series"
-              className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
-            >
-              Manage series
-            </Link>
+          <div className="flex items-center gap-2">
             <Link
               href="/settings/account"
               className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
             >
               Settings
+            </Link>
+            <Link
+              href="/studio/series"
+              className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+            >
+              Manage series
             </Link>
             <Link
               href="/studio/new"

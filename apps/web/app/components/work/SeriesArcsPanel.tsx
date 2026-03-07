@@ -8,83 +8,101 @@ type SeriesWork = {
   seriesOrder?: number | null;
 };
 
-function MiniArcButton({
-  label,
-  work,
-}: {
+type ArcLink = {
+  href: string;
+  title: string;
+  coverImage?: string | null;
   label: string;
-  work: SeriesWork | null | undefined;
-}) {
-  if (!work) return <div className="hidden md:block" />;
+};
 
+function ArcCard({ arc }: { arc: ArcLink }) {
   return (
     <Link
-      href={`/w/${work.slug}`}
-      className="group flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-950/40 px-3 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
+      href={arc.href}
+      className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/60 p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/30 dark:hover:bg-gray-900"
     >
-      <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800 shrink-0">
-        {work.coverImage ? (
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
+        {arc.coverImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={work.coverImage} alt={work.title} className="h-full w-full object-cover" />
-        ) : null}
+          <img src={arc.coverImage} alt={arc.title} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold text-gray-500">ARC</div>
+        )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[11px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">{label}</div>
-        <div className="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-white">{work.title}</div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">{arc.label}</div>
+        <div className="truncate text-sm font-extrabold text-gray-900 dark:text-white">{arc.title}</div>
       </div>
     </Link>
   );
 }
 
-export default function SeriesArcsPanel({ work }: { work: any }) {
-  const series = work?.series;
-  const items: SeriesWork[] = Array.isArray(series?.works) ? series.works : [];
-  if (!series?.title || !items.length) return null;
-
-  const currentId = String(work?.id || "");
-  const currentIndex = items.findIndex((item) => item.id === currentId);
-  const previousArc = work?.previousArc || (currentIndex > 0 ? items[currentIndex - 1] : null);
-  const nextArc = work?.nextArc || (currentIndex >= 0 && currentIndex < items.length - 1 ? items[currentIndex + 1] : null);
+export default function SeriesArcsPanel({
+  seriesTitle,
+  works,
+  currentWorkId,
+  previousArc,
+  nextArc,
+}: {
+  seriesTitle?: string | null;
+  works?: SeriesWork[];
+  currentWorkId: string;
+  previousArc?: ArcLink | null;
+  nextArc?: ArcLink | null;
+}) {
+  const items = Array.isArray(works) ? works : [];
+  const hasPanel = !!seriesTitle || items.length > 0 || previousArc || nextArc;
+  if (!hasPanel) return null;
 
   return (
-    <section className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4 md:p-5">
-      <div className="inline-flex rounded-lg bg-black/70 px-3 py-1 text-sm font-semibold text-white">More in this series</div>
-      <div className="mt-3 text-xl font-extrabold tracking-tight text-yellow-300">{series.title}</div>
+    <section className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+      <div className="rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/30">
+        <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">More in this series</div>
+        <div className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">{seriesTitle || "Series"}</div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {items.map((item) => {
-          const active = item.id === currentId;
-          return (
-            <Link
-              key={item.id}
-              href={`/w/${item.slug}`}
-              className={[
-                "group overflow-hidden rounded-2xl border bg-white/30 dark:bg-gray-950/20",
-                active
-                  ? "border-purple-500/70 ring-1 ring-purple-500/60"
-                  : "border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900",
-              ].join(" ")}
-            >
-              <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
-                {item.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
-                ) : null}
-              </div>
-              <div className="p-3">
-                <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
-                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {typeof item.seriesOrder === "number" ? `Arc ${item.seriesOrder}` : "Series entry"}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+        {items.length ? (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {items.map((item) => {
+              const active = item.id === currentWorkId;
+              return (
+                <Link
+                  key={item.id}
+                  href={`/w/${item.slug}`}
+                  className={`overflow-hidden rounded-2xl border transition ${
+                    active
+                      ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
+                      : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
+                  }`}
+                >
+                  <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
+                    {item.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                    ) : null}
+                    {typeof item.seriesOrder === "number" ? (
+                      <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">
+                        Arc {item.seriesOrder}
+                      </div>
+                    ) : null}
+                    {active ? (
+                      <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
+                    ) : null}
+                  </div>
+                  <div className="p-3">
+                    <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : null}
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2 md:items-start">
-        <MiniArcButton label="Previous Arc" work={previousArc} />
-        <MiniArcButton label="Next Arc" work={nextArc} />
+        {previousArc || nextArc ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {previousArc ? <ArcCard arc={previousArc} /> : <div className="hidden sm:block" />}
+            {nextArc ? <ArcCard arc={nextArc} /> : null}
+          </div>
+        ) : null}
       </div>
     </section>
   );

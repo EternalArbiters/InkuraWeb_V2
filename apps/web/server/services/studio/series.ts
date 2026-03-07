@@ -1,318 +1,269 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
 import prisma from "@/server/db/prisma";
 import { ApiError } from "@/server/http";
-import { slugify } from "@/lib/slugify";
 import { requireCreatorSession } from "./session";
 
-const manageSeriesWorkSelect = {
-  id: true,
-  slug: true,
-  title: true,
-  coverImage: true,
-  status: true,
-  type: true,
-  updatedAt: true,
-  seriesOrder: true,
-} as const;
-
-function normalizeTitle(input: unknown) {
-  return String(input || "").trim().replace(/\s+/g, " ");
+function cleanSeriesTitle(value: unknown) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
-function uniqueIds(input: unknown) {
-  if (!Array.isArray(input)) return [] as string[];
-  return Array.from(new Set(input.map((item) => String(item || "").trim()).filter(Boolean)));
+function normalizedSeriesTitle(value: unknown) {
+  return cleanSeriesTitle(value).toLowerCase();
 }
 
-type DbClient = Prisma.TransactionClient | typeof prisma;
-
-async function ensureOwnedSeries(db: DbClient, seriesId: string, ownerId: string) {
-  const series = await db.workSeries.findFirst({
-    where: { id: seriesId, ownerId },
-    select: { id: true, title: true, slug: true, ownerId: true },
-  });
-  if (!series) throw new ApiError(404, "Series not found");
-  return series;
-}
-
-async function ensureOwnedWorks(db: DbClient, workIds: string[], ownerId: string) {
-  const works = await db.work.findMany({
-    where: { id: { in: workIds }, authorId: ownerId },
-    select: { id: true, seriesId: true, title: true },
-  });
-  if (works.length !== workIds.length) {
-    throw new ApiError(404, "One or more works were not found");
+async function cleanupEmptySeries(db: any, seriesId: string | null | undefined) {
+  if (!seriesId) return;
+  const count = await db.work.count({ where: { seriesId } });
+  if (count === 0) {
+    await db.series.delete({ where: { id: seriesId } }).catch(() => null);
   }
-  const order = new Map(works.map((work) => [work.id, work]));
-  return workIds.map((id) => {
-    const work = order.get(id);
-    if (!work) throw new ApiError(404, "One or more works were not found");
-    return work;
-  });
 }
 
-async function normalizeSeriesOrdersTx(tx: DbClient, seriesId: string) {
-  const works = await tx.work.findMany({
+export async function resequenceSeries(db: any, seriesId: string | null | undefined) {
+  if (!seriesId) return;
+  const works = await db.work.findMany({
     where: { seriesId },
-    orderBy: [{ seriesOrder: "asc" }, { updatedAt: "asc" }, { createdAt: "asc" }],
-    select: { id: true },
+    orderBy: [{ seriesOrder: "asc" }, { updatedAt: "asc" }, { createdAt: "asc" }, { title: "asc" }],
+    select: { id: true, seriesOrder: true },
   });
 
   await Promise.all(
-    works.map((work, index) =>
-      tx.work.update({
-        where: { id: work.id },
-        data: { seriesOrder: index + 1 },
-      }),
-    ),
+    works.map((work: any, index: number) => {
+      const nextOrder = index + 1;
+      if (work.seriesOrder === nextOrder) return null;
+      return db.work.update({ where: { id: work.id }, data: { seriesOrder: nextOrder } });
+    })
   );
 }
 
-async function getStudioSeriesPayload(ownerId: string) {
-  const [series, ungroupedWorks] = await Promise.all([
-    prisma.workSeries.findMany({
-      where: { ownerId },
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        createdAt: true,
-        updatedAt: true,
-        works: {
-          where: { authorId: ownerId },
-          orderBy: [{ seriesOrder: "asc" }, { updatedAt: "desc" }],
-          select: manageSeriesWorkSelect,
-        },
-      },
-    }),
-    prisma.work.findMany({
-      where: { authorId: ownerId, seriesId: null },
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      select: manageSeriesWorkSelect,
-    }),
-  ]);
+export async function ensureSeriesForUser(db: any, userId: string, titleInput: unknown) {
+  const title = cleanSeriesTitle(titleInput);
+  if (!title) return null;
 
-  const normalizedSeries = series.map((item) => ({
-    ...item,
-    works: item.works
-      .slice()
-      .sort((a, b) => {
-        const ao = typeof a.seriesOrder === "number" ? a.seriesOrder : Number.MAX_SAFE_INTEGER;
-        const bo = typeof b.seriesOrder === "number" ? b.seriesOrder : Number.MAX_SAFE_INTEGER;
-        if (ao !== bo) return ao - bo;
-        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-      })
-      .map((work, index) => ({
-        ...work,
-        seriesOrder: index + 1,
-      })),
-  }));
+  const normalizedTitle = normalizedSeriesTitle(title);
+  const existing = await db.series.findFirst({
+    where: { authorId: userId, normalizedTitle },
+    select: { id: true, title: true },
+  });
 
-  return {
-    series: normalizedSeries,
-    ungroupedWorks,
-  };
+  if (existing) {
+    if (existing.title !== title) {
+      await db.series.update({ where: { id: existing.id }, data: { title, normalizedTitle } });
+    }
+    return { id: existing.id, title };
+  }
+
+  return db.series.create({
+    data: { authorId: userId, title, normalizedTitle },
+    select: { id: true, title: true },
+  });
+}
+
+export async function assignWorkToSeries(db: any, {
+  workId,
+  userId,
+  seriesTitle,
+  seriesOrder,
+}: {
+  workId: string;
+  userId: string;
+  seriesTitle?: unknown;
+  seriesOrder?: unknown;
+}) {
+  const work = await db.work.findUnique({
+    where: { id: workId },
+    select: { id: true, authorId: true, seriesId: true, seriesOrder: true },
+  });
+  if (!work) throw new ApiError(404, "Work not found");
+  if (work.authorId !== userId) throw new ApiError(403, "Forbidden");
+
+  const title = cleanSeriesTitle(seriesTitle);
+  const requestedOrderRaw = Number(seriesOrder);
+  const requestedOrder = Number.isFinite(requestedOrderRaw) && requestedOrderRaw > 0 ? Math.floor(requestedOrderRaw) : null;
+
+  if (!title) {
+    const previousSeriesId = work.seriesId;
+    await db.work.update({ where: { id: workId }, data: { seriesId: null, seriesOrder: null } });
+    await resequenceSeries(db, previousSeriesId);
+    await cleanupEmptySeries(db, previousSeriesId);
+    return null;
+  }
+
+  const series = await ensureSeriesForUser(db, userId, title);
+  const max = await db.work.aggregate({
+    where: { seriesId: series.id, NOT: { id: workId } },
+    _max: { seriesOrder: true },
+  });
+  const fallbackOrder = (max?._max?.seriesOrder ?? 0) + 1;
+  const nextOrder = requestedOrder ?? fallbackOrder;
+
+  const previousSeriesId = work.seriesId;
+  await db.work.update({ where: { id: workId }, data: { seriesId: series.id, seriesOrder: nextOrder } });
+
+  if (previousSeriesId && previousSeriesId !== series.id) {
+    await resequenceSeries(db, previousSeriesId);
+    await cleanupEmptySeries(db, previousSeriesId);
+  }
+  await resequenceSeries(db, series.id);
+  return series;
+}
+
+async function assertSeriesOwner(userId: string, seriesId: string) {
+  const series = await prisma.series.findUnique({ where: { id: seriesId }, select: { id: true, authorId: true } });
+  if (!series) throw new ApiError(404, "Series not found");
+  if (series.authorId !== userId) throw new ApiError(403, "Forbidden");
+  return series;
+}
+
+async function assertWorkOwner(userId: string, workId: string) {
+  const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true, authorId: true, seriesId: true, seriesOrder: true } });
+  if (!work) throw new ApiError(404, "Work not found");
+  if (work.authorId !== userId) throw new ApiError(403, "Forbidden");
+  return work;
 }
 
 export async function listStudioSeries() {
   const { userId } = await requireCreatorSession();
-  return getStudioSeriesPayload(userId);
+
+  const [series, unassignedWorks] = await Promise.all([
+    prisma.series.findMany({
+      where: { authorId: userId },
+      orderBy: [{ title: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        works: {
+          orderBy: [{ seriesOrder: "asc" }, { updatedAt: "desc" }],
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            type: true,
+            status: true,
+            coverImage: true,
+            updatedAt: true,
+            seriesOrder: true,
+          },
+        },
+      },
+    }),
+    prisma.work.findMany({
+      where: { authorId: userId, seriesId: null },
+      orderBy: [{ updatedAt: "desc" }],
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        type: true,
+        status: true,
+        coverImage: true,
+        updatedAt: true,
+      },
+    }),
+  ]);
+
+  return { series, unassignedWorks };
 }
 
-export async function mutateStudioSeries(req: Request) {
+export async function createStudioSeries(req: Request) {
   const { userId } = await requireCreatorSession();
-  const body = await req.json().catch(() => null);
+  const body = await req.json().catch(() => ({} as any));
+  const title = cleanSeriesTitle(body?.title);
+  if (!title) return { status: 400, body: { error: "Series title is required" } };
+
+  const series = await prisma.$transaction((tx) => ensureSeriesForUser(tx, userId, title));
+  return { status: 201, body: { ok: true, series } };
+}
+
+export async function patchStudioSeries(req: Request) {
+  const { userId } = await requireCreatorSession();
+  const body = await req.json().catch(() => ({} as any));
   const action = String(body?.action || "").trim();
 
-  if (!action) {
-    return { status: 400, body: { error: "Action is required" } };
-  }
-
-  if (action === "createSeries") {
-    const title = normalizeTitle(body?.title);
-    if (!title) return { status: 400, body: { error: "Series title is required" } };
-
-    const workIds = uniqueIds(body?.workIds);
-    await prisma.$transaction(async (tx) => {
-      const series = await tx.workSeries.upsert({
-        where: { ownerId_slug: { ownerId: userId, slug: slugify(title) } },
-        update: { title },
-        create: { ownerId: userId, title, slug: slugify(title) },
-        select: { id: true },
-      });
-
-      if (!workIds.length) return;
-
-      const works = await ensureOwnedWorks(tx, workIds, userId);
-      const previousSeriesIds = Array.from(new Set(works.map((work) => work.seriesId).filter((id): id is string => !!id && id !== series.id)));
-      const maxSeriesOrder = await tx.work.aggregate({
-        where: { seriesId: series.id },
-        _max: { seriesOrder: true },
-      });
-      let nextOrder = (maxSeriesOrder._max.seriesOrder || 0) + 1;
-
-      for (const workId of workIds) {
-        await tx.work.update({
-          where: { id: workId },
-          data: {
-            seriesId: series.id,
-            seriesOrder: nextOrder++,
-            prevArcUrl: null,
-            nextArcUrl: null,
-          },
-        });
-      }
-
-      for (const previousSeriesId of previousSeriesIds) {
-        await normalizeSeriesOrdersTx(tx, previousSeriesId);
-      }
-      await normalizeSeriesOrdersTx(tx, series.id);
-    });
-
-    return { status: 200, body: { ok: true, ...(await getStudioSeriesPayload(userId)) } };
-  }
+  if (!action) return { status: 400, body: { error: "Action is required" } };
 
   if (action === "renameSeries") {
-    const seriesId = String(body?.seriesId || "").trim();
-    const title = normalizeTitle(body?.title);
-    if (!seriesId) return { status: 400, body: { error: "Series id is required" } };
-    if (!title) return { status: 400, body: { error: "Series title is required" } };
+    const seriesId = String(body?.seriesId || "");
+    const title = cleanSeriesTitle(body?.title);
+    if (!seriesId || !title) return { status: 400, body: { error: "Series id and title are required" } };
+    await assertSeriesOwner(userId, seriesId);
+    await prisma.series.update({
+      where: { id: seriesId },
+      data: { title, normalizedTitle: normalizedSeriesTitle(title) },
+    });
+    return { status: 200, body: { ok: true } };
+  }
 
-    const existing = await ensureOwnedSeries(prisma, seriesId, userId);
-    const nextSlug = slugify(title);
-    const collision = await prisma.workSeries.findUnique({
-      where: { ownerId_slug: { ownerId: userId, slug: nextSlug } },
+  if (action === "addWork") {
+    const seriesId = String(body?.seriesId || "");
+    const workId = String(body?.workId || "");
+    if (!seriesId || !workId) return { status: 400, body: { error: "Series id and work id are required" } };
+    const [series, work] = await Promise.all([assertSeriesOwner(userId, seriesId), assertWorkOwner(userId, workId)]);
+    const max = await prisma.work.aggregate({ where: { seriesId }, _max: { seriesOrder: true } });
+    await prisma.work.update({
+      where: { id: work.id },
+      data: { seriesId: series.id, seriesOrder: (max._max.seriesOrder ?? 0) + 1 },
+    });
+    if (work.seriesId && work.seriesId !== series.id) {
+      await resequenceSeries(prisma, work.seriesId);
+      await cleanupEmptySeries(prisma, work.seriesId);
+    }
+    await resequenceSeries(prisma, series.id);
+    return { status: 200, body: { ok: true } };
+  }
+
+  if (action === "removeWork") {
+    const workId = String(body?.workId || "");
+    if (!workId) return { status: 400, body: { error: "Work id is required" } };
+    const work = await assertWorkOwner(userId, workId);
+    const previousSeriesId = work.seriesId;
+    await prisma.work.update({ where: { id: work.id }, data: { seriesId: null, seriesOrder: null } });
+    await resequenceSeries(prisma, previousSeriesId);
+    await cleanupEmptySeries(prisma, previousSeriesId);
+    return { status: 200, body: { ok: true } };
+  }
+
+  if (action === "moveWork") {
+    const seriesId = String(body?.seriesId || "");
+    const workId = String(body?.workId || "");
+    const direction = String(body?.direction || "");
+    if (!seriesId || !workId || !direction) return { status: 400, body: { error: "Series id, work id, and direction are required" } };
+    await assertSeriesOwner(userId, seriesId);
+    const works = await prisma.work.findMany({
+      where: { seriesId },
+      orderBy: [{ seriesOrder: "asc" }, { updatedAt: "desc" }],
       select: { id: true },
     });
-    if (collision && collision.id !== existing.id) {
-      return { status: 409, body: { error: "Another series already uses this title" } };
+    const index = works.findIndex((work) => work.id === workId);
+    if (index === -1) return { status: 404, body: { error: "Work not found in series" } };
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= works.length) return { status: 200, body: { ok: true } };
+    const reordered = [...works];
+    const [moved] = reordered.splice(index, 1);
+    reordered.splice(targetIndex, 0, moved);
+    await Promise.all(
+      reordered.map((work, idx) => prisma.work.update({ where: { id: work.id }, data: { seriesOrder: idx + 1 } }))
+    );
+    return { status: 200, body: { ok: true } };
+  }
+
+  if (action === "reorderWorks") {
+    const seriesId = String(body?.seriesId || "");
+    const orderedWorkIds = Array.isArray(body?.orderedWorkIds) ? body.orderedWorkIds.map(String) : [];
+    if (!seriesId || !orderedWorkIds.length) return { status: 400, body: { error: "Series id and ordered work ids are required" } };
+    await assertSeriesOwner(userId, seriesId);
+    const works = await prisma.work.findMany({ where: { seriesId }, select: { id: true } });
+    const workIdSet = new Set(works.map((work) => work.id));
+    if (orderedWorkIds.some((id) => !workIdSet.has(id))) {
+      return { status: 400, body: { error: "Invalid work list" } };
     }
-
-    await prisma.workSeries.update({
-      where: { id: seriesId },
-      data: { title, slug: nextSlug },
-    });
-
-    return { status: 200, body: { ok: true, ...(await getStudioSeriesPayload(userId)) } };
-  }
-
-  if (action === "reorderSeries") {
-    const seriesId = String(body?.seriesId || "").trim();
-    const workIds = uniqueIds(body?.workIds);
-    if (!seriesId) return { status: 400, body: { error: "Series id is required" } };
-    if (!workIds.length) return { status: 400, body: { error: "Work order is required" } };
-
-    await prisma.$transaction(async (tx) => {
-      await ensureOwnedSeries(tx, seriesId, userId);
-      const currentWorks = await tx.work.findMany({
-        where: { authorId: userId, seriesId },
-        select: { id: true },
-      });
-      if (currentWorks.length !== workIds.length) {
-        throw new ApiError(400, "The series order is incomplete");
-      }
-      const currentIds = new Set(currentWorks.map((work) => work.id));
-      const payloadIds = new Set(workIds);
-      if (currentIds.size !== payloadIds.size || workIds.some((id) => !currentIds.has(id))) {
-        throw new ApiError(400, "The submitted works do not match this series");
-      }
-
-      await Promise.all(
-        workIds.map((workId, index) =>
-          tx.work.update({
-            where: { id: workId },
-            data: { seriesOrder: index + 1 },
-          }),
-        ),
-      );
-    });
-
-    return { status: 200, body: { ok: true, ...(await getStudioSeriesPayload(userId)) } };
-  }
-
-  if (action === "attachWorks") {
-    const seriesId = String(body?.seriesId || "").trim();
-    const workIds = uniqueIds(body?.workIds);
-    if (!seriesId) return { status: 400, body: { error: "Series id is required" } };
-    if (!workIds.length) return { status: 400, body: { error: "Select at least one work" } };
-
-    await prisma.$transaction(async (tx) => {
-      const series = await ensureOwnedSeries(tx, seriesId, userId);
-      const works = await ensureOwnedWorks(tx, workIds, userId);
-      const previousSeriesIds = Array.from(new Set(works.map((work) => work.seriesId).filter((id): id is string => !!id && id !== series.id)));
-      const maxSeriesOrder = await tx.work.aggregate({
-        where: { seriesId },
-        _max: { seriesOrder: true },
-      });
-      let nextOrder = (maxSeriesOrder._max.seriesOrder || 0) + 1;
-
-      for (const workId of workIds) {
-        await tx.work.update({
-          where: { id: workId },
-          data: {
-            seriesId,
-            seriesOrder: nextOrder++,
-            prevArcUrl: null,
-            nextArcUrl: null,
-          },
-        });
-      }
-
-      for (const previousSeriesId of previousSeriesIds) {
-        await normalizeSeriesOrdersTx(tx, previousSeriesId);
-      }
-      await normalizeSeriesOrdersTx(tx, series.id);
-    });
-
-    return { status: 200, body: { ok: true, ...(await getStudioSeriesPayload(userId)) } };
-  }
-
-  if (action === "detachWork") {
-    const seriesId = String(body?.seriesId || "").trim();
-    const workId = String(body?.workId || "").trim();
-    if (!seriesId) return { status: 400, body: { error: "Series id is required" } };
-    if (!workId) return { status: 400, body: { error: "Work id is required" } };
-
-    await prisma.$transaction(async (tx) => {
-      await ensureOwnedSeries(tx, seriesId, userId);
-      const work = await tx.work.findFirst({
-        where: { id: workId, authorId: userId },
-        select: { id: true, seriesId: true },
-      });
-      if (!work) throw new ApiError(404, "Work not found");
-      if (work.seriesId !== seriesId) throw new ApiError(400, "That work does not belong to this series");
-
-      await tx.work.update({
-        where: { id: workId },
-        data: {
-          seriesId: null,
-          seriesOrder: null,
-        },
-      });
-
-      await normalizeSeriesOrdersTx(tx, seriesId);
-    });
-
-    return { status: 200, body: { ok: true, ...(await getStudioSeriesPayload(userId)) } };
-  }
-
-  if (action === "deleteSeries") {
-    const seriesId = String(body?.seriesId || "").trim();
-    if (!seriesId) return { status: 400, body: { error: "Series id is required" } };
-
-    await prisma.$transaction(async (tx) => {
-      await ensureOwnedSeries(tx, seriesId, userId);
-      await tx.work.updateMany({
-        where: { authorId: userId, seriesId },
-        data: { seriesId: null, seriesOrder: null },
-      });
-      await tx.workSeries.delete({ where: { id: seriesId } });
-    });
-
-    return { status: 200, body: { ok: true, ...(await getStudioSeriesPayload(userId)) } };
+    await Promise.all(
+      orderedWorkIds.map((workId, index) => prisma.work.update({ where: { id: workId }, data: { seriesOrder: index + 1 } }))
+    );
+    return { status: 200, body: { ok: true } };
   }
 
   return { status: 400, body: { error: "Unknown action" } };

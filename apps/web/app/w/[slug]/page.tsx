@@ -171,7 +171,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{work.title}</h1>
 
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 md:flex-wrap md:overflow-visible">
+            <div className="mt-4 hidden items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 md:flex md:flex-wrap md:overflow-visible">
               <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
               <BookmarkButton workId={work.id} initialBookmarked={!!interactions.bookmarked} />
               <AddToListButton workId={work.id} />
@@ -184,6 +184,24 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               />
             </div>
 
+            <div className="mt-4 grid gap-2 md:hidden">
+              <div className="grid grid-cols-3 gap-2">
+                <LikeButton className="w-full px-3" workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
+                <BookmarkButton className="w-full px-3" workId={work.id} initialBookmarked={!!interactions.bookmarked} />
+                <AddToListButton className="w-full px-3" workId={work.id} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <ShareButton className="w-full px-3" title={work.title} />
+                <RatingStars
+                  className="w-full px-3"
+                  workId={work.id}
+                  initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                  ratingAvg={Number(work.ratingAvg ?? 0)}
+                  ratingCount={Number(work.ratingCount ?? 0)}
+                />
+              </div>
+            </div>
+
             {work.description ? <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{work.description}</p> : null}
 
             <div className="mt-6">
@@ -193,7 +211,13 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
             <div className="mt-6">
               <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
                 <div className="grid gap-3">
-                  <SeriesArcsPanel work={work} />
+                  <SeriesArcsPanel
+                    currentWorkId={work.id}
+                    seriesTitle={work.seriesTitle}
+                    works={Array.isArray(work.seriesWorks) ? work.seriesWorks : []}
+                    previousArc={work.previousArc}
+                    nextArc={work.nextArc}
+                  />
 
                   <WorkChaptersWebtoon
                     slug={work.slug}

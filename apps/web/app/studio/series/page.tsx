@@ -6,35 +6,34 @@ import StudioSeriesManagerClient from "./StudioSeriesManagerClient";
 export const dynamic = "force-dynamic";
 
 export default async function StudioSeriesPage() {
-  const [prefsRes, seriesRes] = await Promise.all([
-    apiJson<{ prefs: any }>("/api/me/preferences"),
-    apiJson<{ series: any[]; ungroupedWorks: any[] }>("/api/studio/series"),
-  ]);
-
-  if (!prefsRes.ok) {
+  const res = await apiJson<{ series: any[]; unassignedWorks: any[] }>("/api/studio/series");
+  if (!res.ok) {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/series`)}`);
   }
 
-  const initialSeries = seriesRes.ok ? seriesRes.data.series || [] : [];
-  const initialUngroupedWorks = seriesRes.ok ? seriesRes.data.ungroupedWorks || [] : [];
-
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <Link href="/studio" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
-              ← Back to Studio
+            <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">Manage series</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Organize your works into a proper series and control arc order.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/studio" className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900">
+              Back to studio
             </Link>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">Manage Series</h1>
-            <p className="mt-2 max-w-3xl text-sm text-gray-600 dark:text-gray-300">
-              Group your works into one series, reorder arcs in one place, and keep the public series box tidy.
-            </p>
+            <Link href="/studio/new" className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
+              Create new work
+            </Link>
           </div>
         </div>
 
         <div className="mt-8">
-          <StudioSeriesManagerClient initialSeries={initialSeries as any} initialUngroupedWorks={initialUngroupedWorks as any} />
+          <StudioSeriesManagerClient
+            initialSeries={Array.isArray(res.data.series) ? res.data.series : []}
+            initialUnassignedWorks={Array.isArray(res.data.unassignedWorks) ? res.data.unassignedWorks : []}
+          />
         </div>
       </div>
     </main>

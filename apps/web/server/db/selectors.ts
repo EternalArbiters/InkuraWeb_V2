@@ -92,14 +92,9 @@ export const studioWorkRowSelect = {
   publishType: true,
   authorId: true,
   coverImage: true,
+  seriesId: true,
   seriesOrder: true,
-  series: {
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-    },
-  },
+  series: { select: { id: true, title: true } },
 } as const satisfies Prisma.WorkSelect;
 
 // -----------------------------

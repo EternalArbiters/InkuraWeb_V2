@@ -63,7 +63,7 @@ export default function WorkChaptersWebtoon({
   }, [chapters, sort]);
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+    <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold">Chapters</div>
@@ -73,11 +73,11 @@ export default function WorkChaptersWebtoon({
         <button
           type="button"
           onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
-          className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
           title="Sort"
           aria-label="Sort"
         >
-          <ArrowDownUp className="w-4 h-4" />
+          <ArrowDownUp className="h-4 w-4" />
           <span className="text-xs">{sort === "newest" ? "Newest" : "Oldest"}</span>
         </button>
       </div>
@@ -87,7 +87,6 @@ export default function WorkChaptersWebtoon({
           <div className="text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
         ) : (
           sorted.map((c) => {
-            // Prefer server-resolved thumb. Fallback for older API payloads.
             const candidates = (c.pages || []).map((p) => p.imageUrl).filter(Boolean);
             const thumb = c.thumbnailUrl || c.thumbnailImage || stablePick(String(c.id), candidates) || null;
 
@@ -103,18 +102,18 @@ export default function WorkChaptersWebtoon({
                 key={c.id}
                 href={`/w/${slug}/read/${c.id}`}
                 className={
-                  "flex min-h-[90px] items-stretch gap-3 overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950/20 hover:bg-gray-50 dark:hover:bg-gray-900 transition p-3 rounded-xl " +
+                  "flex min-h-[106px] items-stretch gap-3 rounded-xl border border-gray-200 bg-white p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900 sm:min-h-[112px] " +
                   (read ? "opacity-60" : "")
                 }
               >
-                <div className="relative w-[120px] shrink-0 self-stretch">
-                  <div className="relative h-full bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-lg">
+                <div className="relative w-[118px] shrink-0 sm:w-[126px]">
+                  <div className="relative h-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={thumb}
                         alt={c.title}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 h-full w-full object-cover"
                         style={{
                           objectPosition: `${focusX}% ${focusY}%`,
                           transform: `scale(${zoom})`,
@@ -126,21 +125,21 @@ export default function WorkChaptersWebtoon({
                       <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">No image</div>
                     )}
                     {up ? (
-                      <div className="absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full bg-emerald-600/90 text-white font-extrabold">
+                      <div className="absolute left-2 top-2 rounded-full bg-emerald-600/90 px-2 py-1 text-[10px] font-extrabold text-white">
                         UP
                       </div>
                     ) : null}
                   </div>
                 </div>
 
-                <div className="min-w-0 flex-1 self-center">
-                  <div className="text-sm font-extrabold leading-tight truncate">Chapter {c.number}</div>
-                  <div className="mt-0.5 text-sm leading-tight text-gray-800 dark:text-gray-100 truncate">{c.title}</div>
-                  <div className="mt-1 text-xs leading-tight text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                    {c.isMature ? <span className="px-2 py-1 rounded-full bg-black/70 text-white">18+</span> : null}
-                    {c.publishedAt ? <span>{new Date(c.publishedAt).toLocaleDateString()}</span> : null}
+                <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-0.5">
+                  <div className="truncate text-base font-extrabold leading-tight">Chapter {c.number}</div>
+                  <div className="truncate text-sm leading-tight text-gray-800 dark:text-gray-100">{c.title}</div>
+                  <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs text-gray-600 dark:text-gray-300">
+                    {c.isMature ? <span className="shrink-0 rounded-full bg-black/70 px-2 py-1 text-white">18+</span> : null}
+                    {c.publishedAt ? <span className="truncate">{new Date(c.publishedAt).toLocaleDateString()}</span> : null}
                     {c.status && c.status !== "PUBLISHED" ? (
-                      <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">Draft</span>
+                      <span className="shrink-0 rounded-full border border-gray-200 px-2 py-1 dark:border-gray-800">Draft</span>
                     ) : null}
                   </div>
                 </div>

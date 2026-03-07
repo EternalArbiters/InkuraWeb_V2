@@ -18,13 +18,9 @@ import IconButton from "../IconButton";
 import NavCountBadge from "../NavCountBadge";
 import { CATEGORY_PATHS } from "./constants";
 
-function formatNavDisplayName(displayName: string, maxChars = 10) {
-  const normalized = String(displayName || "").trim().replace(/\s+/g, " ");
-  if (!normalized) return "User";
-
-  const [firstWord, ...rest] = normalized.split(" ");
-  const base = firstWord.length > maxChars ? `${firstWord.slice(0, maxChars)}...` : firstWord;
-  return rest.length ? `${base}...` : base;
+function compactDisplayName(value: string) {
+  const firstWord = String(value || "").trim().split(/\s+/).filter(Boolean)[0] || "User";
+  return firstWord.length > 12 ? `${firstWord.slice(0, 12)}...` : firstWord;
 }
 
 export default function DesktopActions({
@@ -54,8 +50,6 @@ export default function DesktopActions({
   toggleDarkMode: () => void;
   handleLogout: () => void;
 }) {
-  const navDisplayName = formatNavDisplayName(displayName);
-
   return (
     <div className="flex items-center gap-0 pl-6 h-10">
       <IconButton icon={<Upload size={22} />} label="Upload" href="/studio" />
@@ -199,10 +193,10 @@ export default function DesktopActions({
         <Link
           href="/settings/profile"
           prefetch={false}
-          className="ml-4 hidden md:flex items-center gap-2 group max-w-[132px] shrink-0"
+          className="ml-4 hidden md:flex items-center gap-2 group min-w-0 max-w-[150px]"
         >
-          <span title={displayName} className="max-w-[92px] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white group-hover:underline xl:max-w-[108px]">
-            {navDisplayName}
+          <span className="max-w-[102px] truncate text-sm font-medium text-gray-800 dark:text-white group-hover:underline">
+            {compactDisplayName(displayName)}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -219,9 +213,9 @@ export default function DesktopActions({
           </div>
         </Link>
       ) : (
-        <div className="ml-4 hidden md:flex items-center gap-2 max-w-[132px] shrink-0">
-          <span title={displayName} className="max-w-[92px] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white xl:max-w-[108px]">
-            {navDisplayName}
+        <div className="ml-4 hidden md:flex items-center gap-2 min-w-0 max-w-[150px]">
+          <span className="max-w-[102px] truncate text-sm font-medium text-gray-800 dark:text-white">
+            {compactDisplayName(displayName)}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
             {/* eslint-disable-next-line @next/next/no-img-element */}

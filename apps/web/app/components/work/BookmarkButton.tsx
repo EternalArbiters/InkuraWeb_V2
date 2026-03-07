@@ -3,17 +3,14 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bookmark } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-export default function BookmarkButton({
-  workId,
-  initialBookmarked,
-  className,
-}: {
+type Props = {
   workId: string;
   initialBookmarked: boolean;
   className?: string;
-}) {
+};
+
+export default function BookmarkButton({ workId, initialBookmarked, className = "" }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -41,18 +38,15 @@ export default function BookmarkButton({
     <button
       onClick={toggle}
       disabled={isPending}
-      className={cn(
-        `inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border transition disabled:opacity-60 ${
-          bookmarked
-            ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
-            : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-        }`,
-        className,
-      )}
+      className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+        bookmarked
+          ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
+          : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+      } ${className}`.trim()}
       aria-label="Bookmark"
     >
       <Bookmark size={18} className={bookmarked ? "fill-current" : ""} />
-      <span className="whitespace-nowrap">{bookmarked ? "Bookmarked" : "Bookmark"}</span>
+      <span className="whitespace-nowrap">Bookmark</span>
     </button>
   );
 }
