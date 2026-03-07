@@ -28,8 +28,8 @@ export default async function EditProfilePage() {
         <ProfileForm
           initial={{
             email: p.email,
-            username: p.username,
-            name: p.name,
+            username: p.username ?? "",
+            name: p.name ?? "",
             image: p.image,
             avatarFocusX: p.avatarFocusX,
             avatarFocusY: p.avatarFocusY,
