@@ -99,11 +99,11 @@ export default function DesktopActions({
           <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg w-48">
             {isAuthed ? (
               <Link
-                href="/settings/profile"
+                href="/profile"
                 prefetch={false}
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Edit Profile
+                Profile
               </Link>
             ) : null}
             <Link
@@ -191,7 +191,7 @@ export default function DesktopActions({
       {/* Profile Info (Desktop Only) */}
       {isAuthed ? (
         <Link
-          href="/settings/profile"
+          href="/profile"
           prefetch={false}
           className="ml-4 hidden md:flex items-center gap-2 group min-w-0 max-w-[150px]"
         >

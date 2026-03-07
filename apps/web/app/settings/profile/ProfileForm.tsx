@@ -190,8 +190,6 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         onNameChange={setName}
         username={username}
         onUsernameChange={(v) => setUsername(v.replace(/\s+/g, "").toLowerCase())}
-        image={image}
-        onImageChange={setImage}
       />
 
       <div className="mt-6 flex items-center justify-end gap-3">

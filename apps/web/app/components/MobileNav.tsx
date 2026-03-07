@@ -137,7 +137,7 @@ export default function MobileNav({
           {/* User Info */}
           <div className="flex items-center space-x-4 mb-6">
             {isAuthed ? (
-              <Link href="/settings/profile" prefetch={false} onClick={onClose} className="flex items-center space-x-4 group">
+              <Link href="/profile" prefetch={false} onClick={onClose} className="flex items-center space-x-4 group">
                 <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-400">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
