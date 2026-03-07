@@ -239,7 +239,7 @@ export default function MobileNav({
 
             {/* Remaining items */}
             {navItems.slice(5).map((item) => (
-              <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+              <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} isAuthed={isAuthed} />
             ))}
           </nav>
         </div>
