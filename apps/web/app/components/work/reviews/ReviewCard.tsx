@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Pencil, ThumbsUp, Trash2 } from "lucide-react";
 import Stars from "./Stars";
 import type { ReviewItem } from "./types";
@@ -30,7 +31,13 @@ export default function ReviewCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <div className="font-semibold text-sm">{displayName(review.user)}</div>
+            {review.user?.username ? (
+              <Link href={`/u/${review.user.username}`} className="font-semibold text-sm hover:text-purple-400">
+                {displayName(review.user)}
+              </Link>
+            ) : (
+              <div className="font-semibold text-sm">{displayName(review.user)}</div>
+            )}
             <Stars value={review.rating} />
             {review.isMine ? (
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-600 text-white">

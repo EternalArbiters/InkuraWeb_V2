@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo } from "react";
 import {
   Check,
@@ -151,7 +152,13 @@ export default function CommentCard(props: CommentCardProps) {
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-sm font-semibold truncate">{c.displayName}</div>
+          {c.user?.username ? (
+            <Link href={`/u/${c.user.username}`} className="text-sm font-semibold truncate hover:text-purple-400">
+              {c.displayName}
+            </Link>
+          ) : (
+            <div className="text-sm font-semibold truncate">{c.displayName}</div>
+          )}
           {ratingStars}
         </div>
         <div className="flex items-center gap-2">

@@ -4,6 +4,7 @@ import { apiJson } from "@/server/http/apiJson";
 import ShareButton from "@/app/components/work/ShareButton";
 import ListOwnerControls from "./ownerControls";
 import ListWorksGrid from "./listWorksGrid";
+import PublicUserLink from "@/app/components/user/PublicUserLink";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,6 @@ export default async function ReadingListPublicPage({ params: paramsPromise }: {
   const items = Array.isArray(res.data.items) ? res.data.items : [];
   const viewer = res.data.viewer;
 
-  const ownerName = list?.owner?.name || list?.owner?.username || "Unknown";
   const isOwner = !!viewer?.isOwner;
 
   return (
@@ -38,7 +38,7 @@ export default async function ReadingListPublicPage({ params: paramsPromise }: {
             </div>
 
             <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-              by <b>{ownerName}</b> • {items.length} item
+              by <b><PublicUserLink user={list?.owner} className="hover:text-purple-400" /></b> • {items.length} item
             </div>
 
             {list.description ? <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{list.description}</p> : null}

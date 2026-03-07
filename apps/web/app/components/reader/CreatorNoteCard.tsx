@@ -1,4 +1,5 @@
 import * as React from "react";
+import PublicUserLink from "@/app/components/user/PublicUserLink";
 
 type Person = { username?: string | null; name?: string | null; image?: string | null };
 
@@ -44,11 +45,19 @@ export default function CreatorNoteCard({
 
         <div className="min-w-0 flex-1">
           <div className="text-xs text-white/60">{roleLabel}</div>
-          <div className="truncate font-semibold text-white">{uName}</div>
+          <PublicUserLink
+            user={uploader}
+            className="block truncate font-semibold text-white hover:text-purple-200"
+          >
+            {uName}
+          </PublicUserLink>
 
           {tName ? (
             <div className="mt-0.5 text-xs text-white/60">
-              Translator: <span className="text-white/80">{tName}</span>
+              Translator:{" "}
+              <PublicUserLink user={translator} className="text-white/80 hover:text-purple-200">
+                {tName}
+              </PublicUserLink>
             </div>
           ) : null}
         </div>

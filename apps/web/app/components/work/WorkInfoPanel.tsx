@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import PublicUserLink from "@/app/components/user/PublicUserLink";
 
 function row(label: string, value: ReactNode) {
   return (
@@ -19,7 +20,6 @@ function textValue(value: ReactNode, preserveWrap = false) {
 }
 
 export default function WorkInfoPanel({ work }: { work: any }) {
-  const uploader = work?.author?.name || work?.author?.username || "Unknown";
   const translatorUser = work?.translator?.name || work?.translator?.username || null;
   const translatorCredit = work?.translatorCredit || null;
   const companyCredit = work?.companyCredit || null;
@@ -52,7 +52,13 @@ export default function WorkInfoPanel({ work }: { work: any }) {
           {row("Origin", textValue(origin))}
           {row("Language", textValue(language))}
           {row("Publish", textValue(publishType))}
-          {row("Up by", textValue(uploader))}
+          {row(
+            "Up by",
+            <PublicUserLink
+              user={work?.author || null}
+              className="block max-w-full truncate hover:text-purple-400 md:whitespace-normal md:break-words"
+            />
+          )}
 
           {translatorUser || translatorCredit ? row("Translator", textValue(translatorCredit || translatorUser)) : null}
           {work?.originalAuthorCredit ? row("Original author", textValue(work.originalAuthorCredit)) : null}
