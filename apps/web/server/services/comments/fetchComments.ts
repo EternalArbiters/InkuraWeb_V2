@@ -170,13 +170,18 @@ export async function fetchComments(options: FetchCommentsOptions) {
 
 export async function fetchCommentsFromRequest(req: Request) {
   const url = new URL(req.url);
+  const rawTake = url.searchParams.get("take");
+  const rawMax = url.searchParams.get("max");
+  const take = rawTake == null ? undefined : Number.parseInt(rawTake, 10);
+  const max = rawMax == null ? undefined : Number.parseInt(rawMax, 10);
+
   return fetchComments({
     scope: url.searchParams.get("scope"),
     targetType: url.searchParams.get("targetType") as CommentTargetTypeString | null,
     targetId: url.searchParams.get("targetId"),
     workId: url.searchParams.get("workId"),
-    take: url.searchParams.get("take"),
-    max: url.searchParams.get("max"),
+    take: Number.isFinite(take) ? take : undefined,
+    max: Number.isFinite(max) ? max : undefined,
     sort: url.searchParams.get("sort"),
     includeUserRating: url.searchParams.get("includeUserRating") === "1",
   });
