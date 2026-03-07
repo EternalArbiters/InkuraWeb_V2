@@ -90,6 +90,8 @@ export async function createStudioWork(req: Request) {
 
   const translatorCredit = String(fd.get("translatorCredit") || "").trim() || null;
   const companyCredit = String(fd.get("companyCredit") || "").trim() || null;
+  const seriesTitle = String(fd.get("seriesTitle") || "").trim();
+  const seriesOrderRaw = String(fd.get("seriesOrder") || "").trim();
 
   const cover = fd.get("cover");
   const coverFile = cover && typeof cover !== "string" ? (cover as File) : null;
@@ -121,8 +123,26 @@ export async function createStudioWork(req: Request) {
   const suffix = Math.random().toString(36).slice(2, 8);
   const slug = `${base}-${suffix}`;
 
-  const created = await prisma.work.create({
-    data: {
+  const parsedSeriesOrder = seriesOrderRaw ? Number(seriesOrderRaw) : null;
+  const nextSeriesOrder = parsedSeriesOrder != null && Number.isFinite(parsedSeriesOrder)
+    ? Math.max(1, Math.floor(parsedSeriesOrder))
+    : null;
+
+  const created = await prisma.$transaction(async (tx) => {
+    let nextSeriesId: string | null = null;
+    if (seriesTitle) {
+      const seriesSlug = slugify(seriesTitle);
+      const series = await tx.workSeries.upsert({
+        where: { ownerId_slug: { ownerId: userId, slug: seriesSlug } },
+        update: { title: seriesTitle },
+        create: { ownerId: userId, title: seriesTitle, slug: seriesSlug },
+        select: { id: true },
+      });
+      nextSeriesId = series.id;
+    }
+
+    return tx.work.create({
+      data: {
       slug,
       title,
       description: description || null,
@@ -146,6 +166,8 @@ export async function createStudioWork(req: Request) {
 
       translatorCredit: publishType === "TRANSLATION" ? translatorCredit : null,
       companyCredit: publishType === "ORIGINAL" ? null : companyCredit,
+      seriesId: nextSeriesId,
+      seriesOrder: nextSeriesId ? nextSeriesOrder : null,
 
       genres: genreIds.length ? { connect: genreIds.map((id) => ({ id })) } : undefined,
       warningTags: warningTagIds.length ? { connect: warningTagIds.map((id) => ({ id })) } : undefined,
@@ -158,8 +180,9 @@ export async function createStudioWork(req: Request) {
             }),
           }
         : undefined,
-    },
-    select: { id: true },
+      },
+      select: { id: true },
+    });
   });
 
   try {

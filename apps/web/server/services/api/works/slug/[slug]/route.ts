@@ -63,6 +63,28 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
       companyCredit: true,
       prevArcUrl: true,
       nextArcUrl: true,
+      seriesOrder: true,
+      series: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          works: {
+            where: { status: "PUBLISHED" },
+            orderBy: [{ seriesOrder: "asc" }, { updatedAt: "desc" }],
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              coverImage: true,
+              type: true,
+              status: true,
+              seriesOrder: true,
+              updatedAt: true,
+            },
+          },
+        },
+      },
       likeCount: true,
       ratingAvg: true,
       ratingCount: true,
@@ -179,8 +201,24 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
         }))
     : [];
 
+  const orderedSeriesWorks = Array.isArray(work.series?.works)
+    ? work.series.works.slice().sort((a: any, b: any) => {
+        const ao = typeof a.seriesOrder === "number" ? a.seriesOrder : Number.MAX_SAFE_INTEGER;
+        const bo = typeof b.seriesOrder === "number" ? b.seriesOrder : Number.MAX_SAFE_INTEGER;
+        if (ao !== bo) return ao - bo;
+        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+      })
+    : [];
+  const currentSeriesIndex = orderedSeriesWorks.findIndex((item: any) => item.id === work.id);
+  const previousArc = currentSeriesIndex > 0 ? orderedSeriesWorks[currentSeriesIndex - 1] : null;
+  const nextArc = currentSeriesIndex >= 0 && currentSeriesIndex < orderedSeriesWorks.length - 1
+    ? orderedSeriesWorks[currentSeriesIndex + 1]
+    : null;
+
   const workOut = {
     ...work,
+    previousArc,
+    nextArc,
     chapters: visibleChapters,
   };
 

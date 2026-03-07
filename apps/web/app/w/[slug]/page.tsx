@@ -17,63 +17,6 @@ import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
 
 export const dynamic = "force-dynamic";
 
-type ArcPreview = {
-  href: string;
-  title: string;
-  coverImage?: string | null;
-};
-
-function labelFromHref(href: string) {
-  const clean = String(href || "").trim();
-  if (!clean) return "Untitled Arc";
-
-  try {
-    const u = new URL(clean, "https://inkura.local");
-    const segment = u.pathname.split("/").filter(Boolean).pop() || clean;
-    return decodeURIComponent(segment).replace(/[-_]+/g, " ").trim() || "Untitled Arc";
-  } catch {
-    return clean.replace(/[-_]+/g, " ").trim() || "Untitled Arc";
-  }
-}
-
-function extractArcSlug(href: string) {
-  const clean = String(href || "").trim();
-  if (!clean) return null;
-
-  try {
-    const u = new URL(clean, "https://inkura.local");
-    const parts = u.pathname.split("/").filter(Boolean);
-    if (parts[0] !== "w" || !parts[1]) return null;
-    return decodeURIComponent(parts[1]);
-  } catch {
-    return null;
-  }
-}
-
-async function fetchArcPreview(href: string | null | undefined): Promise<ArcPreview | null> {
-  const raw = String(href || "").trim();
-  if (!raw) return null;
-
-  const slug = extractArcSlug(raw);
-  if (slug) {
-    const res = await apiJson<{ work: any; gated?: boolean }>(`/api/works/slug/${encodeURIComponent(slug)}`);
-    if (res.ok && !(res.data as any)?.gated && (res.data as any)?.work) {
-      const arc = (res.data as any).work;
-      return {
-        href: `/w/${arc.slug}`,
-        title: String(arc.title || labelFromHref(raw)),
-        coverImage: arc.coverImage || null,
-      };
-    }
-  }
-
-  return {
-    href: raw,
-    title: labelFromHref(raw),
-    coverImage: null,
-  };
-}
-
 export default async function WorkPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
 
@@ -134,17 +77,6 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
       </main>
     );
   }
-
-  const [prevArc, nextArc] = await Promise.all([
-    fetchArcPreview(work.prevArcUrl),
-    fetchArcPreview(work.nextArcUrl),
-  ]);
-
-  const seriesItems = [
-    prevArc ? { ...prevArc } : null,
-    { href: `/w/${work.slug}`, title: String(work.title || "Untitled"), coverImage: work.coverImage || null, active: true },
-    nextArc ? { ...nextArc } : null,
-  ].filter(Boolean) as Array<{ href: string; title: string; coverImage?: string | null; active?: boolean }>;
 
   const combinedWarnings = Array.isArray(work.warningTags) ? work.warningTags : [];
   const authorName = work.author?.name || work.author?.username || "Unknown";
@@ -261,13 +193,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
             <div className="mt-6">
               <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
                 <div className="grid gap-3">
-                  {(prevArc || nextArc) ? (
-                    <SeriesArcsPanel
-                      items={seriesItems}
-                      prevArc={prevArc ? { ...prevArc, label: "Previous Arc" } : null}
-                      nextArc={nextArc ? { ...nextArc, label: "Next Arc" } : null}
-                    />
-                  ) : null}
+                  <SeriesArcsPanel work={work} />
 
                   <WorkChaptersWebtoon
                     slug={work.slug}

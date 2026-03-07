@@ -45,6 +45,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
   const [translatorCredit, setTranslatorCredit] = React.useState("");
   const [companyCredit, setCompanyCredit] = React.useState("");
   const [uploaderNote, setUploaderNote] = React.useState("");
+  const [seriesTitle, setSeriesTitle] = React.useState("");
+  const [seriesOrder, setSeriesOrder] = React.useState("");
 
   const [isMature, setIsMature] = React.useState(false);
   const [isDeviantLove, setIsDeviantLove] = React.useState(false);
@@ -138,6 +140,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         fd.set("originalTranslatorCredit", originalTranslatorCredit.trim());
         if (uploaderNote.trim()) fd.set("uploaderNote", uploaderNote.trim());
       }
+      if (seriesTitle.trim()) fd.set("seriesTitle", seriesTitle.trim());
+      if (seriesOrder.trim()) fd.set("seriesOrder", seriesOrder.trim());
 
       fd.set("cover", coverFile);
 
@@ -204,6 +208,29 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         tagsRaw={tagsRaw}
         onTagsRawChange={syncTags}
       />
+
+
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
+        <div className="text-sm font-semibold">Series (optional)</div>
+        <div className="text-xs text-gray-600 dark:text-gray-300">
+          Give the same series title to works that belong together, then set the arc order for this work.
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-[1.6fr_180px] gap-3">
+          <input
+            value={seriesTitle}
+            onChange={(e) => setSeriesTitle(e.target.value)}
+            placeholder="Series title"
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          />
+          <input
+            inputMode="numeric"
+            value={seriesOrder}
+            onChange={(e) => setSeriesOrder(e.target.value.replace(/[^0-9]/g, ""))}
+            placeholder="Arc order"
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          />
+        </div>
+      </div>
 
       <MultiSelectPicker
         title="Genres"

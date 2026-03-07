@@ -5,7 +5,7 @@ function row(label: string, value: ReactNode) {
   return (
     <div className="grid grid-cols-[120px_1fr] gap-3 py-2 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
       <div className="text-xs font-semibold text-gray-600 dark:text-gray-300">{label}</div>
-      <div className="text-sm text-gray-900 dark:text-white break-words">{value}</div>
+      <div className="text-sm text-gray-900 dark:text-white min-w-0 break-words">{value}</div>
     </div>
   );
 }
@@ -44,11 +44,11 @@ export default function WorkInfoPanel({ work }: { work: any }) {
           {row("Language", language)}
           {row("Publish", publishType)}
           {row("Up by", uploader)}
+          {work?.series?.title ? row("Series", work.series.title) : null}
 
           {translatorUser || translatorCredit ? row("Translator", translatorCredit || translatorUser) : null}
 
           {work?.originalAuthorCredit ? row("Original author", work.originalAuthorCredit) : null}
-
           {work?.originalTranslatorCredit ? row("Original translator", work.originalTranslatorCredit) : null}
           {companyCredit ? row("Company", companyCredit) : null}
           {work?.sourceUrl ? row(
@@ -57,9 +57,7 @@ export default function WorkInfoPanel({ work }: { work: any }) {
               {work.sourceUrl}
             </Link>
           ) : null}
-
           {work?.uploaderNote ? row("Note", <span className="whitespace-pre-wrap">{work.uploaderNote}</span>) : null}
-
 
           {row("Chapters", String(work?.chapterCount ?? 0))}
           {row("Favorites", String(work?.likeCount ?? 0))}
