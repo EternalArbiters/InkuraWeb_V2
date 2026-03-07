@@ -1,7 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-
 import AuthModal from "@/hooks/AuthModal";
 import { useAuthModal } from "@/hooks/useAuthModal";
 
@@ -17,10 +15,13 @@ import ScrollToTopButton from "./landing/ScrollToTopButton";
 import { useLandingTheme } from "./landing/useLandingTheme";
 import { DISCOVER_ITEMS, FEATURED_FEATURES, HOW_IT_WORKS_ITEMS, WHY_INKURA_ITEMS } from "./landing/data";
 
-export default function LandingPage() {
+type LandingPageProps = {
+  nextParam?: string | null;
+};
+
+export default function LandingPage({ nextParam = null }: LandingPageProps) {
   const { onOpen } = useAuthModal();
-  const params = useSearchParams();
-  const next = params?.get("next") || "";
+  const next = nextParam ?? "";
 
   const { isDarkMode, toggleDarkMode } = useLandingTheme();
 

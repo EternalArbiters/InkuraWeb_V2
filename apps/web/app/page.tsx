@@ -1,19 +1,18 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import LandingPage from "./components/LandingPage"; // pindahkan isi landing ke komponen terpisah agar rapi
+import LandingPage from "./components/LandingPage";
 
-export default function RootPage() {
-  const { data: session, status } = useSession();
+function RootPageInner() {
+  const { status } = useSession();
   const router = useRouter();
   const params = useSearchParams();
   const next = params?.get("next") || "";
 
   useEffect(() => {
     if (status === "authenticated") {
-      // If user came from a protected route redirect, continue there after login.
       if (next && next.startsWith("/")) {
         router.push(next);
       } else {
@@ -26,5 +25,13 @@ export default function RootPage() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  return <LandingPage />;
+  return <LandingPage nextParam={next} />;
+}
+
+export default function RootPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RootPageInner />
+    </Suspense>
+  );
 }

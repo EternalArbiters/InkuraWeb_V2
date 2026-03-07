@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function ResetPasswordPage() {
+function ResetPasswordInner() {
   const params = useSearchParams();
   const router = useRouter();
   const token = params.get("token") || "";
@@ -30,12 +31,11 @@ export default function ResetPasswordPage() {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       setStatus("error");
-      setError(json?.error || "Gagal reset password.");
+      setError((json as { error?: string })?.error || "Gagal reset password.");
       return;
     }
 
     setStatus("ok");
-    // After reset, go to landing/login
     setTimeout(() => router.push("/?login=1"), 800);
   }
 
@@ -90,5 +90,15 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={<div className="min-h-screen bg-[#0B0B10] text-white flex items-center justify-center p-6">Memuat...</div>}
+    >
+      <ResetPasswordInner />
+    </Suspense>
   );
 }
