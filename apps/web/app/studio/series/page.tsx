@@ -9,6 +9,19 @@ export default async function StudioSeriesPage() {
   await requirePageUserId("/studio/series");
   const { series, unassignedWorks } = await listStudioSeries();
 
+  const initialSeries = (Array.isArray(series) ? series : []).map((item) => ({
+    ...item,
+    works: (Array.isArray(item.works) ? item.works : []).map((work) => ({
+      ...work,
+      updatedAt: work.updatedAt ? work.updatedAt.toISOString() : null,
+    })),
+  }));
+
+  const initialUnassignedWorks = (Array.isArray(unassignedWorks) ? unassignedWorks : []).map((work) => ({
+    ...work,
+    updatedAt: work.updatedAt ? work.updatedAt.toISOString() : null,
+  }));
+
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="mx-auto max-w-7xl px-4 py-10">
@@ -29,8 +42,8 @@ export default async function StudioSeriesPage() {
 
         <div className="mt-8">
           <StudioSeriesManagerClient
-            initialSeries={Array.isArray(series) ? series : []}
-            initialUnassignedWorks={Array.isArray(unassignedWorks) ? unassignedWorks : []}
+            initialSeries={initialSeries}
+            initialUnassignedWorks={initialUnassignedWorks}
           />
         </div>
       </div>
