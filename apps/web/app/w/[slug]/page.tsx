@@ -13,8 +13,66 @@ import AddToListButton from "@/app/components/work/AddToListButton";
 import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
+import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
 
 export const dynamic = "force-dynamic";
+
+type ArcPreview = {
+  href: string;
+  title: string;
+  coverImage?: string | null;
+};
+
+function labelFromHref(href: string) {
+  const clean = String(href || "").trim();
+  if (!clean) return "Untitled Arc";
+
+  try {
+    const u = new URL(clean, "https://inkura.local");
+    const segment = u.pathname.split("/").filter(Boolean).pop() || clean;
+    return decodeURIComponent(segment).replace(/[-_]+/g, " ").trim() || "Untitled Arc";
+  } catch {
+    return clean.replace(/[-_]+/g, " ").trim() || "Untitled Arc";
+  }
+}
+
+function extractArcSlug(href: string) {
+  const clean = String(href || "").trim();
+  if (!clean) return null;
+
+  try {
+    const u = new URL(clean, "https://inkura.local");
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts[0] !== "w" || !parts[1]) return null;
+    return decodeURIComponent(parts[1]);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchArcPreview(href: string | null | undefined): Promise<ArcPreview | null> {
+  const raw = String(href || "").trim();
+  if (!raw) return null;
+
+  const slug = extractArcSlug(raw);
+  if (slug) {
+    const res = await apiJson<{ work: any; gated?: boolean }>(`/api/works/slug/${encodeURIComponent(slug)}`);
+    if (res.ok && !(res.data as any)?.gated && (res.data as any)?.work) {
+      const arc = (res.data as any).work;
+      return {
+        href: `/w/${arc.slug}`,
+        title: String(arc.title || labelFromHref(raw)),
+        coverImage: arc.coverImage || null,
+      };
+    }
+  }
+
+  return {
+    href: raw,
+    title: labelFromHref(raw),
+    coverImage: null,
+  };
+}
 
 export default async function WorkPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
@@ -76,6 +134,17 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
       </main>
     );
   }
+
+  const [prevArc, nextArc] = await Promise.all([
+    fetchArcPreview(work.prevArcUrl),
+    fetchArcPreview(work.nextArcUrl),
+  ]);
+
+  const seriesItems = [
+    prevArc ? { ...prevArc } : null,
+    { href: `/w/${work.slug}`, title: String(work.title || "Untitled"), coverImage: work.coverImage || null, active: true },
+    nextArc ? { ...nextArc } : null,
+  ].filter(Boolean) as Array<{ href: string; title: string; coverImage?: string | null; active?: boolean }>;
 
   const combinedWarnings = Array.isArray(work.warningTags) ? work.warningTags : [];
   const authorName = work.author?.name || work.author?.username || "Unknown";
@@ -170,30 +239,16 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{work.title}</h1>
 
-            <div className="mt-4 grid grid-cols-3 gap-2 md:flex md:items-center md:gap-2">
-              <LikeButton
-                workId={work.id}
-                initialLiked={!!interactions.liked}
-                initialCount={Number(work.likeCount ?? 0)}
-                className="w-full justify-center px-3 md:w-auto md:justify-start md:px-5"
-              />
-              <BookmarkButton
-                workId={work.id}
-                initialBookmarked={!!interactions.bookmarked}
-                className="w-full justify-center px-3 md:w-auto md:justify-start md:px-5"
-              />
-              <AddToListButton
-                workId={work.id}
-                className="w-full md:w-auto"
-                buttonClassName="w-full justify-center px-3 md:w-auto md:justify-start md:px-5"
-              />
-              <ShareButton title={work.title} className="w-full justify-center px-3 md:w-auto md:justify-start md:px-5" />
+            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 md:flex-wrap md:overflow-visible">
+              <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
+              <BookmarkButton workId={work.id} initialBookmarked={!!interactions.bookmarked} />
+              <AddToListButton workId={work.id} />
+              <ShareButton title={work.title} />
               <RatingStars
                 workId={work.id}
                 initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
                 ratingAvg={Number(work.ratingAvg ?? 0)}
                 ratingCount={Number(work.ratingCount ?? 0)}
-                className="col-span-2 w-full justify-center px-3 md:col-auto md:w-auto md:justify-start md:px-5"
               />
             </div>
 
@@ -206,28 +261,12 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
             <div className="mt-6">
               <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
                 <div className="grid gap-3">
-                  {(work.prevArcUrl || work.nextArcUrl) ? (
-                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-                      <div className="text-sm font-semibold">Series arcs</div>
-                      <div className="mt-3 flex flex-col sm:flex-row gap-2">
-                        {work.prevArcUrl ? (
-                          <Link
-                            href={work.prevArcUrl}
-                            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center hover:bg-gray-50 dark:hover:bg-gray-900"
-                          >
-                            Previous Arc
-                          </Link>
-                        ) : null}
-                        {work.nextArcUrl ? (
-                          <Link
-                            href={work.nextArcUrl}
-                            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center hover:bg-gray-50 dark:hover:bg-gray-900"
-                          >
-                            Next Arc
-                          </Link>
-                        ) : null}
-                      </div>
-                    </div>
+                  {(prevArc || nextArc) ? (
+                    <SeriesArcsPanel
+                      items={seriesItems}
+                      prevArc={prevArc ? { ...prevArc, label: "Previous Arc" } : null}
+                      nextArc={nextArc ? { ...nextArc, label: "Next Arc" } : null}
+                    />
                   ) : null}
 
                   <WorkChaptersWebtoon
