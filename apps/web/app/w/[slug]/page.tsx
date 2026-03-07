@@ -14,7 +14,6 @@ import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
-import PublicUserLink from "@/app/components/user/PublicUserLink";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +79,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
   }
 
   const combinedWarnings = Array.isArray(work.warningTags) ? work.warningTags : [];
+  const authorName = work.author?.name || work.author?.username || "Unknown";
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -105,7 +105,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 />
               </div>
               <div className="p-4">
-                <div className="text-sm text-gray-600 dark:text-gray-300 truncate">Up by <b><PublicUserLink user={work.author} className="hover:text-purple-400" /></b></div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 truncate">Up by <b>{authorName}</b></div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
                   <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.completion}</span>
@@ -223,6 +223,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                     slug={work.slug}
                     chapters={Array.isArray(work.chapters) ? work.chapters : []}
                     lastReadChapterNumber={typeof progress?.lastReadChapterNumber === "number" ? progress.lastReadChapterNumber : null}
+                    limit={5}
+                    showAllHref={Array.isArray(work.chapters) && work.chapters.length > 5 ? `/w/${work.slug}/chapters` : null}
                   />
                 </div>
               </ContentWarningsGate>
