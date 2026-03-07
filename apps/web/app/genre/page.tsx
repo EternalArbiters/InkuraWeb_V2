@@ -1,12 +1,17 @@
 import Link from "next/link";
+import { listActiveGenres } from "@/server/services/taxonomy/publicTaxonomy";
 import PageScaffold from "../components/PageScaffold";
-import { apiJson } from "@/server/http/apiJson";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function GenrePage() {
-  const res = await apiJson<{ genres: any[] }>("/api/genres");
-  const genres = res.ok ? res.data.genres : [];
+  let genres: Awaited<ReturnType<typeof listActiveGenres>> = [];
+
+  try {
+    genres = await listActiveGenres({ take: 200 });
+  } catch {
+    genres = [];
+  }
 
   return (
     <PageScaffold

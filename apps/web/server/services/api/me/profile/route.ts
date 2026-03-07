@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,6 @@ function normalizeUsername(raw: unknown) {
 }
 
 function isValidUsername(v: string) {
-  // 3-24 chars, must start with alnum, allow alnum, dash, underscore
   return /^[a-z0-9][a-z0-9-_]{2,23}$/.test(v);
 }
 
@@ -30,27 +30,8 @@ function normalizeImage(raw: unknown) {
 }
 
 export const GET = apiRoute(async () => {
-  const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
-
-  const me = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      name: true,
-      image: true,
-      avatarFocusX: true,
-      avatarFocusY: true,
-      avatarZoom: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  if (!me) return json({ error: "Not found" }, { status: 404 });
-  return json({ profile: me });
+  const data = await getViewerProfile();
+  return json(data);
 });
 
 export const PATCH = apiRoute(async (req: Request) => {
@@ -65,13 +46,10 @@ export const PATCH = apiRoute(async (req: Request) => {
   }
 
   if ("image" in body) {
-    // Optional: allow updating avatar URL/path.
-    // If invalid, ignore it instead of failing hard.
     const img = normalizeImage(body.image);
     if (img !== null) data.image = img;
   }
 
-  // Avatar framing (optional)
   if ("avatarFocusX" in body) {
     const v = Number(body.avatarFocusX);
     if (Number.isFinite(v)) data.avatarFocusX = Math.max(0, Math.min(100, Math.round(v)));

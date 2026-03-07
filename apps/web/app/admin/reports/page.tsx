@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminReportsClient from "./AdminReportsClient";
-import { apiJson } from "@/server/http/apiJson";
+import { ApiError } from "@/server/http";
+import { listOpenAdminReports } from "@/server/services/admin/reports";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminReportsPage() {
-  const res = await apiJson<{ reports: any[] }>("/api/admin/reports");
-  if (!res.ok) {
-    redirect("/home");
+  let reports: any[] = [];
+  try {
+    ({ reports } = await listOpenAdminReports());
+  } catch (error) {
+    if (error instanceof ApiError) {
+      redirect("/home");
+    }
+    throw error;
   }
 
-  const initial = (res.data.reports || []).map((r: any) => ({
+  const initial = (reports || []).map((r: any) => ({
     id: r.id,
     createdAt: r.createdAt,
     reason: r.reason,

@@ -38,11 +38,9 @@ function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | 
   return "UNKNOWN";
 }
 
-export async function listStudioWorks(req: Request) {
+export async function listStudioWorksForViewer(input?: { all?: boolean }) {
   const { userId, role } = await requireCreatorSession();
-
-  const url = new URL(req.url);
-  const all = url.searchParams.get("all") === "1" || url.searchParams.get("scope") === "all";
+  const all = !!input?.all;
 
   const works = await prisma.work.findMany({
     where: role === "ADMIN" && all ? {} : { authorId: userId },
@@ -51,6 +49,12 @@ export async function listStudioWorks(req: Request) {
   });
 
   return { works };
+}
+
+export async function listStudioWorks(req: Request) {
+  const url = new URL(req.url);
+  const all = url.searchParams.get("all") === "1" || url.searchParams.get("scope") === "all";
+  return listStudioWorksForViewer({ all });
 }
 
 export async function createStudioWork(req: Request) {

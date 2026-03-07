@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { parseJsonStringArray } from "@/lib/prefs";
@@ -18,37 +19,16 @@ export type ViewerWithPrefs = ViewerBasic & {
   blockedDeviantLoveIds: string[];
 };
 
-export async function getViewerBasic(): Promise<ViewerBasic | null> {
+const getSessionUserId = cache(async (): Promise<string | null> => {
   const session = await getSession();
-  const userId = (session as any)?.user?.id as string | undefined;
+  return ((session as any)?.user?.id as string | undefined) || null;
+});
+
+const getViewerUser = cache(async () => {
+  const userId = await getSessionUserId();
   if (!userId) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      role: true,
-      adultConfirmed: true,
-      deviantLoveConfirmed: true,
-    },
-  });
-
-  if (!user) return null;
-
-  return {
-    id: user.id,
-    role: user.role,
-    adultConfirmed: !!user.adultConfirmed,
-    deviantLoveConfirmed: !!user.deviantLoveConfirmed,
-  };
-}
-
-export async function getViewerWithPrefs(): Promise<ViewerWithPrefs | null> {
-  const session = await getSession();
-  const userId = (session as any)?.user?.id as string | undefined;
-  if (!userId) return null;
-
-  const user = await prisma.user.findUnique({
+  return prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -61,7 +41,22 @@ export async function getViewerWithPrefs(): Promise<ViewerWithPrefs | null> {
       blockedDeviantLove: { select: { id: true } },
     },
   });
+});
 
+export const getViewerBasic = cache(async (): Promise<ViewerBasic | null> => {
+  const user = await getViewerUser();
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    role: user.role,
+    adultConfirmed: !!user.adultConfirmed,
+    deviantLoveConfirmed: !!user.deviantLoveConfirmed,
+  };
+});
+
+export const getViewerWithPrefs = cache(async (): Promise<ViewerWithPrefs | null> => {
+  const user = await getViewerUser();
   if (!user) return null;
 
   return {
@@ -74,4 +69,4 @@ export async function getViewerWithPrefs(): Promise<ViewerWithPrefs | null> {
     blockedWarningIds: user.blockedWarnings.map((w) => w.id),
     blockedDeviantLoveIds: user.blockedDeviantLove.map((d) => d.id),
   };
-}
+});

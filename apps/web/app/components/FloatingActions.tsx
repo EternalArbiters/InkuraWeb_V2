@@ -87,6 +87,19 @@ function extractChapterId(pathname: string | null): string | null {
   return m?.[1] ? decodeURIComponent(m[1]) : null;
 }
 
+function readReaderFloatingSeed(chapterId: string | null) {
+  if (!chapterId || typeof document === "undefined") return null;
+  const el = document.getElementById("reader-floating-seed");
+  if (!(el instanceof HTMLElement)) return null;
+  if (el.dataset.chapterId !== chapterId) return null;
+
+  const likeCount = Number(el.dataset.likeCount || 0);
+  return {
+    liked: el.dataset.liked === "1",
+    count: Number.isFinite(likeCount) ? likeCount : 0,
+  };
+}
+
 export default function FloatingActions() {
   const pathname = usePathname();
   const router = useRouter();
@@ -117,6 +130,14 @@ export default function FloatingActions() {
 
   useEffect(() => {
     if (!chapterId) return;
+
+    const seeded = readReaderFloatingSeed(chapterId);
+    if (seeded) {
+      setLiked(seeded.liked);
+      setCount(seeded.count);
+      return;
+    }
+
     let canceled = false;
     (async () => {
       const res = await fetch(`/api/chapters/${chapterId}`);

@@ -3,32 +3,18 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { getSession } from "@/server/auth/session";
+import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
 import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
 export const GET = apiRoute(async () => {
-  const session = await getSession();
-  if (!session?.user?.id) {
+  const data = await listReadingListsForViewer();
+  if (!data) {
     return json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const lists = await prisma.readingList.findMany({
-    where: { ownerId: session.user.id },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      _count: { select: { items: true } },
-      items: {
-        orderBy: { addedAt: "desc" },
-        take: 3,
-        select: {
-          work: { select: { id: true, slug: true, title: true, coverImage: true } },
-        },
-      },
-    },
-  });
-
-  return json({ lists });
+  return json(data);
 });
 
 export const POST = apiRoute(async (req: Request) => {

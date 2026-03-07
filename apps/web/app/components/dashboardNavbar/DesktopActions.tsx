@@ -79,7 +79,7 @@ export default function DesktopActions({
           icon={
             <div className="relative">
               <Bell size={22} />
-              <NavCountBadge endpoint="/api/notifications/unread-count" />
+              <NavCountBadge endpoint="/api/notifications/unread-count" enabled={isAuthed} />
             </div>
           }
           label="Notifications"
@@ -122,6 +122,7 @@ export default function DesktopActions({
                   <NavCountBadge
                     endpoint="/api/admin-report/unread-count"
                     variant="inline"
+                    enabled={isAuthed}
                   />
                 </span>
               </Link>

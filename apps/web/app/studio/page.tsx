@@ -1,21 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
 import StudioWorksGridClient from "./StudioWorksGridClient";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { listStudioWorksForViewer } from "@/server/services/studio/works";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioPage() {
-  const [prefsRes, worksRes] = await Promise.all([
-    apiJson<{ prefs: any }>("/api/me/preferences"),
-    apiJson<{ works: any[] }>("/api/studio/works"),
-  ]);
-
-  if (!prefsRes.ok) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio`)}`);
-  }
-
-  const works = worksRes.ok ? (worksRes.data.works || []) : [];
+  await requirePageUserId("/studio");
+  const { works } = await listStudioWorksForViewer();
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

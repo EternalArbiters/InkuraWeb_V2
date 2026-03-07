@@ -23,7 +23,9 @@
     "test:e2e": "npm --workspace apps/web run test:e2e",
     "test:e2e:headed": "npm --workspace apps/web run test:e2e:headed",
     "test:e2e:install": "npm --workspace apps/web run test:e2e:install",
-    "test:smoke": "npm --workspace apps/web run test:smoke"
+    "test:smoke": "npm --workspace apps/web run test:smoke",
+    "refactor:stage0": "npm --workspace apps/web run refactor:stage0",
+    "refactor:stage8": "npm --workspace apps/web run refactor:stage8"
   },
   "packageManager": "npm@10.9.2",
   "engines": {

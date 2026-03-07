@@ -1,8 +1,6 @@
 import ActionLink from "@/app/components/ActionLink";
 import WorkRowCard from "@/app/components/work/WorkRowCard";
-import { apiJson } from "@/server/http/apiJson";
-
-export const dynamic = "force-dynamic";
+import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
 
 type Props = {
   title: string;
@@ -11,8 +9,13 @@ type Props = {
 };
 
 export default async function BrowseListPage({ title, qs, emptyText }: Props) {
-  const res = await apiJson<{ works: any[] }>(`/api/works?${qs}`);
-  const works = res.ok ? res.data.works : [];
+  let works: any[] = [];
+
+  try {
+    works = (await listPublishedWorksFromSearchParams(new URLSearchParams(qs))).works;
+  } catch {
+    works = [];
+  }
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

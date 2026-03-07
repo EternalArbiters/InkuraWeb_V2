@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
+import { getReadingListPageDataBySlug } from "@/server/services/readingLists/readingLists";
 import ShareButton from "@/app/components/work/ShareButton";
 import ListOwnerControls from "./ownerControls";
 import ListWorksGrid from "./listWorksGrid";
@@ -11,12 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function ReadingListPublicPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
 
-  const res = await apiJson<{ list: any; items: any[]; viewer: any }>(`/api/lists/public/${params.slug}`);
-  if (!res.ok) return notFound();
+  const data = await getReadingListPageDataBySlug(params.slug);
+  if (!data.ok) return notFound();
 
-  const list = res.data.list;
-  const items = Array.isArray(res.data.items) ? res.data.items : [];
-  const viewer = res.data.viewer;
+  const list = data.list;
+  const items = Array.isArray(data.items) ? data.items : [];
+  const viewer = data.viewer;
 
   const isOwner = !!viewer?.isOwner;
 

@@ -1,27 +1,22 @@
 import BackButton from "@/app/components/BackButton";
 import { redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
 import NewWorkForm from "./NewWorkForm";
+import { getViewerPreferences } from "@/server/services/preferences/viewerPreferences";
+import { listActiveDeviantLoveTags, listActiveGenres, listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioNewWorkPage() {
-  const [prefsRes, genresRes, warningsRes, deviantRes] = await Promise.all([
-    apiJson<{ prefs: any }>("/api/me/preferences"),
-    apiJson<{ genres: any[] }>("/api/genres?take=200"),
-    apiJson<{ warningTags: any[] }>("/api/warnings?take=100"),
-    apiJson<{ deviantLoveTags: any[] }>("/api/deviant-love?take=200"),
+  const [prefs, genres, warningTags, deviantLoveTags] = await Promise.all([
+    getViewerPreferences(),
+    listActiveGenres({ take: 200 }),
+    listActiveWarningTags({ take: 100 }),
+    listActiveDeviantLoveTags({ take: 200 }),
   ]);
 
-  if (!prefsRes.ok) {
+  if (!prefs) {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/new`)}`);
   }
-
-  const prefs = prefsRes.data.prefs;
-
-  const genres = genresRes.ok ? genresRes.data.genres : [];
-  const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
-  const deviantLoveTags = deviantRes.ok ? deviantRes.data.deviantLoveTags : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
-import { apiJson } from "@/server/http/apiJson";
+import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
+import { fetchComments } from "@/server/services/comments/fetchComments";
+import { listWorkReviews } from "@/server/services/reviews/listWorkReviews";
+import { listReadingListOptionsForViewer } from "@/server/services/readingLists/readingLists";
 import WorkCoverBadges from "../../components/WorkCoverBadges";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
@@ -20,17 +23,17 @@ export const dynamic = "force-dynamic";
 export default async function WorkPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
 
-  const res = await apiJson<{ work: any; gated: boolean; viewer: any; interactions?: any }>(`/api/works/slug/${params.slug}`);
-  if (!res.ok) return notFound();
+  const data = await getWorkPageDataBySlug(params.slug);
+  if (!data.ok) return notFound();
 
-  const work = res.data.work;
-  const gated = !!res.data.gated;
-  const viewer = res.data.viewer;
-  const interactions = (res.data as any).interactions || { liked: false, bookmarked: false, myRating: null };
-  const progress = (res.data as any).progress || { lastReadChapterNumber: null };
+  const work = data.work;
+  const gated = !!data.gated;
+  const viewer = data.viewer;
+  const interactions = (data as any).interactions || { liked: false, bookmarked: false, myRating: null };
+  const progress = (data as any).progress || { lastReadChapterNumber: null };
   const canViewMature = !!viewer?.canViewMature;
   const canViewDeviantLove = !!viewer?.canViewDeviantLove;
-  const gateReason = (res.data as any).gateReason as string | undefined;
+  const gateReason = (data as any).gateReason as string | undefined;
 
   if (gated) {
     const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
@@ -77,6 +80,22 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
       </main>
     );
   }
+
+  const [reviewRes, initialReadingLists, commentsRes] = await Promise.all([
+    listWorkReviews({ workId: work.id, sort: "helpful", take: 30 }),
+    viewer ? listReadingListOptionsForViewer() : Promise.resolve(null),
+    fetchComments({
+      scope: "workChapters",
+      workId: work.id,
+      take: 100,
+      sort: "top",
+    }),
+  ]);
+
+  const initialReviews = reviewRes.status === 200 ? ((((reviewRes as any).body?.reviews || []) as any[])) : undefined;
+  const initialMyReviewId = reviewRes.status === 200 ? (((reviewRes as any).body?.myReviewId as string | null) || null) : null;
+  const initialComments = commentsRes.status === 200 ? ((((commentsRes as any).body?.comments || []) as any[])) : undefined;
+  const initialCanModerate = commentsRes.status === 200 ? !!((commentsRes as any).body?.canModerate) : false;
 
   const combinedWarnings = Array.isArray(work.warningTags) ? work.warningTags : [];
   const authorName = work.author?.name || work.author?.username || "Unknown";
@@ -174,7 +193,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
             <div className="mt-4 hidden items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 md:flex md:flex-wrap md:overflow-visible">
               <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
               <BookmarkButton workId={work.id} initialBookmarked={!!interactions.bookmarked} />
-              <AddToListButton workId={work.id} />
+              <AddToListButton workId={work.id} initialLists={initialReadingLists as any} />
               <ShareButton title={work.title} />
               <RatingStars
                 workId={work.id}
@@ -188,7 +207,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               <div className="grid grid-cols-3 gap-2">
                 <LikeButton className="w-full px-3" workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />
                 <BookmarkButton className="w-full px-3" workId={work.id} initialBookmarked={!!interactions.bookmarked} />
-                <AddToListButton className="w-full px-3" workId={work.id} />
+                <AddToListButton className="w-full px-3" workId={work.id} initialLists={initialReadingLists as any} />
               </div>
               <div className="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-2">
                 <ShareButton className="w-full min-w-0 px-3" title={work.title} />
@@ -235,10 +254,21 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               ratingAvg={Number(work.ratingAvg ?? 0)}
               ratingCount={Number(work.ratingCount ?? 0)}
               initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+              initialReviews={initialReviews as any}
+              initialMyReviewId={initialMyReviewId}
             />
 
             {/* Comments: aggregated from all chapters */}
-            <CommentSection targetType="CHAPTER" targetId={work.id} title="Comments" scope="workChapters" showComposer={false} sort="top" />
+            <CommentSection
+              targetType="CHAPTER"
+              targetId={work.id}
+              title="Comments"
+              scope="workChapters"
+              showComposer={false}
+              sort="top"
+              initialComments={initialComments as any}
+              initialCanModerate={initialCanModerate}
+            />
           </div>
         </div>
       </div>

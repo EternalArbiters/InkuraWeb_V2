@@ -4,7 +4,12 @@ import prisma from "@/server/db/prisma";
 import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { parseCursor, parseSkip, parseTake, nextCursorFromRows } from "@/server/db/pagination";
 import { workCardSelect } from "@/server/db/selectors";
-import { getViewerWithPrefs } from "./viewer";
+import { getViewerWithPrefs, type ViewerWithPrefs } from "./viewer";
+import {
+  applyViewerWorkInteractions,
+  getViewerWorkInteractions,
+  type ViewerWorkInteractions,
+} from "./viewerInteractions";
 
 function splitCsv(v: string | null): string[] {
   return (v || "")
@@ -45,9 +50,28 @@ function legacyDeviantGenreSlugs() {
   return Array.from(base);
 }
 
-export async function listPublishedWorks(req: Request) {
-  const { searchParams } = new URL(req.url);
+export type ListPublishedWorksOptions = {
+  viewer?: ViewerWithPrefs | null;
+  includeViewerInteractions?: boolean;
+  viewerWorkInteractions?: ViewerWorkInteractions | null;
+};
 
+function withViewerSummary(viewer: ViewerWithPrefs | null, canViewMature: boolean, canViewDeviantLove: boolean) {
+  if (!viewer) return null;
+
+  return {
+    adultConfirmed: viewer.adultConfirmed,
+    deviantLoveConfirmed: viewer.deviantLoveConfirmed,
+    canViewMature,
+    canViewDeviantLove,
+    role: viewer.role,
+  };
+}
+
+export async function listPublishedWorksFromSearchParams(
+  searchParams: URLSearchParams,
+  options?: ListPublishedWorksOptions
+) {
   // Basic
   const type = upperEnum(searchParams.get("type")); // NOVEL | COMIC
   const q = (searchParams.get("q") || "").trim();
@@ -98,7 +122,8 @@ export async function listPublishedWorks(req: Request) {
   // Sorting
   const sort = (searchParams.get("sort") || "newest").toLowerCase(); // newest|liked|rated
 
-  const viewer = await getViewerWithPrefs();
+  const viewer = options && "viewer" in options ? options.viewer ?? null : await getViewerWithPrefs();
+
   // v14: adultConfirmed alone unlocks mature content.
   const canViewMature = !!viewer && (viewer.role === "ADMIN" || viewer.adultConfirmed);
 
@@ -291,20 +316,24 @@ export async function listPublishedWorks(req: Request) {
 
   // User blocks (by ids)
   if (viewer && !ignoreBlocked) {
-    if (viewer.blockedGenreIds.length)
+    if (viewer.blockedGenreIds.length) {
       AND.push({ genres: { none: { id: { in: viewer.blockedGenreIds } } } });
-    if (viewer.blockedWarningIds.length)
+    }
+    if (viewer.blockedWarningIds.length) {
       AND.push({ warningTags: { none: { id: { in: viewer.blockedWarningIds } } } });
-    if (viewer.blockedDeviantLoveIds.length)
+    }
+    if (viewer.blockedDeviantLoveIds.length) {
       AND.push({ deviantLoveTags: { none: { id: { in: viewer.blockedDeviantLoveIds } } } });
+    }
   }
 
   if (AND.length) where.AND = AND;
 
   let orderBy: any = [{ updatedAt: "desc" }, { id: "desc" }];
   if (sort === "liked") orderBy = [{ likeCount: "desc" }, { id: "desc" }];
-  if (sort === "rated")
+  if (sort === "rated") {
     orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { updatedAt: "desc" }, { id: "desc" }];
+  }
 
   const query: any = {
     where,
@@ -324,42 +353,30 @@ export async function listPublishedWorks(req: Request) {
   const works = await prisma.work.findMany(query);
   const nextCursor = nextCursorFromRows(works as any, take);
 
-  // Add viewer interaction flags for list rows (bookmark/favorite)
   let worksWithViewer: any[] = works as any;
   if (viewer?.id && works.length) {
-    const ids = works.map((w: any) => w.id);
-    const [likes, bookmarks] = await Promise.all([
-      prisma.workLike.findMany({
-        where: { userId: viewer.id, workId: { in: ids } },
-        select: { workId: true },
-      }),
-      prisma.bookmark.findMany({
-        where: { userId: viewer.id, workId: { in: ids } },
-        select: { workId: true },
-      }),
-    ]);
+    let interactions = options?.viewerWorkInteractions ?? null;
 
-    const likedSet = new Set(likes.map((x) => x.workId));
-    const bookmarkedSet = new Set(bookmarks.map((x) => x.workId));
+    if (!interactions && options?.includeViewerInteractions !== false) {
+      interactions = await getViewerWorkInteractions(
+        viewer.id,
+        works.map((work: any) => work.id)
+      );
+    }
 
-    worksWithViewer = works.map((w: any) => ({
-      ...w,
-      viewerFavorited: likedSet.has(w.id),
-      viewerBookmarked: bookmarkedSet.has(w.id),
-    }));
+    if (interactions) {
+      worksWithViewer = applyViewerWorkInteractions(works as any[], interactions);
+    }
   }
 
   return {
     works: worksWithViewer,
     nextCursor,
-    viewer: viewer
-      ? {
-          adultConfirmed: viewer.adultConfirmed,
-          deviantLoveConfirmed: viewer.deviantLoveConfirmed,
-          canViewMature,
-          canViewDeviantLove,
-          role: viewer.role,
-        }
-      : null,
+    viewer: withViewerSummary(viewer, canViewMature, canViewDeviantLove),
   };
+}
+
+export async function listPublishedWorks(req: Request) {
+  const { searchParams } = new URL(req.url);
+  return listPublishedWorksFromSearchParams(searchParams);
 }

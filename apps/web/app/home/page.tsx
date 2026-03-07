@@ -1,23 +1,13 @@
 import Link from "next/link";
-import { apiJson } from "@/server/http/apiJson";
 import WorkRail from "./WorkRail";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { getHomePageData } from "@/server/services/home/getHomePageData";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [trendingComicsRes, trendingNovelsRes, recentRes, originalsRes, translationsRes] = await Promise.all([
-    apiJson<{ works: any[] }>("/api/works?type=COMIC&sort=liked&take=20"),
-    apiJson<{ works: any[] }>("/api/works?type=NOVEL&sort=liked&take=20"),
-    apiJson<{ works: any[] }>("/api/works?sort=newest&take=20"),
-    apiJson<{ works: any[] }>("/api/works?publishType=ORIGINAL&sort=newest&take=20"),
-    apiJson<{ works: any[] }>("/api/works?publishType=TRANSLATION&sort=newest&take=20"),
-  ]);
-
-  const trendingComics = trendingComicsRes.ok ? trendingComicsRes.data.works : [];
-  const trendingNovels = trendingNovelsRes.ok ? trendingNovelsRes.data.works : [];
-  const recent = recentRes.ok ? recentRes.data.works : [];
-  const originals = originalsRes.ok ? originalsRes.data.works : [];
-  const translations = translationsRes.ok ? translationsRes.data.works : [];
+  await requirePageUserId("/home");
+  const { trendingComics, trendingNovels, recent, originals, translations } = await getHomePageData();
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

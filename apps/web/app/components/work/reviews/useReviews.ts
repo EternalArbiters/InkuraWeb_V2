@@ -1,26 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReviewItem, ReviewSort } from "./types";
 
 export function useReviews({
   workId,
   initialMyRating,
+  initialReviews,
+  initialMyReviewId,
 }: {
   workId: string;
   initialMyRating: number | null;
+  initialReviews?: ReviewItem[];
+  initialMyReviewId?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
-  const [loading, setLoading] = useState(true);
+  const hasInitial = !!initialReviews;
+  const [loading, setLoading] = useState(!hasInitial);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<ReviewSort>("helpful");
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
-  const [myReviewId, setMyReviewId] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<ReviewItem[]>(() => initialReviews || []);
+  const [myReviewId, setMyReviewId] = useState<string | null>(initialMyReviewId || null);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const skippedInitialFetchRef = useRef(hasInitial);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [draftRating, setDraftRating] = useState<number>(initialMyRating ?? 0);
@@ -52,6 +58,10 @@ export function useReviews({
   };
 
   useEffect(() => {
+    if (skippedInitialFetchRef.current && sort === "helpful") {
+      skippedInitialFetchRef.current = false;
+      return;
+    }
     fetchReviews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workId, sort]);

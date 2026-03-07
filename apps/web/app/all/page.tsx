@@ -1,6 +1,6 @@
 import ActionLink from "@/app/components/ActionLink";
+import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
 import WorksGrid from "../components/WorksGrid";
-import { apiJson } from "@/server/http/apiJson";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +23,13 @@ export default async function AllWorksPage({
   if (author) qs.set("author", author);
   if (translator) qs.set("translator", translator);
 
-  const res = await apiJson<{ works: any[] }>(`/api/works?${qs.toString()}`);
-  const works = res.ok ? res.data.works : [];
+  let works: any[] = [];
+
+  try {
+    works = (await listPublishedWorksFromSearchParams(qs)).works;
+  } catch {
+    works = [];
+  }
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

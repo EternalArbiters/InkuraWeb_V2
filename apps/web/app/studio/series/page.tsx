@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { listStudioSeries } from "@/server/services/studio/series";
 import StudioSeriesManagerClient from "./StudioSeriesManagerClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioSeriesPage() {
-  const res = await apiJson<{ series: any[]; unassignedWorks: any[] }>("/api/studio/series");
-  if (!res.ok) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/series`)}`);
-  }
+  await requirePageUserId("/studio/series");
+  const { series, unassignedWorks } = await listStudioSeries();
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -31,8 +29,8 @@ export default async function StudioSeriesPage() {
 
         <div className="mt-8">
           <StudioSeriesManagerClient
-            initialSeries={Array.isArray(res.data.series) ? res.data.series : []}
-            initialUnassignedWorks={Array.isArray(res.data.unassignedWorks) ? res.data.unassignedWorks : []}
+            initialSeries={Array.isArray(series) ? series : []}
+            initialUnassignedWorks={Array.isArray(unassignedWorks) ? unassignedWorks : []}
           />
         </div>
       </div>

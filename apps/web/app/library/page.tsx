@@ -1,20 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import WorksGrid from "../components/WorksGrid";
-import { apiJson } from "@/server/http/apiJson";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
 
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage() {
-  const res = await apiJson<{ bookmarks: any[]; progress: any[]; favorites: any[]; lists: any[] }>("/api/library");
-  if (!res.ok) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/library`)}`);
-  }
-
-  const bookmarks = res.data.bookmarks || [];
-  const progress = res.data.progress || [];
-  const favorites = (res.data as any).favorites || [];
-  const lists = (res.data as any).lists || [];
+  await requirePageUserId("/library");
+  const { bookmarks, progress, favorites, lists } = await getViewerLibrary();
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

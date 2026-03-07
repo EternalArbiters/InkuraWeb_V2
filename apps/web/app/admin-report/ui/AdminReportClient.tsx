@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { dispatchNavBadgeRefresh } from "@/app/components/navBadgeEvents";
 
 type ReportRow = {
   id: string;
@@ -70,6 +71,7 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
       setMessage("");
       setPageUrl("");
       await load();
+      dispatchNavBadgeRefresh("/api/admin-report/unread-count");
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {

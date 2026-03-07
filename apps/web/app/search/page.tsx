@@ -1,5 +1,7 @@
 import SearchPresets from "@/components/SearchPresets";
-import { apiJson } from "@/server/http/apiJson";
+import { getViewerWithPrefs } from "@/server/services/works/viewer";
+import { listActiveDeviantLoveTags, listActiveGenres, listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
+import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
 
 import ActiveFiltersBar from "./_components/ActiveFiltersBar";
 import ResultsHeader from "./_components/ResultsHeader";
@@ -38,18 +40,12 @@ export default async function SearchPage({
     gi?: string;
     ge?: string;
     gmode?: string;
-
-    // warnings tri-state
     wi?: string;
     we?: string;
     wmode?: string;
-
-    // deviant love tri-state
     di?: string;
     de?: string;
     dmode?: string;
-
-    // advanced
     lang?: string | string[];
     completion?: string;
     origin?: string;
@@ -77,17 +73,14 @@ export default async function SearchPage({
   const translator = (searchParams.translator || "").trim();
   const comicType = (searchParams.comicType || "").toUpperCase();
 
-  // Genre tri-state
   let includeGenres = splitList(searchParams.gi);
   let excludeGenres = splitList(searchParams.ge);
   const includeMode = (searchParams.gmode || "or").toLowerCase() === "and" ? "and" : "or";
 
-  // Warning tri-state
   let includeWarnings = splitList(searchParams.wi);
   let excludeWarnings = splitList(searchParams.we);
   const warningMode = (searchParams.wmode || "or").toLowerCase() === "and" ? "and" : "or";
 
-  // Deviant Love tri-state
   let includeDeviant = splitList(searchParams.di);
   let excludeDeviant = splitList(searchParams.de);
   const deviantMode = (searchParams.dmode || "or").toLowerCase() === "and" ? "and" : "or";
@@ -96,69 +89,46 @@ export default async function SearchPage({
   const origin = (searchParams.origin || "").toUpperCase();
   const minCh = Math.max(0, parseInt(toStr(searchParams.minCh), 10) || 0);
   const maxCh = Math.max(0, parseInt(toStr(searchParams.maxCh), 10) || 0);
-  const mature = (searchParams.mature || "").toLowerCase(); // hide|include|only
+  const mature = (searchParams.mature || "").toLowerCase();
   const ignoreBlocked = (searchParams.ignoreBlocked || "") === "1";
   const ignoreLang = (searchParams.ignoreLang || "") === "1";
 
-  // User preferences (optional)
-  const prefsRes = await apiJson<{
-    prefs: {
-      adultConfirmed: boolean;
-      deviantLoveConfirmed: boolean;
-      preferredLanguages: string[];
-      blockedGenreIds: string[];
-      blockedWarningIds: string[];
-      blockedDeviantLoveIds: string[];
-    };
-  }>("/api/me/preferences");
+  const [searchViewer, genres, warningTags, deviantLoveTags] = await Promise.all([
+    getViewerWithPrefs(),
+    listActiveGenres({ take: 200 }),
+    listActiveWarningTags({ take: 100 }),
+    listActiveDeviantLoveTags({ take: 200 }),
+  ]);
 
-  const prefs = prefsRes.ok ? prefsRes.data.prefs : null;
+  const canViewMatureByPrefs = !!searchViewer?.adultConfirmed;
+  const showMatureFilter = !!searchViewer?.adultConfirmed;
+  const canUseNsfwTags = !!searchViewer?.adultConfirmed;
+  const canUseDeviantLoveTags = !!searchViewer?.adultConfirmed && !!searchViewer?.deviantLoveConfirmed;
 
-  // v14: adultConfirmed alone unlocks mature content.
-  const canViewMatureByPrefs = !!prefs?.adultConfirmed;
-  const showMatureFilter = !!prefs?.adultConfirmed;
-  const canUseNsfwTags = !!prefs?.adultConfirmed;
-  const canUseDeviantLoveTags = !!prefs?.adultConfirmed && !!prefs?.deviantLoveConfirmed;
-
-  // NSFW filters are age-locked
   if (!canUseNsfwTags) {
     includeWarnings = [];
     excludeWarnings = [];
   }
 
-  // Deviant Love filters are locked
   if (!canUseDeviantLoveTags) {
     includeDeviant = [];
     excludeDeviant = [];
   }
 
-  // Normalize include/exclude conflicts
-  excludeGenres = excludeGenres.filter((g) => !includeGenres.includes(g));
-  excludeWarnings = excludeWarnings.filter((w) => !includeWarnings.includes(w));
-  excludeDeviant = excludeDeviant.filter((d) => !includeDeviant.includes(d));
+  excludeGenres = excludeGenres.filter((value) => !includeGenres.includes(value));
+  excludeWarnings = excludeWarnings.filter((value) => !includeWarnings.includes(value));
+  excludeDeviant = excludeDeviant.filter((value) => !includeDeviant.includes(value));
 
-  // Languages from query OR user prefs
   let langs = toStrArr(searchParams.lang)
-    .flatMap((x) => String(x).split(","))
-    .map((s) => s.trim().toLowerCase())
+    .flatMap((value) => String(value).split(","))
+    .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
   langs = Array.from(new Set(langs));
 
-  if (!ignoreLang && langs.length === 0 && prefs?.preferredLanguages?.length) {
-    langs = prefs.preferredLanguages.map((s) => String(s).toLowerCase());
+  if (!ignoreLang && langs.length === 0 && searchViewer?.preferredLanguages?.length) {
+    langs = searchViewer.preferredLanguages.map((value) => String(value).toLowerCase());
   }
 
-  const [genresRes, warningsRes, deviantRes] = await Promise.all([
-    apiJson<{ genres: any[] }>("/api/genres?take=200"),
-    apiJson<{ warningTags: any[] }>("/api/warnings?take=100"),
-    apiJson<{ deviantLoveTags: any[] }>("/api/deviant-love?take=200"),
-  ]);
-
-  const genres = genresRes.ok ? genresRes.data.genres : [];
-  const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
-  const deviantLoveTags = deviantRes.ok ? deviantRes.data.deviantLoveTags : [];
-
-  // Query API works
   const qs = new URLSearchParams();
   qs.set("take", "60");
   if (q) qs.set("q", q);
@@ -198,10 +168,10 @@ export default async function SearchPage({
   if (ignoreBlocked) qs.set("ignoreBlocked", "1");
   if (ignoreLang) qs.set("ignoreLang", "1");
 
-  const worksRes = await apiJson<{ works: any[]; viewer: any }>(`/api/works?${qs.toString()}`);
-  const works = worksRes.ok ? worksRes.data.works : [];
+  const worksRes = await listPublishedWorksFromSearchParams(qs, { viewer: searchViewer });
+  const works = worksRes.works;
 
-  const viewer = worksRes.ok ? worksRes.data.viewer : null;
+  const viewer = worksRes.viewer;
   const canViewMature = !!viewer?.canViewMature || canViewMatureByPrefs;
   const defaultHideMature = !canViewMature;
 

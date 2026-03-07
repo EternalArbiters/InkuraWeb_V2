@@ -6,10 +6,9 @@ import CustomCursor from "./components/CustomCursor";
 import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
 
-// Banyak page membaca database (Prisma). Di Next 15, kalau route dianggap static,
-// Next akan prerender saat build dan bisa gagal kalau DATABASE_URL belum diset.
-// Dengan ini, seluruh segmen app dipaksa dynamic (render per-request).
-export const dynamic = "force-dynamic";
+// Root layout sengaja dibiarkan `auto` agar hanya page/route yang memang butuh
+// render per-request yang menjadi dynamic. Ini menghindari seluruh app ikut
+// terhitung dynamic hanya karena beberapa halaman membaca session/DB.
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

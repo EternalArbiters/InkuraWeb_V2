@@ -1,25 +1,22 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import PreferencesForm from "./PreferencesForm";
-import { apiJson } from "@/server/http/apiJson";
+import { getViewerPreferences } from "@/server/services/preferences/viewerPreferences";
+import { listActiveDeviantLoveTags, listActiveGenres, listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountSettingsPage() {
-  const [prefsRes, genresRes, warningsRes, deviantRes] = await Promise.all([
-    apiJson<{ prefs: any }>("/api/me/preferences"),
-    apiJson<{ genres: any[] }>("/api/genres"),
-    apiJson<{ warningTags: any[] }>("/api/warnings"),
-    apiJson<{ deviantLoveTags: any[] }>("/api/deviant-love"),
+  const [prefs, genres, warnings, deviantLoveTags] = await Promise.all([
+    getViewerPreferences(),
+    listActiveGenres(),
+    listActiveWarningTags(),
+    listActiveDeviantLoveTags(),
   ]);
 
-  if (!prefsRes.ok) {
+  if (!prefs) {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/settings/account`)}`);
   }
-
-  const genres = genresRes.ok ? genresRes.data.genres : [];
-  const warnings = warningsRes.ok ? warningsRes.data.warningTags : [];
-  const deviantLoveTags = deviantRes.ok ? deviantRes.data.deviantLoveTags : [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -41,12 +38,12 @@ export default async function AccountSettingsPage() {
           warnings={warnings as any}
           deviantLoveTags={deviantLoveTags as any}
           initial={{
-            adultConfirmed: prefsRes.data.prefs.adultConfirmed,
-            deviantLoveConfirmed: prefsRes.data.prefs.deviantLoveConfirmed,
-            preferredLanguages: prefsRes.data.prefs.preferredLanguages,
-            blockedGenreIds: prefsRes.data.prefs.blockedGenreIds,
-            blockedWarningIds: prefsRes.data.prefs.blockedWarningIds,
-            blockedDeviantLoveIds: prefsRes.data.prefs.blockedDeviantLoveIds,
+            adultConfirmed: prefs.adultConfirmed,
+            deviantLoveConfirmed: prefs.deviantLoveConfirmed,
+            preferredLanguages: prefs.preferredLanguages,
+            blockedGenreIds: prefs.blockedGenreIds,
+            blockedWarningIds: prefs.blockedWarningIds,
+            blockedDeviantLoveIds: prefs.blockedDeviantLoveIds,
           }}
         />
       </div>

@@ -1,6 +1,6 @@
 import PageScaffold from "@/app/components/PageScaffold";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default function DonatePage() {
   return (

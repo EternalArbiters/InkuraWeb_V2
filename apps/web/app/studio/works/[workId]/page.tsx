@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
+import { ApiError } from "@/server/http";
+import { getStudioWorkById } from "@/server/services/studio/workById";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +19,16 @@ export default async function StudioWorkPage({
   const params = await paramsPromise;
   const workId = params.workId;
 
-  const res = await apiJson<{ work: any }>(`/api/studio/works/${workId}`);
-  if (!res.ok) {
-    redirect("/studio");
+  let work: any;
+  try {
+    ({ work } = await getStudioWorkById(workId));
+  } catch (error) {
+    if (error instanceof ApiError) {
+      redirect("/studio");
+    }
+    throw error;
   }
 
-  const work = res.data.work;
   const publishType = String(work.publishType || "ORIGINAL").toUpperCase();
   const isComic = work.type === "COMIC";
 
@@ -82,7 +87,8 @@ export default async function StudioWorkPage({
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">            <Link
+          <div className="flex flex-col gap-2">
+            <Link
               href={`/studio/works/${work.id}/edit`}
               className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold text-center"
             >

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { dispatchNavBadgeRefresh } from "@/app/components/navBadgeEvents";
 
 type NotificationItem = {
   id: string;
@@ -25,6 +26,7 @@ export default function NotificationsClient({ initial }: { initial: Notification
         body: JSON.stringify({ markAll: true }),
       }).catch(() => null);
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      dispatchNavBadgeRefresh("/api/notifications/unread-count");
     });
   };
 
@@ -35,6 +37,7 @@ export default function NotificationsClient({ initial }: { initial: Notification
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ id }),
     }).catch(() => null);
+    dispatchNavBadgeRefresh("/api/notifications/unread-count");
   };
 
   return (

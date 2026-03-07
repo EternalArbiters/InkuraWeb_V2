@@ -1,12 +1,13 @@
 import Link from "next/link";
 import NotificationsClient from "./NotificationsClient";
-import { apiJson } from "@/server/http/apiJson";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { listViewerNotifications } from "@/server/services/notifications/viewerNotifications";
 
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
-  const res = await apiJson<{ notifications: any[] }>("/api/notifications");
-  const notifications = res.ok ? res.data.notifications : [];
+  await requirePageUserId("/notifications");
+  const { notifications } = await listViewerNotifications();
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

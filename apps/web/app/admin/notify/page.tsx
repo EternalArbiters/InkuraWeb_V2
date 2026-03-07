@@ -1,7 +1,6 @@
 import Link from "next/link";
 import AdminNotifyClient from "./AdminNotifyClient";
 
-export const dynamic = "force-dynamic";
 
 export default function AdminNotifyPage() {
   return (

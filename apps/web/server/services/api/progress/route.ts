@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { listViewerProgress } from "@/server/services/progress/viewerProgress";
 
 export const runtime = "nodejs";
 
@@ -15,17 +16,7 @@ export const GET = apiRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const take = Math.min(100, Math.max(1, parseInt(searchParams.get("take") || "50", 10) || 50));
 
-  const progress = await prisma.readingProgress.findMany({
-    where: { userId: session.user.id },
-    orderBy: { updatedAt: "desc" },
-    take,
-    include: {
-      work: { select: { id: true, slug: true, title: true, type: true } },
-      chapter: { select: { id: true, number: true, title: true } },
-    },
-  });
-
-  return json({ progress });
+  return json(await listViewerProgress({ take }));
 });
 
 export const POST = apiRoute(async (req: Request) => {
@@ -46,7 +37,7 @@ export const POST = apiRoute(async (req: Request) => {
     where: { id: chapterId },
     select: { id: true, workId: true },
   });
-  if (!chapter || chapter.workId !== workId) {
+  if (!chapter || chapter.workId != workId) {
     return json({ error: "Chapter mismatch" }, { status: 400 });
   }
 

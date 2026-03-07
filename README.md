@@ -125,6 +125,7 @@ Default URL lokal:
 
 ```bash
 npm run verify
+npm run refactor:stage0
 ```
 
 State saat ini, `verify` menjalankan:
@@ -181,13 +182,41 @@ npm run test:e2e
 
 Mulai dari sini:
 
-1. `docs/README.md`
-2. `docs/REGRESSION_CHECKLIST.md`
-3. `docs/stage-10-documentation-runbook.md`
-4. `docs/env-vars.md`
-5. `docs/deployment-runbook.md`
-6. `docs/database-reset-and-seeding.md`
-7. `docs/debug-upload-issues.md`
+1. `docs/perf-refactor-stage-00-baseline.md`
+   - guardrails refactor performa bertahap
+   - baseline hotspot untuk tahap 1 dan seterusnya
+
+2. `docs/perf-refactor-stage-07-hydration-preload.md`
+   - hasil tahap 7
+   - preload review/comment di work detail dan reader + cleanup dynamic wrapper
+
+3. `docs/perf-refactor-stage-06-creator-admin.md`
+   - hasil tahap 6
+   - penutupan sisa self-fetch server page di studio/admin
+
+4. `docs/perf-refactor-stage-05-public-detail.md`
+   - hasil tahap 5
+   - pengurangan self-fetch di work detail, reader, reading list, dan redirect legacy
+
+5. `docs/perf-refactor-stage-04-query-dedupe.md`
+   - hasil tahap 4
+   - dedupe lookup viewer/session + batching interaction untuk home rail
+
+6. `docs/perf-refactor-stage-03-background-auth.md`
+   - hasil tahap 3
+   - polling badge lebih hemat + auth surface user dipindah dari middleware ke page server
+
+7. `docs/perf-refactor-stage-02-render-cache.md`
+   - hasil tahap 2
+   - scope dynamic lebih sempit + cache publik taxonomy
+
+8. `docs/README.md`
+9. `docs/REGRESSION_CHECKLIST.md`
+10. `docs/stage-10-documentation-runbook.md`
+11. `docs/env-vars.md`
+12. `docs/deployment-runbook.md`
+13. `docs/database-reset-and-seeding.md`
+14. `docs/debug-upload-issues.md`
 
 ## Deploy singkat
 
@@ -226,3 +255,11 @@ Kalau ada masalah yang paling umum:
 ## Catatan akhir
 
 Stage 10 dimaksudkan sebagai **snapshot final dokumentasi dan runbook**. Jadi kalau perlu melanjutkan pekerjaan setelah repo ini, baseline yang dipakai sebaiknya adalah snapshot ini, bukan stage sebelumnya.
+
+- Stage 8: `docs/perf-refactor-stage-08-final-hardening.md`
+
+
+## Refactor audit
+
+- `npm run refactor:stage0` — baseline hotspot scanner
+- `npm run refactor:stage8` — final audit guardrail

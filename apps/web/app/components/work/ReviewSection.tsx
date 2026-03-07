@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Stars from "./reviews/Stars";
 import ReviewCard from "./reviews/ReviewCard";
 import ReviewModal from "./reviews/ReviewModal";
-import type { ReviewSort } from "./reviews/types";
+import type { ReviewItem, ReviewSort } from "./reviews/types";
 import { useReviews } from "./reviews/useReviews";
 
 export default function ReviewSection({
@@ -12,11 +12,15 @@ export default function ReviewSection({
   ratingAvg,
   ratingCount,
   initialMyRating,
+  initialReviews,
+  initialMyReviewId,
 }: {
   workId: string;
   ratingAvg: number;
   ratingCount: number;
   initialMyRating: number | null;
+  initialReviews?: ReviewItem[];
+  initialMyReviewId?: string | null;
 }) {
   const {
     isPending,
@@ -42,7 +46,7 @@ export default function ReviewSection({
     del,
     toggleHelpful,
     toggleSpoiler,
-  } = useReviews({ workId, initialMyRating });
+  } = useReviews({ workId, initialMyRating, initialReviews, initialMyReviewId });
 
   const avgLabel = useMemo(() => {
     if (!ratingCount) return "0.0";

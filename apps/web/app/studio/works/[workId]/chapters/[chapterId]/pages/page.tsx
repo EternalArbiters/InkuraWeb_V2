@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import ComicPagesManager from "./ComicPagesManager";
-import { apiJson } from "@/server/http/apiJson";
 import BackButton from "@/app/components/BackButton";
+import { ApiError } from "@/server/http";
+import { getStudioChapterForEdit } from "@/server/services/studio/chapters";
 
 export const dynamic = "force-dynamic";
 
@@ -12,19 +13,23 @@ export default async function ChapterPagesPage({
 }) {
   const params = await paramsPromise;
 
-  const chapterRes = await apiJson<{ chapter: any }>(`/api/studio/chapters/${params.chapterId}`);
-  if (!chapterRes.ok) {
-    if (chapterRes.status === 401) {
-      redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/works/${params.workId}`)}`);
+  let chapter: any;
+  try {
+    ({ chapter } = await getStudioChapterForEdit(params.chapterId));
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 401) {
+        redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/studio/works/${params.workId}`)}`);
+      }
+      if (error.status === 403) {
+        redirect(`/studio/works/${params.workId}`);
+      }
+      if (error.status === 404) {
+        notFound();
+      }
     }
-    if (chapterRes.status === 403) {
-      redirect(`/studio/works/${params.workId}`);
-    }
-    return notFound();
+    throw error;
   }
-
-  const chapter = chapterRes.data.chapter;
-  if (!chapter) return notFound();
 
   const workType = chapter.work?.type;
   if (workType !== "COMIC") {

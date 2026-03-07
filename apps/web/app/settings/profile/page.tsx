@@ -1,17 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 import ProfileForm from "./ProfileForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditProfilePage() {
-  const res = await apiJson<{ profile: any }>("/api/me/profile");
-  if (!res.ok) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/settings/profile`)}`);
-  }
-
-  const p = res.data.profile;
+  await requirePageUserId("/settings/profile");
+  const { profile: p } = await getViewerProfile();
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

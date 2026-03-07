@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { apiJson } from "@/server/http/apiJson";
+import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,9 @@ type ListLite = {
 };
 
 export default async function ListsPage() {
-  const res = await apiJson<{ lists: ListLite[] }>("/api/lists");
+  const data = await listReadingListsForViewer();
 
-  if (!res.ok) {
+  if (!data) {
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
@@ -46,7 +46,7 @@ export default async function ListsPage() {
     );
   }
 
-  const lists = res.data.lists || [];
+  const lists = data.lists || [];
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

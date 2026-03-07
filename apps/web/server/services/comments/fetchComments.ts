@@ -18,26 +18,33 @@ function clampInt(v: unknown, def: number, min: number, max: number) {
   return Math.max(min, Math.min(max, Math.floor(n)));
 }
 
-export async function fetchCommentsFromRequest(req: Request) {
-  const url = new URL(req.url);
+export type FetchCommentsOptions = {
+  scope?: string | null;
+  targetType?: CommentTargetTypeString | null;
+  targetId?: string | null;
+  workId?: string | null;
+  take?: number;
+  max?: number;
+  sort?: unknown;
+  includeUserRating?: boolean;
+};
 
-  const scope = String(url.searchParams.get("scope") || "")
+export async function fetchComments(options: FetchCommentsOptions) {
+  const scope = String(options.scope || "")
     .trim()
     .toLowerCase();
 
-  const targetType = safeTargetType(url.searchParams.get("targetType"));
-  const targetId = String(url.searchParams.get("targetId") || "").trim();
-  const workId = String(url.searchParams.get("workId") || "").trim();
+  const targetType = safeTargetType(options.targetType);
+  const targetId = String(options.targetId || "").trim();
+  const workId = String(options.workId || "").trim();
 
-  // take applies to ROOT comments. Replies are returned under roots.
-  const take = clampInt(url.searchParams.get("take"), 40, 1, 100);
-  const sort = safeCommentSort(url.searchParams.get("sort"));
-
-  const includeUserRating = url.searchParams.get("includeUserRating") === "1";
+  const take = clampInt(options.take, 40, 1, 100);
+  const max = clampInt(options.max, 500, 1, 800);
+  const sort = safeCommentSort(options.sort);
+  const includeUserRating = !!options.includeUserRating;
 
   const session = await getSession();
 
-  // Special scope: all comments from all chapters in a work.
   if (scope === "workchapters") {
     const wid = workId || targetId;
     if (!wid) {
@@ -67,15 +74,13 @@ export async function fetchCommentsFromRequest(req: Request) {
       ...(canModerate ? {} : { isHidden: false }),
     };
 
-    // Fetch enough rows to build the reply tree.
-    const query: any = {
+    const rows = await prisma.comment.findMany({
       where,
       orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
-      take: clampInt(url.searchParams.get("max"), 500, 1, 800),
+      take: max,
       include: commentListInclude,
-    };
+    });
 
-    const rows = await prisma.comment.findMany(query);
     let enriched: any[] = rows as any;
 
     if (session?.user?.id && rows.length) {
@@ -119,14 +124,13 @@ export async function fetchCommentsFromRequest(req: Request) {
     ...(canModerate ? {} : { isHidden: false }),
   };
 
-  const query: any = {
+  const rows = await prisma.comment.findMany({
     where,
     orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
-    take: clampInt(url.searchParams.get("max"), 500, 1, 800),
+    take: max,
     include: commentListInclude,
-  };
+  });
 
-  const rows = await prisma.comment.findMany(query);
   let enriched: any[] = rows as any;
 
   if (session?.user?.id && rows.length) {
@@ -161,6 +165,19 @@ export async function fetchCommentsFromRequest(req: Request) {
   }
 
   const roots = sortRootComments(sort, buildCommentTree(enriched)).slice(0, take);
-
   return { status: 200, body: { ok: true, canModerate, comments: roots } };
+}
+
+export async function fetchCommentsFromRequest(req: Request) {
+  const url = new URL(req.url);
+  return fetchComments({
+    scope: url.searchParams.get("scope"),
+    targetType: url.searchParams.get("targetType") as CommentTargetTypeString | null,
+    targetId: url.searchParams.get("targetId"),
+    workId: url.searchParams.get("workId"),
+    take: url.searchParams.get("take"),
+    max: url.searchParams.get("max"),
+    sort: url.searchParams.get("sort"),
+    includeUserRating: url.searchParams.get("includeUserRating") === "1",
+  });
 }

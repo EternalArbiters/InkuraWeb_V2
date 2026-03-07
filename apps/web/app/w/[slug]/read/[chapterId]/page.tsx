@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
-import { apiJson } from "@/server/http/apiJson";
+import { getPublishedChapterReaderData } from "@/server/services/chapters/readChapter";
+import { fetchComments } from "@/server/services/comments/fetchComments";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderChrome from "@/app/components/reader/ReaderChrome";
 import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
+import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +24,11 @@ export default async function ReadChapterPage({
 }) {
   const params = await paramsPromise;
 
-  const res = await apiJson<{ gated: boolean; chapter: any; work: any; viewer: any; gateReason?: string }>(
-    `/api/chapters/${params.chapterId}`
-  );
-  if (!res.ok) return notFound();
+  const data = await getPublishedChapterReaderData(params.chapterId);
+  if (!data.ok) return notFound();
 
-  const { gated, chapter, work } = res.data;
-  const gateReason = (res.data as any).gateReason as string | undefined;
+  const { gated, chapter, work } = data;
+  const gateReason = (data as any).gateReason as string | undefined;
 
   if (!work || !chapter) return notFound();
 
@@ -71,6 +71,15 @@ export default async function ReadChapterPage({
     );
   }
 
+  const initialCommentsRes = await fetchComments({
+    targetType: "CHAPTER",
+    targetId: chapter.id,
+    take: 5,
+    sort: "top",
+  });
+  const initialComments = initialCommentsRes.status === 200 ? ((((initialCommentsRes as any).body?.comments || []) as any[])) : undefined;
+  const initialCanModerate = initialCommentsRes.status === 200 ? !!((initialCommentsRes as any).body?.canModerate) : false;
+
   const allWarnings = [...(work.warningTags || []), ...(chapter.warningTags || [])].reduce((acc: any[], w: any) => {
     if (!acc.some((x) => x.slug === w.slug)) acc.push(w);
     return acc;
@@ -86,6 +95,11 @@ export default async function ReadChapterPage({
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       {/* Desktop dock (Pre / All / Next) */}
       <DesktopReaderDock workSlug={work.slug} prevId={prev ? prev.id : null} nextId={next ? next.id : null} />
+      <ReaderFloatingSeed
+        chapterId={chapter.id}
+        initialLiked={!!(chapter as any).viewerLiked}
+        initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
+      />
 
       <div className="mx-auto max-w-6xl px-0 sm:px-4 py-0 lg:py-8 pb-24">
         <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
@@ -173,6 +187,8 @@ export default async function ReadChapterPage({
                 showComposer={true}
                 sort="top"
                 variant="compact"
+                initialComments={initialComments as any}
+                initialCanModerate={initialCanModerate}
               />
               <div className="mt-3 flex items-center justify-center">
                 <Link
@@ -205,6 +221,8 @@ export default async function ReadChapterPage({
                 showComposer={true}
                 sort="top"
                 variant="compact"
+                initialComments={initialComments as any}
+                initialCanModerate={initialCanModerate}
               />
               <div className="mt-3 flex items-center justify-center">
                 <Link

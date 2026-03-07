@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
-import { apiJson } from "@/server/http/apiJson";
+import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
 
 export const dynamic = "force-dynamic";
 
 export default async function WorkAllChaptersPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const params = await paramsPromise;
 
-  const res = await apiJson<{ work: any }>(`/api/works/slug/${params.slug}`);
-  if (!res.ok) return notFound();
+  const data = await getWorkPageDataBySlug(params.slug);
+  if (!data.ok) return notFound();
 
-  const work = res.data.work;
-  const progress = (res.data as any).progress || { lastReadChapterNumber: null };
+  const work = data.work;
+  const progress = (data as any).progress || { lastReadChapterNumber: null };
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

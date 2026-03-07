@@ -4,6 +4,38 @@ Folder `docs/` adalah pusat dokumentasi kerja untuk repo cleaned ini. Kalau baru
 
 ## Start here
 
+0. `perf-refactor-stage-00-baseline.md`
+   - guardrails dan baseline refactor performa baru
+   - titik awal untuk stage 1+ tanpa mengubah fitur
+
+0b. `perf-refactor-stage-01-fanout.md`
+   - hasil refactor tahap 1
+   - pengurangan self-fetch server page ke API internal
+
+0c. `perf-refactor-stage-02-render-cache.md`
+   - hasil refactor tahap 2
+   - penyempitan scope dynamic + cache publik untuk taxonomy
+
+0d. `perf-refactor-stage-03-background-auth.md`
+   - hasil refactor tahap 3
+   - request background navbar lebih hemat + auth surface dipersempit
+
+0e. `perf-refactor-stage-04-query-dedupe.md`
+   - hasil refactor tahap 4
+   - dedupe lookup viewer/session + batching interaction untuk home rail
+
+0f. `perf-refactor-stage-05-public-detail.md`
+   - hasil refactor tahap 5
+   - pengurangan self-fetch di work detail, reader, reading list, dan redirect legacy
+
+0g. `perf-refactor-stage-06-creator-admin.md`
+   - hasil refactor tahap 6
+   - penutupan sisa self-fetch di surface creator/admin dan admin reports
+
+0h. `perf-refactor-stage-07-hydration-preload.md`
+   - hasil refactor tahap 7
+   - preload review/comment di detail dan reader + cleanup dynamic wrapper
+
 1. `../README.md`
    - overview repo final stage 0–10
    - quick start lokal
@@ -73,3 +105,5 @@ Folder `docs/` adalah pusat dokumentasi kerja untuk repo cleaned ini. Kalau baru
   - catatan deploy historis yang masih relevan untuk Vercel/Neon
 - `../apps/web/docs/V15_SANITY_CHECKLIST.md`
   - checklist historis khusus patch V15
+
+- Stage 8: `docs/perf-refactor-stage-08-final-hardening.md`

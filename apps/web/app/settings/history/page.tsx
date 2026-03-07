@@ -1,16 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
+import { requirePageUserId } from "@/server/auth/pageAuth";
+import { listViewerProgress } from "@/server/services/progress/viewerProgress";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReadingHistoryPage() {
-  const res = await apiJson<{ progress: any[] }>("/api/progress?take=100");
-  if (!res.ok) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/settings/history`)}`);
-  }
-
-  const progress = res.data.progress || [];
+  await requirePageUserId("/settings/history");
+  const { progress } = await listViewerProgress({ take: 100 });
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

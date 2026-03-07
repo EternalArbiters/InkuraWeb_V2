@@ -28,6 +28,8 @@ export default function CommentSection({
   headerRight,
   showSortControl,
   showUserRating = false,
+  initialComments,
+  initialCanModerate,
 }: {
   targetType: TargetType;
   targetId: string;
@@ -42,6 +44,8 @@ export default function CommentSection({
   headerRight?: ReactNode;
   showSortControl?: boolean;
   showUserRating?: boolean;
+  initialComments?: import("./comments/types").CommentItem[];
+  initialCanModerate?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -91,6 +95,8 @@ export default function CommentSection({
     workId,
     sortMode,
     includeUserRating,
+    initialComments,
+    initialCanModerate,
     onError: (msg) => setError(msg),
   });
 

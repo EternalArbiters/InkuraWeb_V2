@@ -46,7 +46,7 @@ interface MobileNavProps {
 
 type NavItem = { label: string; href: string; Icon: LucideIcon };
 
-function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onClick: () => void }) {
+function NavRow({ item, active, onClick, isAuthed }: { item: NavItem; active: boolean; onClick: () => void; isAuthed: boolean }) {
   const Icon = item.Icon;
   const badgeEndpoint = item.href === "/notifications" ? "/api/notifications/unread-count" : item.href === "/admin-report" ? "/api/admin-report/unread-count" : null;
   return (
@@ -66,7 +66,7 @@ function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onC
       <span className="truncate">{item.label}</span>
       {badgeEndpoint ? (
         <span className="ml-auto">
-          <NavCountBadge endpoint={badgeEndpoint} variant="inline" />
+          <NavCountBadge endpoint={badgeEndpoint} variant="inline" enabled={isAuthed} />
         </span>
       ) : null}
     </Link>
@@ -195,7 +195,7 @@ export default function MobileNav({
               .filter((it) => !["Genres", "Regions", "Translated"].includes(it.label))
               .slice(0, 5)
               .map((item) => (
-                <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+                <NavRow key={item.href} item={item} active={isActive(item.href)} onClick={onClose} isAuthed={isAuthed} />
               ))}
 
             {/* Categories dropdown (placed right under Film) */}

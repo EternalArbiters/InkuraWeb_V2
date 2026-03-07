@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CommentItem, ScopeMode, SortMode, TargetType } from "./types";
 
 export type UseCommentsOptions = {
@@ -11,6 +11,8 @@ export type UseCommentsOptions = {
   workId?: string;
   sortMode: SortMode;
   includeUserRating?: boolean;
+  initialComments?: CommentItem[];
+  initialCanModerate?: boolean;
   onError?: (msg: string) => void;
 };
 
@@ -22,11 +24,17 @@ export function useComments({
   workId,
   sortMode,
   includeUserRating,
+  initialComments,
+  initialCanModerate,
   onError,
 }: UseCommentsOptions) {
-  const [loading, setLoading] = useState(true);
-  const [comments, setComments] = useState<CommentItem[]>([]);
-  const [canModerate, setCanModerate] = useState(false);
+  const hasInitial = !!initialComments;
+  const [loading, setLoading] = useState(!hasInitial);
+  const [comments, setComments] = useState<CommentItem[]>(() => initialComments || []);
+  const [canModerate, setCanModerate] = useState(!!initialCanModerate);
+  const initialKey = `${scope}:${targetType}:${targetId}:${workId || ""}:${sortMode}:${includeUserRating ? "1" : "0"}`;
+  const skippedInitialFetchRef = useRef(hasInitial);
+  const initialKeyRef = useRef(initialKey);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -65,8 +73,12 @@ export function useComments({
   }, [includeUserRating, onError, scope, sortMode, take, targetId, targetType, workId]);
 
   useEffect(() => {
+    if (skippedInitialFetchRef.current && initialKeyRef.current === initialKey) {
+      skippedInitialFetchRef.current = false;
+      return;
+    }
     refresh();
-  }, [refresh]);
+  }, [initialKey, refresh]);
 
   return { loading, comments, setComments, canModerate, refresh };
 }

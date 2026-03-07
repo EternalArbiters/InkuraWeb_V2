@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { apiJson } from "@/server/http/apiJson";
+import { getPublishedChapterReaderData } from "@/server/services/chapters/readChapter";
+import { fetchComments } from "@/server/services/comments/fetchComments";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
+import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +32,11 @@ export default async function ChapterCommentsPage({
   const searchParams = (await searchParamsPromise) || {};
   const sort = safeSort((searchParams as any)?.sort);
 
-  const res = await apiJson<{ gated: boolean; chapter: any; work: any; viewer: any; gateReason?: string }>(`/api/chapters/${params.chapterId}`);
-  if (!res.ok) return notFound();
+  const data = await getPublishedChapterReaderData(params.chapterId);
+  if (!data.ok) return notFound();
 
-  const { gated, chapter, work } = res.data;
-  const gateReason = (res.data as any).gateReason as string | undefined;
+  const { gated, chapter, work } = data;
+  const gateReason = (data as any).gateReason as string | undefined;
   if (!work || !chapter) return notFound();
 
   if (work.slug && work.slug !== params.slug) {
@@ -73,8 +75,24 @@ export default async function ChapterCommentsPage({
     );
   }
 
+  const commentsRes = await fetchComments({
+    targetType: "CHAPTER",
+    targetId: chapter.id,
+    take: 100,
+    sort,
+  });
+  const initialComments = commentsRes.status === 200 ? ((((commentsRes as any).body?.comments || []) as any[])) : undefined;
+  const initialCanModerate = commentsRes.status === 200 ? !!((commentsRes as any).body?.canModerate) : false;
+
+  const seededLikeCount = typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0;
+
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <ReaderFloatingSeed
+        chapterId={chapter.id}
+        initialLiked={!!(chapter as any).viewerLiked}
+        initialLikeCount={seededLikeCount}
+      />
       <div className="max-w-3xl mx-auto px-4 py-8 pb-24">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -95,7 +113,14 @@ export default async function ChapterCommentsPage({
           </div>
         </div>
 
-        <CommentSection targetType="CHAPTER" targetId={chapter.id} title="Comments" sort={sort} />
+        <CommentSection
+          targetType="CHAPTER"
+          targetId={chapter.id}
+          title="Comments"
+          sort={sort}
+          initialComments={initialComments as any}
+          initialCanModerate={initialCanModerate}
+        />
       </div>
     </main>
   );

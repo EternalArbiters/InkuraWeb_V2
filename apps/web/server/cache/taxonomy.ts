@@ -19,8 +19,8 @@ export type ActiveTaxonomyBase = {
 };
 
 // NOTE:
-// - API routes remain `dynamic` + `no-store` for correctness.
-// - We cache ONLY the DB reads here.
+// - Base taxonomy reads stay cached here so page render + API route share the same hot path.
+// - Public GET routes may also send CDN cache headers, but DB invalidation still happens here.
 // - Admin mutations call `revalidateTag('taxonomy')` to bust this cache.
 
 export const getActiveGenresBase = unstable_cache(

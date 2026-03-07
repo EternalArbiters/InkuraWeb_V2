@@ -12,13 +12,25 @@ type ListLite = {
   _count?: { items: number };
 };
 
-export default function AddToListButton({ workId, className = "" }: { workId: string; className?: string }) {
+export default function AddToListButton({
+  workId,
+  className = "",
+  initialLists = null,
+}: {
+  workId: string;
+  className?: string;
+  initialLists?: ListLite[] | null;
+}) {
   const [open, setOpen] = useState(false);
-  const [lists, setLists] = useState<ListLite[] | null>(null);
+  const [lists, setLists] = useState<ListLite[] | null>(initialLists);
   const [loading, setLoading] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [added, setAdded] = useState<Record<string, boolean>>({});
   const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setLists(initialLists);
+  }, [initialLists]);
 
   const load = async () => {
     setLoading(true);

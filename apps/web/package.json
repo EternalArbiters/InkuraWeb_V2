@@ -37,7 +37,9 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:install": "playwright install chromium",
-    "test:smoke": "npm run test:unit && npm run test:e2e"
+    "test:smoke": "npm run test:unit && npm run test:e2e",
+    "refactor:stage0": "node scripts/refactor-stage0-baseline.js",
+    "refactor:stage8": "node scripts/refactor-stage8-audit.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -1,44 +1,16 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
-import { idNameSlugSelect } from "@/server/db/selectors";
-import { parseJsonStringArray, stringifyJsonStringArray } from "@/lib/prefs";
+import { stringifyJsonStringArray } from "@/lib/prefs";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { requireViewerPreferences } from "@/server/services/preferences/viewerPreferences";
 
 export const runtime = "nodejs";
 
 export const GET = apiRoute(async () => {
-  const session = await getSession();
-  if (!session?.user?.id) {
-    return json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      adultConfirmed: true,
-      deviantLoveConfirmed: true,
-      preferredLanguagesJson: true,
-      blockedGenres: { select: idNameSlugSelect },
-      blockedWarnings: { select: idNameSlugSelect },
-      blockedDeviantLove: { select: idNameSlugSelect },
-    },
-  });
-
-  if (!user) return json({ error: "Not found" }, { status: 404 });
-
-  return json({
-    prefs: {
-      adultConfirmed: user.adultConfirmed,
-      deviantLoveConfirmed: user.deviantLoveConfirmed,
-      preferredLanguages: parseJsonStringArray(user.preferredLanguagesJson),
-      blockedGenreIds: user.blockedGenres.map((g) => g.id),
-      blockedWarningIds: user.blockedWarnings.map((w) => w.id),
-      blockedDeviantLoveIds: user.blockedDeviantLove.map((d) => d.id),
-    },
-  });
+  const prefs = await requireViewerPreferences();
+  return json({ prefs });
 });
 
 export const PATCH = apiRoute(async (req: Request) => {
@@ -67,16 +39,13 @@ export const PATCH = apiRoute(async (req: Request) => {
   const nextAdult = adultConfirmed !== undefined ? adultConfirmed : !!current?.adultConfirmed;
   let nextDeviant = deviantLoveConfirmed !== undefined ? deviantLoveConfirmed : !!current?.deviantLoveConfirmed;
 
-  // If adult gate is OFF, deviant love must be OFF too.
   if (!nextAdult) nextDeviant = false;
 
-  // Cannot enable deviant love without adult gate.
   if (nextDeviant && !nextAdult) {
     return json({ error: "Deviant Love requires 18+ confirmation" }, { status: 400 });
   }
 
   if (adultConfirmed !== undefined) data.adultConfirmed = nextAdult;
-  // Update deviant flag if explicitly set OR if adult got turned off and we need to force lock.
   if (deviantLoveConfirmed !== undefined || (adultConfirmed === false && current?.deviantLoveConfirmed)) {
     data.deviantLoveConfirmed = nextDeviant;
   }

@@ -66,6 +66,12 @@ npm run verify
 - Unit tests (Vitest)
 - Next.js production build
 
+Untuk baseline hotspot performa statis sebelum mulai refactor, jalankan juga:
+
+```bash
+npm run refactor:stage0
+```
+
 Opsional tapi disarankan (butuh DB terkoneksi):
 
 ```bash

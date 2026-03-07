@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import ChapterCreateForm from "./ChapterCreateForm";
-import { apiJson } from "@/server/http/apiJson";
+import { ApiError } from "@/server/http";
+import { listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
+import { getStudioWorkById } from "@/server/services/studio/workById";
 
 export const dynamic = "force-dynamic";
 
@@ -13,15 +15,17 @@ export default async function NewChapterPage({
   const params = await paramsPromise;
   const workId = params.workId;
 
-  const [workRes, warningsRes] = await Promise.all([
-    apiJson<{ work: any }>(`/api/studio/works/${workId}`),
-    apiJson<{ warningTags: any[] }>("/api/warnings"),
-  ]);
+  let work: any;
+  try {
+    ({ work } = await getStudioWorkById(workId));
+  } catch (error) {
+    if (error instanceof ApiError) {
+      redirect("/studio");
+    }
+    throw error;
+  }
 
-  if (!workRes.ok) redirect("/studio");
-
-  const work = workRes.data.work;
-  const warningTags = warningsRes.ok ? warningsRes.data.warningTags : [];
+  const warningTags = await listActiveWarningTags({ take: 100 });
 
   const chapters = Array.isArray(work.chapters) ? work.chapters : [];
   const lastNum = chapters.length ? chapters[chapters.length - 1].number : 0;
