@@ -190,10 +190,10 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 <BookmarkButton className="w-full px-3" workId={work.id} initialBookmarked={!!interactions.bookmarked} />
                 <AddToListButton className="w-full px-3" workId={work.id} />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <ShareButton className="w-full px-3" title={work.title} />
+              <div className="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-2">
+                <ShareButton className="w-full min-w-0 px-3" title={work.title} />
                 <RatingStars
-                  className="w-full px-3"
+                  className="w-full min-w-0 px-3"
                   workId={work.id}
                   initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
                   ratingAvg={Number(work.ratingAvg ?? 0)}
