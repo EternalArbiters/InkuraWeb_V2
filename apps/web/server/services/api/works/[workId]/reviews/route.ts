@@ -25,10 +25,12 @@ function cleanText(v: unknown, max = 5000) {
 export const GET = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const url = new URL(req.url);
+  const rawTake = url.searchParams.get("take");
+  const take = rawTake == null ? undefined : Number.parseInt(rawTake, 10);
   const res = await listWorkReviews({
     workId,
     sort: url.searchParams.get("sort"),
-    take: url.searchParams.get("take"),
+    take: Number.isFinite(take) ? take : undefined,
   });
   return json(res.body, { status: res.status });
 });
