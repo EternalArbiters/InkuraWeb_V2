@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 import ThumbCropper from "@/app/components/ThumbCropper";
 import { presignAndUpload } from "@/lib/r2UploadClient";
+import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 
 type Chapter = {
   id: string;
@@ -36,6 +37,19 @@ function clamp(n: unknown, def: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
 
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
+
 export default function ChapterEditForm({ workId, workTitle, workType, chapter, warningTags }: Props) {
   const router = useRouter();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -51,6 +65,8 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   const [thumbUrl, setThumbUrl] = React.useState<string | null>(chapter.thumbnailImage || null);
   const [thumbKey, setThumbKey] = React.useState<string | null>(chapter.thumbnailKey || null);
   const [thumbUploading, setThumbUploading] = React.useState(false);
+  const [thumbPrepared, setThumbPrepared] = React.useState<PreparedUploadFile | null>(null);
+  const [thumbOptimizationSummary, setThumbOptimizationSummary] = React.useState<string | null>(null);
 
   const [thumbFocusX, setThumbFocusX] = React.useState<number>(clamp(chapter.thumbnailFocusX, 50, 0, 100));
   const [thumbFocusY, setThumbFocusY] = React.useState<number>(clamp(chapter.thumbnailFocusY, 50, 0, 100));
@@ -59,14 +75,38 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    return () => {
+      if (thumbPrepared?.previewUrl) URL.revokeObjectURL(thumbPrepared.previewUrl);
+    };
+  }, [thumbPrepared?.previewUrl]);
+
   async function uploadThumb(file: File | null) {
     if (!file) return;
     setError(null);
     setThumbUploading(true);
     try {
-      const up = await presignAndUpload({ scope: "pages", file, workId, chapterId: chapter.id });
+      const prepared = await prepareUploadFile({ scope: "pages", file, makePreviewUrl: true });
+      const up = await presignAndUpload({
+        scope: "pages",
+        file,
+        preparedFile: prepared,
+        workId,
+        chapterId: chapter.id,
+        optimizationVersion: "pr5-upload-guardrails-v1",
+      });
+      setThumbPrepared((current) => {
+        if (current?.previewUrl) URL.revokeObjectURL(current.previewUrl);
+        return prepared;
+      });
       setThumbUrl(up.url);
       setThumbKey(up.key);
+      const bytesSaved = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
+      setThumbOptimizationSummary(
+        prepared.compressionApplied || bytesSaved > 0
+          ? `${formatBytes(prepared.originalBytes)} → ${formatBytes(prepared.optimizedBytes)}`
+          : `No optimization needed (${formatBytes(prepared.optimizedBytes)})`
+      );
       // Reset crop to a sensible default for new uploads
       setThumbFocusX(50);
       setThumbFocusY(50);
@@ -79,6 +119,9 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   }
 
   function clearThumb() {
+    if (thumbPrepared?.previewUrl) URL.revokeObjectURL(thumbPrepared.previewUrl);
+    setThumbPrepared(null);
+    setThumbOptimizationSummary(null);
     setThumbUrl(null);
     setThumbKey(null);
   }
@@ -168,6 +211,9 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
               disabled={thumbUploading}
               className="hidden"
             />
+            {thumbOptimizationSummary ? (
+              <div className="text-xs text-gray-500 dark:text-gray-400">Optimized thumbnail: {thumbOptimizationSummary}</div>
+            ) : null}
           </div>
         </div>
       </div>

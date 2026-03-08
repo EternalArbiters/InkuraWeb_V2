@@ -3,6 +3,8 @@
 import * as React from "react";
 
 import { sendUploadMetric } from "@/lib/clientMetrics";
+import { buildOptimizationMeta } from "@/lib/r2UploadClient";
+import { prepareUploadFile } from "@/lib/uploadOptimization";
 import AvatarPickerCard from "./components/AvatarPickerCard";
 import ProfileAlerts from "./components/ProfileAlerts";
 import ProfileFieldsCard from "./components/ProfileFieldsCard";
@@ -21,6 +23,19 @@ type AvatarPresignResponse = {
   uploadUrl: string;
   publicUrl: string;
 };
+
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
 
 type ApiErrorPayload = {
   error?: string;
@@ -48,7 +63,10 @@ function readApiError(payload: unknown, fallback: string) {
   return fallback;
 }
 
-async function presignAvatarUpload(file: File): Promise<AvatarPresignResponse> {
+async function presignAvatarUpload(
+  file: File,
+  optimizationMeta?: ReturnType<typeof buildOptimizationMeta>
+): Promise<AvatarPresignResponse> {
   const res = await fetch("/api/me/avatar/presign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -56,6 +74,7 @@ async function presignAvatarUpload(file: File): Promise<AvatarPresignResponse> {
       filename: file.name,
       contentType: file.type,
       size: file.size,
+      optimization: optimizationMeta,
     }),
   });
 
@@ -106,6 +125,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
   const [avatarZoom, setAvatarZoom] = React.useState<number>(initial.avatarZoom ?? 1);
 
   const [avatarUploading, setAvatarUploading] = React.useState(false);
+  const [avatarOptimizationSummary, setAvatarOptimizationSummary] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
@@ -118,44 +138,76 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
     setAvatarUploading(true);
     setErr(null);
     setOk(null);
+    setAvatarOptimizationSummary(null);
     const startedAt = Date.now();
     let presignMs = 0;
     let uploadMs = 0;
+    let prepared = null as Awaited<ReturnType<typeof prepareUploadFile>> | null;
     try {
+      prepared = await prepareUploadFile({ scope: "avatar", file });
+      const uploadFile = prepared.file;
+      const optimizationVersion = "pr5-upload-guardrails-v1";
+      const optimizationMeta = buildOptimizationMeta(prepared, optimizationVersion);
       const presignStartedAt = Date.now();
-      const { uploadUrl, publicUrl } = await presignAvatarUpload(file);
+      const { uploadUrl, publicUrl } = await presignAvatarUpload(uploadFile, optimizationMeta);
       presignMs = Date.now() - presignStartedAt;
       const uploadStartedAt = Date.now();
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
-        headers: file.type ? { "Content-Type": file.type } : undefined,
-        body: file,
+        headers: uploadFile.type ? { "Content-Type": uploadFile.type } : undefined,
+        body: uploadFile,
       });
       uploadMs = Date.now() - uploadStartedAt;
       if (!uploadRes.ok) throw new Error("Upload failed");
       setImage(publicUrl);
+      const bytesSaved = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
+      if (prepared.compressionApplied || bytesSaved > 0) {
+        setAvatarOptimizationSummary(`${formatBytes(prepared.originalBytes)} → ${formatBytes(prepared.optimizedBytes)}`);
+      } else {
+        setAvatarOptimizationSummary(`No optimization needed (${formatBytes(prepared.optimizedBytes)})`);
+      }
       setOk("Avatar uploaded");
       sendUploadMetric({
         scope: "avatar",
-        beforeBytes: file.size,
-        afterBytes: file.size,
+        beforeBytes: prepared.originalBytes,
+        afterBytes: prepared.optimizedBytes,
         durationMs: Date.now() - startedAt,
         presignMs,
         uploadMs,
-        contentType: file.type,
-        compressionApplied: false,
+        contentType: uploadFile.type,
+        originalContentType: prepared.originalContentType,
+        optimizedContentType: prepared.contentType,
+        bytesSaved,
+        compressionRatio: prepared.originalBytes > 0 ? Number((prepared.optimizedBytes / prepared.originalBytes).toFixed(4)) : undefined,
+        optimizationScope: "avatar",
+        optimizationVersion,
+        optimizationReason: prepared.reason,
+        width: prepared.width,
+        height: prepared.height,
+        fallbackUsed: !optimizationMeta,
+        compressionApplied: prepared.compressionApplied,
         outcome: "success",
       });
     } catch (error: unknown) {
       sendUploadMetric({
         scope: "avatar",
-        beforeBytes: file.size,
-        afterBytes: file.size,
+        beforeBytes: prepared?.originalBytes ?? file.size,
+        afterBytes: prepared?.optimizedBytes ?? file.size,
         durationMs: Date.now() - startedAt,
         presignMs,
         uploadMs,
-        contentType: file.type,
-        compressionApplied: false,
+        contentType: prepared?.contentType || file.type,
+        originalContentType: prepared?.originalContentType || file.type,
+        optimizedContentType: prepared?.contentType || file.type,
+        bytesSaved: prepared ? Math.max(0, prepared.originalBytes - prepared.optimizedBytes) : 0,
+        compressionRatio: prepared && prepared.originalBytes > 0 ? Number((prepared.optimizedBytes / prepared.originalBytes).toFixed(4)) : undefined,
+        optimizationScope: "avatar",
+        optimizationVersion: "pr5-upload-guardrails-v1",
+        optimizationReason: prepared?.reason,
+        width: prepared?.width,
+        height: prepared?.height,
+        fallbackUsed: prepared ? !buildOptimizationMeta(prepared, "pr5-upload-guardrails-v1") : true,
+        compressionApplied: prepared?.compressionApplied ?? false,
         outcome: "error",
         errorMessage: getErrorMessage(error, "Upload failed"),
       });
@@ -195,6 +247,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         initialEmail={initial.email}
         avatar={avatarPreview}
         avatarUploading={avatarUploading}
+        avatarOptimizationSummary={avatarOptimizationSummary}
         avatarFocusX={avatarFocusX}
         setAvatarFocusX={setAvatarFocusX}
         avatarFocusY={avatarFocusY}
@@ -210,6 +263,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         }}
         onRemoveImage={() => {
           setImage("");
+          setAvatarOptimizationSummary(null);
           setAvatarFocusX(50);
           setAvatarFocusY(50);
           setAvatarZoom(1);

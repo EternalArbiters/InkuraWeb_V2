@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { presignAndUpload } from "@/lib/r2UploadClient";
+import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 import type { PickerItem } from "@/components/MultiSelectPicker";
 
 import CreditsSourceFields from "./components/CreditsSourceFields";
@@ -58,10 +59,31 @@ function hrefForWorkSlug(slug: string) {
   return slug ? `/w/${slug}` : "";
 }
 
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
+
+function buildOptimizationSummary(prepared: PreparedUploadFile | null) {
+  if (!prepared) return null;
+  const bytesSaved = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
+  if (prepared.compressionApplied || bytesSaved > 0) {
+    return `${formatBytes(prepared.originalBytes)} → ${formatBytes(prepared.optimizedBytes)}`;
+  }
+  return `No optimization needed (${formatBytes(prepared.optimizedBytes)})`;
+}
+
 export default function WorkEditForm({ work, genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
 
-  // Normalize publishType to a non-optional string literal union so FormData.append is type-safe.
   const publishType: PublishType = ((work.publishType || "ORIGINAL").toUpperCase() as PublishType);
   const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
@@ -100,11 +122,18 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [isDeviantLove, setIsDeviantLove] = React.useState<boolean>(initialDeviantLoveIds.length > 0);
   const [tags, setTags] = React.useState<string[]>(work.tags.map((t) => t.name));
 
-  const [coverFile, setCoverFile] = React.useState<File | null>(null);
+  const [coverPrepared, setCoverPrepared] = React.useState<PreparedUploadFile | null>(null);
+  const [coverPreparing, setCoverPreparing] = React.useState(false);
   const [removeCover, setRemoveCover] = React.useState(false);
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
+    };
+  }, [coverPrepared?.previewUrl]);
 
   function setPrevFromWorkId(id: string) {
     const w = myWorks.find((x) => x.id === id);
@@ -116,6 +145,27 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
     const w = myWorks.find((x) => x.id === id);
     if (!w) return;
     setNextArcUrl(hrefForWorkSlug(w.slug));
+  }
+
+  async function onPickCover(file: File | null) {
+    if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
+    if (!file) {
+      setCoverPrepared(null);
+      setCoverPreparing(false);
+      return;
+    }
+    setCoverPreparing(true);
+    setError(null);
+    setRemoveCover(false);
+    try {
+      const prepared = await prepareUploadFile({ scope: "covers", file, makePreviewUrl: true });
+      setCoverPrepared(prepared);
+    } catch {
+      setCoverPrepared(null);
+      setError("Failed to process cover");
+    } finally {
+      setCoverPreparing(false);
+    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -147,7 +197,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
 
-      // credits
       fd.append("publishType", publishType);
       if (needsSource) {
         fd.append("originalAuthorCredit", originalAuthorCredit);
@@ -162,14 +211,19 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         fd.append("translatorCredit", translatorCredit);
       }
 
-      // series + legacy arcs
       fd.append("seriesTitle", seriesTitle.trim());
       fd.append("seriesOrder", seriesOrder.trim());
       fd.append("prevArcUrl", prevArcUrl.trim());
       fd.append("nextArcUrl", nextArcUrl.trim());
 
-      if (coverFile && !removeCover) {
-        const up = await presignAndUpload({ scope: "covers", file: coverFile, workId: work.id });
+      if (coverPrepared && !removeCover) {
+        const up = await presignAndUpload({
+          scope: "covers",
+          file: coverPrepared.originalFile,
+          preparedFile: coverPrepared,
+          workId: work.id,
+          optimizationVersion: "pr4-cover-opt-v1",
+        });
         fd.append("coverUrl", up.url);
         fd.append("coverKey", up.key);
       }
@@ -249,10 +303,14 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
       <WorkCoverCard
         title={work.title}
-        coverImage={work.coverImage}
+        coverImage={removeCover ? null : (coverPrepared?.previewUrl || work.coverImage)}
         removeCover={removeCover}
         setRemoveCover={setRemoveCover}
-        setCoverFile={setCoverFile}
+        onPickCover={onPickCover}
+        coverName={coverPrepared?.originalFile.name || null}
+        coverBytes={coverPrepared?.optimizedBytes ?? null}
+        coverOptimizationSummary={buildOptimizationSummary(coverPrepared)}
+        coverPreparing={coverPreparing}
       />
 
       <WorkTaxonomyFields
@@ -271,7 +329,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         setTags={setTags}
       />
 
-      <SubmitRow loading={loading} />
+      <SubmitRow loading={loading || coverPreparing} />
     </form>
   );
 }

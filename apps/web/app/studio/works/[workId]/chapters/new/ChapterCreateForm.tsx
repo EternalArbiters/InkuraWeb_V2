@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { presignAndUpload } from "@/lib/r2UploadClient";
+import { prepareUploadFiles, summarizePreparedUploadFiles, type PreparedUploadFile } from "@/lib/uploadOptimization";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 
 type Props = {
@@ -17,6 +18,18 @@ type CreatedChapter = { id: string };
 
 type PageCommit = { url: string; key?: string | null; order?: number };
 
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${value >= 10 || unitIndex === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[unitIndex]}`;
+}
+
 export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags }: Props) {
   const router = useRouter();
 
@@ -28,11 +41,53 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
   const [content, setContent] = React.useState("");
   const [pages, setPages] = React.useState<File[]>([]);
+  const [preparedPages, setPreparedPages] = React.useState<PreparedUploadFile[]>([]);
+  const [preparingPages, setPreparingPages] = React.useState(false);
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [note, setNote] = React.useState<string | null>(null);
   const [createdChapterId, setCreatedChapterId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (workType !== "COMIC" || pages.length === 0) {
+      setPreparedPages([]);
+      setPreparingPages(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPreparingPages(true);
+
+    void prepareUploadFiles({ scope: "pages", files: pages }).then((prepared) => {
+      if (cancelled) return;
+      setPreparedPages(prepared);
+      setPreparingPages(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pages, workType]);
+
+  const pageSummary = React.useMemo(() => {
+    if (workType !== "COMIC" || pages.length === 0) return null;
+    const originalBytes = pages.reduce((total, file) => total + file.size, 0);
+    if (preparedPages.length !== pages.length) {
+      return {
+        count: pages.length,
+        originalBytes,
+        optimizedBytes: originalBytes,
+        bytesSaved: 0,
+        compressedCount: 0,
+        ready: false,
+      };
+    }
+    return {
+      ...summarizePreparedUploadFiles(preparedPages),
+      ready: true,
+    };
+  }, [pages, preparedPages, workType]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,13 +128,26 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
       if (!chapterId) throw new Error("Chapter created but id is missing");
       setCreatedChapterId(chapterId);
 
-      // Step 2: if comic + pages selected, upload directly to R2 (presigned), then commit.
+      // Step 2: if comic + pages selected, optimize in browser, upload to R2 (presigned), then commit.
       if (workType === "COMIC" && pages.length) {
+        setNote(`Menyiapkan optimasi ${pages.length} halaman...`);
+        const preparedUploads =
+          preparedPages.length === pages.length ? preparedPages : await prepareUploadFiles({ scope: "pages", files: pages });
+
         const uploads: PageCommit[] = [];
-        for (let i = 0; i < pages.length; i += 1) {
-          const file = pages[i];
-          setNote(`Upload halaman ${i + 1}/${pages.length}...`);
-          const up = await presignAndUpload({ scope: "pages", file, workId, chapterId });
+        for (let i = 0; i < preparedUploads.length; i += 1) {
+          const prepared = preparedUploads[i];
+          const savedBytes = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
+          const noteSuffix = savedBytes > 0 ? ` (hemat ${formatBytes(savedBytes)})` : "";
+          setNote(`Upload halaman ${i + 1}/${preparedUploads.length}${noteSuffix}...`);
+          const up = await presignAndUpload({
+            scope: "pages",
+            file: prepared.originalFile,
+            preparedFile: prepared,
+            workId,
+            chapterId,
+            optimizationVersion: "pr3-comic-page-opt-v1",
+          });
           uploads.push({ url: up.url, key: up.key, order: i + 1 });
         }
 
@@ -209,18 +277,31 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
           />
           <span className="text-xs text-gray-600 dark:text-gray-300">
-            Kalau kamu pilih file di sini, v13 akan upload langsung ke R2 (presigned) saat kamu klik Create.
+            Halaman akan dioptimalkan di browser dulu sebelum upload ke R2 agar lebih ringan tanpa mengorbankan keterbacaan.
           </span>
+          {pageSummary ? (
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
+              <div>
+                {pageSummary.count} file · sebelum {formatBytes(pageSummary.originalBytes)}
+                {pageSummary.ready ? ` · sesudah ${formatBytes(pageSummary.optimizedBytes)}` : " · menyiapkan optimasi..."}
+              </div>
+              {pageSummary.ready ? (
+                <div>
+                  Hemat {formatBytes(pageSummary.bytesSaved)} · {pageSummary.compressedCount}/{pageSummary.count} halaman disesuaikan otomatis.
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </label>
       )}
 
       <div className="flex items-center justify-end gap-2">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || preparingPages}
           className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
-          {loading ? "Saving..." : "Create Chapter"}
+          {loading ? "Saving..." : preparingPages ? "Preparing pages..." : "Create Chapter"}
         </button>
       </div>
     </form>

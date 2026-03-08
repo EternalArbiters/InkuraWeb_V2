@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import { presignAndUpload } from "@/lib/r2UploadClient";
+import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 
 import CoverCard from "./components/CoverCard";
 import DeviantLoveCard from "./components/DeviantLoveCard";
@@ -16,7 +18,27 @@ type Props = {
   deviantLoveTags: PickerItem[];
 };
 
-const MAX_COVER_BYTES = 2 * 1024 * 1024;
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
+
+function buildOptimizationSummary(prepared: PreparedUploadFile | null) {
+  if (!prepared) return null;
+  const bytesSaved = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
+  if (prepared.compressionApplied || bytesSaved > 0) {
+    return `${formatBytes(prepared.originalBytes)} → ${formatBytes(prepared.optimizedBytes)}`;
+  }
+  return `No optimization needed (${formatBytes(prepared.optimizedBytes)})`;
+}
 
 export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
@@ -56,31 +78,33 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
   const [tags, setTags] = React.useState<string[]>([]);
   const [tagsRaw, setTagsRaw] = React.useState("");
 
-  const [coverFile, setCoverFile] = React.useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = React.useState<string | null>(null);
+  const [coverPrepared, setCoverPrepared] = React.useState<PreparedUploadFile | null>(null);
+  const [coverPreparing, setCoverPreparing] = React.useState(false);
 
   React.useEffect(() => {
-    if (!coverFile) {
-      setCoverPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(coverFile);
-    setCoverPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [coverFile]);
+    return () => {
+      if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
+    };
+  }, [coverPrepared?.previewUrl]);
 
-  function onPickCover(file: File | null) {
+  async function onPickCover(file: File | null) {
+    if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
     if (!file) {
-      setCoverFile(null);
+      setCoverPrepared(null);
+      setCoverPreparing(false);
       return;
     }
-    if (file.size > MAX_COVER_BYTES) {
-      setErr("Cover terlalu besar (max 2MB).");
-      setCoverFile(null);
-      return;
-    }
+    setCoverPreparing(true);
     setErr(null);
-    setCoverFile(file);
+    try {
+      const prepared = await prepareUploadFile({ scope: "covers", file, makePreviewUrl: true });
+      setCoverPrepared(prepared);
+    } catch {
+      setCoverPrepared(null);
+      setErr("Gagal memproses cover.");
+    } finally {
+      setCoverPreparing(false);
+    }
   }
 
   function syncTags(raw: string) {
@@ -100,7 +124,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
     setErr(null);
 
     if (!title.trim()) return setErr("Title wajib diisi.");
-    if (!coverFile) return setErr("Cover wajib diupload (max 2MB).");
+    if (!coverPrepared) return setErr("Cover wajib diupload.");
 
     if (needsSource) {
       if (!originalAuthorCredit.trim()) return setErr("Original author credit wajib diisi.");
@@ -113,6 +137,13 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
     setLoading(true);
     try {
+      const coverUpload = await presignAndUpload({
+        scope: "covers",
+        file: coverPrepared.originalFile,
+        preparedFile: coverPrepared,
+        optimizationVersion: "pr4-cover-opt-v1",
+      });
+
       const fd = new FormData();
       fd.set("title", title.trim());
       fd.set("description", description.trim());
@@ -127,6 +158,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       fd.set("warningTagIds", JSON.stringify(warningTagIds));
       fd.set("deviantLoveTagIds", JSON.stringify(isDeviantLove ? deviantLoveTagIds : []));
       fd.set("tags", JSON.stringify(tags));
+      fd.set("coverUrl", coverUpload.url);
+      fd.set("coverKey", coverUpload.key);
 
       if (needsSource) {
         fd.set("originalAuthorCredit", originalAuthorCredit.trim());
@@ -142,8 +175,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       }
       if (seriesTitle.trim()) fd.set("seriesTitle", seriesTitle.trim());
       if (seriesOrder.trim()) fd.set("seriesOrder", seriesOrder.trim());
-
-      fd.set("cover", coverFile);
 
       const res = await fetch("/api/studio/works", { method: "POST", body: fd });
       const json = await res.json().catch(() => ({}));
@@ -165,8 +196,11 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       ) : null}
 
       <CoverCard
-        coverPreview={coverPreview}
-        coverFile={coverFile}
+        coverPreview={coverPrepared?.previewUrl || null}
+        coverName={coverPrepared?.originalFile.name || null}
+        coverBytes={coverPrepared?.optimizedBytes ?? null}
+        coverOptimizationSummary={buildOptimizationSummary(coverPrepared)}
+        coverPreparing={coverPreparing}
         onPickCover={onPickCover}
       />
 
@@ -255,7 +289,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         </div>
       </div>
 
-      <SubmitRow loading={loading} />
+      <SubmitRow loading={loading || coverPreparing} />
     </form>
   );
 }

@@ -1,6 +1,8 @@
 import "client-only";
 
 import { sendUploadMetric } from "@/lib/clientMetrics";
+import { buildOptimizationMeta } from "@/lib/r2UploadClient";
+import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 
 // v16: client helpers for comment media (image/gif) with SHA-256 de-dup.
 
@@ -34,7 +36,12 @@ export async function sha256Hex(file: Blob): Promise<string> {
   return hex;
 }
 
-export async function presignCommentMedia(params: { file: File; kind: CommentMediaKind; sha256?: string }): Promise<PresignCommentMediaResponse> {
+export async function presignCommentMedia(params: {
+  file: File;
+  kind: CommentMediaKind;
+  sha256?: string;
+  optimizationMeta?: ReturnType<typeof buildOptimizationMeta>;
+}): Promise<PresignCommentMediaResponse> {
   const sha256 = params.sha256 || (await sha256Hex(params.file));
   const scope = params.kind === "gif" ? "comment_gifs" : "comment_images";
 
@@ -47,6 +54,7 @@ export async function presignCommentMedia(params: { file: File; kind: CommentMed
       contentType: params.file.type,
       size: params.file.size,
       sha256,
+      optimization: params.optimizationMeta,
     }),
   });
 
@@ -56,7 +64,8 @@ export async function presignCommentMedia(params: { file: File; kind: CommentMed
 }
 
 export async function uploadToPresignedUrl(uploadUrl: string, file: Blob) {
-  const res = await fetch(uploadUrl, { method: "PUT", body: file });
+  const headers = file.type ? { "Content-Type": file.type } : undefined;
+  const res = await fetch(uploadUrl, { method: "PUT", headers, body: file });
   if (!res.ok) throw new Error("Upload failed");
 }
 
@@ -79,6 +88,7 @@ export async function commitCommentMedia(params: {
   key: string;
   contentType: string;
   sizeBytes: number;
+  optimizationMeta?: ReturnType<typeof buildOptimizationMeta>;
 }): Promise<CommitMediaResponse> {
   const scope = params.kind === "gif" ? "comment_gifs" : "comment_images";
   const res = await fetch("/api/uploads/commit", {
@@ -90,6 +100,7 @@ export async function commitCommentMedia(params: {
       key: params.key,
       contentType: params.contentType,
       sizeBytes: params.sizeBytes,
+      optimization: params.optimizationMeta,
     }),
   });
   const json = await res.json().catch(() => ({}));
@@ -105,13 +116,35 @@ export async function commitCommentMedia(params: {
 export async function ensureCommentMedia(params: { file: File; kind: CommentMediaKind }) {
   const startedAt = Date.now();
   let uploadMs = 0;
+  let prepared: PreparedUploadFile | null = null;
+  const scope = params.kind === "gif" ? "comment_gifs" : "comment_images";
+
   try {
-    const sha256 = await sha256Hex(params.file);
-    const presigned = await presignCommentMedia({ file: params.file, kind: params.kind, sha256 });
+    prepared =
+      params.kind === "gif"
+        ? {
+            originalFile: params.file,
+            file: params.file,
+            originalBytes: params.file.size,
+            optimizedBytes: params.file.size,
+            width: null,
+            height: null,
+            contentType: params.file.type || "image/gif",
+            originalContentType: params.file.type || "image/gif",
+            compressionApplied: false,
+            reason: "scope-disabled",
+          }
+        : await prepareUploadFile({ scope: "comment_images", file: params.file });
+
+    const uploadFile = prepared.file;
+    const sha256 = await sha256Hex(uploadFile);
+    const optimizationVersion = params.kind === "gif" ? undefined : "pr5-upload-guardrails-v1";
+    const optimizationMeta = buildOptimizationMeta(prepared, optimizationVersion);
+    const presigned = await presignCommentMedia({ file: uploadFile, kind: params.kind, sha256, optimizationMeta });
 
     if (!presigned.exists) {
       const uploadStartedAt = Date.now();
-      await uploadToPresignedUrl(presigned.uploadUrl, params.file);
+      await uploadToPresignedUrl(presigned.uploadUrl, uploadFile);
       uploadMs = Date.now() - uploadStartedAt;
     }
 
@@ -119,31 +152,53 @@ export async function ensureCommentMedia(params: { file: File; kind: CommentMedi
       kind: params.kind,
       sha256,
       key: presigned.key,
-      contentType: params.file.type,
-      sizeBytes: params.file.size,
+      contentType: uploadFile.type,
+      sizeBytes: uploadFile.size,
+      optimizationMeta,
     });
 
     sendUploadMetric({
-      scope: params.kind === "gif" ? "comment_gifs" : "comment_images",
-      beforeBytes: params.file.size,
-      afterBytes: params.file.size,
+      scope,
+      beforeBytes: prepared.originalBytes,
+      afterBytes: prepared.optimizedBytes,
       durationMs: Date.now() - startedAt,
       uploadMs,
-      contentType: params.file.type,
-      compressionApplied: false,
+      contentType: uploadFile.type,
+      originalContentType: prepared.originalContentType,
+      optimizedContentType: prepared.contentType,
+      bytesSaved: Math.max(0, prepared.originalBytes - prepared.optimizedBytes),
+      compressionRatio: prepared.originalBytes > 0 ? Number((prepared.optimizedBytes / prepared.originalBytes).toFixed(4)) : undefined,
+      optimizationScope: scope,
+      optimizationVersion: optimizationVersion || "pr2-client-image-opt-v1",
+      optimizationReason: prepared.reason,
+      width: prepared.width,
+      height: prepared.height,
+      fallbackUsed: !optimizationMeta,
+      compressionApplied: prepared.compressionApplied,
       outcome: "success",
     });
 
     return committed.media;
   } catch (error) {
     sendUploadMetric({
-      scope: params.kind === "gif" ? "comment_gifs" : "comment_images",
-      beforeBytes: params.file.size,
-      afterBytes: params.file.size,
+      scope,
+      beforeBytes: prepared?.originalBytes ?? params.file.size,
+      afterBytes: prepared?.optimizedBytes ?? params.file.size,
       durationMs: Date.now() - startedAt,
       uploadMs,
-      contentType: params.file.type,
-      compressionApplied: false,
+      contentType: prepared?.contentType || params.file.type,
+      originalContentType: prepared?.originalContentType || params.file.type,
+      optimizedContentType: prepared?.contentType || params.file.type,
+      bytesSaved: prepared ? Math.max(0, prepared.originalBytes - prepared.optimizedBytes) : 0,
+      compressionRatio:
+        prepared && prepared.originalBytes > 0 ? Number((prepared.optimizedBytes / prepared.originalBytes).toFixed(4)) : undefined,
+      optimizationScope: scope,
+      optimizationVersion: params.kind === "gif" ? undefined : "pr5-upload-guardrails-v1",
+      optimizationReason: prepared?.reason,
+      width: prepared?.width,
+      height: prepared?.height,
+      fallbackUsed: prepared ? !buildOptimizationMeta(prepared, params.kind === "gif" ? undefined : "pr5-upload-guardrails-v1") : true,
+      compressionApplied: prepared?.compressionApplied ?? false,
       outcome: "error",
       errorMessage: error instanceof Error ? error.message : String(error || "Upload failed"),
     });

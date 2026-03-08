@@ -1,6 +1,12 @@
 import "server-only";
 
-export type UploadScope = "covers" | "pages" | "files" | "comment_images" | "comment_gifs";
+import {
+  isAllowedUploadContentTypeForScope,
+  maxBytesForOptimizationScope,
+  type UploadOptimizationScope,
+} from "@/lib/uploadProfiles";
+
+export type UploadScope = Exclude<UploadOptimizationScope, "avatar">;
 
 function safeUploadFilename(name: string): string {
   return String(name || "file")
@@ -39,22 +45,11 @@ export function normalizeUploadContentType(filename: string, ct: string): string
 }
 
 export function isAllowedUploadContentType(scope: UploadScope, ct: string): boolean {
-  const c = ct.toLowerCase();
-  if (scope === 'covers' || scope === 'pages' || scope === 'comment_images') {
-    return c === 'image/webp' || c === 'image/png' || c === 'image/jpeg';
-  }
-  if (scope === 'comment_gifs') {
-    return c === 'image/gif';
-  }
-  return c === 'application/pdf' || c === 'application/octet-stream';
+  return isAllowedUploadContentTypeForScope(scope, ct);
 }
 
 export function maxBytesForUploadScope(scope: UploadScope): number {
-  if (scope === 'covers') return 2 * 1024 * 1024;
-  if (scope === 'pages') return 5 * 1024 * 1024;
-  if (scope === 'comment_images') return 2 * 1024 * 1024;
-  if (scope === 'comment_gifs') return 5 * 1024 * 1024;
-  return 20 * 1024 * 1024;
+  return maxBytesForOptimizationScope(scope);
 }
 
 export function normalizeSha256(v: unknown): string | null {

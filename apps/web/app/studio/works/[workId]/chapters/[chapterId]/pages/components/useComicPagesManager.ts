@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import { presignAndUpload } from "@/lib/r2UploadClient";
+import { prepareUploadFiles, summarizePreparedUploadFiles, type PreparedUploadFile, type PreparedUploadSummary } from "@/lib/uploadOptimization";
 
 type Page = { id: string; imageUrl: string; order: number };
+
+type UploadSummaryState = PreparedUploadSummary & { ready: boolean };
 
 export function useComicPagesManager({
   workId,
@@ -19,6 +22,8 @@ export function useComicPagesManager({
   initialThumbnailImage: string | null;
 }) {
   const [files, setFiles] = React.useState<File[]>([]);
+  const [preparedFiles, setPreparedFiles] = React.useState<PreparedUploadFile[]>([]);
+  const [preparingFiles, setPreparingFiles] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [pages, setPages] = React.useState<Page[]>(initialPages);
@@ -26,6 +31,45 @@ export function useComicPagesManager({
 
   // Default ON if chapter already has pages to prevent accidental duplicate accumulation.
   const [replaceExisting, setReplaceExisting] = React.useState<boolean>(initialHasPages);
+
+  React.useEffect(() => {
+    if (!files.length) {
+      setPreparedFiles([]);
+      setPreparingFiles(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPreparingFiles(true);
+    void prepareUploadFiles({ scope: "pages", files }).then((prepared) => {
+      if (cancelled) return;
+      setPreparedFiles(prepared);
+      setPreparingFiles(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files]);
+
+  const uploadSummary = React.useMemo<UploadSummaryState | null>(() => {
+    if (!files.length) return null;
+    const originalBytes = files.reduce((total, file) => total + file.size, 0);
+    if (preparedFiles.length !== files.length) {
+      return {
+        count: files.length,
+        originalBytes,
+        optimizedBytes: originalBytes,
+        bytesSaved: 0,
+        compressedCount: 0,
+        ready: false,
+      };
+    }
+    return {
+      ...summarizePreparedUploadFiles(preparedFiles),
+      ready: true,
+    };
+  }, [files, preparedFiles]);
 
   async function upload() {
     if (!files.length) return;
@@ -42,12 +86,22 @@ export function useComicPagesManager({
         }
       }
 
+      const activePreparedFiles =
+        preparedFiles.length === files.length ? preparedFiles : await prepareUploadFiles({ scope: "pages", files });
+
       const startOrder = replaceExisting ? 0 : pages.length;
       const uploaded = [] as { url: string; key: string; order: number }[];
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const up = await presignAndUpload({ scope: "pages", file, workId, chapterId });
+      for (let i = 0; i < activePreparedFiles.length; i++) {
+        const prepared = activePreparedFiles[i];
+        const up = await presignAndUpload({
+          scope: "pages",
+          file: prepared.originalFile,
+          preparedFile: prepared,
+          workId,
+          chapterId,
+          optimizationVersion: "pr3-comic-page-opt-v1",
+        });
         uploaded.push({ url: up.url, key: up.key, order: startOrder + i + 1 });
       }
 
@@ -68,6 +122,7 @@ export function useComicPagesManager({
 
       setPages((prev) => (replaceExisting ? nextPages : [...prev, ...nextPages]));
       setFiles([]);
+      setPreparedFiles([]);
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {
@@ -132,6 +187,9 @@ export function useComicPagesManager({
   return {
     files,
     setFiles,
+    preparedFiles,
+    preparingFiles,
+    uploadSummary,
     loading,
     err,
     pages,

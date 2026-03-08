@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { logWarn } from "@/server/observability/logger";
 import { headObject, makeObjectKey, presignPutObject, publicUrlForKey } from "@/server/storage/r2";
 import {
   extFromUploadContentType,
@@ -13,6 +14,7 @@ import {
   normalizeUploadContentType,
   normalizeUploadScope,
 } from "@/server/uploads/presignRules";
+import { buildUploadGuardrailMeta, readUploadOptimizationMeta, validateUploadOptimizationMeta } from "@/server/uploads/imageValidation";
 
 export const runtime = "nodejs";
 
@@ -58,6 +60,7 @@ export const POST = apiRoute(async (req: Request) => {
   const size = Number(body?.size ?? 0);
   const workId = body?.workId ? String(body.workId) : undefined;
   const chapterId = body?.chapterId ? String(body.chapterId) : undefined;
+  const optimizationMeta = readUploadOptimizationMeta(body?.optimization ?? body?.uploadOptimization ?? body?.meta);
 
   if (!filename) return json({ error: "filename is required" }, { status: 400 });
 
@@ -70,9 +73,27 @@ export const POST = apiRoute(async (req: Request) => {
     return json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
   }
 
+  let validation;
+  try {
+    validation = validateUploadOptimizationMeta({
+      scope,
+      contentType,
+      sizeBytes: size,
+      meta: optimizationMeta,
+    });
+  } catch (error) {
+    return json({ error: error instanceof Error ? error.message : "Invalid upload optimization metadata" }, { status: 400 });
+  }
+
+  if (validation.warnings.length) {
+    logWarn("upload.presign_guardrail_warning", {
+      userId: session.user.id,
+      ...buildUploadGuardrailMeta({ scope, contentType, sizeBytes: size, validation }),
+    });
+  }
+
   // Ownership checks (covers/pages)
-  if (scope === "covers") {
-    if (!workId) return json({ error: "workId is required for covers" }, { status: 400 });
+  if (scope === "covers" && workId) {
     const ok = await canEditWork(session.user.id, me.role, workId);
     if (!ok) return json({ error: "Forbidden" }, { status: 403 });
   }

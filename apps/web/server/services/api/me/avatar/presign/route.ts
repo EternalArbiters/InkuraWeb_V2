@@ -1,16 +1,14 @@
 import "server-only";
 
+import { isAllowedUploadContentTypeForScope, maxBytesForOptimizationScope } from "@/lib/uploadProfiles";
+import { buildUploadGuardrailMeta, readUploadOptimizationMeta, validateUploadOptimizationMeta } from "@/server/uploads/imageValidation";
 import prisma from "@/server/db/prisma";
 import { makeObjectKey, presignPutObject } from "@/server/storage/r2";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { logWarn } from "@/server/observability/logger";
 
 export const runtime = "nodejs";
-
-function isAllowedImageType(ct: string) {
-  const c = (ct || "").toLowerCase();
-  return c === "image/webp" || c === "image/png" || c === "image/jpeg";
-}
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
@@ -26,21 +24,43 @@ export const POST = apiRoute(async (req: Request) => {
         contentType?: unknown;
         type?: unknown;
         size?: unknown;
+        optimization?: unknown;
+        uploadOptimization?: unknown;
+        meta?: unknown;
       }
     | null;
 
   const filename = String(body?.filename || "avatar").trim() || "avatar";
   const contentType = String(body?.contentType || body?.type || "").trim() || "application/octet-stream";
   const size = Number(body?.size ?? 0);
+  const optimizationMeta = readUploadOptimizationMeta(body?.optimization ?? body?.uploadOptimization ?? body?.meta);
 
-  if (!isAllowedImageType(contentType)) {
+  if (!isAllowedUploadContentTypeForScope("avatar", contentType)) {
     return json({ error: "Unsupported file type (use PNG/JPG/WebP)" }, { status: 400 });
   }
 
-  // 2MB max (same as cover)
-  const maxBytes = 2 * 1024 * 1024;
+  const maxBytes = maxBytesForOptimizationScope("avatar");
   if (size && size > maxBytes) {
     return json({ error: "File too large (max 2MB)" }, { status: 400 });
+  }
+
+  let validation;
+  try {
+    validation = validateUploadOptimizationMeta({
+      scope: "avatar",
+      contentType,
+      sizeBytes: size,
+      meta: optimizationMeta,
+    });
+  } catch (error) {
+    return json({ error: error instanceof Error ? error.message : "Invalid avatar optimization metadata" }, { status: 400 });
+  }
+
+  if (validation.warnings.length) {
+    logWarn("upload.avatar_presign_guardrail_warning", {
+      userId: session.user.id,
+      ...buildUploadGuardrailMeta({ scope: "avatar", contentType, sizeBytes: size, validation }),
+    });
   }
 
   const key = makeObjectKey({

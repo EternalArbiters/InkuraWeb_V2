@@ -39,7 +39,10 @@
     "test:e2e:install": "playwright install chromium",
     "test:smoke": "npm run test:unit && npm run test:e2e",
     "refactor:stage0": "node scripts/refactor-stage0-baseline.js",
-    "refactor:stage8": "node scripts/refactor-stage8-audit.js"
+    "refactor:stage8": "node scripts/refactor-stage8-audit.js",
+    "storage:audit": "tsx scripts/audit-image-storage.ts",
+    "storage:reoptimize": "tsx scripts/reoptimize-images.ts",
+    "storage:cleanup-orphans": "tsx scripts/cleanup-orphaned-r2-objects.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

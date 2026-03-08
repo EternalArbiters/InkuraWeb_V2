@@ -1,17 +1,38 @@
 "use client";
 
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+}
+
 export default function WorkCoverCard({
   title,
   coverImage,
   removeCover,
   setRemoveCover,
-  setCoverFile,
+  onPickCover,
+  coverName,
+  coverBytes,
+  coverOptimizationSummary,
+  coverPreparing,
 }: {
   title: string;
   coverImage: string | null;
   removeCover: boolean;
   setRemoveCover: (v: boolean) => void;
-  setCoverFile: (f: File | null) => void;
+  onPickCover: (f: File | null) => void | Promise<void>;
+  coverName: string | null;
+  coverBytes: number | null;
+  coverOptimizationSummary: string | null;
+  coverPreparing: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
@@ -47,12 +68,23 @@ export default function WorkCoverCard({
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+            onChange={(e) => void onPickCover(e.target.files?.[0] || null)}
             className="text-sm"
           />
           <div className="text-[11px] text-gray-600 dark:text-gray-300">
-            Max 2MB. JPG/PNG/WebP.
+            Auto-optimized before upload. Target max 2MB. JPG/PNG/WebP.
           </div>
+          {coverPreparing ? (
+            <div className="text-[11px] text-gray-600 dark:text-gray-300">Optimizing cover...</div>
+          ) : null}
+          {coverName && coverBytes != null ? (
+            <div className="text-[11px] text-gray-600 dark:text-gray-300">
+              {coverName} • {formatBytes(coverBytes)}
+            </div>
+          ) : null}
+          {coverOptimizationSummary ? (
+            <div className="text-[11px] text-emerald-700 dark:text-emerald-300">{coverOptimizationSummary}</div>
+          ) : null}
         </div>
       </div>
     </div>

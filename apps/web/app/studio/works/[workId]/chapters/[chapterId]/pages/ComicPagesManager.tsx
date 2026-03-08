@@ -18,6 +18,8 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
   const {
     files,
     setFiles,
+    preparingFiles,
+    uploadSummary,
     loading,
     err,
     pages: localPages,
@@ -50,22 +52,14 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
         replaceExisting={replaceExisting}
         setReplaceExisting={setReplaceExisting}
         loading={loading}
+        preparing={preparingFiles}
+        summary={uploadSummary}
         onUpload={upload}
       />
 
-      <ChapterCoverCard
-        thumbnailImage={localThumbnailImage}
-        loading={loading}
-        onClear={clearThumb}
-      />
+      <ChapterCoverCard thumbnailImage={localThumbnailImage} loading={loading} onClear={clearThumb} />
 
-      <PagesGrid
-        workId={workId}
-        pages={localPages}
-        loading={loading}
-        onUseAsCover={setThumb}
-        onDelete={del}
-      />
+      <PagesGrid workId={workId} pages={localPages} loading={loading} onUseAsCover={setThumb} onDelete={del} />
     </div>
   );
 }

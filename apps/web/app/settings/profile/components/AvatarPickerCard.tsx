@@ -9,6 +9,7 @@ type Props = {
 
   avatar: string | null;
   avatarUploading: boolean;
+  avatarOptimizationSummary?: string | null;
 
   avatarFocusX: number;
   setAvatarFocusX: (v: number) => void;
@@ -26,6 +27,7 @@ export default function AvatarPickerCard({
   initialEmail,
   avatar,
   avatarUploading,
+  avatarOptimizationSummary,
   avatarFocusX,
   setAvatarFocusX,
   avatarFocusY,
@@ -60,6 +62,9 @@ export default function AvatarPickerCard({
         <div className="min-w-0">
           <div className="text-sm text-gray-500 dark:text-gray-400">Signed in as</div>
           <div className="font-semibold text-gray-900 dark:text-white truncate">{initialEmail}</div>
+          {avatarOptimizationSummary ? (
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Optimized upload: {avatarOptimizationSummary}</div>
+          ) : null}
         </div>
       </div>
 

@@ -5,7 +5,15 @@ import "server-only";
 // If you run ad-hoc Node scripts that import this module, make sure dependencies are installed.
 
 import crypto from "crypto";
-import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  HeadObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 function required(name: string, v: string | undefined) {
@@ -156,6 +164,31 @@ export async function deleteObject(key: string) {
   return true;
 }
 
+export async function deleteObjects(keys: string[]) {
+  const env = getR2Env();
+  const client = getR2Client();
+  const uniqueKeys = [...new Set(keys.map((key) => String(key || "").trim()).filter(Boolean))];
+  if (!uniqueKeys.length) return { deleted: [] as string[] };
+
+  const chunkSize = 1000;
+  const deleted: string[] = [];
+  for (let index = 0; index < uniqueKeys.length; index += chunkSize) {
+    const chunk = uniqueKeys.slice(index, index + chunkSize);
+    await client.send(
+      new DeleteObjectsCommand({
+        Bucket: env.bucket,
+        Delete: {
+          Objects: chunk.map((Key) => ({ Key })),
+          Quiet: true,
+        },
+      })
+    );
+    deleted.push(...chunk);
+  }
+
+  return { deleted };
+}
+
 export async function headObject(key: string): Promise<{ exists: boolean; contentLength?: number; contentType?: string }> {
   const env = getR2Env();
   const client = getR2Client();
@@ -170,6 +203,109 @@ export async function headObject(key: string): Promise<{ exists: boolean; conten
     }
     throw e;
   }
+}
+
+async function bodyToBuffer(body: unknown): Promise<Buffer> {
+  if (!body) return Buffer.alloc(0);
+  if (Buffer.isBuffer(body)) return body;
+  if (body instanceof Uint8Array) return Buffer.from(body);
+  if (typeof Blob !== "undefined" && body instanceof Blob) {
+    return Buffer.from(await body.arrayBuffer());
+  }
+  if (typeof (body as { transformToByteArray?: () => Promise<Uint8Array> }).transformToByteArray === "function") {
+    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
+    return Buffer.from(bytes);
+  }
+  if (typeof (body as { transformToString?: () => Promise<string> }).transformToString === "function") {
+    const text = await (body as { transformToString: () => Promise<string> }).transformToString();
+    return Buffer.from(text);
+  }
+  if (typeof (body as NodeJS.ReadableStream)?.on === "function") {
+    const chunks: Buffer[] = [];
+    for await (const chunk of body as AsyncIterable<Buffer | Uint8Array | string>) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  }
+  throw new Error("Unsupported R2 body type");
+}
+
+export async function getObjectBuffer(
+  key: string
+): Promise<{ exists: boolean; buffer?: Buffer; contentLength?: number; contentType?: string; lastModified?: Date; eTag?: string }> {
+  const env = getR2Env();
+  const client = getR2Client();
+  try {
+    const res = await client.send(new GetObjectCommand({ Bucket: env.bucket, Key: key }));
+    return {
+      exists: true,
+      buffer: await bodyToBuffer(res.Body),
+      contentLength: res.ContentLength ?? undefined,
+      contentType: res.ContentType ?? undefined,
+      lastModified: res.LastModified ?? undefined,
+      eTag: res.ETag ?? undefined,
+    };
+  } catch (e: any) {
+    const code = e?.$metadata?.httpStatusCode;
+    const name = String(e?.name || "").toLowerCase();
+    if (code === 404 || name === "nosuchkey" || name === "notfound") {
+      return { exists: false };
+    }
+    throw e;
+  }
+}
+
+export type ListedObject = {
+  key: string;
+  size: number;
+  lastModified?: Date;
+  eTag?: string;
+};
+
+export async function listObjectsPage(params?: { prefix?: string; continuationToken?: string; maxKeys?: number }) {
+  const env = getR2Env();
+  const client = getR2Client();
+  const res = await client.send(
+    new ListObjectsV2Command({
+      Bucket: env.bucket,
+      Prefix: params?.prefix || undefined,
+      ContinuationToken: params?.continuationToken || undefined,
+      MaxKeys: params?.maxKeys ?? 1000,
+    })
+  );
+
+  return {
+    objects: (res.Contents || [])
+      .filter((item): item is NonNullable<typeof item> => Boolean(item?.Key))
+      .map((item) => ({
+        key: String(item.Key),
+        size: Number(item.Size || 0),
+        lastModified: item.LastModified ?? undefined,
+        eTag: item.ETag ?? undefined,
+      } satisfies ListedObject)),
+    nextContinuationToken: res.NextContinuationToken || undefined,
+    isTruncated: Boolean(res.IsTruncated),
+  };
+}
+
+export async function listAllObjects(params?: { prefix?: string; maxKeysPerPage?: number; hardLimit?: number }) {
+  const objects: ListedObject[] = [];
+  let continuationToken: string | undefined;
+
+  do {
+    const page = await listObjectsPage({
+      prefix: params?.prefix,
+      continuationToken,
+      maxKeys: params?.maxKeysPerPage ?? 1000,
+    });
+    objects.push(...page.objects);
+    continuationToken = page.nextContinuationToken;
+    if (params?.hardLimit && objects.length >= params.hardLimit) {
+      return objects.slice(0, params.hardLimit);
+    }
+  } while (continuationToken);
+
+  return objects;
 }
 
 export function tryExtractKeyFromUrl(urlOrKey: string | null | undefined): string | null {

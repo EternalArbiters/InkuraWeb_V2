@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { getUploadProfile } from "@/lib/uploadProfiles";
 import {
   extFromUploadContentType,
   isAllowedUploadContentType,
@@ -22,6 +23,18 @@ describe("upload presign rules", () => {
     expect(isAllowedUploadContentType("covers", "image/jpeg")).toBe(true);
     expect(isAllowedUploadContentType("comment_gifs", "image/png")).toBe(false);
     expect(maxBytesForUploadScope("comment_gifs")).toBe(5 * 1024 * 1024);
+    expect(maxBytesForUploadScope("covers")).toBe(getUploadProfile("covers").maxBytes);
+    expect(maxBytesForUploadScope("comment_images")).toBe(getUploadProfile("comment_images").maxBytes);
+  });
+
+  it("reads profile-based limits for optimized image scopes", () => {
+    const avatar = getUploadProfile("avatar");
+    const pages = getUploadProfile("pages");
+
+    expect(avatar.minWidth).toBe(64);
+    expect(avatar.maxLongEdge).toBe(640);
+    expect(pages.maxLongEdge).toBe(2400);
+    expect(pages.maxMegapixels).toBe(6);
   });
 
   it("normalizes sha256 hashes and generates deterministic comment media keys", () => {

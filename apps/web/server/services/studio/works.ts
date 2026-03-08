@@ -3,7 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { studioWorkRowSelect } from "@/server/db/selectors";
 import { slugify } from "@/lib/slugify";
-import { saveCoverUpload } from "@/server/uploads/upload";
+import { deletePublicUpload, saveCoverUpload } from "@/server/uploads/upload";
 import { requireCreatorSession } from "./session";
 import { assignWorkToSeries } from "./series";
 import { profileHotspot } from "@/server/observability/profiling";
@@ -104,23 +104,42 @@ export async function createStudioWork(req: Request) {
 
   const cover = fd.get("cover");
   const coverFile = cover && typeof cover !== "string" ? (cover as File) : null;
+  const coverUrl = String(fd.get("coverUrl") || (fd.get("coverImage") as any) || "").trim();
+  const coverKey = String(fd.get("coverKey") || "").trim() || null;
+  const hasUploadedCover = !!coverUrl;
 
-  if (!title) return { status: 400, body: { error: "Title is required" } };
-  if (!coverFile || coverFile.size <= 0) {
+  async function cleanupIncomingCover() {
+    if (coverKey || coverUrl) {
+      await deletePublicUpload(coverKey || coverUrl).catch(() => {});
+    }
+  }
+
+  if (!title) {
+    await cleanupIncomingCover();
+    return { status: 400, body: { error: "Title is required" } };
+  }
+  if ((!coverFile || coverFile.size <= 0) && !hasUploadedCover) {
     return { status: 400, body: { error: "Cover is required (max 2MB)." } };
   }
-  if (coverFile.size > 2 * 1024 * 1024) {
+  if (!hasUploadedCover && coverFile && coverFile.size > 2 * 1024 * 1024) {
     return { status: 400, body: { error: "Cover too large (max 2MB)." } };
   }
 
   const needsSource = publishType !== "ORIGINAL";
   if (needsSource) {
-    if (!originalAuthorCredit) return { status: 400, body: { error: "Original author credit is required" } };
-    if (!sourceUrl) return { status: 400, body: { error: "Source URL is required" } };
+    if (!originalAuthorCredit) {
+      await cleanupIncomingCover();
+      return { status: 400, body: { error: "Original author credit is required" } };
+    }
+    if (!sourceUrl) {
+      await cleanupIncomingCover();
+      return { status: 400, body: { error: "Source URL is required" } };
+    }
   }
 
   if (publishType === "REUPLOAD") {
     if (!originalTranslatorCredit) {
+      await cleanupIncomingCover();
       return {
         status: 400,
         body: { error: "Original translator credit is required for Reupload" },
@@ -140,8 +159,8 @@ export async function createStudioWork(req: Request) {
       type,
       comicType: type === "COMIC" ? comicType : "UNKNOWN",
       status: "DRAFT",
-      coverImage: null,
-      coverKey: null,
+      coverImage: hasUploadedCover ? coverUrl : null,
+      coverKey: hasUploadedCover ? coverKey : null,
       authorId: userId,
       language,
       origin: origin as any,
@@ -175,18 +194,20 @@ export async function createStudioWork(req: Request) {
 
   await assignWorkToSeries(prisma, { workId: created.id, userId, seriesTitle, seriesOrder });
 
-  try {
-    const saved = await saveCoverUpload(coverFile, "covers", {
-      userId,
-      workId: created.id,
-    });
-    await prisma.work.update({
-      where: { id: created.id },
-      data: { coverImage: saved.url, coverKey: saved.key },
-    });
-  } catch (err) {
-    await prisma.work.delete({ where: { id: created.id } }).catch(() => {});
-    throw err;
+  if (!hasUploadedCover && coverFile && coverFile.size > 0) {
+    try {
+      const saved = await saveCoverUpload(coverFile, "covers", {
+        userId,
+        workId: created.id,
+      });
+      await prisma.work.update({
+        where: { id: created.id },
+        data: { coverImage: saved.url, coverKey: saved.key },
+      });
+    } catch (err) {
+      await prisma.work.delete({ where: { id: created.id } }).catch(() => {});
+      throw err;
+    }
   }
 
   const full = await prisma.work.findUnique({ where: { id: created.id } });

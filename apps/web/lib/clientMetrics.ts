@@ -78,6 +78,16 @@ export function sendUploadMetric(data: {
   presignMs?: number;
   uploadMs?: number;
   contentType?: string;
+  originalContentType?: string;
+  optimizedContentType?: string;
+  bytesSaved?: number;
+  compressionRatio?: number;
+  optimizationScope?: string;
+  optimizationVersion?: string;
+  optimizationReason?: string;
+  width?: number | null;
+  height?: number | null;
+  fallbackUsed?: boolean;
   compressionApplied?: boolean;
   outcome?: "success" | "error";
   errorMessage?: string;
