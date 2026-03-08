@@ -3,14 +3,16 @@ import "server-only";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { getSlowQueryThresholdMs, logPrismaQueryMetric } from "@/server/observability/metrics";
 
+type InkuraPrismaClient = PrismaClient<Prisma.PrismaClientOptions, "query">;
+
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prisma: InkuraPrismaClient | undefined;
   var inkuraPrismaQueryLoggingAttached: boolean | undefined;
 }
 
 // Prisma singleton (prevents exhausting connections in dev / hot-reload).
-const prisma = global.prisma || new PrismaClient({
+const prisma: InkuraPrismaClient = global.prisma || new PrismaClient({
   log: [{ emit: "event", level: "query" }],
 });
 
