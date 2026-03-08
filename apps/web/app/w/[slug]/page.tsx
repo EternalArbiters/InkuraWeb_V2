@@ -17,13 +17,19 @@ import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
+import { logPageRenderMetric } from "@/server/observability/metrics";
 
 export const dynamic = "force-dynamic";
 
 export default async function WorkPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
-  const params = await paramsPromise;
+  const startedAt = Date.now();
+  let slug = "";
 
-  const data = await getWorkPageDataBySlug(params.slug);
+  try {
+    const params = await paramsPromise;
+    slug = params.slug;
+
+    const data = await getWorkPageDataBySlug(params.slug);
   if (!data.ok) return notFound();
 
   const work = data.work;
@@ -274,4 +280,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
       </div>
     </main>
   );
+  } finally {
+    logPageRenderMetric("work.detail", startedAt, { slug });
+  }
 }

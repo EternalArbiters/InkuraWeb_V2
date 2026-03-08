@@ -8,11 +8,13 @@ export default function ListOwnerControls({
   initialTitle,
   initialDescription,
   initialPublic,
+  onSaved,
 }: {
   listId: string;
   initialTitle: string;
   initialDescription: string;
   initialPublic: boolean;
+  onSaved?: (list: { title: string; description?: string | null; isPublic: boolean }) => void;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
@@ -42,9 +44,13 @@ export default function ListOwnerControls({
           setError(data?.error || "Gagal menyimpan.");
           return;
         }
+        const nextList = data?.list || { title: t, description: description.trim(), isPublic };
+        setTitle(nextList.title || t);
+        setDescription(nextList.description || "");
+        setIsPublic(!!nextList.isPublic);
+        onSaved?.(nextList);
         setSaved(true);
         setTimeout(() => setSaved(false), 1200);
-        router.refresh();
       } catch {
         setError("Network error.");
       }
@@ -62,7 +68,6 @@ export default function ListOwnerControls({
           return;
         }
         router.push("/lists");
-        router.refresh();
       } catch {
         alert("Network error.");
       }

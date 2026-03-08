@@ -1,31 +1,21 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { workGridSelect } from "@/server/db/selectors";
 import { requireSessionUserId } from "@/server/http/auth";
+import { profileHotspot } from "@/server/observability/profiling";
 
 export async function getViewerLibrary() {
   const userId = await requireSessionUserId();
 
-  const [bookmarks, progress, favorites, lists] = await Promise.all([
+  const [bookmarks, progress, favorites, lists] = await profileHotspot("library.viewer", { sections: 4 }, () => Promise.all([
     prisma.bookmark.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        createdAt: true,
         work: {
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            coverImage: true,
-            type: true,
-            likeCount: true,
-            ratingAvg: true,
-            ratingCount: true,
-            isMature: true,
-            author: { select: { username: true, name: true } },
-            translator: { select: { username: true, name: true } },
-            publishType: true,
-          },
+          select: workGridSelect,
         },
       },
     }),
@@ -41,57 +31,38 @@ export async function getViewerLibrary() {
     prisma.workLike.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        createdAt: true,
         work: {
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            coverImage: true,
-            type: true,
-            likeCount: true,
-            ratingAvg: true,
-            ratingCount: true,
-            isMature: true,
-            updatedAt: true,
-            author: { select: { username: true, name: true } },
-            translator: { select: { username: true, name: true } },
-            publishType: true,
-          },
+          select: workGridSelect,
         },
       },
     }),
     prisma.readingList.findMany({
       where: { ownerId: userId },
       orderBy: { updatedAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        isPublic: true,
+        updatedAt: true,
         _count: { select: { items: true } },
         items: {
           orderBy: [{ sortOrder: "desc" }, { addedAt: "desc" }],
           take: 8,
-          include: {
+          select: {
+            id: true,
+            sortOrder: true,
+            addedAt: true,
             work: {
-              select: {
-                id: true,
-                slug: true,
-                title: true,
-                coverImage: true,
-                type: true,
-                likeCount: true,
-                ratingAvg: true,
-                ratingCount: true,
-                isMature: true,
-                updatedAt: true,
-                author: { select: { username: true, name: true } },
-                translator: { select: { username: true, name: true } },
-                publishType: true,
-              },
+              select: workGridSelect,
             },
           },
         },
       },
     }),
-  ]);
+  ]));
 
   return { bookmarks, progress, favorites, lists };
 }

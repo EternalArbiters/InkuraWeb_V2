@@ -113,8 +113,7 @@ export default function CommentSection({
     onUnauthorized: () => setUnauthorized(true),
     onError: (msg) => setError(msg),
     onSubmitted: async () => {
-      await refreshComments();
-      router.refresh();
+      await refreshComments({ force: true });
     },
   });
 
@@ -183,8 +182,7 @@ export default function CommentSection({
         }
         setReplyTo(null);
         setReplyText("");
-        await refreshComments();
-        router.refresh();
+        await refreshComments({ force: true });
       } catch {
         setError("Gagal kirim reply");
       }
@@ -290,7 +288,6 @@ export default function CommentSection({
       );
       setEditingId(null);
       setEditingText("");
-      router.refresh();
     });
   };
 
@@ -309,7 +306,6 @@ export default function CommentSection({
         return;
       }
       setComments((prev) => removeFromTree(prev, commentId));
-      router.refresh();
     });
   };
 
@@ -332,8 +328,7 @@ export default function CommentSection({
         return;
       }
       setInfo(hide ? "Comment disembunyikan" : "Comment ditampilkan lagi");
-      await refreshComments();
-      router.refresh();
+      await refreshComments({ force: true });
     });
   };
 
@@ -356,8 +351,7 @@ export default function CommentSection({
         return;
       }
       setInfo(pin ? "Comment pinned" : "Comment unpinned");
-      await refreshComments();
-      router.refresh();
+      await refreshComments({ force: true });
     });
   };
 

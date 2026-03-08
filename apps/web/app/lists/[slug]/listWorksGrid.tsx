@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import WorkCoverBadges from "@/app/components/WorkCoverBadges";
 import { X } from "lucide-react";
 
@@ -11,22 +10,37 @@ type Item = {
   work: any;
 };
 
-export default function ListWorksGrid({ listId, isOwner, items }: { listId: string; isOwner: boolean; items: Item[] }) {
-  const router = useRouter();
+export default function ListWorksGrid({
+  listId,
+  isOwner,
+  items,
+  onItemsChange,
+}: {
+  listId: string;
+  isOwner: boolean;
+  items: Item[];
+  onItemsChange?: (items: Item[]) => void;
+}) {
   const [pending, startTransition] = useTransition();
+  const [localItems, setLocalItems] = useState<Item[]>(items);
 
   const remove = async (workId: string) => {
     startTransition(async () => {
       try {
-        await fetch(`/api/lists/${listId}/items/${workId}`, { method: "DELETE" });
-        router.refresh();
+        const res = await fetch(`/api/lists/${listId}/items/${workId}`, { method: "DELETE" });
+        if (!res.ok) return;
+        setLocalItems((prev) => {
+          const next = prev.filter((item) => item.work?.id !== workId);
+          onItemsChange?.(next);
+          return next;
+        });
       } catch {
         // ignore
       }
     });
   };
 
-  const works = items.map((it) => it.work).filter(Boolean);
+  const works = localItems.map((it) => it.work).filter(Boolean);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

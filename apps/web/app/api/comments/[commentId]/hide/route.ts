@@ -1,1 +1,2 @@
-export { runtime, POST } from "@/server/services/api/comments/[commentId]/hide/route";
+export const runtime = "nodejs";
+export { POST } from "@/server/services/api/comments/[commentId]/hide/route";

@@ -137,7 +137,7 @@ export async function createStudioChapter(req: Request) {
       ...(warningTagIds.length ? { warningTags: { connect: warningTagIds.map((id) => ({ id })) } } : {}),
       ...(work.type === "NOVEL" ? { text: { create: { content } } } : {}),
     },
-    select: { id: true, workId: true, number: true, title: true, status: true },
+    select: { id: true, workId: true, number: true, title: true, status: true, work: { select: { slug: true } } },
   });
 
   if (work.type === "COMIC") {
@@ -182,14 +182,14 @@ export async function createStudioChapter(req: Request) {
     await notifyNewChapter({ workId, chapterId: chapter.id, actorId: userId });
   }
 
-  return { status: 201, body: { ok: true, chapter } };
+  return { status: 201, body: { ok: true, chapter: { ...chapter, workSlug: chapter.work.slug } } };
 }
 
 async function loadChapterForEdit(userId: string, role: string, chapterId: string) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
     include: {
-      work: { select: { id: true, title: true, type: true, authorId: true } },
+      work: { select: { id: true, slug: true, title: true, type: true, authorId: true } },
       text: true,
       warningTags: true,
       pages: { orderBy: { order: "asc" } },
@@ -306,7 +306,7 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
   const updated = await prisma.chapter.update({
     where: { id: chapterId },
     data,
-    select: { id: true, title: true, number: true, status: true, workId: true },
+    select: { id: true, title: true, number: true, status: true, workId: true, work: { select: { slug: true } } },
   });
 
   if (owned.chapter.work.type === "NOVEL" && content !== undefined) {
@@ -326,5 +326,5 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
     await notifyNewChapter({ workId: updated.workId, chapterId: updated.id, actorId: userId });
   }
 
-  return { status: 200, body: { ok: true, chapter: updated } };
+  return { status: 200, body: { ok: true, chapter: { ...updated, workSlug: updated.work.slug } } };
 }

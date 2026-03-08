@@ -5,6 +5,7 @@ import { slugify } from "@/lib/slugify";
 import { getSession } from "@/server/auth/session";
 import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
 import { apiRoute, json } from "@/server/http";
+import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
 
@@ -53,5 +54,6 @@ export const POST = apiRoute(async (req: Request) => {
     include: { _count: { select: { items: true } } },
   });
 
+  revalidatePublicReadingList(list.slug);
   return json({ ok: true, list }, { status: 201 });
 });

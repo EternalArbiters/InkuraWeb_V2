@@ -34,7 +34,7 @@ export async function uploadOrReplaceChapterPages(req: Request, chapterId: strin
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
-    include: { work: { select: { id: true, authorId: true } } },
+    include: { work: { select: { id: true, slug: true, authorId: true } } },
   });
 
   if (!chapter) return { status: 404, body: { error: "Not found" } };
@@ -141,5 +141,5 @@ export async function uploadOrReplaceChapterPages(req: Request, chapterId: strin
 
   await renumberChapterPages(chapterId);
 
-  return { status: 200, body: { ok: true } };
+  return { status: 200, body: { ok: true, chapterId, workSlug: chapter.work.slug } };
 }

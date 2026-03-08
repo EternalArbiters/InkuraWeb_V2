@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
 
@@ -20,7 +21,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
-    select: { id: true, ownerId: true },
+    select: { id: true, slug: true, ownerId: true },
   });
   if (!list) return json({ error: "List not found" }, { status: 404 });
 
@@ -52,6 +53,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     // Unique constraint: already exists
     if (e?.code === "P2002") {
       await prisma.readingList.update({ where: { id: listId }, data: { updatedAt: new Date() } });
+      revalidatePublicReadingList(list.slug);
       return json({ ok: true, added: false });
     }
     throw e;
@@ -59,6 +61,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
 
   // Touch list updatedAt so it rises to the top in /lists
   await prisma.readingList.update({ where: { id: listId }, data: { updatedAt: new Date() } });
+  revalidatePublicReadingList(list.slug);
 
   return json({ ok: true, added: true });
 });

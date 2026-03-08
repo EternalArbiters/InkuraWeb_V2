@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { parseCursor, parseTake, nextCursorFromRows } from "@/server/db/pagination";
 import { notificationSelect } from "@/server/db/selectors";
 import { requireSessionUserId } from "@/server/http/auth";
+import { profileHotspot } from "@/server/observability/profiling";
 
 export async function listViewerNotifications(input?: {
   take?: number;
@@ -25,10 +26,12 @@ export async function listViewerNotifications(input?: {
     query.skip = 1;
   }
 
-  const [unreadCount, notifications] = await Promise.all([
-    prisma.notification.count({ where: { userId, isRead: false } }),
-    prisma.notification.findMany(query),
-  ]);
+  const [unreadCount, notifications] = await profileHotspot("notifications.list", { take, hasCursor: !!cursor }, () =>
+    Promise.all([
+      prisma.notification.count({ where: { userId, isRead: false } }),
+      prisma.notification.findMany(query),
+    ])
+  );
 
   const nextCursor = nextCursorFromRows(notifications as any, take);
   return { unreadCount, notifications, nextCursor };

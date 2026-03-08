@@ -1,5 +1,7 @@
 import "client-only";
 
+import { sendUploadMetric } from "@/lib/clientMetrics";
+
 // Client-side helpers for Cloudflare R2 presigned uploads.
 
 export type PresignResponse = {
@@ -50,14 +52,52 @@ export async function presignAndUpload(params: {
   workId?: string;
   chapterId?: string;
 }) {
-  const signed = await presignUpload({
-    scope: params.scope,
-    filename: params.file.name,
-    contentType: params.file.type,
-    size: params.file.size,
-    workId: params.workId,
-    chapterId: params.chapterId,
-  });
-  await uploadToPresignedUrl(signed.uploadUrl, params.file);
-  return { url: signed.publicUrl, key: signed.key };
+  const startedAt = Date.now();
+  let presignMs = 0;
+  let uploadMs = 0;
+
+  try {
+    const presignStartedAt = Date.now();
+    const signed = await presignUpload({
+      scope: params.scope,
+      filename: params.file.name,
+      contentType: params.file.type,
+      size: params.file.size,
+      workId: params.workId,
+      chapterId: params.chapterId,
+    });
+    presignMs = Date.now() - presignStartedAt;
+
+    const uploadStartedAt = Date.now();
+    await uploadToPresignedUrl(signed.uploadUrl, params.file);
+    uploadMs = Date.now() - uploadStartedAt;
+
+    sendUploadMetric({
+      scope: params.scope,
+      beforeBytes: params.file.size,
+      afterBytes: params.file.size,
+      durationMs: Date.now() - startedAt,
+      presignMs,
+      uploadMs,
+      contentType: params.file.type,
+      compressionApplied: false,
+      outcome: "success",
+    });
+
+    return { url: signed.publicUrl, key: signed.key };
+  } catch (error) {
+    sendUploadMetric({
+      scope: params.scope,
+      beforeBytes: params.file.size,
+      afterBytes: params.file.size,
+      durationMs: Date.now() - startedAt,
+      presignMs,
+      uploadMs,
+      contentType: params.file.type,
+      compressionApplied: false,
+      outcome: "error",
+      errorMessage: error instanceof Error ? error.message : String(error || "Upload failed"),
+    });
+    throw error;
+  }
 }

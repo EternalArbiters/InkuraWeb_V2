@@ -30,6 +30,8 @@ export default function ReviewSection({
     setSort,
     reviews,
     myReview,
+    ratingAvg: liveRatingAvg,
+    ratingCount: liveRatingCount,
     revealed,
     modalOpen,
     draftRating,
@@ -46,25 +48,32 @@ export default function ReviewSection({
     del,
     toggleHelpful,
     toggleSpoiler,
-  } = useReviews({ workId, initialMyRating, initialReviews, initialMyReviewId });
+  } = useReviews({
+    workId,
+    initialMyRating,
+    initialReviews,
+    initialMyReviewId,
+    initialRatingAvg: ratingAvg,
+    initialRatingCount: ratingCount,
+  });
 
   const avgLabel = useMemo(() => {
-    if (!ratingCount) return "0.0";
-    return (Math.round(ratingAvg * 10) / 10).toFixed(1);
-  }, [ratingAvg, ratingCount]);
+    if (!liveRatingCount) return "0.0";
+    return (Math.round(liveRatingAvg * 10) / 10).toFixed(1);
+  }, [liveRatingAvg, liveRatingCount]);
 
   return (
     <section className="mt-6">
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-sm font-semibold">Reviews</div>
-            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 flex items-center gap-2">
+            <div className="mt-1 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <span className="inline-flex items-center gap-1">
-                <Stars value={Math.round(ratingAvg || 0)} />
+                <Stars value={Math.round(liveRatingAvg || 0)} />
               </span>
               <span>
-                <b>{avgLabel}</b> <span className="opacity-70">({ratingCount})</span>
+                <b>{avgLabel}</b> <span className="opacity-70">({liveRatingCount})</span>
               </span>
             </div>
           </div>
@@ -74,7 +83,7 @@ export default function ReviewSection({
               value={sort}
               onChange={(e) => setSort(e.target.value as ReviewSort)}
               disabled={isPending}
-              className="rounded-full border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/20 px-3 py-2 text-xs font-semibold"
+              className="rounded-full border border-gray-200 bg-white/70 px-3 py-2 text-xs font-semibold dark:border-gray-800 dark:bg-gray-950/20"
               aria-label="Sort reviews"
               title="Sort reviews"
             >
@@ -89,24 +98,18 @@ export default function ReviewSection({
               type="button"
               onClick={openComposer}
               disabled={isPending}
-              className="px-4 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+              className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-xs font-semibold text-white hover:brightness-110 disabled:opacity-60"
             >
               {myReview ? "Edit your review" : "Write a review"}
             </button>
           </div>
         </div>
 
-        {error ? (
-          <div className="mt-3 text-sm text-red-600 dark:text-red-400">
-            {error}
-          </div>
-        ) : null}
+        {error ? <div className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</div> : null}
 
         <div className="mt-4">
           {loading ? (
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Loading reviews…
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Loading reviews…</div>
           ) : reviews.length ? (
             <div className="grid gap-3">
               {reviews.map((r) => (
@@ -123,9 +126,7 @@ export default function ReviewSection({
               ))}
             </div>
           ) : (
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              No reviews yet. Be the first!
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">No reviews yet. Be the first!</div>
           )}
         </div>
       </div>

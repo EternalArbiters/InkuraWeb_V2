@@ -1,5 +1,7 @@
 import "client-only";
 
+import { sendUploadMetric } from "@/lib/clientMetrics";
+
 // v16: client helpers for comment media (image/gif) with SHA-256 de-dup.
 
 export type CommentMediaKind = "gif" | "image";
@@ -101,20 +103,50 @@ export async function commitCommentMedia(params: {
 // - upload if needed
 // - commit to DB (dedupe-safe)
 export async function ensureCommentMedia(params: { file: File; kind: CommentMediaKind }) {
-  const sha256 = await sha256Hex(params.file);
-  const presigned = await presignCommentMedia({ file: params.file, kind: params.kind, sha256 });
+  const startedAt = Date.now();
+  let uploadMs = 0;
+  try {
+    const sha256 = await sha256Hex(params.file);
+    const presigned = await presignCommentMedia({ file: params.file, kind: params.kind, sha256 });
 
-  if (!presigned.exists) {
-    await uploadToPresignedUrl(presigned.uploadUrl, params.file);
+    if (!presigned.exists) {
+      const uploadStartedAt = Date.now();
+      await uploadToPresignedUrl(presigned.uploadUrl, params.file);
+      uploadMs = Date.now() - uploadStartedAt;
+    }
+
+    const committed = await commitCommentMedia({
+      kind: params.kind,
+      sha256,
+      key: presigned.key,
+      contentType: params.file.type,
+      sizeBytes: params.file.size,
+    });
+
+    sendUploadMetric({
+      scope: params.kind === "gif" ? "comment_gifs" : "comment_images",
+      beforeBytes: params.file.size,
+      afterBytes: params.file.size,
+      durationMs: Date.now() - startedAt,
+      uploadMs,
+      contentType: params.file.type,
+      compressionApplied: false,
+      outcome: "success",
+    });
+
+    return committed.media;
+  } catch (error) {
+    sendUploadMetric({
+      scope: params.kind === "gif" ? "comment_gifs" : "comment_images",
+      beforeBytes: params.file.size,
+      afterBytes: params.file.size,
+      durationMs: Date.now() - startedAt,
+      uploadMs,
+      contentType: params.file.type,
+      compressionApplied: false,
+      outcome: "error",
+      errorMessage: error instanceof Error ? error.message : String(error || "Upload failed"),
+    });
+    throw error;
   }
-
-  const committed = await commitCommentMedia({
-    kind: params.kind,
-    sha256,
-    key: presigned.key,
-    contentType: params.file.type,
-    sizeBytes: params.file.size,
-  });
-
-  return committed.media;
 }

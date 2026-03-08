@@ -6,6 +6,7 @@ import { slugify } from "@/lib/slugify";
 import { saveCoverUpload } from "@/server/uploads/upload";
 import { requireCreatorSession } from "./session";
 import { assignWorkToSeries } from "./series";
+import { profileHotspot } from "@/server/observability/profiling";
 
 function toStringArray(v: unknown): string[] {
   if (!v) return [];
@@ -42,11 +43,13 @@ export async function listStudioWorksForViewer(input?: { all?: boolean }) {
   const { userId, role } = await requireCreatorSession();
   const all = !!input?.all;
 
-  const works = await prisma.work.findMany({
-    where: role === "ADMIN" && all ? {} : { authorId: userId },
-    orderBy: { updatedAt: "desc" },
-    select: studioWorkRowSelect,
-  });
+  const works = await profileHotspot("studioWorks.list", { scope: role === "ADMIN" && all ? "all" : "mine", isAdmin: role === "ADMIN" }, () =>
+    prisma.work.findMany({
+      where: role === "ADMIN" && all ? {} : { authorId: userId },
+      orderBy: { updatedAt: "desc" },
+      select: studioWorkRowSelect,
+    })
+  );
 
   return { works };
 }

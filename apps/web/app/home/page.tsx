@@ -2,14 +2,18 @@ import Link from "next/link";
 import WorkRail from "./WorkRail";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getHomePageData } from "@/server/services/home/getHomePageData";
+import { logPageRenderMetric } from "@/server/observability/metrics";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  await requirePageUserId("/home");
-  const { trendingComics, trendingNovels, recent, originals, translations } = await getHomePageData();
+  const startedAt = Date.now();
 
-  return (
+  try {
+    await requirePageUserId("/home");
+    const { trendingComics, trendingNovels, recent, originals, translations } = await getHomePageData();
+
+    return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
         <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -43,5 +47,8 @@ export default async function HomePage() {
         </footer>
       </div>
     </main>
-  );
+    );
+  } finally {
+    logPageRenderMetric("home", startedAt);
+  }
 }

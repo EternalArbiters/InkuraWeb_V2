@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ListPlus, Check, Loader2 } from "lucide-react";
+import { getOrFetchClientResource, mutateClientResource, seedClientResource } from "@/lib/clientResourceCache";
 
 type ListLite = {
   id: string;
@@ -11,6 +12,8 @@ type ListLite = {
   isPublic: boolean;
   _count?: { items: number };
 };
+
+const LISTS_CACHE_KEY = "viewer:reading-lists";
 
 export default function AddToListButton({
   workId,
@@ -30,18 +33,25 @@ export default function AddToListButton({
 
   useEffect(() => {
     setLists(initialLists);
+    if (initialLists) {
+      seedClientResource(LISTS_CACHE_KEY, initialLists, 30_000);
+    }
   }, [initialLists]);
 
-  const load = async () => {
+  const load = async ({ force = false }: { force?: boolean } = {}) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/lists", { method: "GET" });
-      if (!res.ok) {
-        setLists([]);
-        return;
-      }
-      const data = await res.json().catch(() => null);
-      setLists(Array.isArray(data?.lists) ? data.lists : []);
+      const nextLists = await getOrFetchClientResource<ListLite[]>(
+        LISTS_CACHE_KEY,
+        async () => {
+          const res = await fetch("/api/lists", { method: "GET" });
+          if (!res.ok) return [];
+          const data = await res.json().catch(() => null);
+          return Array.isArray(data?.lists) ? (data.lists as ListLite[]) : [];
+        },
+        { ttlMs: 30_000, force }
+      );
+      setLists(nextLists);
     } catch {
       setLists([]);
     } finally {
@@ -70,8 +80,36 @@ export default function AddToListButton({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ workId }),
       });
+      const data = await res.json().catch(() => ({} as any));
       if (res.ok) {
         setAdded((p) => ({ ...p, [listId]: true }));
+        mutateClientResource<ListLite[]>(
+          LISTS_CACHE_KEY,
+          (current) =>
+            (current || []).map((list) =>
+              list.id === listId
+                ? {
+                    ...list,
+                    _count: {
+                      items: (list._count?.items ?? 0) + (data?.added === false ? 0 : 1),
+                    },
+                  }
+                : list
+            ),
+          30_000
+        );
+        setLists((prev) =>
+          (prev || []).map((list) =>
+            list.id === listId
+              ? {
+                  ...list,
+                  _count: {
+                    items: (list._count?.items ?? 0) + (data?.added === false ? 0 : 1),
+                  },
+                }
+              : list
+          )
+        );
         setTimeout(() => setAdded((p) => ({ ...p, [listId]: false })), 1200);
       }
     } catch {
@@ -130,8 +168,8 @@ export default function AddToListButton({
                           <button
                             type="button"
                             onClick={() => addToList(l.id)}
-                            disabled={isAdding}
-                            className="w-full flex items-center justify-between gap-2 px-3 py-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-900 text-left"
+                            disabled={isAdding || done}
+                            className="w-full flex items-center justify-between gap-2 px-3 py-3 rounded-2xl hover:bg-gray-50 disabled:opacity-70 dark:hover:bg-gray-900 text-left"
                           >
                             <div className="min-w-0">
                               <div className="text-sm font-semibold truncate">{l.title}</div>
@@ -199,8 +237,8 @@ export default function AddToListButton({
                         <button
                           type="button"
                           onClick={() => addToList(l.id)}
-                          disabled={isAdding}
-                          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 text-left"
+                          disabled={isAdding || done}
+                          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 disabled:opacity-70 dark:hover:bg-gray-900 text-left"
                         >
                           <div className="min-w-0">
                             <div className="text-sm font-semibold truncate">{l.title}</div>

@@ -38,12 +38,10 @@ export default function NewListForm() {
       const slug = data?.list?.slug;
       if (slug) {
         router.push(`/lists/${slug}`);
-        router.refresh();
         return;
       }
 
       router.push("/lists");
-      router.refresh();
     } catch {
       setError("Network error.");
     } finally {

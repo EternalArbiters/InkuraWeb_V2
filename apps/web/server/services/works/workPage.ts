@@ -2,8 +2,15 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { publicUrlForKey } from "@/server/uploads/upload";
+import {
+  PUBLIC_CONTENT_REVALIDATE,
+  publicWorkTag,
+  publicWorksTag,
+  withCachedPublicData,
+} from "@/server/cache/publicContent";
 import { computeWorkGate } from "@/server/services/works/gating";
 import { getViewerBasic } from "@/server/services/works/viewer";
+import { profileHotspot } from "@/server/observability/profiling";
 
 function stablePick(id: string, candidates: string[]) {
   if (!candidates.length) return null;
@@ -43,9 +50,7 @@ export type WorkPageResult =
       work: any;
     };
 
-export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResult> {
-  const viewer = await getViewerBasic();
-
+async function loadPublicWorkPageDataBySlug(slug: string) {
   const work = await prisma.work.findUnique({
     where: { slug },
     select: {
@@ -103,6 +108,7 @@ export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResul
       author: { select: { username: true, name: true } },
       translator: { select: { username: true, name: true } },
       chapters: {
+        where: { status: "PUBLISHED" },
         orderBy: [{ number: "asc" }, { createdAt: "asc" }],
         select: {
           id: true,
@@ -129,9 +135,61 @@ export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResul
   });
 
   if (!work || work.status !== "PUBLISHED") {
-    return { ok: false, status: 404, error: "Not found" };
+    return { ok: false as const, status: 404 as const, error: "Not found" as const };
   }
 
+  const visibleChapters = Array.isArray(work.chapters)
+    ? work.chapters.map((chapter: any) => ({
+        ...chapter,
+        thumbnailUrl: resolveChapterThumb(chapter),
+      }))
+    : [];
+
+  const seriesWorks = Array.isArray(work.series?.works)
+    ? work.series.works.filter((item: any) => String(item.id) !== String(work.id))
+    : [];
+
+  const orderedSeries = Array.isArray(work.series?.works) ? work.series.works : [];
+  const currentIndex = orderedSeries.findIndex((item: any) => String(item.id) === String(work.id));
+  const previousSeriesWork = currentIndex > 0 ? orderedSeries[currentIndex - 1] : null;
+  const nextSeriesWork = currentIndex >= 0 && currentIndex < orderedSeries.length - 1 ? orderedSeries[currentIndex + 1] : null;
+
+  const previousArc = previousSeriesWork
+    ? { href: `/w/${previousSeriesWork.slug}`, title: previousSeriesWork.title, coverImage: previousSeriesWork.coverImage, label: "Previous Arc" }
+    : work.prevArcUrl
+      ? { href: work.prevArcUrl, title: "Previous Arc", coverImage: null, label: "Previous Arc" }
+      : null;
+
+  const nextArc = nextSeriesWork
+    ? { href: `/w/${nextSeriesWork.slug}`, title: nextSeriesWork.title, coverImage: nextSeriesWork.coverImage, label: "Next Arc" }
+    : work.nextArcUrl
+      ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: "Next Arc" }
+      : null;
+
+  return {
+    ok: true as const,
+    work: {
+      ...work,
+      chapters: visibleChapters,
+      seriesTitle: work.series?.title || null,
+      seriesWorks,
+      previousArc,
+      nextArc,
+    },
+  };
+}
+
+export async function getPublicWorkPageDataBySlug(slug: string) {
+  return withCachedPublicData(
+    ["public-work-page:v2", slug],
+    [publicWorksTag(), publicWorkTag(slug)],
+    PUBLIC_CONTENT_REVALIDATE.work,
+    async () => profileHotspot("workPage.public", { slug }, () => loadPublicWorkPageDataBySlug(slug))
+  );
+}
+
+export async function getViewerWorkPagePayload(work: any) {
+  const viewer = await profileHotspot("workPage.viewerPayload", { workId: work.id, chapterCount: Array.isArray(work.chapters) ? work.chapters.length : 0 }, () => getViewerBasic());
   const gate = computeWorkGate({
     viewer,
     work: {
@@ -142,21 +200,22 @@ export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResul
     },
   });
 
+  const viewerOut = viewer
+    ? {
+        role: viewer.role,
+        adultConfirmed: viewer.adultConfirmed,
+        deviantLoveConfirmed: viewer.deviantLoveConfirmed,
+        canViewMature: gate.canViewMature,
+        canViewDeviantLove: gate.canViewDeviantLove,
+        isOwner: gate.isOwner,
+      }
+    : null;
+
   if (gate.gateReason) {
     return {
-      ok: true,
-      gated: true,
+      gated: true as const,
       gateReason: gate.gateReason,
-      viewer: viewer
-        ? {
-            role: viewer.role,
-            adultConfirmed: viewer.adultConfirmed,
-            deviantLoveConfirmed: viewer.deviantLoveConfirmed,
-            canViewMature: gate.canViewMature,
-            canViewDeviantLove: gate.canViewDeviantLove,
-            isOwner: gate.isOwner,
-          }
-        : null,
+      viewer: viewerOut,
       work: {
         id: work.id,
         slug: work.slug,
@@ -193,62 +252,39 @@ export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResul
     lastReadChapterNumber = progress?.chapter?.number ?? null;
   }
 
-  const visibleChapters = Array.isArray(work.chapters)
-    ? work.chapters
-        .filter((chapter: any) => (gate.isOwner || viewer?.role === "ADMIN" ? true : chapter.status === "PUBLISHED"))
-        .map((chapter: any) => ({
-          ...chapter,
-          thumbnailUrl: resolveChapterThumb(chapter),
-        }))
-    : [];
-
-  const seriesWorks = Array.isArray(work.series?.works)
-    ? work.series.works.filter((item: any) => String(item.id) !== String(work.id))
-    : [];
-
-  const orderedSeries = Array.isArray(work.series?.works) ? work.series.works : [];
-  const currentIndex = orderedSeries.findIndex((item: any) => String(item.id) === String(work.id));
-  const previousSeriesWork = currentIndex > 0 ? orderedSeries[currentIndex - 1] : null;
-  const nextSeriesWork = currentIndex >= 0 && currentIndex < orderedSeries.length - 1 ? orderedSeries[currentIndex + 1] : null;
-
-  const previousArc = previousSeriesWork
-    ? { href: `/w/${previousSeriesWork.slug}`, title: previousSeriesWork.title, coverImage: previousSeriesWork.coverImage, label: "Previous Arc" }
-    : work.prevArcUrl
-      ? { href: work.prevArcUrl, title: "Previous Arc", coverImage: null, label: "Previous Arc" }
-      : null;
-
-  const nextArc = nextSeriesWork
-    ? { href: `/w/${nextSeriesWork.slug}`, title: nextSeriesWork.title, coverImage: nextSeriesWork.coverImage, label: "Next Arc" }
-    : work.nextArcUrl
-      ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: "Next Arc" }
-      : null;
-
   return {
-    ok: true,
-    gated: false,
-    viewer: viewer
-      ? {
-          role: viewer.role,
-          adultConfirmed: viewer.adultConfirmed,
-          deviantLoveConfirmed: viewer.deviantLoveConfirmed,
-          canViewMature: gate.canViewMature,
-          canViewDeviantLove: gate.canViewDeviantLove,
-          isOwner: gate.isOwner,
-        }
-      : null,
+    gated: false as const,
+    viewer: viewerOut,
     progress: { lastReadChapterNumber },
     interactions: {
       liked: viewerLiked,
       bookmarked: viewerBookmarked,
       myRating: viewerRating,
     },
-    work: {
-      ...work,
-      chapters: visibleChapters,
-      seriesTitle: work.series?.title || null,
-      seriesWorks,
-      previousArc,
-      nextArc,
-    },
+  };
+}
+
+export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResult> {
+  const base = await getPublicWorkPageDataBySlug(slug);
+  if (!base.ok) return base;
+
+  const viewerPayload = await getViewerWorkPagePayload(base.work);
+  if (viewerPayload.gated) {
+    return {
+      ok: true,
+      gated: true,
+      gateReason: viewerPayload.gateReason,
+      viewer: viewerPayload.viewer,
+      work: viewerPayload.work,
+    };
+  }
+
+  return {
+    ok: true,
+    gated: false,
+    viewer: viewerPayload.viewer,
+    progress: viewerPayload.progress,
+    interactions: viewerPayload.interactions,
+    work: base.work,
   };
 }

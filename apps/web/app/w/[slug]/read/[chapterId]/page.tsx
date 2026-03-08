@@ -9,6 +9,7 @@ import ReaderChrome from "@/app/components/reader/ReaderChrome";
 import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
+import { logPageRenderMetric } from "@/server/observability/metrics";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +23,16 @@ export default async function ReadChapterPage({
 }: {
   params: Promise<{ slug: string; chapterId: string }>;
 }) {
-  const params = await paramsPromise;
+  const startedAt = Date.now();
+  let slug = "";
+  let chapterId = "";
 
-  const data = await getPublishedChapterReaderData(params.chapterId);
+  try {
+    const params = await paramsPromise;
+    slug = params.slug;
+    chapterId = params.chapterId;
+
+    const data = await getPublishedChapterReaderData(params.chapterId);
   if (!data.ok) return notFound();
 
   const { gated, chapter, work } = data;
@@ -238,4 +246,7 @@ export default async function ReadChapterPage({
       </div>
     </main>
   );
+  } finally {
+    logPageRenderMetric("chapter.reader", startedAt, { slug, chapterId });
+  }
 }

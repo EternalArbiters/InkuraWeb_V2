@@ -46,7 +46,7 @@ export const getActiveGenresBase = unstable_cache(
     }));
   },
   ["taxonomy:genres:v1"],
-  { tags: ["taxonomy"], revalidate: 60 }
+  { tags: ["taxonomy"], revalidate: 900 }
 );
 
 export const getActiveTagsBase = unstable_cache(
@@ -58,7 +58,7 @@ export const getActiveTagsBase = unstable_cache(
     });
   },
   ["taxonomy:tags:v1"],
-  { tags: ["taxonomy"], revalidate: 60 }
+  { tags: ["taxonomy"], revalidate: 900 }
 );
 
 export const getActiveWarningTagsBase = unstable_cache(
@@ -70,7 +70,7 @@ export const getActiveWarningTagsBase = unstable_cache(
     });
   },
   ["taxonomy:warnings:v1"],
-  { tags: ["taxonomy"], revalidate: 60 }
+  { tags: ["taxonomy"], revalidate: 900 }
 );
 
 export const getActiveDeviantLoveTagsBase = unstable_cache(
@@ -82,5 +82,5 @@ export const getActiveDeviantLoveTagsBase = unstable_cache(
     });
   },
   ["taxonomy:deviant-love:v1"],
-  { tags: ["taxonomy"], revalidate: 60 }
+  { tags: ["taxonomy"], revalidate: 900 }
 );

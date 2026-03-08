@@ -113,7 +113,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       if (!res.ok) throw new Error(json?.error || "Failed");
 
       router.push(`/studio/works/${workId}`);
-      router.refresh();
     } catch (err: any) {
       setError(err?.message || "Error");
     } finally {

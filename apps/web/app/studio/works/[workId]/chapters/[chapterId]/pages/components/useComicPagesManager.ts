@@ -1,33 +1,38 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { presignAndUpload } from "@/lib/r2UploadClient";
+
+type Page = { id: string; imageUrl: string; order: number };
 
 export function useComicPagesManager({
   workId,
   chapterId,
   initialHasPages,
+  initialPages,
+  initialThumbnailImage,
 }: {
   workId: string;
   chapterId: string;
   initialHasPages: boolean;
+  initialPages: Page[];
+  initialThumbnailImage: string | null;
 }) {
-  const router = useRouter();
-
   const [files, setFiles] = React.useState<File[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+  const [pages, setPages] = React.useState<Page[]>(initialPages);
+  const [thumbnailImage, setThumbnailImage] = React.useState<string | null>(initialThumbnailImage);
 
   // Default ON if chapter already has pages to prevent accidental duplicate accumulation.
   const [replaceExisting, setReplaceExisting] = React.useState<boolean>(initialHasPages);
 
-  async function upload(existingPagesCount: number) {
+  async function upload() {
     if (!files.length) return;
     setErr(null);
     setLoading(true);
     try {
-      if (replaceExisting && existingPagesCount > 0) {
+      if (replaceExisting && pages.length > 0) {
         const ok = confirm(
           "Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones."
         );
@@ -37,7 +42,7 @@ export function useComicPagesManager({
         }
       }
 
-      const startOrder = replaceExisting ? 0 : existingPagesCount;
+      const startOrder = replaceExisting ? 0 : pages.length;
       const uploaded = [] as { url: string; key: string; order: number }[];
 
       for (let i = 0; i < files.length; i++) {
@@ -55,8 +60,14 @@ export function useComicPagesManager({
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Commit failed");
 
+      const nextPages: Page[] = uploaded.map((item, index) => ({
+        id: String(json?.pages?.[index]?.id || `temp:${Date.now()}:${index}`),
+        imageUrl: item.url,
+        order: item.order,
+      }));
+
+      setPages((prev) => (replaceExisting ? nextPages : [...prev, ...nextPages]));
       setFiles([]);
-      router.refresh();
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {
@@ -75,7 +86,7 @@ export function useComicPagesManager({
       });
       const json = await res.json().catch(() => ({} as any));
       if (!res.ok) throw new Error(json?.error || "Failed");
-      router.refresh();
+      setThumbnailImage(url);
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {
@@ -94,7 +105,7 @@ export function useComicPagesManager({
       });
       const json = await res.json().catch(() => ({} as any));
       if (!res.ok) throw new Error(json?.error || "Failed");
-      router.refresh();
+      setThumbnailImage(null);
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {
@@ -110,7 +121,7 @@ export function useComicPagesManager({
       const res = await fetch(`/api/studio/comic-pages/${pageId}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Delete failed");
-      router.refresh();
+      setPages((prev) => prev.filter((page) => page.id !== pageId).map((page, index) => ({ ...page, order: index + 1 })));
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {
@@ -123,6 +134,8 @@ export function useComicPagesManager({
     setFiles,
     loading,
     err,
+    pages,
+    thumbnailImage,
     replaceExisting,
     setReplaceExisting,
     upload,

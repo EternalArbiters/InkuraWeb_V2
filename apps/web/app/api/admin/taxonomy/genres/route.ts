@@ -1,1 +1,2 @@
-export { runtime, GET, POST } from "@/server/services/api/admin/taxonomy/genres/route";
+export const runtime = "nodejs";
+export { GET, POST } from "@/server/services/api/admin/taxonomy/genres/route";

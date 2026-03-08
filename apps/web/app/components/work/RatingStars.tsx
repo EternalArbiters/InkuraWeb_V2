@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Star } from "lucide-react";
+import { readWorkInteraction, seedWorkInteraction, subscribeWorkInteraction, updateWorkInteraction } from "@/lib/workInteractionStore";
 
 type Props = {
   workId: string;
@@ -28,10 +29,16 @@ export default function RatingStars({
   const [count, setCount] = useState<number>(ratingCount);
 
   useEffect(() => {
-    setMyRating(initialMyRating);
-    setAvg(ratingAvg);
-    setCount(ratingCount);
-  }, [initialMyRating, ratingAvg, ratingCount]);
+    seedWorkInteraction(workId, { myRating: initialMyRating, ratingAvg, ratingCount });
+    const sync = () => {
+      const state = readWorkInteraction(workId);
+      setMyRating(state.myRating ?? initialMyRating);
+      setAvg(state.ratingAvg ?? ratingAvg);
+      setCount(state.ratingCount ?? ratingCount);
+    };
+    sync();
+    return subscribeWorkInteraction(workId, sync);
+  }, [initialMyRating, ratingAvg, ratingCount, workId]);
 
   const avgLabel = useMemo(() => {
     if (!count) return "0.0";
@@ -51,10 +58,12 @@ export default function RatingStars({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      if (typeof data.myRating === "number") setMyRating(data.myRating);
-      if (typeof data.ratingAvg === "number") setAvg(data.ratingAvg);
-      if (typeof data.ratingCount === "number") setCount(data.ratingCount);
-      router.refresh();
+      updateWorkInteraction(workId, (current) => ({
+        ...current,
+        myRating: typeof data.myRating === "number" ? data.myRating : current.myRating ?? initialMyRating,
+        ratingAvg: typeof data.ratingAvg === "number" ? data.ratingAvg : current.ratingAvg ?? ratingAvg,
+        ratingCount: typeof data.ratingCount === "number" ? data.ratingCount : current.ratingCount ?? ratingCount,
+      }));
     });
   };
 

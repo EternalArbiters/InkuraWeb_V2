@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { seedClientResource } from "@/lib/clientResourceCache";
 
 type WorkLite = {
   id: string;
@@ -20,6 +21,13 @@ type SeriesLite = {
   works: WorkLite[];
 };
 
+type StudioSeriesPayload = {
+  series: SeriesLite[];
+  unassignedWorks: WorkLite[];
+};
+
+const STUDIO_SERIES_CACHE_KEY = "studio:series-manager";
+
 async function callSeriesApi(body: Record<string, unknown>, method: "PATCH" | "POST" = "PATCH") {
   const res = await fetch("/api/studio/series", {
     method,
@@ -28,7 +36,23 @@ async function callSeriesApi(body: Record<string, unknown>, method: "PATCH" | "P
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((json as any)?.error || "Request failed");
-  return json;
+  return json as any;
+}
+
+function sortSeries(series: SeriesLite[]) {
+  return [...series].sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function sortWorksByUpdatedAt(works: WorkLite[]) {
+  return [...works].sort((a, b) => {
+    const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+    const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+    return bTime - aTime;
+  });
+}
+
+function normalizeSeriesWorks(works: WorkLite[]) {
+  return works.map((work, index) => ({ ...work, seriesOrder: index + 1 }));
 }
 
 export default function StudioSeriesManagerClient({
@@ -47,6 +71,17 @@ export default function StudioSeriesManagerClient({
   const [error, setError] = React.useState<string | null>(null);
   const [draggedWorkId, setDraggedWorkId] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    seedClientResource<StudioSeriesPayload>(
+      STUDIO_SERIES_CACHE_KEY,
+      {
+        series: initialSeries,
+        unassignedWorks: initialUnassignedWorks,
+      },
+      30_000
+    );
+  }, [initialSeries, initialUnassignedWorks]);
+
   const selectedSeries = React.useMemo(
     () => series.find((item) => item.id === selectedSeriesId) || null,
     [series, selectedSeriesId]
@@ -56,17 +91,15 @@ export default function StudioSeriesManagerClient({
     setRenameTitle(selectedSeries?.title || "");
   }, [selectedSeries?.title]);
 
-  async function refresh() {
-    const res = await fetch("/api/studio/series", { cache: "no-store" });
-    const data = await res.json().catch(() => ({ series: [], unassignedWorks: [] }));
-    setSeries(Array.isArray(data?.series) ? data.series : []);
-    setUnassignedWorks(Array.isArray(data?.unassignedWorks) ? data.unassignedWorks : []);
+  function commitSnapshot(next: StudioSeriesPayload, nextSelectedSeriesId?: string) {
+    setSeries(next.series);
+    setUnassignedWorks(next.unassignedWorks);
     setSelectedSeriesId((prev) => {
-      const nextId = Array.isArray(data?.series) && data.series.some((item: SeriesLite) => item.id === prev)
-        ? prev
-        : data?.series?.[0]?.id || "";
-      return nextId;
+      if (nextSelectedSeriesId !== undefined) return nextSelectedSeriesId;
+      if (next.series.some((item) => item.id === prev)) return prev;
+      return next.series[0]?.id || "";
     });
+    seedClientResource<StudioSeriesPayload>(STUDIO_SERIES_CACHE_KEY, next, 30_000);
   }
 
   async function mutate(run: () => Promise<void>) {
@@ -74,7 +107,6 @@ export default function StudioSeriesManagerClient({
     setError(null);
     try {
       await run();
-      await refresh();
     } catch (err: any) {
       setError(err?.message || "Failed");
     } finally {
@@ -85,7 +117,11 @@ export default function StudioSeriesManagerClient({
   async function createSeries() {
     if (!newSeriesTitle.trim()) return;
     await mutate(async () => {
-      await callSeriesApi({ title: newSeriesTitle.trim() }, "POST");
+      const data = await callSeriesApi({ title: newSeriesTitle.trim() }, "POST");
+      const created = data?.series as { id?: string; title?: string } | undefined;
+      if (!created?.id || !created?.title) return;
+      const nextSeries = sortSeries([...series, { id: created.id, title: created.title, works: [] }]);
+      commitSnapshot({ series: nextSeries, unassignedWorks }, created.id);
       setNewSeriesTitle("");
     });
   }
@@ -94,6 +130,10 @@ export default function StudioSeriesManagerClient({
     if (!selectedSeriesId || !renameTitle.trim()) return;
     await mutate(async () => {
       await callSeriesApi({ action: "renameSeries", seriesId: selectedSeriesId, title: renameTitle.trim() });
+      const nextSeries = sortSeries(
+        series.map((item) => (item.id === selectedSeriesId ? { ...item, title: renameTitle.trim() } : item))
+      );
+      commitSnapshot({ series: nextSeries, unassignedWorks });
     });
   }
 
@@ -101,12 +141,32 @@ export default function StudioSeriesManagerClient({
     if (!selectedSeriesId) return;
     await mutate(async () => {
       await callSeriesApi({ action: "addWork", seriesId: selectedSeriesId, workId });
+      const work = unassignedWorks.find((item) => item.id === workId);
+      if (!work) return;
+      const nextSeries = series.map((item) =>
+        item.id === selectedSeriesId
+          ? { ...item, works: normalizeSeriesWorks([...item.works, { ...work, seriesOrder: item.works.length + 1 }]) }
+          : item
+      );
+      const nextUnassigned = unassignedWorks.filter((item) => item.id !== workId);
+      commitSnapshot({ series: nextSeries, unassignedWorks: nextUnassigned });
     });
   }
 
   async function removeWork(workId: string) {
     await mutate(async () => {
       await callSeriesApi({ action: "removeWork", workId });
+      let movedWork: WorkLite | null = null;
+      const nextSeries = series.map((item) => {
+        const match = item.works.find((work) => work.id === workId) || null;
+        if (match) movedWork = { ...match, seriesOrder: null };
+        return {
+          ...item,
+          works: normalizeSeriesWorks(item.works.filter((work) => work.id !== workId)),
+        };
+      });
+      const nextUnassigned = movedWork ? sortWorksByUpdatedAt([...unassignedWorks, movedWork]) : unassignedWorks;
+      commitSnapshot({ series: nextSeries, unassignedWorks: nextUnassigned });
     });
   }
 
@@ -114,6 +174,17 @@ export default function StudioSeriesManagerClient({
     if (!selectedSeriesId) return;
     await mutate(async () => {
       await callSeriesApi({ action: "moveWork", seriesId: selectedSeriesId, workId, direction });
+      const nextSeries = series.map((item) => {
+        if (item.id !== selectedSeriesId) return item;
+        const works = [...item.works];
+        const index = works.findIndex((work) => work.id === workId);
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+        if (index === -1 || targetIndex < 0 || targetIndex >= works.length) return item;
+        const [moved] = works.splice(index, 1);
+        works.splice(targetIndex, 0, moved);
+        return { ...item, works: normalizeSeriesWorks(works) };
+      });
+      commitSnapshot({ series: nextSeries, unassignedWorks });
     });
   }
 
@@ -121,6 +192,15 @@ export default function StudioSeriesManagerClient({
     if (!selectedSeriesId) return;
     await mutate(async () => {
       await callSeriesApi({ action: "reorderWorks", seriesId: selectedSeriesId, orderedWorkIds: nextIds });
+      const nextSeries = series.map((item) => {
+        if (item.id !== selectedSeriesId) return item;
+        const byId = new Map(item.works.map((work) => [work.id, work]));
+        return {
+          ...item,
+          works: normalizeSeriesWorks(nextIds.map((id) => byId.get(id)).filter(Boolean) as WorkLite[]),
+        };
+      });
+      commitSnapshot({ series: nextSeries, unassignedWorks });
     });
   }
 

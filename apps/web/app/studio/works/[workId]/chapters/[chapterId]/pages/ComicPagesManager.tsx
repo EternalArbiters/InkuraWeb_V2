@@ -20,13 +20,21 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
     setFiles,
     loading,
     err,
+    pages: localPages,
+    thumbnailImage: localThumbnailImage,
     replaceExisting,
     setReplaceExisting,
     upload,
     setThumb,
     clearThumb,
     del,
-  } = useComicPagesManager({ workId, chapterId, initialHasPages: pages.length > 0 });
+  } = useComicPagesManager({
+    workId,
+    chapterId,
+    initialHasPages: pages.length > 0,
+    initialPages: pages,
+    initialThumbnailImage: thumbnailImage,
+  });
 
   return (
     <div className="grid gap-4">
@@ -42,18 +50,18 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
         replaceExisting={replaceExisting}
         setReplaceExisting={setReplaceExisting}
         loading={loading}
-        onUpload={() => upload(pages.length)}
+        onUpload={upload}
       />
 
       <ChapterCoverCard
-        thumbnailImage={thumbnailImage}
+        thumbnailImage={localThumbnailImage}
         loading={loading}
         onClear={clearThumb}
       />
 
       <PagesGrid
         workId={workId}
-        pages={pages}
+        pages={localPages}
         loading={loading}
         onUseAsCover={setThumb}
         onDelete={del}

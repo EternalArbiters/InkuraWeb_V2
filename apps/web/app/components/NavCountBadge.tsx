@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { NAV_BADGE_REFRESH_EVENT } from "./navBadgeEvents";
+import { sendClientMetric } from "@/lib/clientMetrics";
 
 const VISIBLE_POLL_MS = 90_000;
 
@@ -36,6 +37,7 @@ export default function NavCountBadge({
   enabled?: boolean;
 }) {
   const [count, setCount] = React.useState<number>(0);
+  const lastPollAtRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     if (!enabled) {
@@ -46,16 +48,27 @@ export default function NavCountBadge({
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
-    async function load() {
+    async function load(trigger: "mount" | "timer" | "focus" | "visibility" | "external" | "online" = "mount") {
       if (!mounted) return;
       if (!isDocumentVisible() || !isNavigatorOnline()) return;
 
+      const startedAt = Date.now();
+      const previousPollAt = lastPollAtRef.current;
       try {
         const res = await fetch(endpoint, { cache: "no-store" as any });
         const json = await res.json().catch(() => ({} as any));
         const c = Number(json?.count || 0);
         if (!mounted) return;
         setCount(Number.isFinite(c) ? c : 0);
+        const now = Date.now();
+        sendClientMetric("client.nav_badge_poll", {
+          endpoint,
+          trigger,
+          durationMs: now - startedAt,
+          count: Number.isFinite(c) ? c : 0,
+          intervalSinceLastMs: previousPollAt ? now - previousPollAt : null,
+        });
+        lastPollAtRef.current = now;
       } catch {
         if (mounted) setCount(0);
       }
@@ -73,19 +86,19 @@ export default function NavCountBadge({
       if (!mounted) return;
       if (!isDocumentVisible()) return;
       timer = setTimeout(async () => {
-        await load();
+        await load("timer");
         schedule(VISIBLE_POLL_MS);
       }, delay);
     }
 
-    function refreshNow() {
-      void load();
+    function refreshNow(reason: "mount" | "focus" | "visibility" | "external" | "online" = "mount") {
+      void load(reason);
       schedule(VISIBLE_POLL_MS);
     }
 
     function onVisibilityChange() {
       if (isDocumentVisible()) {
-        refreshNow();
+        refreshNow("visibility");
       } else {
         clearTimer();
       }
@@ -94,21 +107,23 @@ export default function NavCountBadge({
     function onExternalRefresh(event: Event) {
       const detail = (event as CustomEvent<NavBadgeRefreshDetail>).detail;
       if (detail?.endpoint && detail.endpoint !== endpoint) return;
-      refreshNow();
+      refreshNow("external");
     }
 
-    refreshNow();
+    refreshNow("mount");
     document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("focus", refreshNow);
-    window.addEventListener("online", refreshNow);
+    const onFocus = () => refreshNow("focus");
+    const onOnline = () => refreshNow("online");
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("online", onOnline);
     window.addEventListener(NAV_BADGE_REFRESH_EVENT, onExternalRefresh as EventListener);
 
     return () => {
       mounted = false;
       clearTimer();
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("focus", refreshNow);
-      window.removeEventListener("online", refreshNow);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("online", onOnline);
       window.removeEventListener(NAV_BADGE_REFRESH_EVENT, onExternalRefresh as EventListener);
     };
   }, [enabled, endpoint]);

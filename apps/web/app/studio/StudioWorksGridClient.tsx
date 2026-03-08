@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import PublishToggle from "./works/[workId]/PublishToggle";
@@ -17,9 +16,13 @@ type WorkLite = {
 };
 
 export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) {
-  const router = useRouter();
+  const [items, setItems] = React.useState<WorkLite[]>(works);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setItems(works);
+  }, [works]);
 
   const del = async (workId: string) => {
     const ok = confirm("Delete this work? This will remove the work, chapters, and related data. This can't be undone.");
@@ -31,7 +34,7 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
       const res = await fetch(`/api/studio/works/${workId}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) throw new Error(data?.error || "Delete failed");
-      router.refresh();
+      setItems((prev) => prev.filter((item) => item.id !== workId));
     } catch (e: any) {
       setError(e?.message || "Delete failed");
     } finally {
@@ -48,17 +51,15 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
       ) : null}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {works.map((w) => (
+        {items.map((w) => (
           <div key={w.id} className="border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden">
             <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
               {w.coverImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={w.coverImage} alt={w.title} className="absolute inset-0 w-full h-full object-cover" />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">No cover</div>
               )}
 
-              {/* overlay actions */}
               <div className="absolute top-2 right-2 flex items-center gap-2">
                 <Link
                   href={`/studio/works/${w.id}`}
@@ -82,7 +83,13 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
             </div>
 
             <div className="p-3 grid gap-2">
-              <PublishToggle workId={w.id} status={w.status} />
+              <PublishToggle
+                workId={w.id}
+                status={w.status}
+                onStatusChange={(nextStatus) =>
+                  setItems((prev) => prev.map((item) => (item.id === w.id ? { ...item, status: nextStatus } : item)))
+                }
+              />
               <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
               <div className="text-xs text-gray-600 dark:text-gray-300">
                 {w.type ? `${w.type} • ` : ""}{w.publishType || ""}

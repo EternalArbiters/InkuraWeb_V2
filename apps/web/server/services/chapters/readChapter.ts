@@ -2,6 +2,12 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { chapterListItemSelect, comicPageSelect, nameSlugSelect, userPublicSelect } from "@/server/db/selectors";
+import {
+  PUBLIC_CONTENT_REVALIDATE,
+  publicChapterTag,
+  publicWorksTag,
+  withCachedPublicData,
+} from "@/server/cache/publicContent";
 import { computeChapterGate } from "@/server/services/works/gating";
 import { getViewerBasic } from "@/server/services/works/viewer";
 
@@ -16,7 +22,7 @@ export type ReadChapterResult =
       chapter: any;
     };
 
-export async function getPublishedChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
+async function loadPublicChapterReaderData(chapterId: string) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
     select: {
@@ -57,9 +63,50 @@ export async function getPublishedChapterReaderData(chapterId: string): Promise<
   });
 
   if (!chapter || chapter.status !== "PUBLISHED" || chapter.work.status !== "PUBLISHED") {
-    return { ok: false, status: 404, error: "Not found" };
+    return { ok: false as const, status: 404 as const, error: "Not found" as const };
   }
 
+  return {
+    ok: true as const,
+    chapter: {
+      id: chapter.id,
+      title: chapter.title,
+      number: chapter.number,
+      warningTags: chapter.warningTags,
+      text: chapter.text,
+      pages: chapter.pages,
+      isMature: chapter.isMature,
+      likeCount: chapter.likeCount,
+      authorNote: chapter.authorNote ?? null,
+    },
+    work: {
+      id: chapter.work.id,
+      slug: chapter.work.slug,
+      title: chapter.work.title,
+      type: chapter.work.type,
+      isMature: chapter.work.isMature,
+      publishType: (chapter.work as any).publishType,
+      authorId: chapter.work.authorId,
+      author: (chapter.work as any).author,
+      translator: (chapter.work as any).translator,
+      warningTags: chapter.work.warningTags,
+      deviantLoveTags: chapter.work.deviantLoveTags,
+      genres: (chapter.work as any).genres,
+      chapters: chapter.work.chapters,
+    },
+  };
+}
+
+export async function getPublicChapterReaderData(chapterId: string) {
+  return withCachedPublicData(
+    ["public-chapter-reader:v2", chapterId],
+    [publicWorksTag(), publicChapterTag(chapterId)],
+    PUBLIC_CONTENT_REVALIDATE.chapter,
+    async () => loadPublicChapterReaderData(chapterId)
+  );
+}
+
+export async function getViewerChapterReaderPayload(chapterId: string, work: any, chapter: any) {
   const viewer = await getViewerBasic();
   const viewerLiked = viewer?.id
     ? !!(await prisma.chapterLike.findUnique({ where: { userId_chapterId: { userId: viewer.id, chapterId } } }))
@@ -68,10 +115,10 @@ export async function getPublishedChapterReaderData(chapterId: string): Promise<
   const gate = computeChapterGate({
     viewer,
     work: {
-      authorId: chapter.work.authorId,
-      isMature: !!chapter.work.isMature,
-      genres: (chapter.work as any).genres,
-      deviantLoveTags: chapter.work.deviantLoveTags,
+      authorId: work.authorId,
+      isMature: !!work.isMature,
+      genres: work.genres,
+      deviantLoveTags: work.deviantLoveTags,
     },
     chapter: { isMature: !!chapter.isMature },
   });
@@ -89,19 +136,18 @@ export async function getPublishedChapterReaderData(chapterId: string): Promise<
 
   if (gate.gateReason) {
     return {
-      ok: true,
-      gated: true,
+      gated: true as const,
       gateReason: gate.gateReason,
       viewer: viewerOut,
       work: {
-        id: chapter.work.id,
-        slug: chapter.work.slug,
-        title: chapter.work.title,
-        type: chapter.work.type,
-        isMature: chapter.work.isMature,
-        publishType: (chapter.work as any).publishType,
-        author: (chapter.work as any).author,
-        translator: (chapter.work as any).translator,
+        id: work.id,
+        slug: work.slug,
+        title: work.title,
+        type: work.type,
+        isMature: work.isMature,
+        publishType: work.publishType,
+        author: work.author,
+        translator: work.translator,
       },
       chapter: {
         id: chapter.id,
@@ -116,33 +162,37 @@ export async function getPublishedChapterReaderData(chapterId: string): Promise<
   }
 
   return {
-    ok: true,
-    gated: false,
+    gated: false as const,
     viewer: viewerOut,
     chapter: {
-      id: chapter.id,
-      title: chapter.title,
-      number: chapter.number,
-      warningTags: chapter.warningTags,
-      text: chapter.text,
-      pages: chapter.pages,
-      isMature: chapter.isMature,
-      likeCount: chapter.likeCount,
+      ...chapter,
       viewerLiked,
-      authorNote: chapter.authorNote ?? null,
     },
-    work: {
-      id: chapter.work.id,
-      slug: chapter.work.slug,
-      title: chapter.work.title,
-      type: chapter.work.type,
-      isMature: chapter.work.isMature,
-      publishType: (chapter.work as any).publishType,
-      author: (chapter.work as any).author,
-      translator: (chapter.work as any).translator,
-      warningTags: chapter.work.warningTags,
-      deviantLoveTags: chapter.work.deviantLoveTags,
-      chapters: chapter.work.chapters,
-    },
+    work,
+  };
+}
+
+export async function getPublishedChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
+  const base = await getPublicChapterReaderData(chapterId);
+  if (!base.ok) return base;
+
+  const viewerPayload = await getViewerChapterReaderPayload(chapterId, base.work, base.chapter);
+  if (viewerPayload.gated) {
+    return {
+      ok: true,
+      gated: true,
+      gateReason: viewerPayload.gateReason,
+      viewer: viewerPayload.viewer,
+      work: viewerPayload.work,
+      chapter: viewerPayload.chapter,
+    };
+  }
+
+  return {
+    ok: true,
+    gated: false,
+    viewer: viewerPayload.viewer,
+    chapter: viewerPayload.chapter,
+    work: viewerPayload.work,
   };
 }

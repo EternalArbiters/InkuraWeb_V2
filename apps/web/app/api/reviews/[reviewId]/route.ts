@@ -1,1 +1,2 @@
-export { runtime, PATCH, DELETE } from "@/server/services/api/reviews/[reviewId]/route";
+export const runtime = "nodejs";
+export { PATCH, DELETE } from "@/server/services/api/reviews/[reviewId]/route";

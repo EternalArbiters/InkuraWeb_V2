@@ -97,7 +97,6 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
       setNote(null);
       router.push(`/studio/works/${workId}`);
-      router.refresh();
     } catch (err: any) {
       setError(err?.message || "Error");
     } finally {

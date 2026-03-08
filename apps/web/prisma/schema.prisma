@@ -225,6 +225,11 @@ model Work {
   @@index([translatorId])
   @@index([status, updatedAt])
   @@index([status, likeCount])
+  @@index([status, type, updatedAt])
+  @@index([status, type, likeCount])
+  @@index([status, publishType, updatedAt])
+  @@index([status, publishType, likeCount])
+  @@index([status, ratingAvg, ratingCount, updatedAt])
   @@index([seriesId, seriesOrder])
 }
 
@@ -264,6 +269,8 @@ model Chapter {
 
   @@unique([workId, number])
   @@index([workId])
+  @@index([workId, status, number, createdAt])
+  @@index([status, publishedAt])
 }
 
 // --- Taxonomy ---
@@ -385,6 +392,7 @@ model WorkLike {
 
   @@id([userId, workId])
   @@index([workId])
+  @@index([userId, createdAt])
 }
 
 model ChapterLike {
@@ -420,6 +428,7 @@ model Bookmark {
 
   @@id([userId, workId])
   @@index([workId])
+  @@index([userId, createdAt])
 }
 
 model ReadingProgress {
@@ -438,6 +447,8 @@ model ReadingProgress {
   @@unique([userId, workId])
   @@index([workId])
   @@index([chapterId])
+  @@index([userId, updatedAt])
+  @@index([userId, lastReadAt])
 }
 
 enum CommentTargetType {
@@ -609,6 +620,7 @@ model Review {
   @@unique([workId, userId])
   @@index([workId, createdAt])
   @@index([workId, helpfulCount, createdAt])
+  @@index([workId, rating, createdAt])
 }
 
 model ReviewVote {
@@ -641,6 +653,7 @@ model ReadingList {
 
   @@index([ownerId, updatedAt])
   @@index([isPublic, updatedAt])
+  @@index([ownerId, isPublic, updatedAt])
 }
 
 model ReadingListItem {
@@ -655,6 +668,7 @@ model ReadingListItem {
 
   @@unique([listId, workId])
   @@index([listId, sortOrder])
+  @@index([listId, addedAt])
   @@index([workId])
 }
 
@@ -765,6 +779,7 @@ model MediaObject {
   commentAttachments CommentAttachment[]
 
   @@index([type, createdAt])
+  @@index([contentType, createdAt])
 }
 
 

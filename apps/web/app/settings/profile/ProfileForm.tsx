@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { sendUploadMetric } from "@/lib/clientMetrics";
 import AvatarPickerCard from "./components/AvatarPickerCard";
 import ProfileAlerts from "./components/ProfileAlerts";
 import ProfileFieldsCard from "./components/ProfileFieldsCard";
@@ -117,17 +118,47 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
     setAvatarUploading(true);
     setErr(null);
     setOk(null);
+    const startedAt = Date.now();
+    let presignMs = 0;
+    let uploadMs = 0;
     try {
+      const presignStartedAt = Date.now();
       const { uploadUrl, publicUrl } = await presignAvatarUpload(file);
+      presignMs = Date.now() - presignStartedAt;
+      const uploadStartedAt = Date.now();
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         headers: file.type ? { "Content-Type": file.type } : undefined,
         body: file,
       });
+      uploadMs = Date.now() - uploadStartedAt;
       if (!uploadRes.ok) throw new Error("Upload failed");
       setImage(publicUrl);
       setOk("Avatar uploaded");
+      sendUploadMetric({
+        scope: "avatar",
+        beforeBytes: file.size,
+        afterBytes: file.size,
+        durationMs: Date.now() - startedAt,
+        presignMs,
+        uploadMs,
+        contentType: file.type,
+        compressionApplied: false,
+        outcome: "success",
+      });
     } catch (error: unknown) {
+      sendUploadMetric({
+        scope: "avatar",
+        beforeBytes: file.size,
+        afterBytes: file.size,
+        durationMs: Date.now() - startedAt,
+        presignMs,
+        uploadMs,
+        contentType: file.type,
+        compressionApplied: false,
+        outcome: "error",
+        errorMessage: getErrorMessage(error, "Upload failed"),
+      });
       setErr(getErrorMessage(error, "Upload failed"));
     } finally {
       setAvatarUploading(false);

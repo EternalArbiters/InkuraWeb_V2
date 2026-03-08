@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
 
@@ -18,7 +19,7 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
   const viewer = await getViewer();
   if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
-  const list = await prisma.readingList.findUnique({ where: { id: listId }, select: { ownerId: true } });
+  const list = await prisma.readingList.findUnique({ where: { id: listId }, select: { slug: true, ownerId: true } });
   if (!list) return json({ error: "List not found" }, { status: 404 });
 
   const isOwner = list.ownerId === viewer.id;
@@ -27,6 +28,7 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
 
   await prisma.readingListItem.deleteMany({ where: { listId, workId } });
   await prisma.readingList.update({ where: { id: listId }, data: { updatedAt: new Date() } });
+  revalidatePublicReadingList(list.slug);
 
   return json({ ok: true });
 });

@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/server/auth/requireUser";
 import { asOptionalBool as _asOptionalBool, asString as _asString, getClientMeta as _getClientMeta, readJsonObject, toJsonSafe as _toJsonSafe } from "@/server/http";
+import { getBooleanFlagParam, getOptionalStringParam } from "@/server/http/queryParams";
 
 export type AdminGuardOk = { adminId: string };
 
@@ -29,9 +30,8 @@ export function asOptionalBool(v: any): boolean | undefined {
 
 export function parseSearchParams(url: string) {
   const u = new URL(url);
-  const q = (u.searchParams.get("q") || "").trim();
-  const includeInactive = (u.searchParams.get("includeInactive") || "").trim();
-  return { q, includeInactive: includeInactive === "1" || includeInactive.toLowerCase() === "true" };
+  const q = getOptionalStringParam(u.searchParams, "q") || "";
+  return { q, includeInactive: getBooleanFlagParam(u.searchParams, "includeInactive") };
 }
 
 export function isUniqueViolation(e: unknown) {

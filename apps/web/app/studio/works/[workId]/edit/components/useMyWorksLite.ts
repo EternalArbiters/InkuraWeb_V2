@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { getOrFetchClientResource } from "@/lib/clientResourceCache";
 
 export type WorkLite = {
   id: string;
@@ -13,6 +14,8 @@ export type WorkLite = {
   coverImage?: string | null;
 };
 
+const MY_WORKS_CACHE_KEY = "studio:my-works-lite";
+
 export function useMyWorksLite(excludeWorkId: string) {
   const [myWorks, setMyWorks] = React.useState<WorkLite[]>([]);
   const [loadingWorks, setLoadingWorks] = React.useState(false);
@@ -20,24 +23,28 @@ export function useMyWorksLite(excludeWorkId: string) {
   React.useEffect(() => {
     let mounted = true;
     setLoadingWorks(true);
-    fetch(`/api/studio/works`)
-      .then((r) => r.json())
-      .then((j) => {
+    getOrFetchClientResource<WorkLite[]>(
+      MY_WORKS_CACHE_KEY,
+      async () => {
+        const response = await fetch(`/api/studio/works`);
+        const json = await response.json().catch(() => ({} as any));
+        const works = Array.isArray(json?.works) ? (json.works as any[]) : [];
+        return works.map((w) => ({
+          id: String(w.id),
+          slug: String(w.slug || ""),
+          title: String(w.title || ""),
+          type: String(w.type || ""),
+          status: String(w.status || ""),
+          seriesTitle: w?.series?.title ? String(w.series.title) : null,
+          seriesOrder: typeof w?.seriesOrder === "number" ? w.seriesOrder : null,
+          coverImage: typeof w?.coverImage === "string" ? w.coverImage : null,
+        }));
+      },
+      { ttlMs: 30_000 }
+    )
+      .then((works) => {
         if (!mounted) return;
-        const works = Array.isArray(j?.works) ? (j.works as any[]) : [];
-        const lite = works
-          .map((w) => ({
-            id: String(w.id),
-            slug: String(w.slug || ""),
-            title: String(w.title || ""),
-            type: String(w.type || ""),
-            status: String(w.status || ""),
-            seriesTitle: w?.series?.title ? String(w.series.title) : null,
-            seriesOrder: typeof w?.seriesOrder === "number" ? w.seriesOrder : null,
-            coverImage: typeof w?.coverImage === "string" ? w.coverImage : null,
-          }))
-          .filter((w) => w.id && w.slug && w.id !== excludeWorkId);
-        setMyWorks(lite);
+        setMyWorks(works.filter((work) => work.id && work.slug && work.id !== excludeWorkId));
       })
       .catch(() => null)
       .finally(() => mounted && setLoadingWorks(false));

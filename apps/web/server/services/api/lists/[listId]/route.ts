@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
 
@@ -70,7 +71,7 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
-    select: { id: true, ownerId: true },
+    select: { id: true, slug: true, ownerId: true },
   });
 
   if (!list) return json({ error: "Not found" }, { status: 404 });
@@ -98,6 +99,7 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
     include: { _count: { select: { items: true } } },
   });
 
+  revalidatePublicReadingList(updated.slug);
   return json({ ok: true, list: updated });
 });
 
@@ -108,7 +110,7 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
-    select: { id: true, ownerId: true },
+    select: { id: true, slug: true, ownerId: true },
   });
 
   if (!list) return json({ error: "Not found" }, { status: 404 });
@@ -118,5 +120,6 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
   if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
 
   await prisma.readingList.delete({ where: { id: listId } });
+  revalidatePublicReadingList(list.slug);
   return json({ ok: true });
 });

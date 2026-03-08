@@ -2,6 +2,13 @@ import "server-only";
 
 import { cache } from "react";
 import prisma from "@/server/db/prisma";
+import { workGridSelect } from "@/server/db/selectors";
+import {
+  PUBLIC_CONTENT_REVALIDATE,
+  publicReadingListTag,
+  publicReadingListsTag,
+  withCachedPublicData,
+} from "@/server/cache/publicContent";
 import { getSession } from "@/server/auth/session";
 import { getViewerBasic } from "@/server/services/works/viewer";
 import { computeViewerAccess, workHasDeviantLoveTags, workHasLegacyDeviantGenre } from "@/server/services/works/gating";
@@ -14,7 +21,11 @@ export const listReadingListsForViewer = cache(async function listReadingListsFo
   const lists = await prisma.readingList.findMany({
     where: { ownerId: userId },
     orderBy: { updatedAt: "desc" },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      isPublic: true,
       _count: { select: { items: true } },
       items: {
         orderBy: { addedAt: "desc" },
@@ -42,7 +53,7 @@ export async function listReadingListOptionsForViewer() {
   }));
 }
 
-export async function getReadingListPageDataBySlug(slug: string) {
+async function loadReadingListPageBaseBySlug(slug: string) {
   const list = await prisma.readingList.findUnique({
     where: { slug },
     include: {
@@ -54,19 +65,7 @@ export async function getReadingListPageDataBySlug(slug: string) {
         include: {
           work: {
             select: {
-              id: true,
-              slug: true,
-              title: true,
-              coverImage: true,
-              type: true,
-              publishType: true,
-              isMature: true,
-              language: true,
-              comicType: true,
-              likeCount: true,
-              ratingAvg: true,
-              ratingCount: true,
-              author: { select: { username: true, name: true } },
+              ...workGridSelect,
               genres: { select: { slug: true } },
               deviantLoveTags: { select: { slug: true } },
             },
@@ -79,25 +78,6 @@ export async function getReadingListPageDataBySlug(slug: string) {
   if (!list) {
     return { ok: false as const, status: 404 as const, error: "Not found" as const };
   }
-
-  const viewer = await getViewerBasic();
-  const access = computeViewerAccess(viewer, list.ownerId);
-  const isAdmin = viewer?.role === "ADMIN";
-
-  if (!list.isPublic && !access.isOwner && !isAdmin) {
-    return { ok: false as const, status: 404 as const, error: "Not found" as const };
-  }
-
-  const items = Array.isArray(list.items) ? list.items : [];
-  const visibleItems = items.filter((item: any) => {
-    const work = item.work;
-    if (!work) return false;
-
-    const requiresMatureGate = !!work.isMature && !access.canViewMature;
-    const requiresDeviantGate = (workHasLegacyDeviantGenre(work.genres) || workHasDeviantLoveTags(work.deviantLoveTags)) && !access.canViewDeviantLove;
-
-    return !(requiresMatureGate || requiresDeviantGate);
-  });
 
   return {
     ok: true as const,
@@ -113,12 +93,48 @@ export async function getReadingListPageDataBySlug(slug: string) {
       createdAt: list.createdAt,
       updatedAt: list.updatedAt,
     },
-    items: visibleItems.map((item: any) => ({
-      id: item.id,
-      addedAt: item.addedAt,
-      sortOrder: item.sortOrder,
-      work: item.work,
-    })),
+    items: Array.isArray(list.items)
+      ? list.items.map((item: any) => ({
+          id: item.id,
+          addedAt: item.addedAt,
+          sortOrder: item.sortOrder,
+          work: item.work,
+        }))
+      : [],
+  };
+}
+
+export async function getPublicReadingListPageDataBySlug(slug: string) {
+  return withCachedPublicData(
+    ["public-reading-list:v2", slug],
+    [publicReadingListsTag(), publicReadingListTag(slug)],
+    PUBLIC_CONTENT_REVALIDATE.readingList,
+    async () => loadReadingListPageBaseBySlug(slug)
+  );
+}
+
+export async function getViewerReadingListPayload(list: any, items: any[]) {
+  const viewer = await getViewerBasic();
+  const access = computeViewerAccess(viewer, list.ownerId);
+  const isAdmin = viewer?.role === "ADMIN";
+
+  if (!list.isPublic && !access.isOwner && !isAdmin) {
+    return { ok: false as const, status: 404 as const, error: "Not found" as const };
+  }
+
+  const visibleItems = items.filter((item: any) => {
+    const work = item.work;
+    if (!work) return false;
+
+    const requiresMatureGate = !!work.isMature && !access.canViewMature;
+    const requiresDeviantGate = (workHasLegacyDeviantGenre(work.genres) || workHasDeviantLoveTags(work.deviantLoveTags)) && !access.canViewDeviantLove;
+
+    return !(requiresMatureGate || requiresDeviantGate);
+  });
+
+  return {
+    ok: true as const,
+    items: visibleItems,
     viewer: viewer
       ? {
           id: viewer.id,
@@ -130,5 +146,20 @@ export async function getReadingListPageDataBySlug(slug: string) {
           isOwner: access.isOwner,
         }
       : null,
+  };
+}
+
+export async function getReadingListPageDataBySlug(slug: string) {
+  const base = await getPublicReadingListPageDataBySlug(slug);
+  if (!base.ok) return base;
+
+  const viewerPayload = await getViewerReadingListPayload(base.list, base.items);
+  if (!viewerPayload.ok) return viewerPayload;
+
+  return {
+    ok: true as const,
+    list: base.list,
+    items: viewerPayload.items,
+    viewer: viewerPayload.viewer,
   };
 }

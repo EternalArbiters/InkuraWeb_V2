@@ -179,7 +179,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       if (!res.ok) throw new Error(json?.error || "Failed");
 
       router.push(`/studio/works/${work.id}`);
-      router.refresh();
     } catch (err: any) {
       setError(err?.message || "Error");
     } finally {

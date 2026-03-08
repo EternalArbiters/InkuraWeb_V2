@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
+import { revalidatePublicProfile } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
 
@@ -90,6 +91,11 @@ export const PATCH = apiRoute(async (req: Request) => {
   }
 
   try {
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { username: true },
+    });
+
     const updated = await prisma.user.update({
       where: { id: session.user.id },
       data,
@@ -105,6 +111,11 @@ export const PATCH = apiRoute(async (req: Request) => {
         role: true,
       },
     });
+    revalidatePublicProfile(currentUser?.username || updated.username);
+    if (currentUser?.username && currentUser.username !== updated.username) {
+      revalidatePublicProfile(updated.username);
+    }
+
     return json({ ok: true, profile: updated });
   } catch (e: any) {
     const msg = String(e?.message || "");

@@ -1,1 +1,2 @@
-export { runtime, DELETE } from "@/server/services/api/uploads/route";
+export const runtime = "nodejs";
+export { DELETE } from "@/server/services/api/uploads/route";

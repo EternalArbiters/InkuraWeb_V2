@@ -161,3 +161,21 @@ R2_PUBLIC_BASE_URL="https://cdn.example.test"
 - upload presign gagal → cek env R2 lengkap
 - image berhasil upload tapi tidak tampil → cek `R2_PUBLIC_BASE_URL`
 - forgot password tidak kirim email → cek `RESEND_API_KEY` dan `EMAIL_FROM`
+
+## Env opsional untuk metrik performa Tahap F
+
+```env
+INKURA_SLOW_ROUTE_MS=600
+INKURA_SLOW_PAGE_RENDER_MS=900
+INKURA_SLOW_QUERY_MS=250
+INKURA_CLIENT_WARN_MS=4000
+INKURA_LOG_QUERIES=
+```
+
+Keterangan:
+
+- `INKURA_SLOW_ROUTE_MS`: threshold warning untuk API route lambat
+- `INKURA_SLOW_PAGE_RENDER_MS`: threshold warning untuk server page render lambat
+- `INKURA_SLOW_QUERY_MS`: threshold warning untuk query Prisma lambat
+- `INKURA_CLIENT_WARN_MS`: threshold warning untuk metrik browser lambat (poll/upload)
+- `INKURA_LOG_QUERIES=1`: log query Prisma umum, bukan hanya slow query. Biasanya cukup dipakai sementara saat investigasi.

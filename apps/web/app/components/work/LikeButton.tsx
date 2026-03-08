@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import { readWorkInteraction, seedWorkInteraction, subscribeWorkInteraction, updateWorkInteraction } from "@/lib/workInteractionStore";
 
 type Props = {
   workId: string;
@@ -19,9 +20,15 @@ export default function LikeButton({ workId, initialLiked, initialCount, classNa
   const [count, setCount] = useState(initialCount);
 
   useEffect(() => {
-    setLiked(initialLiked);
-    setCount(initialCount);
-  }, [initialLiked, initialCount]);
+    seedWorkInteraction(workId, { liked: initialLiked, likeCount: initialCount });
+    const sync = () => {
+      const state = readWorkInteraction(workId);
+      setLiked(state.liked ?? initialLiked);
+      setCount(state.likeCount ?? initialCount);
+    };
+    sync();
+    return subscribeWorkInteraction(workId, sync);
+  }, [initialCount, initialLiked, workId]);
 
   const toggle = () => {
     startTransition(async () => {
@@ -32,9 +39,11 @@ export default function LikeButton({ workId, initialLiked, initialCount, classNa
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      setLiked(!!data.liked);
-      if (typeof data.likeCount === "number") setCount(data.likeCount);
-      router.refresh();
+      updateWorkInteraction(workId, (current) => ({
+        ...current,
+        liked: !!data.liked,
+        likeCount: typeof data.likeCount === "number" ? data.likeCount : current.likeCount ?? initialCount,
+      }));
     });
   };
 
@@ -47,11 +56,11 @@ export default function LikeButton({ workId, initialLiked, initialCount, classNa
           ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
           : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
       } ${className}`.trim()}
-      aria-label="Favorite"
+      aria-label="Like work"
     >
       <Heart size={20} className={`h-5 w-5 shrink-0 ${liked ? "fill-current" : ""}`.trim()} />
       <span className="whitespace-nowrap">Favorite</span>
-      <span className="text-sm opacity-70">{count}</span>
+      <span className="text-xs opacity-70">{count}</span>
     </button>
   );
 }

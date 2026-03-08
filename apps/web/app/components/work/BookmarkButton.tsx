@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bookmark } from "lucide-react";
+import { readWorkInteraction, seedWorkInteraction, subscribeWorkInteraction, updateWorkInteraction } from "@/lib/workInteractionStore";
 
 type Props = {
   workId: string;
@@ -17,8 +18,14 @@ export default function BookmarkButton({ workId, initialBookmarked, className = 
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
 
   useEffect(() => {
-    setBookmarked(initialBookmarked);
-  }, [initialBookmarked]);
+    seedWorkInteraction(workId, { bookmarked: initialBookmarked });
+    const sync = () => {
+      const state = readWorkInteraction(workId);
+      setBookmarked(state.bookmarked ?? initialBookmarked);
+    };
+    sync();
+    return subscribeWorkInteraction(workId, sync);
+  }, [initialBookmarked, workId]);
 
   const toggle = () => {
     startTransition(async () => {
@@ -29,8 +36,7 @@ export default function BookmarkButton({ workId, initialBookmarked, className = 
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      setBookmarked(!!data.bookmarked);
-      router.refresh();
+      updateWorkInteraction(workId, (current) => ({ ...current, bookmarked: !!data.bookmarked }));
     });
   };
 

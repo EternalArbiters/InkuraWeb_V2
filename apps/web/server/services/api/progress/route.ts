@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
+import { getOptionalIntParam } from "@/server/http/queryParams";
 import { listViewerProgress } from "@/server/services/progress/viewerProgress";
 
 export const runtime = "nodejs";
@@ -14,7 +15,7 @@ export const GET = apiRoute(async (req: Request) => {
   }
 
   const { searchParams } = new URL(req.url);
-  const take = Math.min(100, Math.max(1, parseInt(searchParams.get("take") || "50", 10) || 50));
+  const take = getOptionalIntParam(searchParams, "take", { min: 1, max: 100 }) || 50;
 
   return json(await listViewerProgress({ take }));
 });

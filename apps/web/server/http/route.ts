@@ -3,6 +3,7 @@ import "server-only";
 import { getSession } from "@/server/auth/session";
 import { attachRequestIdHeader, getOrCreateRequestId, getRequestPath } from "@/server/observability/api";
 import { errorToMeta, logError, logInfo } from "@/server/observability/logger";
+import { getSlowRouteThresholdMs, logSlowRouteMetric } from "@/server/observability/metrics";
 import { forbidden, internalError, unauthorized, error as jsonError } from "./response";
 
 /**
@@ -48,6 +49,23 @@ function statusCodeToName(status: number) {
   return "HTTP_ERROR";
 }
 
+
+function attachServerTimingHeader(res: Response, durationMs: number): Response {
+  const value = `app;dur=${Math.max(0, Math.round(durationMs))}`;
+  try {
+    (res.headers as any).set?.("server-timing", value);
+    return res;
+  } catch {
+    const headers = new Headers(res.headers);
+    headers.set("server-timing", value);
+    return new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers,
+    });
+  }
+}
+
 /**
  * Wrap a Next.js App Router route handler and convert thrown errors into JSON responses.
  *
@@ -73,7 +91,19 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
 
     try {
       const res = await handler(req, ctx);
-      const out = attachRequestIdHeader(res, requestId);
+      const durationMs = Date.now() - startedAt;
+      const withServerTiming = attachServerTimingHeader(res, durationMs);
+      const out = attachRequestIdHeader(withServerTiming, requestId);
+
+      if (durationMs >= getSlowRouteThresholdMs()) {
+        logSlowRouteMetric({
+          requestId,
+          method,
+          path,
+          status: out.status,
+          durationMs,
+        });
+      }
 
       // Log only the problematic ones by default, or everything if INKURA_LOG_REQUESTS=1.
       if (out.status >= 500) {
@@ -85,7 +115,7 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
           status: out.status,
           code: statusCodeToName(out.status),
           userId,
-          durationMs: Date.now() - startedAt,
+          durationMs,
         });
       } else if (logRequests) {
         logInfo("api.request", {
@@ -93,7 +123,7 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
           method,
           path,
           status: out.status,
-          durationMs: Date.now() - startedAt,
+          durationMs,
         });
       }
 
@@ -101,7 +131,19 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
     } catch (e) {
       if (e instanceof ApiError) {
         const res = jsonError(e.message, e.status);
-        const out = attachRequestIdHeader(res, requestId);
+        const durationMs = Date.now() - startedAt;
+        const withServerTiming = attachServerTimingHeader(res, durationMs);
+        const out = attachRequestIdHeader(withServerTiming, requestId);
+
+        if (durationMs >= getSlowRouteThresholdMs()) {
+          logSlowRouteMetric({
+            requestId,
+            method,
+            path,
+            status: e.status,
+            durationMs,
+          });
+        }
 
         // Only log 5xx ApiErrors (4xx are usually expected).
         if (e.status >= 500) {
@@ -113,7 +155,7 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
             status: e.status,
             code: statusCodeToName(e.status),
             userId,
-            durationMs: Date.now() - startedAt,
+            durationMs,
             ...errorToMeta(e),
           });
         } else if (logRequests) {
@@ -122,7 +164,7 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
             method,
             path,
             status: e.status,
-            durationMs: Date.now() - startedAt,
+            durationMs,
           });
         }
 
@@ -132,34 +174,43 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
       const msg = normalizeMessage(e);
 
       if (msg === "UNAUTHORIZED") {
-        const out = attachRequestIdHeader(unauthorized(), requestId);
+        const durationMs = Date.now() - startedAt;
+        const out = attachRequestIdHeader(attachServerTimingHeader(unauthorized(), durationMs), requestId);
+        if (durationMs >= getSlowRouteThresholdMs()) {
+          logSlowRouteMetric({ requestId, method, path, status: 401, durationMs });
+        }
         if (logRequests) {
           logInfo("api.request", {
             requestId,
             method,
             path,
             status: 401,
-            durationMs: Date.now() - startedAt,
+            durationMs,
           });
         }
         return out;
       }
 
       if (msg === "FORBIDDEN") {
-        const out = attachRequestIdHeader(forbidden(), requestId);
+        const durationMs = Date.now() - startedAt;
+        const out = attachRequestIdHeader(attachServerTimingHeader(forbidden(), durationMs), requestId);
+        if (durationMs >= getSlowRouteThresholdMs()) {
+          logSlowRouteMetric({ requestId, method, path, status: 403, durationMs });
+        }
         if (logRequests) {
           logInfo("api.request", {
             requestId,
             method,
             path,
             status: 403,
-            durationMs: Date.now() - startedAt,
+            durationMs,
           });
         }
         return out;
       }
 
       // Unhandled error.
+      const durationMs = Date.now() - startedAt;
       const userId = await safeGetSessionUserId();
       logError("api.unhandled_error", {
         requestId,
@@ -168,11 +219,14 @@ export function apiRoute<TCtx>(handler: (req: Request, ctx?: TCtx) => Promise<Re
         status: 500,
         code: "INTERNAL_ERROR",
         userId,
-        durationMs: Date.now() - startedAt,
+        durationMs,
         ...errorToMeta(e),
       });
 
-      const out = attachRequestIdHeader(internalError(), requestId);
+      const out = attachRequestIdHeader(attachServerTimingHeader(internalError(), durationMs), requestId);
+      if (durationMs >= getSlowRouteThresholdMs()) {
+        logSlowRouteMetric({ requestId, method, path, status: 500, durationMs });
+      }
       return out;
     }
   };

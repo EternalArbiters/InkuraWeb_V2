@@ -1,12 +1,13 @@
 import "server-only";
 
 import { apiRoute, json, publicCacheControl } from "@/server/http";
+import { getOptionalIntParam, getOptionalStringParam } from "@/server/http/queryParams";
 import { listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
 
 export const GET = apiRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
-  const q = (searchParams.get("q") || "").trim();
-  const take = Math.min(100, Math.max(1, parseInt(searchParams.get("take") || "100", 10) || 100));
+  const q = getOptionalStringParam(searchParams, "q") || "";
+  const take = getOptionalIntParam(searchParams, "take", { min: 1, max: 100 }) || 100;
 
   const warningTags = await listActiveWarningTags({ q, take });
 

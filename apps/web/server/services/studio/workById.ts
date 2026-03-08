@@ -362,6 +362,7 @@ export async function deleteStudioWorkById(workId: string) {
     select: {
       id: true,
       authorId: true,
+      slug: true,
       coverKey: true,
       coverImage: true,
       chapters: {
@@ -430,5 +431,5 @@ export async function deleteStudioWorkById(workId: string) {
   const uniq = Array.from(new Set(toDelete)).filter(Boolean);
   await Promise.all(uniq.map((x) => deletePublicUpload(x)));
 
-  return { ok: true };
+  return { ok: true, slug: work.slug };
 }

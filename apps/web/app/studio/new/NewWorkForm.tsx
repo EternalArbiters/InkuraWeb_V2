@@ -149,7 +149,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed");
       router.push(`/studio/works/${json?.work?.id}`);
-      router.refresh();
     } catch (e: any) {
       setErr(e?.message || "Error");
     } finally {

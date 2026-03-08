@@ -5,6 +5,7 @@ import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
 import { parseCursor, parseSkip, parseTake, nextCursorFromRows } from "@/server/db/pagination";
 import { workCardSelect } from "@/server/db/selectors";
 import { getViewerWithPrefs, type ViewerWithPrefs } from "./viewer";
+import { profileHotspot } from "@/server/observability/profiling";
 import {
   applyViewerWorkInteractions,
   getViewerWorkInteractions,
@@ -342,6 +343,31 @@ export async function listPublishedWorksFromSearchParams(
     select: workCardSelect,
   };
 
+  const probeMeta = {
+    sort,
+    type: type || "ANY",
+    publishType: publishType || "ANY",
+    comicType: comicType || "ANY",
+    hasQuery: !!q,
+    hasTag: !!tag,
+    hasAuthor: !!author,
+    hasTranslator: !!translator,
+    includeGenreCount: includeGenres.length,
+    excludeGenreCount: effectiveExcludeGenres.length,
+    includeWarningCount: includeWarnings.length,
+    excludeWarningCount: effectiveExcludeWarnings.length,
+    includeDeviantCount: includeDeviant.length,
+    excludeDeviantCount: effectiveExcludeDeviant.length,
+    langCount: langs.length,
+    matureMode: mature || "default",
+    cursorMode: cursor ? "cursor" : "offset",
+    take,
+    skip: cursor ? 0 : skip,
+    hasViewer: !!viewer?.id,
+    canViewMature,
+    canViewDeviantLove,
+  };
+
   // Cursor pagination (optional). Falls back to offset pagination (skip).
   if (cursor) {
     query.cursor = { id: cursor };
@@ -350,7 +376,7 @@ export async function listPublishedWorksFromSearchParams(
     query.skip = skip;
   }
 
-  const works = await prisma.work.findMany(query);
+  const works = await profileHotspot("listPublishedWorks.findMany", probeMeta, () => prisma.work.findMany(query));
   const nextCursor = nextCursorFromRows(works as any, take);
 
   let worksWithViewer: any[] = works as any;
@@ -358,9 +384,11 @@ export async function listPublishedWorksFromSearchParams(
     let interactions = options?.viewerWorkInteractions ?? null;
 
     if (!interactions && options?.includeViewerInteractions !== false) {
-      interactions = await getViewerWorkInteractions(
-        viewer.id,
-        works.map((work: any) => work.id)
+      interactions = await profileHotspot("listPublishedWorks.viewerInteractions", { workCount: works.length }, () =>
+        getViewerWorkInteractions(
+          viewer.id,
+          works.map((work: any) => work.id)
+        )
       );
     }
 

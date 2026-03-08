@@ -61,6 +61,9 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
         include: { user: { select: userPublicSelect } },
       });
 
+      let ratingAvg = 0;
+      let ratingCount = 0;
+
       if (ratingMaybe && ratingMaybe !== existing.rating) {
         await tx.workRating.upsert({
           where: { userId_workId: { userId: existing.userId, workId: existing.workId } },
@@ -74,19 +77,29 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
           _count: { value: true },
         });
 
+        ratingAvg = Number(agg._avg.value ?? 0);
+        ratingCount = Number(agg._count.value ?? 0);
+
         await tx.work.update({
           where: { id: existing.workId },
           data: {
-            ratingAvg: Number(agg._avg.value ?? 0),
-            ratingCount: Number(agg._count.value ?? 0),
+            ratingAvg,
+            ratingCount,
           },
         });
+      } else {
+        const currentWork = await tx.work.findUnique({
+          where: { id: existing.workId },
+          select: { ratingAvg: true, ratingCount: true },
+        });
+        ratingAvg = Number(currentWork?.ratingAvg ?? 0);
+        ratingCount = Number(currentWork?.ratingCount ?? 0);
       }
 
-      return updated;
+      return { review: updated, ratingAvg, ratingCount };
     });
 
-    return json({ ok: true, review: result });
+    return json({ ok: true, review: result.review, ratingAvg: result.ratingAvg, ratingCount: result.ratingCount });
   } catch (e) {
     console.error(e);
     return json({ error: "Internal error" }, { status: 500 });

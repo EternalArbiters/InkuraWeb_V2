@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import { readWorkInteraction, seedWorkInteraction, subscribeWorkInteraction, updateWorkInteraction } from "@/lib/workInteractionStore";
 
 export default function FavoriteIconButton({
   workId,
@@ -19,8 +20,14 @@ export default function FavoriteIconButton({
   const [favorited, setFavorited] = useState(initialFavorited);
 
   useEffect(() => {
-    setFavorited(initialFavorited);
-  }, [initialFavorited]);
+    seedWorkInteraction(workId, { liked: initialFavorited });
+    const sync = () => {
+      const state = readWorkInteraction(workId);
+      setFavorited(state.liked ?? initialFavorited);
+    };
+    sync();
+    return subscribeWorkInteraction(workId, sync);
+  }, [initialFavorited, workId]);
 
   const toggle = () => {
     startTransition(async () => {
@@ -31,8 +38,11 @@ export default function FavoriteIconButton({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      setFavorited(!!data.liked);
-      router.refresh();
+      updateWorkInteraction(workId, (current) => ({
+        ...current,
+        liked: !!data.liked,
+        likeCount: typeof data.likeCount === "number" ? data.likeCount : current.likeCount,
+      }));
     });
   };
 

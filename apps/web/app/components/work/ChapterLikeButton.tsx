@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import { readChapterInteraction, seedChapterInteraction, subscribeChapterInteraction, updateChapterInteraction } from "@/lib/chapterInteractionStore";
 
 export default function ChapterLikeButton({
   chapterId,
@@ -24,9 +25,15 @@ export default function ChapterLikeButton({
   const [count, setCount] = useState(initialCount);
 
   useEffect(() => {
-    setLiked(initialLiked);
-    setCount(initialCount);
-  }, [initialLiked, initialCount]);
+    seedChapterInteraction(chapterId, { liked: initialLiked, likeCount: initialCount });
+    const sync = () => {
+      const state = readChapterInteraction(chapterId);
+      setLiked(state.liked ?? initialLiked);
+      setCount(state.likeCount ?? initialCount);
+    };
+    sync();
+    return subscribeChapterInteraction(chapterId, sync);
+  }, [chapterId, initialCount, initialLiked]);
 
   const toggle = () => {
     startTransition(async () => {
@@ -37,9 +44,11 @@ export default function ChapterLikeButton({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      setLiked(!!data.liked);
-      if (typeof data.likeCount === "number") setCount(data.likeCount);
-      router.refresh();
+      updateChapterInteraction(chapterId, (current) => ({
+        ...current,
+        liked: !!data.liked,
+        likeCount: typeof data.likeCount === "number" ? data.likeCount : current.likeCount ?? initialCount,
+      }));
     });
   };
 

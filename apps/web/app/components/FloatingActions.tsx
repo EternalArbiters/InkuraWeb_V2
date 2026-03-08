@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { readChapterInteraction, seedChapterInteraction, subscribeChapterInteraction, updateChapterInteraction } from "@/lib/chapterInteractionStore";
 
 function CircleButton({
   children,
@@ -53,7 +54,6 @@ function ArrowUpIcon() {
 }
 
 function HeartChatIcon() {
-  // Heart + chat bubble look
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path
@@ -82,7 +82,6 @@ function HeartIcon({ filled }: { filled: boolean }) {
 
 function extractChapterId(pathname: string | null): string | null {
   if (!pathname) return null;
-  // matches /read/<chapterId> and /read/<chapterId>/...
   const m = pathname.match(/\/read\/([^/?#]+)(?:\/|$)/);
   return m?.[1] ? decodeURIComponent(m[1]) : null;
 }
@@ -131,26 +130,39 @@ export default function FloatingActions() {
   useEffect(() => {
     if (!chapterId) return;
 
+    const sync = () => {
+      const state = readChapterInteraction(chapterId);
+      setLiked(state.liked ?? false);
+      setCount(state.likeCount ?? 0);
+    };
+
     const seeded = readReaderFloatingSeed(chapterId);
     if (seeded) {
-      setLiked(seeded.liked);
-      setCount(seeded.count);
-      return;
+      seedChapterInteraction(chapterId, { liked: seeded.liked, likeCount: seeded.count });
     }
 
-    let canceled = false;
-    (async () => {
-      const res = await fetch(`/api/chapters/${chapterId}`);
-      if (!res.ok) return;
-      const data = await res.json().catch(() => null as any);
-      if (!data?.chapter) return;
-      if (canceled) return;
-      setLiked(!!data.chapter.viewerLiked);
-      setCount(typeof data.chapter.likeCount === "number" ? data.chapter.likeCount : 0);
-    })();
-    return () => {
-      canceled = true;
-    };
+    sync();
+    const unsubscribe = subscribeChapterInteraction(chapterId, sync);
+
+    if (!seeded) {
+      let canceled = false;
+      (async () => {
+        const res = await fetch(`/api/chapters/${chapterId}`);
+        if (!res.ok) return;
+        const data = await res.json().catch(() => null as any);
+        if (!data?.chapter || canceled) return;
+        seedChapterInteraction(chapterId, {
+          liked: !!data.chapter.viewerLiked,
+          likeCount: typeof data.chapter.likeCount === "number" ? data.chapter.likeCount : 0,
+        });
+      })();
+      return () => {
+        canceled = true;
+        unsubscribe();
+      };
+    }
+
+    return unsubscribe;
   }, [chapterId]);
 
   const toggleChapterLike = () => {
@@ -163,29 +175,27 @@ export default function FloatingActions() {
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) return;
-      setLiked(!!data.liked);
-      if (typeof data.likeCount === "number") setCount(data.likeCount);
-      router.refresh();
+      updateChapterInteraction(chapterId, (current) => ({
+        ...current,
+        liked: !!data.liked,
+        likeCount: typeof data.likeCount === "number" ? data.likeCount : current.likeCount ?? count,
+      }));
     });
   };
 
   const opacityClass = isReader ? "opacity-50 hover:opacity-85" : "opacity-95 hover:opacity-100";
-
-  // On reader pages we keep these a bit higher so they don't collide with the Pre/All/Next dock.
   const containerClass = isReader
     ? "fixed bottom-24 right-6 z-[80] flex flex-col items-end gap-3"
     : "fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3";
 
   return (
     <div className={containerClass}>
-
       {!hideScrollTop ? (
       <CircleButton ariaLabel="Scroll to top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={opacityClass}>
         <ArrowUpIcon />
       </CircleButton>
       ) : null}
 
-      {/* Desktop only: Chat Elya (not in reader) */}
       {showChat && !isReader ? (
         <div className="hidden md:block">
           <CircleButton ariaLabel="Chat Elya" href="/chat" className={opacityClass}>
@@ -194,7 +204,6 @@ export default function FloatingActions() {
         </div>
       ) : null}
 
-      {/* Desktop only: Like Chapter in reader */}
       {isReader && chapterId ? (
         <div className="hidden md:block">
           <CircleButton

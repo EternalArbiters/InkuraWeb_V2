@@ -82,6 +82,24 @@ export const workCardSelect = {
   translator: { select: userNameSelect },
 } as const satisfies Prisma.WorkSelect;
 
+
+export const workGridSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  coverImage: true,
+  type: true,
+  publishType: true,
+  isMature: true,
+  language: true,
+  comicType: true,
+  likeCount: true,
+  ratingAvg: true,
+  ratingCount: true,
+  updatedAt: true,
+  author: { select: userNameSelect },
+} as const satisfies Prisma.WorkSelect;
+
 export const studioWorkRowSelect = {
   id: true,
   slug: true,
