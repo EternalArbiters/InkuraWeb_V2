@@ -25,7 +25,7 @@ export async function getViewerLibrary() {
       take: 50,
       include: {
         work: { select: { id: true, slug: true, title: true, coverImage: true, type: true } },
-        chapter: { select: { id: true, number: true, title: true } },
+        chapter: { select: { id: true, number: true, label: true, title: true } },
       },
     }),
     prisma.workLike.findMany({

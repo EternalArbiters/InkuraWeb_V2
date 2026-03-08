@@ -94,6 +94,7 @@ export async function getStudioWorkById(workId: string) {
         select: {
           id: true,
           number: true,
+          label: true,
           title: true,
           thumbnailImage: true,
           thumbnailFocusX: true,

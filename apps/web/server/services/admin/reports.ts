@@ -44,7 +44,7 @@ export async function listOpenAdminReports() {
   const chapters = chapterIds.length
     ? await prisma.chapter.findMany({
         where: { id: { in: chapterIds } },
-        select: { id: true, title: true, number: true, work: { select: { id: true, title: true, slug: true } } },
+        select: { id: true, title: true, number: true, label: true, work: { select: { id: true, title: true, slug: true } } },
       })
     : [];
 

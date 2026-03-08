@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 type ReportItem = {
   id: string;
@@ -20,7 +21,7 @@ type ReportItem = {
         user: { id: string; username: string | null; name: string | null };
         target:
           | { type: "WORK"; work: { id: string; title: string; slug: string } | null }
-          | { type: "CHAPTER"; chapter: { id: string; title: string; number: number; work: { id: string; title: string; slug: string } } | null };
+          | { type: "CHAPTER"; chapter: { id: string; title: string; number: number; label?: string | null; work: { id: string; title: string; slug: string } } | null };
       }
     | null;
 };
@@ -98,7 +99,7 @@ export default function AdminReportsClient({ initial }: { initial: ReportItem[] 
                     t.type === "CHAPTER" && t.chapter
                       ? (
                           <>
-                            In: <b>{t.chapter.work.title}</b> • Chapter {t.chapter.number}: {t.chapter.title}
+                            In: <b>{t.chapter.work.title}</b> • {getChapterDisplayTitle(t.chapter.number, t.chapter.title, t.chapter.label)}
                           </>
                         )
                       : t.type === "WORK" && t.work

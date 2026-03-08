@@ -30,6 +30,7 @@ async function loadPublicChapterReaderData(chapterId: string) {
       workId: true,
       title: true,
       number: true,
+      label: true,
       status: true,
       isMature: true,
       likeCount: true,
@@ -72,6 +73,7 @@ async function loadPublicChapterReaderData(chapterId: string) {
       id: chapter.id,
       title: chapter.title,
       number: chapter.number,
+      label: chapter.label,
       warningTags: chapter.warningTags,
       text: chapter.text,
       pages: chapter.pages,
@@ -152,6 +154,7 @@ export async function getViewerChapterReaderPayload(chapterId: string, work: any
       chapter: {
         id: chapter.id,
         number: chapter.number,
+        label: chapter.label,
         title: chapter.title,
         isMature: chapter.isMature,
         likeCount: chapter.likeCount,

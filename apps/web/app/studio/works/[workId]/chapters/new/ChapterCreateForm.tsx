@@ -33,6 +33,8 @@ function formatBytes(bytes: number) {
 export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags }: Props) {
   const router = useRouter();
 
+  const [autoNumber, setAutoNumber] = React.useState(true);
+  const [manualLabel, setManualLabel] = React.useState("");
   const [title, setTitle] = React.useState("");
   const [number, setNumber] = React.useState(nextNumber);
   const [status, setStatus] = React.useState("DRAFT");
@@ -48,6 +50,12 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
   const [error, setError] = React.useState<string | null>(null);
   const [note, setNote] = React.useState<string | null>(null);
   const [createdChapterId, setCreatedChapterId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (autoNumber) {
+      setNumber(nextNumber);
+    }
+  }, [autoNumber, nextNumber]);
 
   React.useEffect(() => {
     if (workType !== "COMIC" || pages.length === 0) {
@@ -95,6 +103,14 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
     setNote(null);
     setCreatedChapterId(null);
 
+    const trimmedManualLabel = manualLabel.trim();
+    const trimmedTitle = title.trim();
+
+    if (!autoNumber && !trimmedManualLabel) {
+      setError("Isi Chapter Label kalau mode auto dimatikan.");
+      return;
+    }
+
     if (workType === "NOVEL" && !content.trim()) {
       setError("Content wajib diisi untuk NOVEL");
       return;
@@ -102,13 +118,13 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
     setLoading(true);
     try {
-      // Step 1: create chapter (metadata + novel content only)
       setNote("Membuat chapter...");
 
       const payload: any = {
         workId,
         number,
-        title: (title || `Chapter ${number}`).trim(),
+        label: autoNumber ? null : trimmedManualLabel,
+        title: (trimmedTitle || trimmedManualLabel || `Chapter ${number}`).trim(),
         status,
         isMature,
         warningTagIds: warningIds,
@@ -128,7 +144,6 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
       if (!chapterId) throw new Error("Chapter created but id is missing");
       setCreatedChapterId(chapterId);
 
-      // Step 2: if comic + pages selected, optimize in browser, upload to R2 (presigned), then commit.
       if (workType === "COMIC" && pages.length) {
         setNote(`Menyiapkan optimasi ${pages.length} halaman...`);
         const preparedUploads =
@@ -204,26 +219,79 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Chapter Number</span>
-          <input
-            type="number"
-            min={0}
-            value={number}
-            onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </label>
+      <div className="grid gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold">Chapter label</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">
+              Auto = sistem pakai nomor berikutnya. Manual = kamu bisa tulis sendiri, misalnya Prolog, Bonus, atau Chapter 0.
+            </div>
+          </div>
 
+          <label className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm font-medium">
+            <input type="checkbox" checked={autoNumber} onChange={(e) => setAutoNumber(e.target.checked)} />
+            Auto chapter label
+          </label>
+        </div>
+
+        {autoNumber ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Chapter Number</span>
+              <input
+                type="number"
+                min={0}
+                value={number}
+                readOnly
+                className="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 outline-none cursor-not-allowed"
+              />
+            </label>
+
+            <div className="grid gap-2">
+              <span className="text-sm font-semibold">Preview</span>
+              <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
+                Chapter {number}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Chapter Label</span>
+              <input
+                value={manualLabel}
+                onChange={(e) => setManualLabel(e.target.value)}
+                placeholder="Prolog, Bonus, Chapter 0..."
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Chapter Order</span>
+              <input
+                type="number"
+                min={0}
+                value={number}
+                onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </label>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label className="grid gap-2">
           <span className="text-sm font-semibold">Title</span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={`Chapter ${number}`}
+            placeholder={autoNumber ? `Chapter ${number}` : "Optional title / subtitle"}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
+          <span className="text-xs text-gray-600 dark:text-gray-300">
+            Kalau dikosongkan, sistem akan pakai {autoNumber ? `Chapter ${number}` : "Chapter Label"} sebagai judul default.
+          </span>
         </label>
 
         <label className="grid gap-2">
@@ -238,7 +306,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
           </select>
         </label>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 md:col-span-2">
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature (Chapter)</div>

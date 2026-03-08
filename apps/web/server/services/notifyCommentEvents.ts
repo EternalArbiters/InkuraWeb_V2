@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { getChapterDisplayLabel } from "@/lib/chapterLabel";
 import {
   canSeeGatedNotificationContent,
   commentNotificationDedupeKey,
@@ -42,6 +43,7 @@ export async function notifyCommentEvents(args: {
           select: {
             id: true,
             number: true,
+            label: true,
             title: true,
             isMature: true,
             work: {
@@ -96,7 +98,10 @@ export async function notifyCommentEvents(args: {
       userId: work.authorId,
       type: "COMMENT_NEW",
       title: `New comment on ${work.title}`,
-      body: targetType === "WORK" ? `${actorName} commented.` : `${actorName} commented on Chapter ${chapterCtx!.number}.`,
+      body:
+        targetType === "WORK"
+          ? `${actorName} commented.`
+          : `${actorName} commented on ${getChapterDisplayLabel(chapterCtx!.number, chapterCtx!.label)}.`,
       href,
       workId: work.id,
       chapterId: targetType === "CHAPTER" ? chapterCtx!.id : null,

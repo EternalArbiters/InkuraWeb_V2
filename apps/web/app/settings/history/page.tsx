@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listViewerProgress } from "@/server/services/progress/viewerProgress";
+import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function ReadingHistoryPage() {
                   <div>
                     <div className="font-semibold">{p.work?.title}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Chapter {p.chapter?.number}: {p.chapter?.title}
+                      {getChapterDisplayTitle(p.chapter?.number ?? 0, p.chapter?.title, p.chapter?.label)}
                     </div>
                   </div>
                   <Link

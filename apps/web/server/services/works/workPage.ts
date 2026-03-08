@@ -114,6 +114,7 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
           id: true,
           title: true,
           number: true,
+          label: true,
           status: true,
           createdAt: true,
           publishedAt: true,

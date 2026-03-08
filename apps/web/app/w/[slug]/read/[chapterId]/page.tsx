@@ -10,13 +10,9 @@ import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import { logPageRenderMetric } from "@/server/observability/metrics";
+import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 export const dynamic = "force-dynamic";
-
-function chapterLabel(n: number, title: string) {
-  const t = title ? `: ${title}` : "";
-  return `Ch. ${n}${t}`;
-}
 
 export default async function ReadChapterPage({
   params: paramsPromise,
@@ -113,7 +109,7 @@ export default async function ReadChapterPage({
         <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
           <div>
             {/* keep for accessibility/SEO only */}
-            <h1 className="sr-only">{work.title} — {chapterLabel(chapter.number, chapter.title)}</h1>
+            <h1 className="sr-only">{work.title} — {getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}</h1>
 
             {/* Desktop titles */}
             <div className="hidden lg:block mb-4">
@@ -121,21 +117,21 @@ export default async function ReadChapterPage({
                 {work.title}
               </Link>
               <div className="mt-1 text-3xl font-extrabold tracking-tight text-white">
-                {chapterLabel(chapter.number, chapter.title)}
+                {getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}
               </div>
             </div>
 
             <div className="mt-0">
               <ContentWarningsGate
                 storageKey={`chapter:${chapter.id}`}
-                title={`${work.title} — ${chapterLabel(chapter.number, chapter.title)}`}
+                title={`${work.title} — ${getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}`}
                 warnings={allWarnings}
               >
                 <ReaderChrome
                   workId={work.id}
                   workSlug={work.slug}
                   workTitle={work.title}
-                  chapterTitle={chapterLabel(chapter.number, chapter.title)}
+                  chapterTitle={getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}
                   chapterId={chapter.id}
                   prevId={prev ? prev.id : null}
                   nextId={next ? next.id : null}

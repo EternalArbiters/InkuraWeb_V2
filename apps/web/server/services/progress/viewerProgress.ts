@@ -13,7 +13,7 @@ export async function listViewerProgress(input?: { take?: number }) {
     take,
     include: {
       work: { select: { id: true, slug: true, title: true, type: true } },
-      chapter: { select: { id: true, number: true, title: true } },
+      chapter: { select: { id: true, number: true, label: true, title: true } },
     },
   });
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 import { redirect } from "next/navigation";
 import { ApiError } from "@/server/http";
 import { getStudioWorkById } from "@/server/services/studio/workById";
@@ -150,7 +151,7 @@ export default async function StudioWorkPage({
 
                       <div className="min-w-0">
                         <div className="text-sm font-semibold truncate">
-                          #{ch.number} — {ch.title}
+                          {getChapterDisplayTitle(ch.number, ch.title, ch.label)}
                         </div>
                         <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
                           {ch.status === "PUBLISHED" ? "Published" : "Draft"}

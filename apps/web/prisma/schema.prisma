@@ -239,6 +239,7 @@ model Chapter {
   work        Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
 
   number      Int
+  label       String?
   title       String
   status      ChapterStatus @default(DRAFT)
   publishedAt DateTime?

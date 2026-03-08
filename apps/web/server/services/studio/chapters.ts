@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { savePublicUpload, deletePublicUpload } from "@/server/uploads/upload";
 import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 import { ApiError } from "@/server/http";
+import { Prisma } from "@prisma/client";
 import { requireCreatorSession } from "./session";
 
 function safeJsonArray(v: unknown): string[] {
@@ -32,6 +33,13 @@ function safeStatus(v: unknown): "DRAFT" | "PUBLISHED" {
   return s === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
 }
 
+function safeLabel(v: unknown) {
+  if (v === null) return null;
+  if (typeof v !== "string") return undefined;
+  const s = v.trim();
+  return s || null;
+}
+
 async function recomputePublishedChapterCount(workId: string) {
   const count = await prisma.chapter.count({ where: { workId, status: "PUBLISHED" } as any });
   await prisma.work.update({ where: { id: workId }, data: { chapterCount: count } });
@@ -53,6 +61,7 @@ export async function createStudioChapter(req: Request) {
 
   let workId = "";
   let title = "";
+  let label: string | null | undefined = undefined;
   let number = 1;
   let status: "DRAFT" | "PUBLISHED" = "DRAFT";
   let isMature = false;
@@ -66,7 +75,8 @@ export async function createStudioChapter(req: Request) {
     const body = await req.json().catch(() => ({} as any));
     workId = String(body?.workId || "").trim();
     title = String(body?.title || "").trim();
-    number = Math.max(1, parseInt(String(body?.number || "1"), 10) || 1);
+    label = safeLabel(body?.label);
+    number = Math.max(0, parseInt(String(body?.number ?? "1"), 10) || 0);
     status = safeStatus(body?.status);
     isMature = safeBool(body?.isMature);
     warningTagIds = Array.isArray(body?.warningTagIds) ? body.warningTagIds.map(String) : [];
@@ -84,8 +94,9 @@ export async function createStudioChapter(req: Request) {
     const fd = await req.formData();
     workId = String(fd.get("workId") || "").trim();
     title = String(fd.get("title") || "").trim();
+    label = safeLabel(fd.get("label"));
     const numberRaw = String(fd.get("number") || "").trim();
-    number = Math.max(1, parseInt(numberRaw || "1", 10) || 1);
+    number = Math.max(0, parseInt(numberRaw || "1", 10) || 0);
     status = safeStatus(fd.get("status"));
     isMature = safeBool(fd.get("isMature"));
     warningTagIds = safeJsonArray(fd.get("warningTagIds"));
@@ -126,19 +137,28 @@ export async function createStudioChapter(req: Request) {
   }
 
   // Create chapter first (so we have chapterId for R2 key prefixes)
-  const chapter = await prisma.chapter.create({
-    data: {
-      workId,
-      title,
-      number,
-      status: status as any,
-      publishedAt: status === "PUBLISHED" ? new Date() : null,
-      ...(isMature ? { isMature: true } : {}),
-      ...(warningTagIds.length ? { warningTags: { connect: warningTagIds.map((id) => ({ id })) } } : {}),
-      ...(work.type === "NOVEL" ? { text: { create: { content } } } : {}),
-    },
-    select: { id: true, workId: true, number: true, title: true, status: true, work: { select: { slug: true } } },
-  });
+  let chapter;
+  try {
+    chapter = await prisma.chapter.create({
+      data: {
+        workId,
+        title,
+        number,
+        ...(label !== undefined ? { label } : {}),
+        status: status as any,
+        publishedAt: status === "PUBLISHED" ? new Date() : null,
+        ...(isMature ? { isMature: true } : {}),
+        ...(warningTagIds.length ? { warningTags: { connect: warningTagIds.map((id) => ({ id })) } } : {}),
+        ...(work.type === "NOVEL" ? { text: { create: { content } } } : {}),
+      },
+      select: { id: true, workId: true, number: true, label: true, title: true, status: true, work: { select: { slug: true } } },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { status: 409, body: { error: "Chapter order sudah dipakai di work ini." } };
+    }
+    throw error;
+  }
 
   if (work.type === "COMIC") {
     // If old flow still sends files in the same request, upload them to R2 now.
@@ -220,10 +240,11 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
   const body = await req.json().catch(() => ({} as any));
 
   const title = typeof body.title === "string" ? body.title.trim() : undefined;
+  const label = safeLabel(body.label);
   const numberRaw = body.number;
   const number =
     typeof numberRaw === "number" && Number.isFinite(numberRaw)
-      ? Math.max(1, Math.floor(numberRaw))
+      ? Math.max(0, Math.floor(numberRaw))
       : undefined;
   const content = typeof body.content === "string" ? body.content : undefined;
   const authorNote =
@@ -264,6 +285,7 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
 
   const data: any = {};
   if (title !== undefined) data.title = title;
+  if (label !== undefined) data.label = label;
   if (number !== undefined) data.number = number;
   if (isMature !== undefined) data.isMature = isMature;
   if (warningTagIds) data.warningTags = { set: warningTagIds.map((id) => ({ id })) };
@@ -303,11 +325,19 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
     }
   }
 
-  const updated = await prisma.chapter.update({
-    where: { id: chapterId },
-    data,
-    select: { id: true, title: true, number: true, status: true, workId: true, work: { select: { slug: true } } },
-  });
+  let updated;
+  try {
+    updated = await prisma.chapter.update({
+      where: { id: chapterId },
+      data,
+      select: { id: true, title: true, number: true, label: true, status: true, workId: true, work: { select: { slug: true } } },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { status: 409, body: { error: "Chapter order sudah dipakai di work ini." } };
+    }
+    throw error;
+  }
 
   if (owned.chapter.work.type === "NOVEL" && content !== undefined) {
     if (owned.chapter.text) {

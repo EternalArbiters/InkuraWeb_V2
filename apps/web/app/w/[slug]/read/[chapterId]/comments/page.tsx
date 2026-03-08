@@ -5,13 +5,9 @@ import { fetchComments } from "@/server/services/comments/fetchComments";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
+import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 export const dynamic = "force-dynamic";
-
-function chapterLabel(n: number, title: string) {
-  const t = title ? `: ${title}` : "";
-  return `Ch. ${n}${t}`;
-}
 
 function safeSort(v: unknown): "latest" | "top" | "oldest" {
   const s = String(v || "").toLowerCase().trim();
@@ -108,7 +104,7 @@ export default async function ChapterCommentsPage({
               className="mt-1 block truncate text-2xl font-extrabold tracking-tight hover:underline"
               title="Back to reader"
             >
-              {chapterLabel(chapter.number, chapter.title)}
+              {getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}
             </Link>
           </div>
         </div>

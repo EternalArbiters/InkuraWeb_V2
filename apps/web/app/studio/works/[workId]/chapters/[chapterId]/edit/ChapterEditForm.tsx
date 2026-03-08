@@ -11,16 +11,17 @@ type Chapter = {
   id: string;
   title: string;
   number: number;
+  label?: string | null;
   status: string;
-  isMature: boolean;
-  warningTags: { id: string; name: string; slug: string }[];
-  text?: { content: string } | null;
+  isMature?: boolean | null;
   authorNote?: string | null;
   thumbnailImage?: string | null;
   thumbnailKey?: string | null;
   thumbnailFocusX?: number | null;
   thumbnailFocusY?: number | null;
   thumbnailZoom?: number | null;
+  text?: { content: string } | null;
+  warningTags?: Array<{ id: string }>;
 };
 
 type Props = {
@@ -32,9 +33,9 @@ type Props = {
 };
 
 function clamp(n: unknown, def: number, min: number, max: number) {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return def;
-  return Math.max(min, Math.min(max, v));
+  const value = Number(n);
+  if (!Number.isFinite(value)) return def;
+  return Math.max(min, Math.min(max, value));
 }
 
 function formatBytes(bytes: number) {
@@ -46,19 +47,22 @@ function formatBytes(bytes: number) {
     value /= 1024;
     unitIndex += 1;
   }
-  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2;
-  return `${value.toFixed(digits)} ${units[unitIndex]}`;
+  return `${value >= 10 || unitIndex === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[unitIndex]}`;
 }
 
 export default function ChapterEditForm({ workId, workTitle, workType, chapter, warningTags }: Props) {
   const router = useRouter();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const [autoNumber, setAutoNumber] = React.useState(!chapter.label);
+  const [manualLabel, setManualLabel] = React.useState(chapter.label || "");
   const [title, setTitle] = React.useState(chapter.title || "");
   const [number, setNumber] = React.useState(chapter.number || 0);
   const [status, setStatus] = React.useState(chapter.status || "DRAFT");
   const [isMature, setIsMature] = React.useState(!!chapter.isMature);
-  const [warningIds, setWarningIds] = React.useState<string[]>(chapter.warningTags.map((w) => w.id));
-
+  const [warningIds, setWarningIds] = React.useState<string[]>(() =>
+    Array.isArray(chapter.warningTags) ? chapter.warningTags.map((tag) => String(tag.id)) : []
+  );
   const [content, setContent] = React.useState(chapter.text?.content || "");
   const [authorNote, setAuthorNote] = React.useState(chapter.authorNote || "");
 
@@ -104,10 +108,9 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       const bytesSaved = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
       setThumbOptimizationSummary(
         prepared.compressionApplied || bytesSaved > 0
-          ? `${formatBytes(prepared.originalBytes)} → ${formatBytes(prepared.optimizedBytes)}`
+          ? `${formatBytes(prepared.originalBytes)} -> ${formatBytes(prepared.optimizedBytes)}`
           : `No optimization needed (${formatBytes(prepared.optimizedBytes)})`
       );
-      // Reset crop to a sensible default for new uploads
       setThumbFocusX(50);
       setThumbFocusY(50);
       setThumbZoom(1);
@@ -129,11 +132,21 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const trimmedManualLabel = manualLabel.trim();
+    const trimmedTitle = title.trim();
+
+    if (!autoNumber && !trimmedManualLabel) {
+      setError("Isi Chapter Label kalau mode auto dimatikan.");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload: any = {
-        title: title || `Chapter ${number}`,
+        title: (trimmedTitle || trimmedManualLabel || `Chapter ${number}`).trim(),
         number,
+        label: autoNumber ? null : trimmedManualLabel,
         status,
         isMature,
         warningTagIds: warningIds,
@@ -218,26 +231,79 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Chapter Number</span>
-          <input
-            type="number"
-            min={0}
-            value={number}
-            onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </label>
+      <div className="grid gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold">Chapter label</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">
+              Auto = sistem pakai nomor chapter. Manual = kamu bisa tulis sendiri label seperti Prolog, Bonus, atau Chapter 0.
+            </div>
+          </div>
 
+          <label className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm font-medium">
+            <input type="checkbox" checked={autoNumber} onChange={(e) => setAutoNumber(e.target.checked)} />
+            Auto chapter label
+          </label>
+        </div>
+
+        {autoNumber ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Chapter Number</span>
+              <input
+                type="number"
+                min={0}
+                value={number}
+                readOnly
+                className="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 outline-none cursor-not-allowed"
+              />
+            </label>
+
+            <div className="grid gap-2">
+              <span className="text-sm font-semibold">Preview</span>
+              <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
+                Chapter {number}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Chapter Label</span>
+              <input
+                value={manualLabel}
+                onChange={(e) => setManualLabel(e.target.value)}
+                placeholder="Prolog, Bonus, Chapter 0..."
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Chapter Order</span>
+              <input
+                type="number"
+                min={0}
+                value={number}
+                onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </label>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label className="grid gap-2">
           <span className="text-sm font-semibold">Title</span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={`Chapter ${number}`}
+            placeholder={autoNumber ? `Chapter ${number}` : "Optional title / subtitle"}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
+          <span className="text-xs text-gray-600 dark:text-gray-300">
+            Kalau dikosongkan, sistem akan pakai {autoNumber ? `Chapter ${number}` : "Chapter Label"} sebagai judul default.
+          </span>
         </label>
 
         <label className="grid gap-2">
@@ -252,7 +318,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           </select>
         </label>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 md:col-span-2">
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature (Chapter)</div>

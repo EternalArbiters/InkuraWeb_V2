@@ -53,6 +53,7 @@ export const comicPageSelect = {
 export const chapterListItemSelect = {
   id: true,
   number: true,
+  label: true,
   title: true,
 } as const satisfies Prisma.ChapterSelect;
 

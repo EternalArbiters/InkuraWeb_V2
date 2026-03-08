@@ -2,6 +2,7 @@ import Link from "next/link";
 import WorksGrid from "../components/WorksGrid";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
+import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function LibraryPage() {
                     <div>
                       <div className="font-semibold">{p.work?.title}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-300">
-                        Chapter {p.chapter?.number}: {p.chapter?.title}
+                        {getChapterDisplayTitle(p.chapter?.number ?? 0, p.chapter?.title, p.chapter?.label)}
                       </div>
                     </div>
                     <Link

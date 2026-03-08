@@ -3,11 +3,13 @@
 import Link from "next/link";
 import * as React from "react";
 import { ArrowDownUp } from "lucide-react";
+import { getChapterDisplayLabel, getChapterSecondaryTitle } from "@/lib/chapterLabel";
 
 type ChapterLite = {
   id: string;
   number: number;
   title: string;
+  label?: string | null;
   status?: string | null;
   publishedAt?: string | null;
   createdAt?: string | null;
@@ -102,6 +104,8 @@ export default function WorkChaptersWebtoon({
 
             const read = typeof lastReadChapterNumber === "number" && c.number <= lastReadChapterNumber;
             const up = isWithin24h(c.publishedAt || c.createdAt || null);
+            const displayLabel = getChapterDisplayLabel(c.number, c.label);
+            const secondaryTitle = getChapterSecondaryTitle(c.number, c.title, c.label);
 
             return (
               <Link
@@ -139,8 +143,12 @@ export default function WorkChaptersWebtoon({
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-0.5">
-                  <div className="truncate text-base font-extrabold leading-tight">Chapter {c.number}</div>
-                  <div className="truncate text-sm leading-tight text-gray-800 dark:text-gray-100">{c.title}</div>
+                  <div className="truncate text-base font-extrabold leading-tight">{displayLabel}</div>
+                  {secondaryTitle ? (
+                    <div className="truncate text-sm leading-tight text-gray-800 dark:text-gray-100">
+                      {secondaryTitle}
+                    </div>
+                  ) : null}
                   <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs text-gray-600 dark:text-gray-300">
                     {c.isMature ? <span className="shrink-0 rounded-full bg-black/70 px-2 py-1 text-white">18+</span> : null}
                     {c.publishedAt ? <span className="truncate">{new Date(c.publishedAt).toLocaleDateString()}</span> : null}
