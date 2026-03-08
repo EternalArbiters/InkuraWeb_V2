@@ -25,7 +25,9 @@ export const listReadingListsForViewer = cache(async function listReadingListsFo
       id: true,
       slug: true,
       title: true,
+      description: true,
       isPublic: true,
+      updatedAt: true,
       _count: { select: { items: true } },
       items: {
         orderBy: { addedAt: "desc" },
