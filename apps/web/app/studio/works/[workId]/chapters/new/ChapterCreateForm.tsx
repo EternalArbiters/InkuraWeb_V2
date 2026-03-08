@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFiles, summarizePreparedUploadFiles, type PreparedUploadFile } from "@/lib/uploadOptimization";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import ComicPageFilesPicker from "@/components/ComicPageFilesPicker";
 
 type Props = {
   workId: string;
@@ -33,10 +34,10 @@ function formatBytes(bytes: number) {
 export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags }: Props) {
   const router = useRouter();
 
-  const [autoNumber, setAutoNumber] = React.useState(true);
-  const [manualLabel, setManualLabel] = React.useState("");
   const [title, setTitle] = React.useState("");
+  const [autoLabel, setAutoLabel] = React.useState(true);
   const [number, setNumber] = React.useState(nextNumber);
+  const [displayLabel, setDisplayLabel] = React.useState("");
   const [status, setStatus] = React.useState("DRAFT");
   const [isMature, setIsMature] = React.useState(false);
   const [warningIds, setWarningIds] = React.useState<string[]>([]);
@@ -45,6 +46,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
   const [pages, setPages] = React.useState<File[]>([]);
   const [preparedPages, setPreparedPages] = React.useState<PreparedUploadFile[]>([]);
   const [preparingPages, setPreparingPages] = React.useState(false);
+  const [importingPages, setImportingPages] = React.useState(false);
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -52,10 +54,8 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
   const [createdChapterId, setCreatedChapterId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (autoNumber) {
-      setNumber(nextNumber);
-    }
-  }, [autoNumber, nextNumber]);
+    if (autoLabel) setNumber(nextNumber);
+  }, [autoLabel, nextNumber]);
 
   React.useEffect(() => {
     if (workType !== "COMIC" || pages.length === 0) {
@@ -103,14 +103,6 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
     setNote(null);
     setCreatedChapterId(null);
 
-    const trimmedManualLabel = manualLabel.trim();
-    const trimmedTitle = title.trim();
-
-    if (!autoNumber && !trimmedManualLabel) {
-      setError("Isi Chapter Label kalau mode auto dimatikan.");
-      return;
-    }
-
     if (workType === "NOVEL" && !content.trim()) {
       setError("Content wajib diisi untuk NOVEL");
       return;
@@ -118,13 +110,14 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
     setLoading(true);
     try {
+      // Step 1: create chapter (metadata + novel content only)
       setNote("Membuat chapter...");
 
       const payload: any = {
         workId,
         number,
-        label: autoNumber ? null : trimmedManualLabel,
-        title: (trimmedTitle || trimmedManualLabel || `Chapter ${number}`).trim(),
+        displayLabel: autoLabel ? null : displayLabel.trim() || null,
+        title: (title || (!autoLabel && displayLabel.trim() ? displayLabel.trim() : `Chapter ${number}`)).trim(),
         status,
         isMature,
         warningTagIds: warningIds,
@@ -144,6 +137,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
       if (!chapterId) throw new Error("Chapter created but id is missing");
       setCreatedChapterId(chapterId);
 
+      // Step 2: if comic + pages selected, optimize in browser, upload to R2 (presigned), then commit.
       if (workType === "COMIC" && pages.length) {
         setNote(`Menyiapkan optimasi ${pages.length} halaman...`);
         const preparedUploads =
@@ -219,79 +213,50 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold">Chapter label</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Auto = sistem pakai nomor berikutnya. Manual = kamu bisa tulis sendiri, misalnya Prolog, Bonus, atau Chapter 0.
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4 md:col-span-2">
+          <label className="flex items-center gap-3">
+            <input type="checkbox" checked={autoLabel} onChange={(e) => setAutoLabel(e.target.checked)} />
+            <div>
+              <div className="text-sm font-semibold">Auto chapter label</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300">Aktif: pakai urutan chapter otomatis. Mati: kamu bisa isi label sendiri seperti Prolog, Chapter 0, Bonus, dll.</div>
             </div>
-          </div>
-
-          <label className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm font-medium">
-            <input type="checkbox" checked={autoNumber} onChange={(e) => setAutoNumber(e.target.checked)} />
-            Auto chapter label
           </label>
-        </div>
 
-        {autoNumber ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="grid gap-2">
-              <span className="text-sm font-semibold">Chapter Number</span>
-              <input
-                type="number"
-                min={0}
-                value={number}
-                readOnly
-                className="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 outline-none cursor-not-allowed"
-              />
-            </label>
-
-            <div className="grid gap-2">
-              <span className="text-sm font-semibold">Preview</span>
-              <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
-                Chapter {number}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold">Chapter Label</span>
-              <input
-                value={manualLabel}
-                onChange={(e) => setManualLabel(e.target.value)}
-                placeholder="Prolog, Bonus, Chapter 0..."
-                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold">Chapter Order</span>
+              <span className="text-sm font-semibold">Sort Number</span>
               <input
                 type="number"
                 min={0}
                 value={number}
                 onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
-                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+                disabled={autoLabel}
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold">Display Label</span>
+              <input
+                value={autoLabel ? `Chapter ${number}` : displayLabel}
+                onChange={(e) => setDisplayLabel(e.target.value)}
+                disabled={autoLabel}
+                placeholder="Prolog / Bonus / Chapter 0"
+                className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60"
               />
             </label>
           </div>
-        )}
-      </div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label className="grid gap-2">
           <span className="text-sm font-semibold">Title</span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={autoNumber ? `Chapter ${number}` : "Optional title / subtitle"}
+            placeholder={!autoLabel && displayLabel.trim() ? displayLabel.trim() : `Chapter ${number}`}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            Kalau dikosongkan, sistem akan pakai {autoNumber ? `Chapter ${number}` : "Chapter Label"} sebagai judul default.
-          </span>
         </label>
 
         <label className="grid gap-2">
@@ -306,7 +271,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
           </select>
         </label>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 md:col-span-2">
+        <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature (Chapter)</div>
@@ -335,17 +300,18 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
           />
         </label>
       ) : (
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Pages (Images)</span>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => setPages(Array.from(e.target.files || []))}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          />
+        <div className="grid gap-3">
+          <div className="grid gap-2">
+            <span className="text-sm font-semibold">Comic Pages</span>
+            <span className="text-xs text-gray-600 dark:text-gray-300">
+              Sekarang ada 4 cara upload: manual satu-satu, upload semua image, upload ZIP chapter, atau upload PDF chapter.
+            </span>
+          </div>
+
+          <ComicPageFilesPicker files={pages} setFiles={setPages} onBusyChange={setImportingPages} />
+
           <span className="text-xs text-gray-600 dark:text-gray-300">
-            Halaman akan dioptimalkan di browser dulu sebelum upload ke R2 agar lebih ringan tanpa mengorbankan keterbacaan.
+            Setelah masuk antrean, halaman akan dioptimalkan di browser dulu sebelum upload ke R2 agar lebih ringan tanpa mengorbankan keterbacaan.
           </span>
           {pageSummary ? (
             <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
@@ -360,16 +326,16 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
               ) : null}
             </div>
           ) : null}
-        </label>
+        </div>
       )}
 
       <div className="flex items-center justify-end gap-2">
         <button
           type="submit"
-          disabled={loading || preparingPages}
+          disabled={loading || preparingPages || importingPages}
           className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
-          {loading ? "Saving..." : preparingPages ? "Preparing pages..." : "Create Chapter"}
+          {loading ? "Saving..." : importingPages ? "Processing import..." : preparingPages ? "Preparing pages..." : "Create Chapter"}
         </button>
       </div>
     </form>

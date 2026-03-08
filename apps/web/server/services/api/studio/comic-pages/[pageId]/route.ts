@@ -7,6 +7,14 @@ import { apiRoute, json } from "@/server/http";
 
 export const runtime = "nodejs";
 
+async function setChapterPageOrder(ids: string[]) {
+  if (!ids.length) return;
+  await prisma.$transaction([
+    ...ids.map((id, i) => prisma.comicPage.update({ where: { id }, data: { order: -(i + 1) } })),
+    ...ids.map((id, i) => prisma.comicPage.update({ where: { id }, data: { order: i + 1 } })),
+  ]);
+}
+
 async function renumberChapterPages(chapterId: string) {
   const pages = await prisma.comicPage.findMany({
     where: { chapterId },
@@ -14,11 +22,7 @@ async function renumberChapterPages(chapterId: string) {
     select: { id: true },
   });
 
-  const ids = pages.map((p) => p.id);
-  await prisma.$transaction([
-    ...ids.map((id, i) => prisma.comicPage.update({ where: { id }, data: { order: -(i + 1) } })),
-    ...ids.map((id, i) => prisma.comicPage.update({ where: { id }, data: { order: i + 1 } })),
-  ]);
+  await setChapterPageOrder(pages.map((p) => p.id));
 }
 
 async function getMe(sessionUserId: string) {
@@ -87,8 +91,20 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
     return json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.comicPage.update({ where: { id: pageId }, data: { order } });
-  await renumberChapterPages(page.chapterId);
+  const chapterPages = await prisma.comicPage.findMany({
+    where: { chapterId: page.chapterId },
+    orderBy: { order: "asc" },
+    select: { id: true },
+  });
+
+  const ids = chapterPages.map((item) => item.id);
+  const currentIndex = ids.indexOf(pageId);
+  if (currentIndex === -1) return json({ error: "Not found" }, { status: 404 });
+
+  const targetIndex = Math.max(0, Math.min(ids.length - 1, order - 1));
+  const [picked] = ids.splice(currentIndex, 1);
+  ids.splice(targetIndex, 0, picked);
+  await setChapterPageOrder(ids);
 
   return json({ ok: true });
 });

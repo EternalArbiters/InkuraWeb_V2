@@ -1,5 +1,8 @@
 "use client";
 
+import * as React from "react";
+import ComicPageFilesPicker from "@/components/ComicPageFilesPicker";
+
 type UploadSummary = {
   count: number;
   originalBytes: number;
@@ -32,7 +35,7 @@ export default function UploadPagesCard({
   onUpload,
 }: {
   files: File[];
-  setFiles: (files: File[]) => void;
+  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
   replaceExisting: boolean;
   setReplaceExisting: (v: boolean) => void;
   loading: boolean;
@@ -40,16 +43,18 @@ export default function UploadPagesCard({
   summary: UploadSummary | null;
   onUpload: () => void;
 }) {
+  const [importing, setImporting] = React.useState(false);
+
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
-      <div className="font-semibold">Upload pages</div>
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={(e) => setFiles(Array.from(e.target.files || []))}
-        className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-      />
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-4">
+      <div>
+        <div className="font-semibold">Upload pages</div>
+        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+          Kamu bisa upload manual satu-satu, upload semua image, import ZIP chapter, atau import PDF chapter.
+        </div>
+      </div>
+
+      <ComicPageFilesPicker files={files} setFiles={setFiles} onBusyChange={setImporting} />
 
       {summary ? (
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
@@ -79,10 +84,10 @@ export default function UploadPagesCard({
         <button
           type="button"
           onClick={onUpload}
-          disabled={loading || preparing || files.length === 0}
+          disabled={loading || preparing || importing || files.length === 0}
           className="px-4 py-2 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
-          {loading ? "Working..." : preparing ? "Preparing..." : replaceExisting ? "Replace" : "Upload"}
+          {loading ? "Working..." : importing ? "Processing import..." : preparing ? "Preparing..." : replaceExisting ? "Replace" : "Upload"}
         </button>
       </div>
       <div className="text-xs text-gray-600 dark:text-gray-300">

@@ -30,6 +30,7 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
     setThumb,
     clearThumb,
     del,
+    move,
   } = useComicPagesManager({
     workId,
     chapterId,
@@ -59,7 +60,7 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
 
       <ChapterCoverCard thumbnailImage={localThumbnailImage} loading={loading} onClear={clearThumb} />
 
-      <PagesGrid workId={workId} pages={localPages} loading={loading} onUseAsCover={setThumb} onDelete={del} />
+      <PagesGrid workId={workId} pages={localPages} loading={loading} onUseAsCover={setThumb} onDelete={del} onMove={move} />
     </div>
   );
 }

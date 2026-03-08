@@ -8,6 +8,14 @@ type Page = { id: string; imageUrl: string; order: number };
 
 type UploadSummaryState = PreparedUploadSummary & { ready: boolean };
 
+function reorderPages(items: Page[], from: number, to: number): Page[] {
+  if (from === to || from < 0 || to < 0 || from >= items.length || to >= items.length) return items;
+  const next = [...items];
+  const [picked] = next.splice(from, 1);
+  next.splice(to, 0, picked);
+  return next.map((page, index) => ({ ...page, order: index + 1 }));
+}
+
 export function useComicPagesManager({
   workId,
   chapterId,
@@ -184,6 +192,34 @@ export function useComicPagesManager({
     }
   }
 
+  async function move(pageId: string, direction: "up" | "down") {
+    const currentIndex = pages.findIndex((page) => page.id === pageId);
+    if (currentIndex === -1) return;
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= pages.length) return;
+
+    const previousPages = pages;
+    const nextPages = reorderPages(previousPages, currentIndex, targetIndex);
+
+    setErr(null);
+    setLoading(true);
+    setPages(nextPages);
+    try {
+      const res = await fetch(`/api/studio/comic-pages/${pageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: targetIndex + 1 }),
+      });
+      const json = await res.json().catch(() => ({} as any));
+      if (!res.ok) throw new Error(json?.error || "Move failed");
+    } catch (e: any) {
+      setPages(previousPages);
+      setErr(e?.message || "Error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return {
     files,
     setFiles,
@@ -200,5 +236,6 @@ export function useComicPagesManager({
     setThumb,
     clearThumb,
     del,
+    move,
   };
 }
