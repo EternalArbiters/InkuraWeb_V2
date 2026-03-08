@@ -1,6 +1,7 @@
 "use client";
 
 const ZIP_CDN_URL = "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js";
+const PDFJS_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs";
 const PDFJS_WORKER_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.worker.min.mjs";
 
 type ZipEntry = {
@@ -129,10 +130,19 @@ async function loadJsZip(): Promise<JSZipStatic> {
 }
 
 let pdfJsPromise: Promise<PdfJsModule> | null = null;
+let externalModuleImporter: ((specifier: string) => Promise<any>) | null = null;
+
+function getExternalModuleImporter() {
+  if (!externalModuleImporter) {
+    externalModuleImporter = new Function("specifier", "return import(specifier);") as (specifier: string) => Promise<any>;
+  }
+  return externalModuleImporter;
+}
 
 async function loadPdfJs(): Promise<PdfJsModule> {
   if (!pdfJsPromise) {
-    pdfJsPromise = import(/* webpackIgnore: true */ "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs").then((mod: any) => {
+    const importExternalModule = getExternalModuleImporter();
+    pdfJsPromise = importExternalModule(PDFJS_CDN_URL).then((mod: any) => {
       const pdfjs = (mod?.default || mod) as PdfJsModule;
       if (pdfjs?.GlobalWorkerOptions) {
         pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_CDN_URL;
