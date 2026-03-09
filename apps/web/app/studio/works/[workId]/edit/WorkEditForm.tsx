@@ -14,6 +14,7 @@ import WorkCoverCard from "./components/WorkCoverCard";
 import WorkPublishTypeCard from "./components/WorkPublishTypeCard";
 import WorkSummaryField from "./components/WorkSummaryField";
 import WorkTaxonomyFields from "./components/WorkTaxonomyFields";
+import { useMyWorksLite } from "./components/useMyWorksLite";
 
 type PublishType = "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
 
@@ -21,7 +22,6 @@ type Work = {
   id: string;
   slug: string;
   title: string;
-  subtitle?: string | null;
   description: string | null;
   type: "NOVEL" | "COMIC";
   comicType?: string;
@@ -54,6 +54,9 @@ type Props = {
   deviantLoveTags: PickerItem[];
 };
 
+function hrefForWorkSlug(slug: string) {
+  return slug ? `/w/${slug}` : "";
+}
 
 function formatBytes(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
@@ -80,11 +83,10 @@ function buildOptimizationSummary(prepared: PreparedUploadFile | null) {
 export default function WorkEditForm({ work, genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
 
-  const publishType: PublishType = ((work.publishType || "ORIGINAL").toUpperCase() as PublishType);
+  const [publishType, setPublishType] = React.useState<PublishType>(((work.publishType || "ORIGINAL").toUpperCase() as PublishType));
   const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
   const [title, setTitle] = React.useState(work.title);
-  const [subtitle, setSubtitle] = React.useState(work.subtitle || "");
   const [description, setDescription] = React.useState(work.description || "");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">(work.type);
   const [comicType, setComicType] = React.useState<string>(work.comicType || "UNKNOWN");
@@ -102,8 +104,12 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
   const [companyCredit, setCompanyCredit] = React.useState(work.companyCredit || "");
 
+  const [prevArcUrl, setPrevArcUrl] = React.useState(work.prevArcUrl || "");
+  const [nextArcUrl, setNextArcUrl] = React.useState(work.nextArcUrl || "");
   const [seriesTitle, setSeriesTitle] = React.useState(work.series?.title || "");
   const [seriesOrder, setSeriesOrder] = React.useState(work.seriesOrder ? String(work.seriesOrder) : "");
+
+  const { myWorks, loadingWorks } = useMyWorksLite(work.id);
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
@@ -131,6 +137,17 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
     if (!isMature && warningIds.length) setWarningIds([]);
   }, [isMature, warningIds.length]);
 
+  function setPrevFromWorkId(id: string) {
+    const w = myWorks.find((x) => x.id === id);
+    if (!w) return;
+    setPrevArcUrl(hrefForWorkSlug(w.slug));
+  }
+
+  function setNextFromWorkId(id: string) {
+    const w = myWorks.find((x) => x.id === id);
+    if (!w) return;
+    setNextArcUrl(hrefForWorkSlug(w.slug));
+  }
 
   async function onPickCover(file: File | null) {
     if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
@@ -169,7 +186,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
     try {
       const fd = new FormData();
       fd.append("title", title);
-      fd.append("subtitle", subtitle.trim());
       fd.append("description", description);
       fd.append("type", type);
       fd.append("comicType", type === "COMIC" ? comicType : "UNKNOWN");
@@ -196,8 +212,8 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
       fd.append("seriesTitle", seriesTitle.trim());
       fd.append("seriesOrder", seriesOrder.trim());
-      fd.append("prevArcUrl", "");
-      fd.append("nextArcUrl", "");
+      fd.append("prevArcUrl", prevArcUrl.trim());
+      fd.append("nextArcUrl", nextArcUrl.trim());
 
       if (coverPrepared && !removeCover) {
         const up = await presignAndUpload({
@@ -231,24 +247,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         </div>
       ) : null}
 
-      <WorkPublishTypeCard publishType={publishType} />
-
-      <WorkBasicsFields
-        title={title}
-        setTitle={setTitle}
-        subtitle={subtitle}
-        setSubtitle={setSubtitle}
-        type={type}
-        setType={setType}
-        comicType={comicType}
-        setComicType={setComicType}
-        language={language}
-        setLanguage={setLanguage}
-        completion={completion}
-        setCompletion={setCompletion}
-        origin={origin}
-        setOrigin={setOrigin}
-      />
+      <WorkPublishTypeCard publishType={publishType} setPublishType={setPublishType} />
 
       <CreditsSourceFields
         needsSource={needsSource}
@@ -266,16 +265,39 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       />
 
       <WorkArcFields
+        myWorks={myWorks}
+        loadingWorks={loadingWorks}
         seriesTitle={seriesTitle}
         setSeriesTitle={setSeriesTitle}
         seriesOrder={seriesOrder}
         setSeriesOrder={setSeriesOrder}
+        prevArcUrl={prevArcUrl}
+        setPrevArcUrl={setPrevArcUrl}
+        nextArcUrl={nextArcUrl}
+        setNextArcUrl={setNextArcUrl}
+        onPickPrevWorkId={setPrevFromWorkId}
+        onPickNextWorkId={setNextFromWorkId}
+      />
+
+      <WorkBasicsFields
+        title={title}
+        setTitle={setTitle}
+        type={type}
+        setType={setType}
+        comicType={comicType}
+        setComicType={setComicType}
+        language={language}
+        setLanguage={setLanguage}
+        completion={completion}
+        setCompletion={setCompletion}
+        origin={origin}
+        setOrigin={setOrigin}
       />
 
       <WorkSummaryField description={description} setDescription={setDescription} />
 
       <WorkCoverCard
-        title={title}
+        title={work.title}
         coverImage={removeCover ? null : (coverPrepared?.previewUrl || work.coverImage)}
         removeCover={removeCover}
         setRemoveCover={setRemoveCover}

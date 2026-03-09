@@ -202,11 +202,6 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         </div>
       ) : null}
 
-      {note ? (
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4 text-sm">
-          {note}
-        </div>
-      ) : null}
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
         <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -322,8 +317,20 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
               ) : null}
             </div>
           ) : null}
+
+          {note ? (
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-sm text-gray-700 dark:text-gray-200">
+              {note}
+            </div>
+          ) : null}
         </div>
       )}
+
+      {workType !== "COMIC" && note ? (
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-sm text-gray-700 dark:text-gray-200">
+          {note}
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-end gap-2">
         <button
