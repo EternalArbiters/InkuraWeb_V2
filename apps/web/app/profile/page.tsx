@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import HorizontalRail from "@/app/home/HorizontalRail";
 import WorkCardSquare from "@/app/home/WorkCardSquare";
 import ProfileCollectionCard from "@/app/components/user/ProfileCollectionCard";
 import { getSession } from "@/server/auth/session";
@@ -19,6 +20,29 @@ function formatDate(value: Date | string | null | undefined) {
 
 function profileName(user: { name: string | null; username: string | null; email: string }) {
   return user.name || user.username || user.email.split("@")[0] || "User";
+}
+
+function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
+  if (!works.length) return null;
+
+  return (
+    <div className="mt-6 first:mt-5">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-lg md:text-xl font-extrabold tracking-tight">{title}</h3>
+        <div className="text-xs font-medium uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
+          {works.length} work{works.length === 1 ? "" : "s"}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <HorizontalRail>
+          {works.map((work) => (
+            <WorkCardSquare key={work.id} work={work} />
+          ))}
+        </HorizontalRail>
+      </div>
+    </div>
+  );
 }
 
 export default async function ProfilePage() {
@@ -45,7 +69,7 @@ export default async function ProfilePage() {
         works: {
           where: { status: "PUBLISHED" },
           orderBy: { updatedAt: "desc" },
-          take: 8,
+          take: 24,
           select: {
             id: true,
             slug: true,
@@ -122,6 +146,9 @@ export default async function ProfilePage() {
 
   const displayName = profileName(profile);
   const avatar = profile.image || "/images/default-avatar.png";
+  const novelWorks = profile.works.filter((work) => work.type === "NOVEL");
+  const comicWorks = profile.works.filter((work) => work.type === "COMIC");
+  const filmWorks = profile.works.filter((work) => work.type === "FILM");
   const avatarFocusX = Number.isFinite(Number(profile.avatarFocusX)) ? Number(profile.avatarFocusX) : 50;
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;
@@ -191,11 +218,11 @@ export default async function ProfilePage() {
           </div>
 
           {profile.works.length ? (
-            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-              {profile.works.map((work) => (
-                <WorkCardSquare key={work.id} work={work} />
-              ))}
-            </div>
+            <>
+              <PublishedWorksRail title="Novels" works={novelWorks} />
+              <PublishedWorksRail title="Comics" works={comicWorks} />
+              <PublishedWorksRail title="Films" works={filmWorks} />
+            </>
           ) : (
             <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
               No published works yet.
