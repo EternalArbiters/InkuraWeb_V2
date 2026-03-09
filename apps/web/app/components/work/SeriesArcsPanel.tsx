@@ -115,15 +115,15 @@ export default function SeriesArcsPanel({
         {titleNode}
 
         {nearbyItems.length ? (
-          <div className="mt-4">
-            <div className="flex flex-wrap gap-3">
+          <div className="mt-4 -mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar">
+            <div className="flex w-max gap-3 snap-x snap-mandatory">
               {nearbyItems.map((item) => {
                 const active = item.id === currentWorkId;
                 return (
                   <Link
                     key={item.id}
                     href={`/w/${item.slug}`}
-                    className={`w-[9.25rem] overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
+                    className={`shrink-0 snap-start w-[9.25rem] overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
                       active
                         ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
                         : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
