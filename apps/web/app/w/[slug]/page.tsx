@@ -126,8 +126,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
             <div>
-              <div className="overflow-hidden border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
-                <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
+              <div className="overflow-hidden rounded-[28px] border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-[28px] bg-gray-100 dark:bg-gray-800">
                   {work.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={work.coverImage} alt={work.title} className="h-full w-full object-cover" />
@@ -284,6 +284,9 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                     <SeriesArcsPanel
                       currentWorkId={work.id}
                       currentWorkSlug={work.slug}
+                      currentWorkTitle={work.title}
+                      currentWorkCoverImage={work.coverImage}
+                      currentWorkSeriesOrder={work.seriesOrder}
                       seriesTitle={work.seriesTitle}
                       works={Array.isArray(work.seriesWorks) ? work.seriesWorks : []}
                       previousArc={work.previousArc}

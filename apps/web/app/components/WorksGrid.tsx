@@ -27,9 +27,9 @@ export default function WorksGrid({ works }: { works: Work[] }) {
           <Link
             key={w.id}
             href={`/w/${w.slug}`}
-            className="group border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden hover:shadow-lg transition"
+            className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white/70 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900/50"
           >
-            <div className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-[28px] bg-gray-100 dark:bg-gray-800">
               {w.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={w.coverImage} alt={w.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition" />
