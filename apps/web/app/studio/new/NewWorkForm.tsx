@@ -64,7 +64,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
   const [originalAuthorCredit, setOriginalAuthorCredit] = React.useState("");
   const [originalTranslatorCredit, setOriginalTranslatorCredit] = React.useState("");
   const [sourceUrl, setSourceUrl] = React.useState("");
-  const [translatorCredit, setTranslatorCredit] = React.useState("");
   const [companyCredit, setCompanyCredit] = React.useState("");
   const [uploaderNote, setUploaderNote] = React.useState("");
   const [seriesTitle, setSeriesTitle] = React.useState("");
@@ -166,9 +165,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         fd.set("sourceUrl", sourceUrl.trim());
         if (companyCredit.trim()) fd.set("companyCredit", companyCredit.trim());
       }
-      if (publishType === "TRANSLATION") {
-        if (translatorCredit.trim()) fd.set("translatorCredit", translatorCredit.trim());
-      }
       if (publishType === "REUPLOAD") {
         fd.set("originalTranslatorCredit", originalTranslatorCredit.trim());
         if (uploaderNote.trim()) fd.set("uploaderNote", uploaderNote.trim());
@@ -213,8 +209,6 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         setOriginalTranslatorCredit={setOriginalTranslatorCredit}
         sourceUrl={sourceUrl}
         setSourceUrl={setSourceUrl}
-        translatorCredit={translatorCredit}
-        setTranslatorCredit={setTranslatorCredit}
         companyCredit={companyCredit}
         setCompanyCredit={setCompanyCredit}
         uploaderNote={uploaderNote}

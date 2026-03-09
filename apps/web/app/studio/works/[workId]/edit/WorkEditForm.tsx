@@ -35,7 +35,6 @@ type Work = {
   originalTranslatorCredit?: string | null;
   sourceUrl?: string | null;
   uploaderNote?: string | null;
-  translatorCredit?: string | null;
   companyCredit?: string | null;
   prevArcUrl?: string | null;
   nextArcUrl?: string | null;
@@ -103,7 +102,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [sourceUrl, setSourceUrl] = React.useState(work.sourceUrl || "");
   const [uploaderNote, setUploaderNote] = React.useState(work.uploaderNote || "");
 
-  const [translatorCredit, setTranslatorCredit] = React.useState(work.translatorCredit || "");
   const [companyCredit, setCompanyCredit] = React.useState(work.companyCredit || "");
 
   const [prevArcUrl, setPrevArcUrl] = React.useState(work.prevArcUrl || "");
@@ -207,9 +205,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         fd.append("originalTranslatorCredit", originalTranslatorCredit);
         fd.append("uploaderNote", uploaderNote);
       }
-      if (publishType === "TRANSLATION") {
-        fd.append("translatorCredit", translatorCredit);
-      }
 
       fd.append("seriesTitle", seriesTitle.trim());
       fd.append("seriesOrder", seriesOrder.trim());
@@ -261,8 +256,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         setSourceUrl={setSourceUrl}
         uploaderNote={uploaderNote}
         setUploaderNote={setUploaderNote}
-        translatorCredit={translatorCredit}
-        setTranslatorCredit={setTranslatorCredit}
         companyCredit={companyCredit}
         setCompanyCredit={setCompanyCredit}
       />

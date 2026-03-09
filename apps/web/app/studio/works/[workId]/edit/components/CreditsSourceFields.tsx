@@ -11,8 +11,6 @@ export default function CreditsSourceFields({
   setSourceUrl,
   uploaderNote,
   setUploaderNote,
-  translatorCredit,
-  setTranslatorCredit,
   companyCredit,
   setCompanyCredit,
 }: {
@@ -26,8 +24,6 @@ export default function CreditsSourceFields({
   setSourceUrl: (v: string) => void;
   uploaderNote: string;
   setUploaderNote: (v: string) => void;
-  translatorCredit: string;
-  setTranslatorCredit: (v: string) => void;
   companyCredit: string;
   setCompanyCredit: (v: string) => void;
 }) {
@@ -67,17 +63,6 @@ export default function CreditsSourceFields({
         />
       </label>
 
-      {publishType === "TRANSLATION" ? (
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold">Translator credit (optional)</span>
-          <input
-            value={translatorCredit}
-            onChange={(e) => setTranslatorCredit(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            placeholder="Contoh: Eternal Scans"
-          />
-        </label>
-      ) : null}
 
       <label className="grid gap-2">
         <span className="text-sm font-semibold">Publisher (optional)</span>

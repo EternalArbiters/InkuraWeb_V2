@@ -9,8 +9,6 @@ export default function PublishTypeCard({
   setOriginalTranslatorCredit,
   sourceUrl,
   setSourceUrl,
-  translatorCredit,
-  setTranslatorCredit,
   companyCredit,
   setCompanyCredit,
   uploaderNote,
@@ -24,8 +22,6 @@ export default function PublishTypeCard({
   setOriginalTranslatorCredit: (v: string) => void;
   sourceUrl: string;
   setSourceUrl: (v: string) => void;
-  translatorCredit: string;
-  setTranslatorCredit: (v: string) => void;
   companyCredit: string;
   setCompanyCredit: (v: string) => void;
   uploaderNote: string;
@@ -93,17 +89,6 @@ export default function PublishTypeCard({
             />
           </div>
 
-          {publishType === "TRANSLATION" ? (
-            <div className="grid gap-1">
-              <label className="text-sm font-semibold">Translator credit (optional)</label>
-              <input
-                value={translatorCredit}
-                onChange={(e) => setTranslatorCredit(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
-                placeholder="Contoh: Eternal Scans"
-              />
-            </div>
-          ) : null}
 
           <div className="grid gap-1">
             <label className="text-sm font-semibold">Company / Publisher (optional)</label>

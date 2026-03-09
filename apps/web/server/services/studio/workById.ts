@@ -188,7 +188,6 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   const originalTranslatorCreditRaw = String(fd.get("originalTranslatorCredit") || "").trim();
   const sourceUrlRaw = String(fd.get("sourceUrl") || "").trim();
   const uploaderNoteRaw = String(fd.get("uploaderNote") || "");
-  const translatorCreditRaw = String(fd.get("translatorCredit") || "").trim();
   const companyCreditRaw = String(fd.get("companyCredit") || "").trim();
   const prevArcUrlRaw = String(fd.get("prevArcUrl") || "").trim();
   const nextArcUrlRaw = String(fd.get("nextArcUrl") || "").trim();
@@ -315,7 +314,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
             originalTranslatorCredit: publishType === "REUPLOAD" ? nextOriginalTranslatorCredit : null,
             sourceUrl: nextSourceUrl,
             uploaderNote: nextUploaderNote,
-            translatorCredit: publishType === "TRANSLATION" ? translatorCreditRaw || null : null,
+            translatorCredit: null,
             companyCredit: companyCreditRaw || null,
           }
         : {

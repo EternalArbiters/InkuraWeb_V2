@@ -96,7 +96,6 @@ export async function createStudioWork(req: Request) {
   const sourceUrl = String(fd.get("sourceUrl") || "").trim() || null;
   const uploaderNote = String(fd.get("uploaderNote") || "").trim() || null;
 
-  const translatorCredit = String(fd.get("translatorCredit") || "").trim() || null;
   const companyCredit = String(fd.get("companyCredit") || "").trim() || null;
   const seriesTitle = String(fd.get("seriesTitle") || "").trim();
   const seriesOrderRaw = String(fd.get("seriesOrder") || "").trim();
@@ -174,7 +173,7 @@ export async function createStudioWork(req: Request) {
       sourceUrl: publishType === "ORIGINAL" ? null : sourceUrl,
       uploaderNote: publishType === "REUPLOAD" ? uploaderNote : null,
 
-      translatorCredit: publishType === "TRANSLATION" ? translatorCredit : null,
+      translatorCredit: null,
       companyCredit: publishType === "ORIGINAL" ? null : companyCredit,
 
       genres: genreIds.length ? { connect: genreIds.map((id) => ({ id })) } : undefined,
