@@ -27,6 +27,29 @@ describe("upload image validation", () => {
     expect(result.warnings).toEqual([]);
   });
 
+
+  it("allows sub-400 page widths when the uploaded page metadata is otherwise valid", () => {
+    const meta = readUploadOptimizationMeta({
+      optimizationVersion: "pr5-upload-guardrails-v1",
+      optimizedBytes: 320000,
+      optimizedContentType: "image/webp",
+      width: 320,
+      height: 2400,
+      compressionApplied: true,
+      reason: "optimized",
+    });
+
+    const result = validateUploadOptimizationMeta({
+      scope: "pages",
+      contentType: "image/webp",
+      sizeBytes: 320000,
+      meta,
+    });
+
+    expect(result.usedOptimizationMeta).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
   it("allows fallback when optimization metadata is absent", () => {
     const result = validateUploadOptimizationMeta({
       scope: "pages",

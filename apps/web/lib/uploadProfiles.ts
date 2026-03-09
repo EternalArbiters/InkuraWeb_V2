@@ -89,7 +89,7 @@ export const UPLOAD_PROFILES: Record<UploadOptimizationScope, UploadOptimization
     stripMetadata: true,
     preserveAnimation: false,
     quality: 0.88,
-    minWidth: 400,
+    minWidth: null,
     minHeight: 400,
     maxWidth: 1800,
     maxHeight: 3200,

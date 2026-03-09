@@ -24,4 +24,16 @@ describe("comic page optimization profile", () => {
     expect(landscape.height).toBeLessThanOrEqual(1800);
     expect(landscape.resized).toBe(true);
   });
+
+  it("keeps optimized page widths at least 400px when the original file already meets that threshold", () => {
+    const tallPage = getTargetImageDimensions({ scope: "pages", width: 900, height: 7000 });
+    expect(tallPage.width).toBe(400);
+    expect(tallPage.height).toBeGreaterThan(3200);
+    expect(tallPage.resized).toBe(true);
+
+    const genuinelySmallPage = getTargetImageDimensions({ scope: "pages", width: 320, height: 5000 });
+    expect(genuinelySmallPage.width).toBe(320);
+    expect(genuinelySmallPage.height).toBe(5000);
+    expect(genuinelySmallPage.resized).toBe(false);
+  });
 });

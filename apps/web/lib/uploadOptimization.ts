@@ -48,6 +48,10 @@ export function getTargetImageDimensions(params: {
     return { width: 0, height: 0, resized: false, scale: 1 };
   }
 
+  if (scope === "pages" && width < 400) {
+    return { width, height, resized: false, scale: 1 };
+  }
+
   let scale = 1;
 
   if (profile.maxLongEdge) {
@@ -69,6 +73,11 @@ export function getTargetImageDimensions(params: {
     if (currentPixels * scale * scale > maxPixels) {
       scale = Math.min(scale, Math.sqrt(maxPixels / currentPixels));
     }
+  }
+
+  const pageMinWidthFloor = scope === "pages" ? 400 : null;
+  if (pageMinWidthFloor != null && width >= pageMinWidthFloor && width * scale < pageMinWidthFloor) {
+    scale = Math.max(scale, pageMinWidthFloor / width);
   }
 
   const nextWidth = Math.max(1, Math.round(width * scale));

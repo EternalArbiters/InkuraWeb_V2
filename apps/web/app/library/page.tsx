@@ -51,7 +51,7 @@ export default async function LibraryPage() {
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No bookmarks yet.</p>
           ) : (
             <div className="mt-6">
-              <WorksGrid works={bookmarks.map((b) => b.work) as any} />
+              <WorksGrid works={bookmarks.map((b) => b.work) as any} showRecentUpdateBadge />
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import ActionLink from "@/app/components/ActionLink";
-import WorkRowCard from "@/app/components/work/WorkRowCard";
+import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
 
 type Props = {
@@ -19,19 +19,23 @@ export default async function BrowseListPage({ title, qs, emptyText }: Props) {
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{title}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{title}</h1>
           </div>
           <ActionLink href="/search">Advanced search</ActionLink>
         </div>
 
-        <div className="mt-7 space-y-3">
+        <div className="mt-7">
           {works?.length ? (
-            works.map((w) => <WorkRowCard key={w.id} work={w} />)
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {works.map((work) => (
+                <InteractiveWorkCard key={work.id} work={work} />
+              ))}
+            </div>
           ) : (
-            <div className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 text-sm text-gray-600 dark:text-gray-300">
+            <div className="border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
               {emptyText || "No items."}
             </div>
           )}
