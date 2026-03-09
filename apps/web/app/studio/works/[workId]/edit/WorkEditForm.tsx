@@ -21,6 +21,7 @@ type Work = {
   id: string;
   slug: string;
   title: string;
+  subtitle?: string | null;
   description: string | null;
   type: "NOVEL" | "COMIC";
   comicType?: string;
@@ -82,6 +83,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const needsSource = publishType === "TRANSLATION" || publishType === "REUPLOAD";
 
   const [title, setTitle] = React.useState(work.title);
+  const [subtitle, setSubtitle] = React.useState(work.subtitle || "");
   const [description, setDescription] = React.useState(work.description || "");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">(work.type);
   const [comicType, setComicType] = React.useState<string>(work.comicType || "UNKNOWN");
@@ -166,6 +168,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
     try {
       const fd = new FormData();
       fd.append("title", title);
+      fd.append("subtitle", subtitle.trim());
       fd.append("description", description);
       fd.append("type", type);
       fd.append("comicType", type === "COMIC" ? comicType : "UNKNOWN");
@@ -254,6 +257,8 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       <WorkBasicsFields
         title={title}
         setTitle={setTitle}
+        subtitle={subtitle}
+        setSubtitle={setSubtitle}
         type={type}
         setType={setType}
         comicType={comicType}
