@@ -39,6 +39,7 @@ export default async function StudioWorkPage({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <div className="text-3xl font-extrabold tracking-tight">{work.title}</div>
+            {work.subtitle ? <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{work.subtitle}</div> : null}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{publishType}</span>

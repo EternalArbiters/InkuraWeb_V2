@@ -151,6 +151,7 @@ model Work {
   id          String     @id @default(cuid())
   slug        String     @unique
   title       String
+  subtitle    String?
   description String?
   type        WorkType
   comicType   ComicType  @default(UNKNOWN)

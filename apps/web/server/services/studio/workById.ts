@@ -65,6 +65,7 @@ export async function getStudioWorkById(workId: string) {
       authorId: true,
       slug: true,
       title: true,
+      subtitle: true,
       description: true,
       type: true,
       comicType: true,
@@ -165,6 +166,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   const fd = await req.formData();
 
   const title = String(fd.get("title") || "").trim();
+  const subtitle = String(fd.get("subtitle") || "").trim() || null;
   const description = String(fd.get("description") || "");
 
   const typeRaw = String(fd.get("type") || "").toUpperCase().trim();
@@ -290,6 +292,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     where: { id: workId },
     data: {
       title,
+      subtitle,
       slug: nextSlug,
       description: description || null,
       ...(type ? { type } : {}),

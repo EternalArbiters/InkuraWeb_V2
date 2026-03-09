@@ -6,6 +6,8 @@ import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 export default function WorkBasicsFields({
   title,
   setTitle,
+  subtitle,
+  setSubtitle,
   type,
   setType,
   comicType,
@@ -19,6 +21,8 @@ export default function WorkBasicsFields({
 }: {
   title: string;
   setTitle: (v: string) => void;
+  subtitle: string;
+  setSubtitle: (v: string) => void;
   type: "NOVEL" | "COMIC";
   setType: (v: "NOVEL" | "COMIC") => void;
   comicType: string;
@@ -39,6 +43,16 @@ export default function WorkBasicsFields({
           onChange={(e) => setTitle(e.target.value)}
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           required
+        />
+      </label>
+
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold">Subtitle (optional)</span>
+        <input
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+          placeholder="Optional subtitle / alternate title"
         />
       </label>
 
@@ -117,7 +131,6 @@ export default function WorkBasicsFields({
           <option value="UNKNOWN">Unknown</option>
         </select>
       </label>
-
     </div>
   );
 }

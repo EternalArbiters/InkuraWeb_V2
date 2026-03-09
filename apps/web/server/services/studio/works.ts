@@ -71,6 +71,7 @@ export async function createStudioWork(req: Request) {
   const fd = await req.formData();
 
   const title = String(fd.get("title") || "").trim();
+  const subtitle = String(fd.get("subtitle") || "").trim() || null;
   const description = String(fd.get("description") || "").trim();
 
   const typeRaw = String(fd.get("type") || "NOVEL").toUpperCase().trim();
@@ -154,6 +155,7 @@ export async function createStudioWork(req: Request) {
     data: {
       slug,
       title,
+      subtitle,
       description: description || null,
       type,
       comicType: type === "COMIC" ? comicType : "UNKNOWN",

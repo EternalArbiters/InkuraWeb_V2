@@ -5,6 +5,8 @@ import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 export default function WorkBasicsCard({
   title,
   setTitle,
+  subtitle,
+  setSubtitle,
   type,
   setType,
   comicType,
@@ -22,6 +24,8 @@ export default function WorkBasicsCard({
 }: {
   title: string;
   setTitle: (v: string) => void;
+  subtitle: string;
+  setSubtitle: (v: string) => void;
   type: "NOVEL" | "COMIC";
   setType: (v: "NOVEL" | "COMIC") => void;
   comicType: "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER";
@@ -50,6 +54,18 @@ export default function WorkBasicsCard({
           />
         </div>
         <div className="grid gap-1">
+          <label className="text-sm font-semibold">Subtitle (optional)</label>
+          <input
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
+            placeholder="Optional subtitle / alternate title"
+          />
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <div className="grid gap-1">
           <label className="text-sm font-semibold">Type</label>
           <select
             value={type}
@@ -60,26 +76,26 @@ export default function WorkBasicsCard({
             <option value="COMIC">Comic</option>
           </select>
         </div>
-      </div>
 
-      {type === "COMIC" ? (
-        <div className="grid gap-1">
-          <label className="text-sm font-semibold">Comic type</label>
-          <select
-            value={comicType}
-            onChange={(e) => setComicType(e.target.value as any)}
-            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
-          >
-            <option value="UNKNOWN">Unknown</option>
-            <option value="MANGA">Manga</option>
-            <option value="MANHWA">Manhwa</option>
-            <option value="MANHUA">Manhua</option>
-            <option value="WEBTOON">Webtoon</option>
-            <option value="WESTERN">Western</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
-      ) : null}
+        {type === "COMIC" ? (
+          <div className="grid gap-1">
+            <label className="text-sm font-semibold">Comic type</label>
+            <select
+              value={comicType}
+              onChange={(e) => setComicType(e.target.value as any)}
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
+            >
+              <option value="UNKNOWN">Unknown</option>
+              <option value="MANGA">Manga</option>
+              <option value="MANHWA">Manhwa</option>
+              <option value="MANHUA">Manhua</option>
+              <option value="WEBTOON">Webtoon</option>
+              <option value="WESTERN">Western</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+        ) : <div />}
+      </div>
 
       <div className="grid gap-1">
         <label className="text-sm font-semibold">Language</label>
@@ -123,7 +139,6 @@ export default function WorkBasicsCard({
           <option value="CANCELLED">Cancelled</option>
         </select>
       </div>
-
 
       <div className="grid gap-1">
         <label className="text-sm font-semibold">Description</label>

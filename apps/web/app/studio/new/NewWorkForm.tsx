@@ -47,6 +47,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
   const [err, setErr] = React.useState<string | null>(null);
 
   const [title, setTitle] = React.useState("");
+  const [subtitle, setSubtitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [type, setType] = React.useState<"NOVEL" | "COMIC">("NOVEL");
   const [comicType, setComicType] = React.useState<
@@ -149,6 +150,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
 
       const fd = new FormData();
       fd.set("title", title.trim());
+      fd.set("subtitle", subtitle.trim());
       fd.set("description", description.trim());
       fd.set("type", type);
       fd.set("comicType", comicType);
@@ -222,6 +224,8 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       <WorkBasicsCard
         title={title}
         setTitle={setTitle}
+        subtitle={subtitle}
+        setSubtitle={setSubtitle}
         type={type}
         setType={setType}
         comicType={comicType}

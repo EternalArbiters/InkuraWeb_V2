@@ -28,7 +28,7 @@ export default function DeviantLoveCard({
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-4">
       {setIsMature ? (
-        <div className="grid gap-3">
+        <>
           <label className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -38,7 +38,7 @@ export default function DeviantLoveCard({
             <div>
               <div className="text-sm font-semibold">18+ / Mature</div>
               <div className="text-xs text-gray-600 dark:text-gray-300">
-                Viewer wajib opt-in 18+. Centang dulu untuk membuka warning NSFW.
+                Viewer wajib opt-in 18+.
               </div>
             </div>
           </label>
@@ -51,12 +51,8 @@ export default function DeviantLoveCard({
               selectedIds={warningTagIds}
               onChange={setWarningTagIds || (() => undefined)}
             />
-          ) : (
-            <div className="rounded-xl border border-dashed border-gray-200 p-4 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">
-              Aktifkan 18+ / Mature dulu kalau mau memilih warning NSFW.
-            </div>
-          )}
-        </div>
+          ) : null}
+        </>
       ) : null}
 
       <label className="flex items-center gap-3">
@@ -68,19 +64,18 @@ export default function DeviantLoveCard({
         <div>
           <div className="text-sm font-semibold">Deviant Love</div>
           <div className="text-xs text-gray-600 dark:text-gray-300">
-            Tag khusus (butuh unlock).
+            Tag khusus (butuh unlock). Jika tidak dicentang, tag DL akan dihapus.
           </div>
         </div>
       </label>
+
       {isDeviantLove ? (
-        <div>
-          <MultiSelectPicker
-            title="Deviant Love Tags"
-            items={deviantLoveTags}
-            selectedIds={deviantLoveTagIds}
-            onChange={setDeviantLoveTagIds}
-          />
-        </div>
+        <MultiSelectPicker
+          title="Deviant Love Tags"
+          items={deviantLoveTags}
+          selectedIds={deviantLoveTagIds}
+          onChange={setDeviantLoveTagIds}
+        />
       ) : null}
     </div>
   );
