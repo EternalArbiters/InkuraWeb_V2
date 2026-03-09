@@ -1,8 +1,10 @@
 import Link from "next/link";
 import WorksGrid from "../components/WorksGrid";
+import ActionLink from "@/app/components/ActionLink";
+import HorizontalRail from "@/app/home/HorizontalRail";
+import { ReadingProgressRailCard } from "@/app/components/library/ReadingProgressCard";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
-import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -26,30 +28,20 @@ export default async function LibraryPage() {
         </div>
 
         <div className="mt-10">
-          <h2 className="text-lg font-bold">Continue Reading</h2>
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="text-lg font-bold">Continue Reading</h2>
+            <ActionLink href="/settings/history">See all</ActionLink>
+          </div>
           {progress.length === 0 ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No reading history yet.</p>
           ) : (
-            <ul className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {progress.slice(0, 6).map((p) => (
-                <li key={p.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-semibold">{p.work?.title}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
-                        {getChapterDisplayTitle(p.chapter?.number ?? 0, p.chapter?.title, p.chapter?.label)}
-                      </div>
-                    </div>
-                    <Link
-                      href={`/w/${p.work?.slug}/read/${p.chapter?.id}`}
-                      className="rounded-full px-4 py-2 text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700"
-                    >
-                      Continue
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-4">
+              <HorizontalRail>
+                {progress.slice(0, 12).map((p) => (
+                  <ReadingProgressRailCard key={p.id} progress={p as any} />
+                ))}
+              </HorizontalRail>
+            </div>
           )}
         </div>
 

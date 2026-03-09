@@ -12,7 +12,7 @@ export async function listViewerProgress(input?: { take?: number }) {
     orderBy: { updatedAt: "desc" },
     take,
     include: {
-      work: { select: { id: true, slug: true, title: true, type: true } },
+      work: { select: { id: true, slug: true, title: true, coverImage: true, type: true } },
       chapter: { select: { id: true, number: true, label: true, title: true } },
     },
   });

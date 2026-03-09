@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { ReadingProgressListCard } from "@/app/components/library/ReadingProgressCard";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listViewerProgress } from "@/server/services/progress/viewerProgress";
-import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -27,26 +27,11 @@ export default async function ReadingHistoryPage() {
         {progress.length === 0 ? (
           <p className="mt-6 text-sm text-gray-600 dark:text-gray-300">No history yet.</p>
         ) : (
-          <ul className="mt-6 grid gap-3">
+          <div className="mt-6 grid gap-3">
             {progress.map((p) => (
-              <li key={p.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-semibold">{p.work?.title}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      {getChapterDisplayTitle(p.chapter?.number ?? 0, p.chapter?.title, p.chapter?.label)}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/w/${p.work?.slug}/read/${p.chapter?.id}`}
-                    className="rounded-full px-4 py-2 text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700"
-                  >
-                    Open
-                  </Link>
-                </div>
-              </li>
+              <ReadingProgressListCard key={p.id} progress={p as any} />
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </main>
