@@ -115,19 +115,20 @@ export default function SeriesArcsPanel({
         {titleNode}
 
         {nearbyItems.length ? (
-          <div className="-mx-1 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {nearbyItems.map((item) => {
-              const active = item.id === currentWorkId;
-              return (
-                <Link
-                  key={item.id}
-                  href={`/w/${item.slug}`}
-                  className={`w-[9.75rem] shrink-0 snap-start overflow-hidden rounded-[16px] border transition sm:w-[10.5rem] lg:w-[11rem] xl:w-[11.5rem] ${
-                    active
-                      ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
-                      : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
-                  }`}
-                >
+          <div className="mt-4 max-w-[20rem] overflow-hidden sm:max-w-[21rem]">
+            <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {nearbyItems.map((item) => {
+                const active = item.id === currentWorkId;
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/w/${item.slug}`}
+                    className={`w-[9.25rem] shrink-0 snap-start overflow-hidden rounded-[16px] border transition sm:w-[9.75rem] ${
+                      active
+                        ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
+                        : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
+                    }`}
+                  >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] bg-gray-100 dark:bg-gray-800">
                     {item.coverImage ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -147,9 +148,10 @@ export default function SeriesArcsPanel({
                   <div className="p-3">
                     <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
                   </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         ) : null}
 
