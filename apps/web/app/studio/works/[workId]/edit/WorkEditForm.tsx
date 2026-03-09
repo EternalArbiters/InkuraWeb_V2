@@ -14,7 +14,6 @@ import WorkCoverCard from "./components/WorkCoverCard";
 import WorkPublishTypeCard from "./components/WorkPublishTypeCard";
 import WorkSummaryField from "./components/WorkSummaryField";
 import WorkTaxonomyFields from "./components/WorkTaxonomyFields";
-import { useMyWorksLite } from "./components/useMyWorksLite";
 
 type PublishType = "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
 
@@ -53,10 +52,6 @@ type Props = {
   warningTags: PickerItem[];
   deviantLoveTags: PickerItem[];
 };
-
-function hrefForWorkSlug(slug: string) {
-  return slug ? `/w/${slug}` : "";
-}
 
 function formatBytes(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
@@ -104,12 +99,9 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
   const [companyCredit, setCompanyCredit] = React.useState(work.companyCredit || "");
 
-  const [prevArcUrl, setPrevArcUrl] = React.useState(work.prevArcUrl || "");
-  const [nextArcUrl, setNextArcUrl] = React.useState(work.nextArcUrl || "");
   const [seriesTitle, setSeriesTitle] = React.useState(work.series?.title || "");
   const [seriesOrder, setSeriesOrder] = React.useState(work.seriesOrder ? String(work.seriesOrder) : "");
 
-  const { myWorks, loadingWorks } = useMyWorksLite(work.id);
 
   const [genreIds, setGenreIds] = React.useState<string[]>(work.genres.map((g) => g.id));
   const [warningIds, setWarningIds] = React.useState<string[]>(work.warningTags.map((w) => w.id));
@@ -136,18 +128,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   React.useEffect(() => {
     if (!isMature && warningIds.length) setWarningIds([]);
   }, [isMature, warningIds.length]);
-
-  function setPrevFromWorkId(id: string) {
-    const w = myWorks.find((x) => x.id === id);
-    if (!w) return;
-    setPrevArcUrl(hrefForWorkSlug(w.slug));
-  }
-
-  function setNextFromWorkId(id: string) {
-    const w = myWorks.find((x) => x.id === id);
-    if (!w) return;
-    setNextArcUrl(hrefForWorkSlug(w.slug));
-  }
 
   async function onPickCover(file: File | null) {
     if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
@@ -212,8 +192,8 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
 
       fd.append("seriesTitle", seriesTitle.trim());
       fd.append("seriesOrder", seriesOrder.trim());
-      fd.append("prevArcUrl", prevArcUrl.trim());
-      fd.append("nextArcUrl", nextArcUrl.trim());
+      fd.append("prevArcUrl", "");
+      fd.append("nextArcUrl", "");
 
       if (coverPrepared && !removeCover) {
         const up = await presignAndUpload({
@@ -265,18 +245,10 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       />
 
       <WorkArcFields
-        myWorks={myWorks}
-        loadingWorks={loadingWorks}
         seriesTitle={seriesTitle}
         setSeriesTitle={setSeriesTitle}
         seriesOrder={seriesOrder}
         setSeriesOrder={setSeriesOrder}
-        prevArcUrl={prevArcUrl}
-        setPrevArcUrl={setPrevArcUrl}
-        nextArcUrl={nextArcUrl}
-        setNextArcUrl={setNextArcUrl}
-        onPickPrevWorkId={setPrevFromWorkId}
-        onPickNextWorkId={setNextFromWorkId}
       />
 
       <WorkBasicsFields
