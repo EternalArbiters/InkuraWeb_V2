@@ -1,7 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
-import { commentListInclude } from "@/server/db/selectors";
+import { chapterListItemSelect, commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { canModerateForTarget, CommentTargetTypeString } from "./moderation";
 import { buildCommentTree, safeCommentSort, sortRootComments } from "./tree";
@@ -16,6 +16,16 @@ function clampInt(v: unknown, def: number, min: number, max: number) {
   const n = Number(v);
   if (!Number.isFinite(n)) return def;
   return Math.max(min, Math.min(max, Math.floor(n)));
+}
+
+function attachChapterContextToTree(nodes: any[], byId: Map<string, any>): any[] {
+  return (nodes || []).map((node) => ({
+    ...node,
+    chapter: String(node?.targetType || "").toUpperCase() === "CHAPTER"
+      ? (byId.get(String(node?.targetId || "")) ?? null)
+      : (node?.chapter ?? null),
+    replies: Array.isArray(node?.replies) ? attachChapterContextToTree(node.replies, byId) : [],
+  }));
 }
 
 export type FetchCommentsOptions = {
@@ -57,12 +67,11 @@ export async function fetchComments(options: FetchCommentsOptions) {
       targetId: wid,
     });
 
-    const chapterIds = (
-      await prisma.chapter.findMany({
-        where: { workId: wid },
-        select: { id: true },
-      })
-    ).map((c) => c.id);
+    const chapterRows = await prisma.chapter.findMany({
+      where: { workId: wid },
+      select: chapterListItemSelect,
+    });
+    const chapterIds = chapterRows.map((c) => c.id);
 
     if (!chapterIds.length) {
       return { status: 200, body: { ok: true, canModerate, comments: [] } };
@@ -104,7 +113,11 @@ export async function fetchComments(options: FetchCommentsOptions) {
       }));
     }
 
-    const roots = sortRootComments(sort, buildCommentTree(enriched)).slice(0, take);
+    const chapterMap = new Map(chapterRows.map((chapter) => [String(chapter.id), chapter]));
+    const roots = attachChapterContextToTree(
+      sortRootComments(sort, buildCommentTree(enriched)).slice(0, take),
+      chapterMap,
+    );
     return { status: 200, body: { ok: true, canModerate, comments: roots } };
   }
 

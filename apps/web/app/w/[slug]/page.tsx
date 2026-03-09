@@ -320,6 +320,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 scope="workChapters"
                 showComposer={false}
                 sort="top"
+                showChapterContext
                 initialComments={initialComments as any}
                 initialCanModerate={initialCanModerate}
               />

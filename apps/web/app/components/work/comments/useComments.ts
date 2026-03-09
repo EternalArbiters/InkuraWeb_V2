@@ -42,6 +42,11 @@ export function useComments({
   const cacheKey = `comments:${initialKey}:${take || 100}`;
   const skippedInitialFetchRef = useRef(hasInitial);
   const initialKeyRef = useRef(initialKey);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   useEffect(() => {
     if (!hasInitial) return;
@@ -114,11 +119,11 @@ export function useComments({
         setCommentsState(data.comments);
         setLoading(false);
       } catch (error: any) {
-        onError?.(error?.message || "Gagal memuat comments");
+        onErrorRef.current?.(error?.message || "Gagal memuat comments");
         setLoading(false);
       }
     },
-    [cacheKey, includeUserRating, onError, scope, sortMode, take, targetId, targetType, workId]
+    [cacheKey, includeUserRating, scope, sortMode, take, targetId, targetType, workId]
   );
 
   useEffect(() => {

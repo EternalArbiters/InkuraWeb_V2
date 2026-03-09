@@ -28,6 +28,7 @@ export default function CommentSection({
   headerRight,
   showSortControl,
   showUserRating = false,
+  showChapterContext,
   initialComments,
   initialCanModerate,
 }: {
@@ -44,6 +45,7 @@ export default function CommentSection({
   headerRight?: ReactNode;
   showSortControl?: boolean;
   showUserRating?: boolean;
+  showChapterContext?: boolean;
   initialComments?: import("./comments/types").CommentItem[];
   initialCanModerate?: boolean;
 }) {
@@ -494,6 +496,7 @@ export default function CommentSection({
             canModerate={canModerate}
             sectionTargetType={targetType}
             showUserRating={showUserRating}
+            showChapterContext={showChapterContext}
             isPending={isPending}
             focusedId={focusedId}
             revealed={revealed}

@@ -25,6 +25,13 @@ export type CommentAttachment = {
   media: CommentMedia;
 };
 
+export type CommentChapterContext = {
+  id: string;
+  number: number;
+  label?: string | null;
+  title?: string | null;
+};
+
 export type CommentItem = {
   id: string;
   targetType: TargetType;
@@ -37,6 +44,7 @@ export type CommentItem = {
   isSpoiler?: boolean;
   user: CommentUser;
   attachments?: CommentAttachment[];
+  chapter?: CommentChapterContext | null;
   likeCount?: number;
   dislikeCount?: number;
   isPinned?: boolean;

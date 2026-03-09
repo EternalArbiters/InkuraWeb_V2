@@ -30,6 +30,7 @@ export type CommentCardProps = {
 
   sectionTargetType: TargetType;
   showUserRating: boolean;
+  showChapterContext?: boolean;
 
   isPending: boolean;
 
@@ -79,6 +80,7 @@ export default function CommentCard(props: CommentCardProps) {
     canModerate,
     sectionTargetType,
     showUserRating,
+    showChapterContext,
     isPending,
     focusedId,
     revealed,
@@ -123,6 +125,18 @@ export default function CommentCard(props: CommentCardProps) {
   const isFocused = focusedId === c.id;
 
   const isReplyingHere = replyTo?.id === c.id;
+
+  const chapterContextLabel = useMemo(() => {
+    if (!showChapterContext || !c.chapter) return null;
+    const chapterNumber = Number(c.chapter.number ?? 0);
+    const chapterPrefix = c.chapter.label?.trim()
+      ? c.chapter.label.trim()
+      : Number.isFinite(chapterNumber)
+        ? `Chapter ${chapterNumber}`
+        : "Chapter";
+    const chapterTitle = String(c.chapter.title || "").trim();
+    return chapterTitle ? `${chapterPrefix}: ${chapterTitle}` : chapterPrefix;
+  }, [c.chapter, showChapterContext]);
 
   const ratingStars = useMemo(() => {
     if (!(showUserRating && sectionTargetType === "WORK")) return null;
@@ -180,6 +194,12 @@ export default function CommentCard(props: CommentCardProps) {
           <div className="text-xs text-gray-600 dark:text-gray-300">{c.createdAtLabel}</div>
         </div>
       </div>
+
+      {chapterContextLabel ? (
+        <div className="mt-1 text-[11px] font-medium text-purple-700 dark:text-purple-300">
+          From {chapterContextLabel}
+        </div>
+      ) : null}
 
       {c.editedAtLabel ? (
         <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Edited: {c.editedAtLabel}</div>
