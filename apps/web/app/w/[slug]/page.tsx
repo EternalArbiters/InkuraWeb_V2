@@ -17,6 +17,7 @@ import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
+import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 
 export const dynamic = "force-dynamic";
@@ -119,7 +120,6 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
     const combinedWarnings = Array.isArray(work.warningTags) ? work.warningTags : [];
     const deviantLoveTags = Array.isArray(work.deviantLoveTags) ? work.deviantLoveTags : [];
-    const authorName = work.author?.name || work.author?.username || "Unknown";
 
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -145,10 +145,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                   />
                 </div>
                 <div className="p-4">
-                  <div className="truncate text-sm text-gray-600 dark:text-gray-300">
-                    Up by <b>{authorName}</b>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <UploaderIdentityLink user={work.author} className="w-full" textClassName="text-sm text-gray-600 dark:text-gray-300 font-medium" avatarClassName="h-8 w-8" />
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
                     <Link href={buildSearchHref({ kind: String(work.type || "").toLowerCase() })} className={chipLinkClass}>
                       {work.type}
                     </Link>

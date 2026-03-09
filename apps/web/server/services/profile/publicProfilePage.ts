@@ -68,7 +68,7 @@ async function loadPublicProfilePageData(username: string) {
           chapterCount: true,
           publishType: true,
           authorId: true,
-          author: { select: { username: true, name: true } },
+          author: { select: { username: true, name: true, image: true } },
           genres: { select: { slug: true } },
           deviantLoveTags: { select: { slug: true } },
         },
@@ -87,7 +87,7 @@ async function loadPublicProfilePageData(username: string) {
           _count: { select: { items: true } },
           items: {
             orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],
-            take: 5,
+            take: 6,
             select: {
               work: {
                 select: {

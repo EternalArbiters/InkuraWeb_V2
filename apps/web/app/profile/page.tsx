@@ -62,7 +62,7 @@ export default async function ProfilePage() {
             completion: true,
             chapterCount: true,
             publishType: true,
-            author: { select: { name: true, username: true } },
+            author: { select: { name: true, username: true, image: true } },
           },
         },
         readingLists: {
@@ -78,7 +78,7 @@ export default async function ProfilePage() {
             _count: { select: { items: true } },
             items: {
               orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],
-              take: 5,
+              take: 3,
               select: {
                 work: {
                   select: {

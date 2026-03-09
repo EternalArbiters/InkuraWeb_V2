@@ -2,7 +2,10 @@ import Link from "next/link";
 import OriginFlag from "@/app/components/OriginFlag";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import FavoriteIconButton from "@/app/components/work/FavoriteIconButton";
+import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import { formatUpdatedAt } from "@/lib/time";
+
+type Person = { username?: string | null; name?: string | null; image?: string | null } | null | undefined;
 
 type WorkLite = {
   id: string;
@@ -16,13 +19,12 @@ type WorkLite = {
   language?: string | null;
   completion?: string | null;
   chapterCount?: number | null;
-  likeCount?: number | null; // kept for API compatibility (sorting), not shown in row
+  likeCount?: number | null;
   ratingAvg?: number | null;
   ratingCount?: number | null;
   updatedAt?: string | Date | null;
-  author?: { username?: string | null; name?: string | null } | null;
-  translator?: { username?: string | null; name?: string | null } | null;
-  // viewer interactions (from /api/works)
+  author?: { username?: string | null; name?: string | null; image?: string | null } | null;
+  translator?: { username?: string | null; name?: string | null; image?: string | null } | null;
   viewerBookmarked?: boolean | null;
   viewerFavorited?: boolean | null;
 };
@@ -54,7 +56,6 @@ function originFlagEmoji(input: Pick<WorkLite, "type" | "comicType" | "language"
     .toLowerCase()
     .split("-")[0];
 
-  // Comics: prefer comicType (MANGA/MANHWA/MANHUA)
   if (type === "COMIC") {
     if (comicType === "MANGA") return "🇯🇵";
     if (comicType === "MANHWA") return "🇰🇷";
@@ -63,7 +64,6 @@ function originFlagEmoji(input: Pick<WorkLite, "type" | "comicType" | "language"
     if (comicType === "OTHER") return "🏳️";
   }
 
-  // Novels (and fallback): map language to flag
   const map: Record<string, string> = {
     ja: "🇯🇵",
     jp: "🇯🇵",
@@ -93,8 +93,9 @@ function originFlagEmoji(input: Pick<WorkLite, "type" | "comicType" | "language"
 export default function WorkRowCard({ work }: { work: WorkLite }) {
   const href = work?.slug ? `/w/${work.slug}` : work?.id ? `/work/${work.id}` : "#";
 
-  const author = work?.author?.name || work?.author?.username || "";
-  const translator = work?.translator?.name || work?.translator?.username || "";
+  const author = work?.author;
+  const translator = work?.translator;
+  const uploader: Person = author?.username || author?.name ? author : translator;
   const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
   const isUp = !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000;
   const updatedLabel = formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 });
@@ -111,7 +112,6 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
   return (
     <div className="group flex gap-4 rounded-[14px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition p-3">
       <Link href={href} className="flex gap-4 min-w-0 flex-1">
-        {/* Cover: stretch to match row height (so top/bottom align with card) */}
         <div className="relative w-[92px] sm:w-[108px] shrink-0 self-stretch">
           <div className="relative h-full min-h-[124px] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
             {work?.coverImage ? (
@@ -138,11 +138,9 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
             {work?.title || "Untitled"}
           </div>
 
-          {(author || translator) && (
-            <div className="mt-1 text-xs sm:text-sm text-gray-700 dark:text-gray-200 truncate">
-              Up by {author || translator}
-            </div>
-          )}
+          <div className="mt-1">
+            <UploaderIdentityLink user={uploader} textClassName="text-xs sm:text-sm text-gray-700 dark:text-gray-200" />
+          </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
             {typeof work?.chapterCount === "number" ? <span>Ch: {work.chapterCount}</span> : null}
@@ -152,7 +150,6 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
 
           {updatedLabel ? <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 opacity-80">{updatedLabel}</div> : null}
 
-          {/* Row-list-only badges: moved below the Updated line */}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {isUp ? <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-600/90 text-white font-extrabold">UP</span> : null}
             <span className={`inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(type)}`}>{type}</span>
@@ -166,7 +163,6 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
         </div>
       </Link>
 
-      {/* Row actions: only Bookmark + Favorite */}
       {work?.id ? (
         <div className="shrink-0 flex items-start gap-2 pt-1">
           <BookmarkIconButton workId={work.id} initialBookmarked={!!work.viewerBookmarked} />

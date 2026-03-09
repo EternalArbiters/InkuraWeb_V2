@@ -45,7 +45,7 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
               likeCount: true,
               ratingAvg: true,
               ratingCount: true,
-              author: { select: { username: true, name: true } },
+              author: { select: { username: true, name: true, image: true } },
             },
           },
         },

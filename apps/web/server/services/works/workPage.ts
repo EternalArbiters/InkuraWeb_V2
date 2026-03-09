@@ -106,8 +106,8 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
       genres: { select: { name: true, slug: true } },
       tags: { select: { name: true, slug: true } },
       authorId: true,
-      author: { select: { username: true, name: true } },
-      translator: { select: { username: true, name: true } },
+      author: { select: { username: true, name: true, image: true } },
+      translator: { select: { username: true, name: true, image: true } },
       chapters: {
         where: { status: "PUBLISHED" },
         orderBy: [{ number: "asc" }, { createdAt: "asc" }],

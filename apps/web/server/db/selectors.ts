@@ -16,6 +16,7 @@ import type { Prisma } from "@prisma/client";
 export const userNameSelect = {
   username: true,
   name: true,
+  image: true,
 } as const satisfies Prisma.UserSelect;
 
 export const userPublicSelect = {

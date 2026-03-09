@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import WorkCoverBadges from "@/app/components/WorkCoverBadges";
+import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import { X } from "lucide-react";
 
 type Item = {
@@ -45,7 +46,6 @@ export default function ListWorksGrid({
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {works.map((w: any) => {
-        const authorName = w.author?.name || w.author?.username || "Unknown";
         return (
           <div key={w.id} className="relative group overflow-hidden rounded-[10px] border border-gray-200 bg-white/70 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900/50">
             {isOwner ? (
@@ -76,17 +76,19 @@ export default function ListWorksGrid({
                   }}
                 />
               </div>
-              <div className="p-3">
+              <div className="p-3 pb-0">
                 <div className="text-sm font-bold leading-snug line-clamp-2">{w.title}</div>
-                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 line-clamp-1">Up by {authorName}</div>
-                <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-3">
-                  <span>❤ {w.likeCount ?? 0}</span>
-                  <span>
-                    ⭐ {(Math.round((w.ratingAvg ?? 0) * 10) / 10).toFixed(1)} ({w.ratingCount ?? 0})
-                  </span>
-                </div>
               </div>
             </Link>
+            <div className="px-3 pt-2">
+              <UploaderIdentityLink user={w.author} className="w-full" textClassName="text-xs text-gray-600 dark:text-gray-300" />
+            </div>
+            <div className="p-3 pt-2 text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-3">
+              <span>❤ {w.likeCount ?? 0}</span>
+              <span>
+                ⭐ {(Math.round((w.ratingAvg ?? 0) * 10) / 10).toFixed(1)} ({w.ratingCount ?? 0})
+              </span>
+            </div>
           </div>
         );
       })}
