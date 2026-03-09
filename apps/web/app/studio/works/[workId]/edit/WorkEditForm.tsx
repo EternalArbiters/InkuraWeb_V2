@@ -133,6 +133,10 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
     };
   }, [coverPrepared?.previewUrl]);
 
+  React.useEffect(() => {
+    if (!isMature && warningIds.length) setWarningIds([]);
+  }, [isMature, warningIds.length]);
+
   function setPrevFromWorkId(id: string) {
     const w = myWorks.find((x) => x.id === id);
     if (!w) return;
@@ -190,7 +194,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       fd.append("completion", completion);
       fd.append("isMature", String(isMature));
       fd.append("genreIds", JSON.stringify(genreIds));
-      fd.append("warningTagIds", JSON.stringify(warningIds));
+      fd.append("warningTagIds", JSON.stringify(isMature ? warningIds : []));
       fd.append("deviantLoveTagIds", JSON.stringify(isDeviantLove ? deviantLoveTagIds : []));
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
@@ -288,8 +292,6 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         setCompletion={setCompletion}
         origin={origin}
         setOrigin={setOrigin}
-        isMature={isMature}
-        setIsMature={setIsMature}
       />
 
       <WorkSummaryField description={description} setDescription={setDescription} />
@@ -313,6 +315,8 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         warningTags={warningTags}
         warningIds={warningIds}
         setWarningIds={setWarningIds}
+        isMature={isMature}
+        setIsMature={setIsMature}
         deviantLoveTags={deviantLoveTags}
         isDeviantLove={isDeviantLove}
         setIsDeviantLove={setIsDeviantLove}

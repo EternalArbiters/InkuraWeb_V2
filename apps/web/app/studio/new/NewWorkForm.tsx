@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
+import MultiSelectPicker, { type PickerItem } from "@/components/MultiSelectPicker";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 
@@ -86,6 +86,10 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
     };
   }, [coverPrepared?.previewUrl]);
 
+  React.useEffect(() => {
+    if (!isMature && warningTagIds.length) setWarningTagIds([]);
+  }, [isMature, warningTagIds.length]);
+
   async function onPickCover(file: File | null) {
     if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
     if (!file) {
@@ -154,7 +158,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       fd.set("publishType", publishType);
       fd.set("isMature", isMature ? "true" : "false");
       fd.set("genreIds", JSON.stringify(genreIds));
-      fd.set("warningTagIds", JSON.stringify(warningTagIds));
+      fd.set("warningTagIds", JSON.stringify(isMature ? warningTagIds : []));
       fd.set("deviantLoveTagIds", JSON.stringify(isDeviantLove ? deviantLoveTagIds : []));
       fd.set("tags", JSON.stringify(tags));
       fd.set("coverUrl", coverUpload.url);
@@ -228,13 +232,12 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         setOrigin={setOrigin}
         completion={completion}
         setCompletion={setCompletion}
-        isMature={isMature}
-        setIsMature={setIsMature}
         description={description}
         setDescription={setDescription}
         tagsRaw={tagsRaw}
         onTagsRawChange={syncTags}
       />
+
 
       <MultiSelectPicker
         title="Genres"
@@ -242,14 +245,13 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
         selectedIds={genreIds}
         onChange={setGenreIds}
       />
-      <MultiSelectPicker
-        title="Warnings"
-        items={warningTags}
-        selectedIds={warningTagIds}
-        onChange={setWarningTagIds}
-      />
 
       <DeviantLoveCard
+        warningTags={warningTags}
+        isMature={isMature}
+        setIsMature={setIsMature}
+        warningTagIds={warningTagIds}
+        setWarningTagIds={setWarningTagIds}
         deviantLoveTags={deviantLoveTags}
         isDeviantLove={isDeviantLove}
         setIsDeviantLove={setIsDeviantLove}

@@ -43,7 +43,6 @@ export default async function StudioWorkPage({
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{publishType}</span>
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.status}</span>
-              <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">slug: {work.slug}</span>
             </div>
 
             {publishType !== "ORIGINAL" ? (

@@ -16,8 +16,6 @@ export default function WorkBasicsFields({
   setCompletion,
   origin,
   setOrigin,
-  isMature,
-  setIsMature,
 }: {
   title: string;
   setTitle: (v: string) => void;
@@ -31,8 +29,6 @@ export default function WorkBasicsFields({
   setCompletion: (v: string) => void;
   origin: string;
   setOrigin: (v: string) => void;
-  isMature: boolean;
-  setIsMature: (v: boolean) => void;
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,19 +118,6 @@ export default function WorkBasicsFields({
         </select>
       </label>
 
-      <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-        <input
-          type="checkbox"
-          checked={isMature}
-          onChange={(e) => setIsMature(e.target.checked)}
-        />
-        <div>
-          <div className="text-sm font-semibold">18+ / Mature</div>
-          <div className="text-xs text-gray-600 dark:text-gray-300">
-            Viewer wajib opt-in 18+.
-          </div>
-        </div>
-      </label>
     </div>
   );
 }

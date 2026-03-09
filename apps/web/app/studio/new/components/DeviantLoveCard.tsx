@@ -3,12 +3,22 @@
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 
 export default function DeviantLoveCard({
+  warningTags = [],
+  isMature = false,
+  setIsMature,
+  warningTagIds = [],
+  setWarningTagIds,
   deviantLoveTags,
   isDeviantLove,
   setIsDeviantLove,
   deviantLoveTagIds,
   setDeviantLoveTagIds,
 }: {
+  warningTags?: PickerItem[];
+  isMature?: boolean;
+  setIsMature?: (v: boolean) => void;
+  warningTagIds?: string[];
+  setWarningTagIds?: (v: string[]) => void;
   deviantLoveTags: PickerItem[];
   isDeviantLove: boolean;
   setIsDeviantLove: (v: boolean) => void;
@@ -16,7 +26,39 @@ export default function DeviantLoveCard({
   setDeviantLoveTagIds: (v: string[]) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-4">
+      {setIsMature ? (
+        <div className="grid gap-3">
+          <label className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={isMature}
+              onChange={(e) => setIsMature(e.target.checked)}
+            />
+            <div>
+              <div className="text-sm font-semibold">18+ / Mature</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300">
+                Viewer wajib opt-in 18+. Centang dulu untuk membuka warning NSFW.
+              </div>
+            </div>
+          </label>
+
+          {isMature ? (
+            <MultiSelectPicker
+              title="Warnings"
+              subtitle="NSFW / sensitive tags."
+              items={warningTags}
+              selectedIds={warningTagIds}
+              onChange={setWarningTagIds || (() => undefined)}
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-200 p-4 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">
+              Aktifkan 18+ / Mature dulu kalau mau memilih warning NSFW.
+            </div>
+          )}
+        </div>
+      ) : null}
+
       <label className="flex items-center gap-3">
         <input
           type="checkbox"
@@ -31,7 +73,7 @@ export default function DeviantLoveCard({
         </div>
       </label>
       {isDeviantLove ? (
-        <div className="mt-4">
+        <div>
           <MultiSelectPicker
             title="Deviant Love Tags"
             items={deviantLoveTags}

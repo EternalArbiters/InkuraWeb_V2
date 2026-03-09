@@ -15,8 +15,6 @@ export default function WorkBasicsCard({
   setOrigin,
   completion,
   setCompletion,
-  isMature,
-  setIsMature,
   description,
   setDescription,
   tagsRaw,
@@ -34,8 +32,6 @@ export default function WorkBasicsCard({
   setOrigin: (v: any) => void;
   completion: string;
   setCompletion: (v: string) => void;
-  isMature: boolean;
-  setIsMature: (v: boolean) => void;
   description: string;
   setDescription: (v: string) => void;
   tagsRaw: string;
@@ -128,19 +124,6 @@ export default function WorkBasicsCard({
         </select>
       </div>
 
-      <label className="flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
-        <input
-          type="checkbox"
-          checked={isMature}
-          onChange={(e) => setIsMature(e.target.checked)}
-        />
-        <div>
-          <div className="text-sm font-semibold">18+ / Mature</div>
-          <div className="text-xs text-gray-600 dark:text-gray-300">
-            Viewer wajib opt-in 18+.
-          </div>
-        </div>
-      </label>
 
       <div className="grid gap-1">
         <label className="text-sm font-semibold">Description</label>
