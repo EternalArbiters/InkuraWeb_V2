@@ -42,7 +42,7 @@ function ArcCard({ arc }: { arc: ArcLink }) {
   return (
     <Link
       href={arc.href}
-      className="flex items-center gap-3 rounded-[10px] border border-gray-200 bg-white/60 p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/30 dark:hover:bg-gray-900"
+      className="flex min-w-0 items-center gap-3 rounded-[10px] border border-gray-200 bg-white/60 p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/30 dark:hover:bg-gray-900"
     >
       <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-[8px] border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
         {arc.coverImage ? (
@@ -109,48 +109,50 @@ export default function SeriesArcsPanel({
   );
 
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
-      <div className="rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/30">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+      <div className="min-w-0 rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/30">
         <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">More in this series</div>
         {titleNode}
 
         {nearbyItems.length ? (
-          <div className="mt-4 -mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar">
-            <div className="flex w-max gap-3 snap-x snap-mandatory">
-              {nearbyItems.map((item) => {
-                const active = item.id === currentWorkId;
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/w/${item.slug}`}
-                    className={`shrink-0 snap-start w-[9.25rem] overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
-                      active
-                        ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
-                        : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
-                    }`}
-                  >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
-                      {item.coverImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">No cover</div>
-                      )}
-                      {typeof item.seriesOrder === "number" ? (
-                        <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">
-                          Arc {item.seriesOrder}
-                        </div>
-                      ) : null}
-                      {active ? (
-                        <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
-                      ) : null}
-                    </div>
-                    <div className="p-3">
-                      <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
-                    </div>
-                  </Link>
-                );
-              })}
+          <div className="mt-4 max-w-full">
+            <div className="-mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar">
+              <div className="inline-flex min-w-max gap-3 snap-x snap-mandatory">
+                {nearbyItems.map((item) => {
+                  const active = item.id === currentWorkId;
+                  return (
+                    <Link
+                      key={item.id}
+                      href={`/w/${item.slug}`}
+                      className={`w-[9.25rem] shrink-0 snap-start overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
+                        active
+                          ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
+                          : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
+                      }`}
+                    >
+                      <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
+                        {item.coverImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">No cover</div>
+                        )}
+                        {typeof item.seriesOrder === "number" ? (
+                          <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">
+                            Arc {item.seriesOrder}
+                          </div>
+                        ) : null}
+                        {active ? (
+                          <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
+                        ) : null}
+                      </div>
+                      <div className="p-3">
+                        <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : null}
