@@ -4,7 +4,7 @@ import prisma from "@/server/db/prisma";
 import { savePublicUpload, deletePublicUpload } from "@/server/uploads/upload";
 import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 import { ApiError } from "@/server/http";
-import { Prisma } from "@prisma/client";
+import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
 import { requireCreatorSession } from "./session";
 import { normalizeNovelContentForStorage, novelContentHasMeaningfulContent } from "@/lib/novelContent";
 
@@ -362,4 +362,51 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
   }
 
   return { status: 200, body: { ok: true, chapter: { ...updated, workSlug: updated.work.slug } } };
+}
+
+export async function deleteStudioChapter(chapterId: string) {
+  const { userId, role } = await requireCreatorSession();
+
+  const owned = await loadChapterForEdit(userId, role, chapterId);
+  if (owned.kind === "not_found") throw new ApiError(404, "Not found");
+  if (owned.kind === "forbidden") throw new ApiError(403, "Forbidden");
+
+  const chapter = owned.chapter;
+
+  const comments = await prisma.comment.findMany({
+    where: { targetType: CommentTargetType.CHAPTER, targetId: chapterId },
+    select: { id: true },
+  });
+  const commentIds = comments.map((comment) => comment.id);
+
+  await prisma.$transaction(async (tx) => {
+    if (commentIds.length) {
+      await tx.report.deleteMany({
+        where: { targetType: ReportTargetType.COMMENT, targetId: { in: commentIds } },
+      });
+      await tx.comment.deleteMany({ where: { id: { in: commentIds } } });
+    }
+
+    await tx.notification.deleteMany({ where: { chapterId } });
+    await tx.chapter.delete({ where: { id: chapterId } });
+  });
+
+  await recomputePublishedChapterCount(chapter.work.id);
+
+  const toDelete: string[] = [];
+  if (chapter.thumbnailKey) toDelete.push(String(chapter.thumbnailKey));
+  for (const page of chapter.pages || []) {
+    if (page.imageKey) toDelete.push(String(page.imageKey));
+    else if (page.imageUrl) toDelete.push(String(page.imageUrl));
+  }
+
+  const uniq = Array.from(new Set(toDelete)).filter(Boolean);
+  await Promise.all(uniq.map((item) => deletePublicUpload(item)));
+
+  return {
+    ok: true,
+    chapterId,
+    workId: chapter.work.id,
+    workSlug: chapter.work.slug,
+  };
 }

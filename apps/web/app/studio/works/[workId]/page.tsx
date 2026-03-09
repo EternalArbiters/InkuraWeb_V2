@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { FileText, Pencil } from "lucide-react";
 import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 import { redirect } from "next/navigation";
 import { ApiError } from "@/server/http";
 import { getStudioWorkById } from "@/server/services/studio/workById";
+import DeleteChapterButton from "./DeleteChapterButton";
 
 export const dynamic = "force-dynamic";
 
@@ -163,18 +165,26 @@ export default async function StudioWorkPage({
                     <div className="flex gap-2 shrink-0">
                       <Link
                         href={`/studio/works/${work.id}/chapters/${ch.id}/edit`}
-                        className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                        title="Edit chapter"
+                        aria-label="Edit chapter"
                       >
-                        Edit
+                        <Pencil className="h-4 w-4" />
                       </Link>
                       {isComic ? (
                         <Link
                           href={`/studio/works/${work.id}/chapters/${ch.id}/pages`}
-                          className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                          title="Manage pages"
+                          aria-label="Manage pages"
                         >
-                          Pages
+                          <FileText className="h-4 w-4" />
                         </Link>
                       ) : null}
+                      <DeleteChapterButton
+                        chapterId={ch.id}
+                        chapterTitle={getChapterDisplayTitle(ch.number, ch.title, ch.label)}
+                      />
                     </div>
                   </div>
                 );
