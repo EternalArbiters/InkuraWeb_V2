@@ -44,7 +44,7 @@ function Cover({
 }) {
   const content = (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-[14px] bg-gray-100 dark:bg-gray-800 ${compact ? "h-24 w-[72px]" : "h-32 w-24 sm:h-36 sm:w-28"}`}
+      className={`relative shrink-0 overflow-hidden rounded-[8px] bg-gray-100 dark:bg-gray-800 ${compact ? "h-24 w-[72px]" : "h-32 w-24 sm:h-36 sm:w-28"}`}
     >
       {coverImage ? (
         // eslint-disable-next-line @next/next/no-img-element

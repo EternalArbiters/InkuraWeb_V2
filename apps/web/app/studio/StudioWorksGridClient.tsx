@@ -53,8 +53,8 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {items.map((w) => (
-          <div key={w.id} className="overflow-hidden rounded-[16px] border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
-            <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] bg-gray-100 dark:bg-gray-800">
+          <div key={w.id} className="overflow-hidden rounded-[10px] border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
               <Link
                 href={`/w/${w.slug}`}
                 className="absolute inset-0 z-0 block"

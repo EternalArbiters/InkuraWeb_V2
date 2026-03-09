@@ -42,9 +42,9 @@ function ArcCard({ arc }: { arc: ArcLink }) {
   return (
     <Link
       href={arc.href}
-      className="flex items-center gap-3 rounded-[16px] border border-gray-200 bg-white/60 p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/30 dark:hover:bg-gray-900"
+      className="flex items-center gap-3 rounded-[10px] border border-gray-200 bg-white/60 p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/30 dark:hover:bg-gray-900"
     >
-      <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-[12px] border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
+      <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-[8px] border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
         {arc.coverImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={arc.coverImage} alt={arc.title} className="h-full w-full object-cover" />
@@ -123,13 +123,13 @@ export default function SeriesArcsPanel({
                   <Link
                     key={item.id}
                     href={`/w/${item.slug}`}
-                    className={`w-[9.25rem] shrink-0 snap-start overflow-hidden rounded-[16px] border transition sm:w-[9.75rem] ${
+                    className={`w-[9.25rem] shrink-0 snap-start overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
                       active
                         ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
                         : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
                     }`}
                   >
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] bg-gray-100 dark:bg-gray-800">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
                     {item.coverImage ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />

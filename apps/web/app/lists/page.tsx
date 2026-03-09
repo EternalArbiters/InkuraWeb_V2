@@ -122,7 +122,7 @@ export default async function ListsPage() {
                     <div className="mt-4 grid grid-cols-3 gap-2">
                       {previews.length ? (
                         previews.map((w) => (
-                          <div key={w.id} className="aspect-[3/4] overflow-hidden rounded-[14px] bg-gray-100 dark:bg-gray-800">
+                          <div key={w.id} className="aspect-[3/4] overflow-hidden rounded-[8px] bg-gray-100 dark:bg-gray-800">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             {w.coverImage ? <img src={w.coverImage} alt={w.title} className="w-full h-full object-cover" /> : null}
                           </div>

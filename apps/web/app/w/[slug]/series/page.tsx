@@ -68,13 +68,13 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
               <Link
                 key={item.id}
                 href={`/w/${item.slug}`}
-                className={`overflow-hidden rounded-[16px] border transition ${
+                className={`overflow-hidden rounded-[10px] border transition ${
                   active
                     ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
                     : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900"
                 }`}
               >
-                <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] bg-gray-100 dark:bg-gray-800">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
                   {item.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />

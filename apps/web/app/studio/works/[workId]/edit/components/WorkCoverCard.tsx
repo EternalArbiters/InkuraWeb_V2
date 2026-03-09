@@ -51,7 +51,7 @@ export default function WorkCoverCard({
       </div>
 
       <div className="mt-3 grid grid-cols-[120px_1fr] gap-3 items-start">
-        <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
           {coverImage && !removeCover ? (
             <img
               src={coverImage}

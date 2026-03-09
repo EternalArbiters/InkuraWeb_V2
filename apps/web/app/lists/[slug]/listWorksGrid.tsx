@@ -47,7 +47,7 @@ export default function ListWorksGrid({
       {works.map((w: any) => {
         const authorName = w.author?.name || w.author?.username || "Unknown";
         return (
-          <div key={w.id} className="relative group overflow-hidden rounded-[16px] border border-gray-200 bg-white/70 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900/50">
+          <div key={w.id} className="relative group overflow-hidden rounded-[10px] border border-gray-200 bg-white/70 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900/50">
             {isOwner ? (
               <button
                 type="button"
@@ -62,7 +62,7 @@ export default function ListWorksGrid({
             ) : null}
 
             <Link href={`/w/${w.slug}`} className="block">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] bg-gray-100 dark:bg-gray-800">
+              <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {w.coverImage ? <img src={w.coverImage} alt={w.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition" /> : null}
                 <WorkCoverBadges

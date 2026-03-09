@@ -7,9 +7,9 @@ export default function WorkCardSquare({ work }: { work: any }) {
   return (
     <Link
       href={href}
-      className="snap-start shrink-0 w-[160px] sm:w-[190px] overflow-hidden rounded-[16px] border border-gray-200 bg-white transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
+      className="snap-start shrink-0 w-[160px] sm:w-[190px] overflow-hidden rounded-[10px] border border-gray-200 bg-white transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
     >
-      <div className="relative aspect-[3/4] overflow-hidden rounded-[16px] bg-gray-100 dark:bg-gray-800">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
         {work?.coverImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={work.coverImage} alt={work?.title || "cover"} className="w-full h-full object-cover" loading="lazy" />
