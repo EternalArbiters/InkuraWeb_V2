@@ -47,14 +47,14 @@ function clamp(n: unknown, def: number, min: number, max: number) {
 export default function WorkChaptersWebtoon({
   slug,
   chapters,
-  lastReadChapterNumber,
+  lastReadChapterId,
   limit = 5,
   showAllHref,
 }: {
   slug: string;
   chapters: ChapterLite[];
-  lastReadChapterNumber: number | null;
-  limit?: number;
+  lastReadChapterId?: string | null;
+  limit?: number | null;
   showAllHref?: string | null;
 }) {
   const [sort, setSort] = React.useState<"newest" | "oldest">("newest");
@@ -102,7 +102,7 @@ export default function WorkChaptersWebtoon({
             const focusY = clamp(c.thumbnailFocusY, 50, 0, 100);
             const zoom = clamp(c.thumbnailZoom, 1, 1, 2.5);
 
-            const read = typeof lastReadChapterNumber === "number" && c.number <= lastReadChapterNumber;
+            const read = !!lastReadChapterId && String(c.id) === String(lastReadChapterId);
             const up = isWithin24h(c.publishedAt || c.createdAt || null);
             const displayLabel = getChapterDisplayLabel(c.number, c.label);
             const secondaryTitle = getChapterSecondaryTitle(c.number, c.title, c.label);

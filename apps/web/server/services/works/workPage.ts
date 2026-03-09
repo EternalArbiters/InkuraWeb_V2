@@ -45,7 +45,7 @@ export type WorkPageResult =
       ok: true;
       gated: false;
       viewer: any;
-      progress: { lastReadChapterNumber: number | null };
+      progress: { lastReadChapterId: string | null; lastReadChapterNumber: number | null };
       interactions: { liked: boolean; bookmarked: boolean; myRating: number | null };
       work: any;
     };
@@ -234,6 +234,7 @@ export async function getViewerWorkPagePayload(work: any) {
   let viewerLiked = false;
   let viewerBookmarked = false;
   let viewerRating: number | null = null;
+  let lastReadChapterId: string | null = null;
   let lastReadChapterNumber: number | null = null;
 
   if (viewer?.id) {
@@ -243,20 +244,21 @@ export async function getViewerWorkPagePayload(work: any) {
       prisma.workRating.findUnique({ where: { userId_workId: { userId: viewer.id, workId: work.id } }, select: { value: true } }),
       prisma.readingProgress.findUnique({
         where: { userId_workId: { userId: viewer.id, workId: work.id } },
-        select: { chapter: { select: { number: true } } },
+        select: { chapterId: true, chapter: { select: { number: true } } },
       }),
     ]);
 
     viewerLiked = !!like;
     viewerBookmarked = !!bookmark;
     viewerRating = rating?.value ?? null;
+    lastReadChapterId = progress?.chapterId ?? null;
     lastReadChapterNumber = progress?.chapter?.number ?? null;
   }
 
   return {
     gated: false as const,
     viewer: viewerOut,
-    progress: { lastReadChapterNumber },
+    progress: { lastReadChapterId, lastReadChapterNumber },
     interactions: {
       liked: viewerLiked,
       bookmarked: viewerBookmarked,

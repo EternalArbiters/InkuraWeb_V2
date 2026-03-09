@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import { notFound } from "next/navigation";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
@@ -12,7 +12,7 @@ export default async function WorkAllChaptersPage({ params: paramsPromise }: { p
   if (!data.ok) return notFound();
 
   const work = data.work;
-  const progress = (data as any).progress || { lastReadChapterNumber: null };
+  const progress = (data as any).progress || { lastReadChapterId: null, lastReadChapterNumber: null };
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -22,18 +22,14 @@ export default async function WorkAllChaptersPage({ params: paramsPromise }: { p
             <div className="text-3xl font-extrabold tracking-tight">All Chapters</div>
             <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{work.title}</div>
           </div>
-          <Link
-            href={`/w/${work.slug}`}
-            className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-          >
-            Back
-          </Link>
+          <BackButton href={`/w/${work.slug}`} />
         </div>
 
         <WorkChaptersWebtoon
           slug={work.slug}
           chapters={Array.isArray(work.chapters) ? work.chapters : []}
-          lastReadChapterNumber={typeof progress?.lastReadChapterNumber === "number" ? progress.lastReadChapterNumber : null}
+          lastReadChapterId={typeof progress?.lastReadChapterId === "string" ? progress.lastReadChapterId : null}
+          limit={null}
           showAllHref={null}
         />
       </div>

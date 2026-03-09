@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 import ProfileForm from "./ProfileForm";
@@ -17,12 +17,7 @@ export default async function EditProfilePage() {
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit Profile</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update your display name and username.</p>
           </div>
-          <Link
-            href="/home"
-            className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Back
-          </Link>
+          <BackButton href="/home" />
         </div>
 
         <ProfileForm

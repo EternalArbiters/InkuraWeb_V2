@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import NewListForm from "./newListForm";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +11,7 @@ export default function NewListPage() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">New Collection</h1>
           </div>
-          <Link href="/lists" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-            Back
-          </Link>
+          <BackButton href="/lists" />
         </div>
 
         <div className="mt-6">

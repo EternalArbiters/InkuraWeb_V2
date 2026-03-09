@@ -211,7 +211,25 @@ export async function prepareUploadFile(params: {
       });
     }
 
-    if (blob.size >= file.size * 0.98 && target.width === decoded.width && target.height === decoded.height && contentType === originalContentType) {
+    if (blob.size > file.size) {
+      return makePreparedUploadFile({
+        originalFile: file,
+        file,
+        contentType: originalContentType,
+        width: decoded.width,
+        height: decoded.height,
+        compressionApplied: false,
+        reason: "encode-not-smaller",
+        makePreviewUrl,
+      });
+    }
+
+    if (
+      blob.size >= file.size * 0.98 &&
+      target.width === decoded.width &&
+      target.height === decoded.height &&
+      contentType === originalContentType
+    ) {
       return makePreparedUploadFile({
         originalFile: file,
         file,

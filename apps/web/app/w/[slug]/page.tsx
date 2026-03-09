@@ -36,7 +36,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
   const gated = !!data.gated;
   const viewer = data.viewer;
   const interactions = (data as any).interactions || { liked: false, bookmarked: false, myRating: null };
-  const progress = (data as any).progress || { lastReadChapterNumber: null };
+  const progress = (data as any).progress || { lastReadChapterId: null, lastReadChapterNumber: null };
   const canViewMature = !!viewer?.canViewMature;
   const canViewDeviantLove = !!viewer?.canViewDeviantLove;
   const gateReason = (data as any).gateReason as string | undefined;
@@ -247,7 +247,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                   <WorkChaptersWebtoon
                     slug={work.slug}
                     chapters={Array.isArray(work.chapters) ? work.chapters : []}
-                    lastReadChapterNumber={typeof progress?.lastReadChapterNumber === "number" ? progress.lastReadChapterNumber : null}
+                    lastReadChapterId={typeof progress?.lastReadChapterId === "string" ? progress.lastReadChapterId : null}
                     limit={5}
                     showAllHref={Array.isArray(work.chapters) && work.chapters.length > 5 ? `/w/${work.slug}/chapters` : null}
                   />

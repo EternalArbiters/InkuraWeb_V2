@@ -1,3 +1,4 @@
+import BackButton from "@/app/components/BackButton";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminReportsClient from "./AdminReportsClient";
@@ -51,12 +52,7 @@ export default async function AdminReportsPage() {
             >
               Notify user
             </Link>
-            <Link
-              href="/home"
-              className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Back
-            </Link>
+            <BackButton href="/home" />
           </div>
         </div>
 

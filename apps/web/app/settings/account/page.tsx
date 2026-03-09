@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import { redirect } from "next/navigation";
 import PreferencesForm from "./PreferencesForm";
 import { getViewerPreferences } from "@/server/services/preferences/viewerPreferences";
@@ -25,12 +25,7 @@ export default async function AccountSettingsPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Account Settings</h1>
           </div>
-          <Link
-            href="/home"
-            className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Back
-          </Link>
+          <BackButton href="/home" />
         </div>
 
         <PreferencesForm

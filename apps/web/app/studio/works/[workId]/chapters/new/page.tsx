@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import { redirect } from "next/navigation";
 import ChapterCreateForm from "./ChapterCreateForm";
 import { ApiError } from "@/server/http";
@@ -36,9 +36,7 @@ export default async function NewChapterPage({
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">New Chapter</h1>
-          <Link href={`/studio/works/${work.id}`} className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-            ← Back
-          </Link>
+          <BackButton href={`/studio/works/${work.id}`} />
         </div>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           Work: <b>{work.title}</b> ({work.type})

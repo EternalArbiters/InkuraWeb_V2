@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import NotificationsClient from "./NotificationsClient";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listViewerNotifications } from "@/server/services/notifications/viewerNotifications";
@@ -16,12 +16,7 @@ export default async function NotificationsPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Notifications</h1>
           </div>
-          <Link
-            href="/all"
-            className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Back
-          </Link>
+          <BackButton href="/all" />
         </div>
 
         <NotificationsClient initial={notifications as any} />
