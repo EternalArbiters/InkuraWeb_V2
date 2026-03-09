@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ComicPageStack from "@/app/components/reader/ComicPageStack";
 import { notFound, redirect } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
 import { getPublishedChapterReaderData } from "@/server/services/chapters/readChapter";
@@ -10,10 +11,13 @@ import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import { logPageRenderMetric } from "@/server/observability/metrics";
-import { getChapterDisplayTitle } from "@/lib/chapterLabel";
-import { getNovelReaderHtml } from "@/lib/novelContent";
 
 export const dynamic = "force-dynamic";
+
+function chapterLabel(n: number, title: string) {
+  const t = title ? `: ${title}` : "";
+  return `Ch. ${n}${t}`;
+}
 
 export default async function ReadChapterPage({
   params: paramsPromise,
@@ -110,7 +114,7 @@ export default async function ReadChapterPage({
         <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
           <div>
             {/* keep for accessibility/SEO only */}
-            <h1 className="sr-only">{work.title} — {getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}</h1>
+            <h1 className="sr-only">{work.title} — {chapterLabel(chapter.number, chapter.title)}</h1>
 
             {/* Desktop titles */}
             <div className="hidden lg:block mb-4">
@@ -118,69 +122,42 @@ export default async function ReadChapterPage({
                 {work.title}
               </Link>
               <div className="mt-1 text-3xl font-extrabold tracking-tight text-white">
-                {getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}
+                {chapterLabel(chapter.number, chapter.title)}
               </div>
             </div>
 
             <div className="mt-0">
               <ContentWarningsGate
                 storageKey={`chapter:${chapter.id}`}
-                title={`${work.title} — ${getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}`}
+                title={`${work.title} — ${chapterLabel(chapter.number, chapter.title)}`}
                 warnings={allWarnings}
               >
                 <ReaderChrome
                   workId={work.id}
                   workSlug={work.slug}
                   workTitle={work.title}
-                  chapterTitle={getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}
+                  chapterTitle={chapterLabel(chapter.number, chapter.title)}
                   chapterId={chapter.id}
                   prevId={prev ? prev.id : null}
                   nextId={next ? next.id : null}
                   initialLiked={!!(chapter as any).viewerLiked}
                   initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
                 >
-                  <style>{`
-                    .novel-reader-content p, .novel-reader-content div { margin: 0 0 1.1rem; }
-                    .novel-reader-content h1, .novel-reader-content h2, .novel-reader-content h3, .novel-reader-content h4 { margin: 1.6rem 0 0.8rem; font-weight: 700; line-height: 1.25; }
-                    .novel-reader-content h1 { font-size: 1.8rem; }
-                    .novel-reader-content h2 { font-size: 1.45rem; }
-                    .novel-reader-content h3 { font-size: 1.2rem; }
-                    .novel-reader-content ul, .novel-reader-content ol { margin: 0 0 1.2rem 1.4rem; }
-                    .novel-reader-content li { margin: 0.3rem 0; }
-                    .novel-reader-content blockquote { margin: 1.25rem 0; border-left: 3px solid rgba(168,85,247,.75); padding-left: 1rem; opacity: .95; }
-                    .novel-reader-content hr { margin: 1.5rem 0; border: 0; border-top: 1px solid rgba(148,163,184,.35); }
-                    .novel-reader-content a { color: #a855f7; text-decoration: underline; }
-                    .novel-reader-content img { display: block; max-width: 100%; height: auto; margin: 1.25rem auto; border-radius: 1rem; }
-                    .novel-reader-content figure { margin: 1.25rem 0; }
-                    .novel-reader-content pre, .novel-reader-content code { white-space: pre-wrap; }
-                    .novel-reader-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-                    .novel-reader-content td, .novel-reader-content th { border: 1px solid rgba(148,163,184,.25); padding: .55rem .7rem; }
-                  `}</style>
                   {isComic ? (
-                    <div className="-mx-0 sm:-mx-0 lg:mx-0 flex flex-col gap-0">
-                      {Array.isArray(chapter.pages)
-                        ? chapter.pages.map((p: any) => (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img key={p.id} src={p.imageUrl} alt={`Page ${p.order}`} className="w-full block" />
-                          ))
-                        : null}
-
-                      {Array.isArray(chapter.pages) && chapter.pages.length === 0 ? (
-                        <div className="mx-4 lg:mx-0 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-                          <div className="text-lg font-bold">No pages yet</div>
-                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                            Chapter ini belum punya halaman. (Creator bisa upload via Studio.)
-                          </p>
-                        </div>
-                      ) : null}
-                    </div>
+                    Array.isArray(chapter.pages) && chapter.pages.length > 0 ? (
+                      <ComicPageStack pages={chapter.pages as any} />
+                    ) : (
+                      <div className="mx-4 lg:mx-0 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
+                        <div className="text-lg font-bold">No pages yet</div>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                          Chapter ini belum punya halaman. (Creator bisa upload via Studio.)
+                        </p>
+                      </div>
+                    )
                   ) : (
-                    <article className="max-w-none px-4 lg:px-0">
+                    <article className="prose dark:prose-invert max-w-none px-4 lg:px-0">
                       {chapter.text?.content ? (
-                        <div
-                          className="novel-reader-content text-[1.04rem] leading-8 text-gray-900 dark:text-gray-100"
-                          dangerouslySetInnerHTML={{ __html: getNovelReaderHtml(chapter.text.content) }}
-                        />
+                        <div className="whitespace-pre-wrap leading-relaxed">{chapter.text.content}</div>
                       ) : (
                         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
                           <div className="text-lg font-bold">No text yet</div>
