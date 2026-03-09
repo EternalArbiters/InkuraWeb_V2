@@ -27,7 +27,7 @@ function progressHref(progress: ProgressItem) {
 
 function Cover({ title, coverImage, compact = false }: { title?: string | null; coverImage?: string | null; compact?: boolean }) {
   return (
-    <div className={`relative shrink-0 overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800 ${compact ? "h-24 w-[72px]" : "h-32 w-24 sm:h-36 sm:w-28"}`}>
+    <div className={`relative shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800 ${compact ? "h-24 w-[72px]" : "h-32 w-24 sm:h-36 sm:w-28"}`}>
       {coverImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={coverImage} alt={title || "cover"} className="h-full w-full object-cover" loading="lazy" />
