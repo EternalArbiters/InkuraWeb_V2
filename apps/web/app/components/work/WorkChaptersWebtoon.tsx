@@ -5,6 +5,23 @@ import * as React from "react";
 import { ArrowDownUp } from "lucide-react";
 import { getChapterDisplayLabel, getChapterSecondaryTitle } from "@/lib/chapterLabel";
 
+const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
+
+function getReadChaptersStorageKey(slug: string) {
+  return `${READ_CHAPTERS_STORAGE_PREFIX}${slug}`;
+}
+
+function loadRememberedReadChapters(slug: string): string[] {
+  if (typeof window === "undefined" || !slug) return [];
+  try {
+    const raw = window.localStorage.getItem(getReadChaptersStorageKey(slug));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string" && value.length > 0) : [];
+  } catch {
+    return [];
+  }
+}
+
 type ChapterLite = {
   id: string;
   number: number;
@@ -58,6 +75,37 @@ export default function WorkChaptersWebtoon({
   showAllHref?: string | null;
 }) {
   const [sort, setSort] = React.useState<"newest" | "oldest">("newest");
+  const [rememberedReadChapterIds, setRememberedReadChapterIds] = React.useState<string[]>(() =>
+    lastReadChapterId ? [String(lastReadChapterId)] : [],
+  );
+
+  React.useEffect(() => {
+    const syncRememberedReadChapters = () => {
+      const next = loadRememberedReadChapters(slug);
+      if (lastReadChapterId && !next.includes(String(lastReadChapterId))) next.push(String(lastReadChapterId));
+      setRememberedReadChapterIds(next);
+    };
+
+    syncRememberedReadChapters();
+    if (typeof window === "undefined") return;
+
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === getReadChaptersStorageKey(slug)) syncRememberedReadChapters();
+    };
+    const onRememberedUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ workSlug?: string }>).detail;
+      if (!detail?.workSlug || detail.workSlug === slug) syncRememberedReadChapters();
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("inkura:read-chapters-updated", onRememberedUpdate as EventListener);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("inkura:read-chapters-updated", onRememberedUpdate as EventListener);
+    };
+  }, [slug, lastReadChapterId]);
+
+  const readChapterIds = React.useMemo(() => new Set(rememberedReadChapterIds), [rememberedReadChapterIds]);
 
   const sorted = React.useMemo(() => {
     const arr = [...(chapters || [])];
@@ -102,7 +150,7 @@ export default function WorkChaptersWebtoon({
             const focusY = clamp(c.thumbnailFocusY, 50, 0, 100);
             const zoom = clamp(c.thumbnailZoom, 1, 1, 2.5);
 
-            const read = !!lastReadChapterId && String(c.id) === String(lastReadChapterId);
+            const read = readChapterIds.has(String(c.id));
             const up = isWithin24h(c.publishedAt || c.createdAt || null);
             const displayLabel = getChapterDisplayLabel(c.number, c.label);
             const secondaryTitle = getChapterSecondaryTitle(c.number, c.title, c.label);

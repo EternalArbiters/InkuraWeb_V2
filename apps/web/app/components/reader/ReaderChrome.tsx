@@ -6,6 +6,25 @@ import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, LayoutGrid, MessageCircle } from "lucide-react";
 import ChapterLikeButton from "@/app/components/work/ChapterLikeButton";
 
+const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
+
+function getReadChaptersStorageKey(workSlug: string) {
+  return `${READ_CHAPTERS_STORAGE_PREFIX}${workSlug}`;
+}
+
+function rememberReadChapter(workSlug: string, chapterId: string) {
+  if (typeof window === "undefined" || !workSlug || !chapterId) return;
+  const key = getReadChaptersStorageKey(workSlug);
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    const next = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string" && value) : [];
+    if (!next.includes(chapterId)) next.push(chapterId);
+    window.localStorage.setItem(key, JSON.stringify(next));
+    window.dispatchEvent(new CustomEvent("inkura:read-chapters-updated", { detail: { workSlug } }));
+  } catch {}
+}
+
 function isInteractiveTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el) return false;
@@ -40,6 +59,7 @@ export default function ReaderChrome({
   // Reading history / progress
   useEffect(() => {
     if (!workId || !chapterId) return;
+    rememberReadChapter(workSlug, chapterId);
     // Best-effort; ignore errors (401 for guests).
     fetch(`/api/progress`, {
       method: "POST",
