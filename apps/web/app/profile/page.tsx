@@ -148,7 +148,6 @@ export default async function ProfilePage() {
   const avatar = profile.image || "/images/default-avatar.png";
   const novelWorks = profile.works.filter((work) => work.type === "NOVEL");
   const comicWorks = profile.works.filter((work) => work.type === "COMIC");
-  const filmWorks = profile.works.filter((work) => work.type === "FILM");
   const avatarFocusX = Number.isFinite(Number(profile.avatarFocusX)) ? Number(profile.avatarFocusX) : 50;
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;
@@ -221,7 +220,6 @@ export default async function ProfilePage() {
             <>
               <PublishedWorksRail title="Novels" works={novelWorks} />
               <PublishedWorksRail title="Comics" works={comicWorks} />
-              <PublishedWorksRail title="Films" works={filmWorks} />
             </>
           ) : (
             <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
