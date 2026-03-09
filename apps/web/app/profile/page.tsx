@@ -78,7 +78,7 @@ export default async function ProfilePage() {
             _count: { select: { items: true } },
             items: {
               orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],
-              take: 3,
+              take: 5,
               select: {
                 work: {
                   select: {

@@ -87,7 +87,7 @@ async function loadPublicProfilePageData(username: string) {
           _count: { select: { items: true } },
           items: {
             orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],
-            take: 6,
+            take: 5,
             select: {
               work: {
                 select: {

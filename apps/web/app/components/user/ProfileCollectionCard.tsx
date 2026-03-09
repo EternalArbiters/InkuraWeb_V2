@@ -2,6 +2,7 @@ import Link from "next/link";
 
 type WorkPreview = {
   id?: string;
+  slug?: string | null;
   title?: string | null;
   coverImage?: string | null;
 };
@@ -26,67 +27,66 @@ function formatUpdated(value: Date | string) {
   });
 }
 
-function CoverTile({ work, className }: { work?: WorkPreview | null; className?: string }) {
+function PreviewCard({ listSlug, work }: { listSlug: string; work?: WorkPreview | null }) {
   return (
-    <div className={`overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800 ${className || ""}`.trim()}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      {work?.coverImage ? (
-        <img src={work.coverImage} alt={work.title || "Collection preview"} className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-          No cover
-        </div>
-      )}
-    </div>
+    <Link
+      href={`/lists/${listSlug}`}
+      className="w-[8.75rem] shrink-0 snap-start overflow-hidden rounded-[10px] border border-gray-200 bg-white/80 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900 sm:w-[9.25rem]"
+    >
+      <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
+        {work?.coverImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={work.coverImage} alt={work.title || "Collection preview"} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">No cover</div>
+        )}
+      </div>
+      <div className="p-3">
+        <div className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-white">{work?.title || "Open collection"}</div>
+      </div>
+    </Link>
   );
 }
 
 export default function ProfileCollectionCard({ list }: { list: CollectionLike }) {
   const itemCount = typeof list.itemCount === "number" ? list.itemCount : Number(list._count?.items || 0);
-  const previews = Array.isArray(list.items) ? list.items.map((item) => item.work).filter(Boolean) : [];
-  const lead = previews[0];
-  const sideOne = previews[1];
-  const sideTwo = previews[2];
+  const previews = Array.isArray(list.items) ? list.items.map((item) => item.work).filter(Boolean).slice(0, 5) : [];
 
   return (
-    <Link
-      href={`/lists/${list.slug}`}
-      className="block rounded-[24px] border border-gray-200 bg-white/70 p-4 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900/50"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="truncate text-xl font-extrabold tracking-tight">{list.title}</div>
-          <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collection • {itemCount} work{itemCount === 1 ? "" : "s"}</div>
+    <section className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+      <div className="rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/30">
+        <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">Collection</div>
+        <Link
+          href={`/lists/${list.slug}`}
+          className="mt-3 inline-flex text-2xl font-extrabold tracking-tight text-gray-900 transition hover:text-purple-600 dark:text-white dark:hover:text-purple-400"
+        >
+          {list.title}
+        </Link>
+        <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+          Collection • {itemCount} work{itemCount === 1 ? "" : "s"}
         </div>
-        <span className="shrink-0 rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600 dark:border-gray-700 dark:text-gray-300">
-          {itemCount} item{itemCount === 1 ? "" : "s"}
-        </span>
-      </div>
+        {list.description ? (
+          <div className="mt-3 line-clamp-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{list.description}</div>
+        ) : null}
+        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Updated {formatUpdated(list.updatedAt)}</div>
 
-      <div className="mt-4 grid grid-cols-[88px_minmax(0,1fr)_56px] gap-3 sm:grid-cols-[104px_minmax(0,1fr)_72px]">
-        <CoverTile work={lead} className="aspect-[3/4]" />
-
-        <div className="min-w-0 py-1">
-          <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">
-            {lead?.title || "Open this collection"}
+        {previews.length ? (
+          <div className="mt-4 max-w-[20rem] overflow-hidden sm:max-w-[21rem] md:max-w-full">
+            <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {previews.map((work, index) => (
+                <PreviewCard key={work?.id || `${list.id}-${index}`} listSlug={list.slug} work={work} />
+              ))}
+            </div>
           </div>
-          {list.description ? (
-            <div className="mt-2 line-clamp-4 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
-              {list.description}
-            </div>
-          ) : (
-            <div className="mt-2 line-clamp-4 text-sm text-gray-500 dark:text-gray-400">
-              A curated collection of works shared on this profile.
-            </div>
-          )}
-          <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Updated {formatUpdated(list.updatedAt)}</div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <CoverTile work={sideOne} className="aspect-[3/4]" />
-          <CoverTile work={sideTwo} className="aspect-[3/4]" />
-        </div>
+        ) : (
+          <Link
+            href={`/lists/${list.slug}`}
+            className="mt-4 flex min-h-28 items-center justify-center rounded-[10px] border border-dashed border-gray-300 text-sm font-medium text-gray-500 transition hover:bg-white/70 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-900/60"
+          >
+            Open collection
+          </Link>
+        )}
       </div>
-    </Link>
+    </section>
   );
 }

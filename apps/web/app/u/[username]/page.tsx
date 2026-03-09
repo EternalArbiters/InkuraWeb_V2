@@ -141,7 +141,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
             </div>
 
             {visibleLists.length ? (
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mt-4 grid gap-4">
                 {visibleLists.map((list) => (
                   <ProfileCollectionCard key={list.id} list={list as any} />
                 ))}
