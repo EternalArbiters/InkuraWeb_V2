@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import WorksGrid from "@/app/components/WorksGrid";
 import PublicUserLink from "@/app/components/user/PublicUserLink";
+import ProfileCollectionCard from "@/app/components/user/ProfileCollectionCard";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import { getProfilePageData } from "@/server/services/profile/publicProfilePage";
 
@@ -26,44 +27,6 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-function ListCard({ list }: { list: any }) {
-  const previews = Array.isArray(list.items) ? list.items.map((item: any) => item.work).filter(Boolean).slice(0, 3) : [];
-
-  return (
-    <Link
-      href={`/lists/${list.slug}`}
-      className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4 hover:shadow-lg transition"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-lg font-extrabold truncate">{list.title}</div>
-          {list.description ? (
-            <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{list.description}</div>
-          ) : null}
-        </div>
-        <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-emerald-600 text-white">PUBLIC</span>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
-        <span>{list.itemCount} item</span>
-        <span>Updated {new Date(list.updatedAt).toLocaleDateString()}</span>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {previews.length ? (
-          previews.map((work: any) => (
-            <div key={work.id} className="aspect-[3/4] overflow-hidden rounded-[8px] bg-gray-100 dark:bg-gray-800">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {work.coverImage ? <img src={work.coverImage} alt={work.title} className="h-full w-full object-cover" /> : null}
-            </div>
-          ))
-        ) : (
-          <div className="col-span-3 text-sm text-gray-600 dark:text-gray-300">No visible works in this list yet.</div>
-        )}
-      </div>
-    </Link>
-  );
-}
 
 function ReviewStars({ value }: { value: number }) {
   return (
@@ -151,7 +114,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
 
               <div className="grid grid-cols-3 gap-3 w-full md:w-auto md:min-w-[340px]">
                 <StatCard label="Published Works" value={visibleWorks.length} />
-                <StatCard label="Public Lists" value={visibleLists.length} />
+                <StatCard label="Collections" value={visibleLists.length} />
                 <StatCard label="Reviews" value={visibleReviews.length} />
               </div>
             </div>
@@ -173,19 +136,19 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
 
           <section className="mt-8">
             <div>
-              <h2 className="text-xl font-extrabold tracking-tight">Public Reading Lists</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Shared collections that other readers can open.</p>
+              <h2 className="text-xl font-extrabold tracking-tight">Collections</h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections shared on this profile for other readers to explore.</p>
             </div>
 
             {visibleLists.length ? (
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {visibleLists.map((list) => (
-                  <ListCard key={list.id} list={list} />
+                  <ProfileCollectionCard key={list.id} list={list as any} />
                 ))}
               </div>
             ) : (
               <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 text-sm text-gray-600 dark:text-gray-300">
-                No public lists yet.
+                No collections yet.
               </div>
             )}
           </section>

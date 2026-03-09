@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import WorkCardSquare from "@/app/home/WorkCardSquare";
+import ProfileCollectionCard from "@/app/components/user/ProfileCollectionCard";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
 
@@ -75,6 +76,19 @@ export default async function ProfilePage() {
             description: true,
             updatedAt: true,
             _count: { select: { items: true } },
+            items: {
+              orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],
+              take: 3,
+              select: {
+                work: {
+                  select: {
+                    id: true,
+                    title: true,
+                    coverImage: true,
+                  },
+                },
+              },
+            },
           },
         },
         reviews: {
@@ -159,7 +173,7 @@ export default async function ProfilePage() {
             </div>
             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/50 p-4">
               <div className="text-2xl font-extrabold">{publicListsCount}</div>
-              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Public lists</div>
+              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Collections</div>
             </div>
             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/50 p-4">
               <div className="text-2xl font-extrabold">{reviewsCount}</div>
@@ -192,36 +206,19 @@ export default async function ProfilePage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
             <div>
-              <h2 className="text-2xl font-extrabold tracking-tight">Public Reading Lists</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Lists you have shared with other readers.</p>
+              <h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections you have shared with other readers.</p>
             </div>
 
             {profile.readingLists.length ? (
-              <div className="mt-5 grid gap-3">
+              <div className="mt-5 grid gap-4">
                 {profile.readingLists.map((list) => (
-                  <Link
-                    key={list.id}
-                    href={`/lists/${list.slug}`}
-                    className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/40 p-4 hover:bg-gray-100 dark:hover:bg-gray-900/70 transition"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold truncate">{list.title}</div>
-                        {list.description ? (
-                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{list.description}</div>
-                        ) : null}
-                      </div>
-                      <span className="shrink-0 text-xs rounded-full px-2 py-1 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                        {list._count.items} items
-                      </span>
-                    </div>
-                    <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Updated {formatDate(list.updatedAt)}</div>
-                  </Link>
+                  <ProfileCollectionCard key={list.id} list={list as any} />
                 ))}
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-                No public reading lists yet.
+                No collections yet.
               </div>
             )}
           </section>
