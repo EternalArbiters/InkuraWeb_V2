@@ -52,7 +52,7 @@ function ListCard({ list }: { list: any }) {
       <div className="mt-4 grid grid-cols-3 gap-2">
         {previews.length ? (
           previews.map((work: any) => (
-            <div key={work.id} className="aspect-[3/4] overflow-hidden rounded-[24px] bg-gray-100 dark:bg-gray-800">
+            <div key={work.id} className="aspect-[3/4] overflow-hidden rounded-[14px] bg-gray-100 dark:bg-gray-800">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {work.coverImage ? <img src={work.coverImage} alt={work.title} className="h-full w-full object-cover" /> : null}
             </div>
