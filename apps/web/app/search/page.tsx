@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import SearchPresets from "@/components/SearchPresets";
 import { getSearchPageData, type SearchPageRawParams } from "@/server/services/search/searchPage";
 
@@ -8,12 +9,34 @@ import WorksGrid from "./_components/WorksGrid";
 
 export const dynamic = "force-dynamic";
 
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 export default async function SearchPage({
   searchParams: searchParamsPromise,
 }: {
   searchParams: Promise<SearchPageRawParams>;
 }) {
   const searchParams = await searchParamsPromise;
+  const rawType = String(firstParam(searchParams.type) || "").trim().toLowerCase();
+  const rawQuery = String(firstParam(searchParams.q) || "").trim();
+  const rawTag = String(firstParam(searchParams.tag) || "").trim();
+
+  if (rawType === "authors" || rawType === "translator" || rawType === "users") {
+    const next = new URLSearchParams();
+    if (rawQuery) next.set("q", rawQuery);
+    if (rawType === "authors") next.set("scope", "authors");
+    if (rawType === "translator") next.set("scope", "translators");
+    redirect(`/search/users${next.toString() ? `?${next.toString()}` : ""}`);
+  }
+
+  if (rawType === "tags" && rawQuery && !rawTag) {
+    const next = new URLSearchParams();
+    next.set("tag", rawQuery);
+    redirect(`/search?${next.toString()}`);
+  }
+
   const data = await getSearchPageData(searchParams);
 
   return (
