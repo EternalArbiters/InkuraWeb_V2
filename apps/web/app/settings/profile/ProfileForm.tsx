@@ -2,6 +2,9 @@
 
 import * as React from "react";
 
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+
 import { sendUploadMetric } from "@/lib/clientMetrics";
 import { buildOptimizationMeta } from "@/lib/r2UploadClient";
 import { prepareUploadFile } from "@/lib/uploadOptimization";
@@ -116,6 +119,8 @@ async function saveProfile(payload: {
 }
 
 export default function ProfileForm({ initial }: { initial: Initial }) {
+  const router = useRouter();
+  const { update } = useSession();
   const [name, setName] = React.useState(initial.name || "");
   const [username, setUsername] = React.useState(initial.username || "");
   const [image, setImage] = React.useState(initial.image || "");
@@ -231,6 +236,8 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         avatarFocusY,
         avatarZoom,
       });
+      await update();
+      router.refresh();
       setOk("Saved");
     } catch (error: unknown) {
       setErr(getErrorMessage(error, "Failed"));
