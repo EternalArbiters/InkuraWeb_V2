@@ -115,39 +115,39 @@ export default function SeriesArcsPanel({
         {titleNode}
 
         {nearbyItems.length ? (
-          <div className="mt-4 max-w-[20rem] overflow-hidden sm:max-w-[21rem]">
-            <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-4">
+            <div className="flex flex-wrap gap-3">
               {nearbyItems.map((item) => {
                 const active = item.id === currentWorkId;
                 return (
                   <Link
                     key={item.id}
                     href={`/w/${item.slug}`}
-                    className={`w-[9.25rem] shrink-0 snap-start overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
+                    className={`w-[9.25rem] overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
                       active
                         ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
                         : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
                     }`}
                   >
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
-                    {item.coverImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">No cover</div>
-                    )}
-                    {typeof item.seriesOrder === "number" ? (
-                      <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">
-                        Arc {item.seriesOrder}
-                      </div>
-                    ) : null}
-                    {active ? (
-                      <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
-                    ) : null}
-                  </div>
-                  <div className="p-3">
-                    <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
-                  </div>
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
+                      {item.coverImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">No cover</div>
+                      )}
+                      {typeof item.seriesOrder === "number" ? (
+                        <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">
+                          Arc {item.seriesOrder}
+                        </div>
+                      ) : null}
+                      {active ? (
+                        <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
+                      ) : null}
+                    </div>
+                    <div className="p-3">
+                      <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
+                    </div>
                   </Link>
                 );
               })}
