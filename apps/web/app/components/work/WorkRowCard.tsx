@@ -109,11 +109,11 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
       : "";
 
   return (
-    <div className="group flex gap-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition p-3">
+    <div className="group flex gap-4 rounded-[14px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition p-3">
       <Link href={href} className="flex gap-4 min-w-0 flex-1">
         {/* Cover: stretch to match row height (so top/bottom align with card) */}
         <div className="relative w-[92px] sm:w-[108px] shrink-0 self-stretch">
-          <div className="relative h-full min-h-[124px] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+          <div className="relative h-full min-h-[124px] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
             {work?.coverImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={work.coverImage} alt={work?.title || "cover"} className="w-full h-full object-cover block" loading="lazy" />
