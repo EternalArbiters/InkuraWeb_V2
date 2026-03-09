@@ -6,6 +6,7 @@ import { notifyNewChapter } from "@/server/services/notifyNewChapter";
 import { ApiError } from "@/server/http";
 import { Prisma } from "@prisma/client";
 import { requireCreatorSession } from "./session";
+import { normalizeNovelContentForStorage, novelContentHasMeaningfulContent } from "@/lib/novelContent";
 
 function safeJsonArray(v: unknown): string[] {
   if (Array.isArray(v)) return v.map(String).map((s) => s.trim()).filter(Boolean);
@@ -80,7 +81,7 @@ export async function createStudioChapter(req: Request) {
     status = safeStatus(body?.status);
     isMature = safeBool(body?.isMature);
     warningTagIds = Array.isArray(body?.warningTagIds) ? body.warningTagIds.map(String) : [];
-    content = String(body?.content || "");
+    content = normalizeNovelContentForStorage(String(body?.content || ""));
     pagesMeta = Array.isArray(body?.pages)
       ? body.pages
           .map((p: any) => ({
@@ -100,7 +101,7 @@ export async function createStudioChapter(req: Request) {
     status = safeStatus(fd.get("status"));
     isMature = safeBool(fd.get("isMature"));
     warningTagIds = safeJsonArray(fd.get("warningTagIds"));
-    content = String(fd.get("content") || "");
+    content = normalizeNovelContentForStorage(String(fd.get("content") || ""));
     files = fd.getAll("pages").filter((x) => typeof x !== "string") as File[];
 
     // optional: commit pages meta (if client uploaded via presign)
@@ -132,7 +133,7 @@ export async function createStudioChapter(req: Request) {
   const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true, type: true } });
   if (!work) return { status: 404, body: { error: "Work not found" } };
 
-  if (work.type === "NOVEL" && !content.trim()) {
+  if (work.type === "NOVEL" && !novelContentHasMeaningfulContent(content)) {
     return { status: 400, body: { error: "content is required for NOVEL" } };
   }
 
@@ -246,7 +247,7 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
     typeof numberRaw === "number" && Number.isFinite(numberRaw)
       ? Math.max(0, Math.floor(numberRaw))
       : undefined;
-  const content = typeof body.content === "string" ? body.content : undefined;
+  const content = typeof body.content === "string" ? normalizeNovelContentForStorage(body.content) : undefined;
   const authorNote =
     typeof body.authorNote === "string" ? body.authorNote : body.authorNote === null ? null : undefined;
 
@@ -281,6 +282,10 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
 
   if (title !== undefined && title.length === 0) {
     return { status: 400, body: { error: "title cannot be empty" } };
+  }
+
+  if (owned.chapter.work.type === "NOVEL" && content !== undefined && !novelContentHasMeaningfulContent(content)) {
+    return { status: 400, body: { error: "content is required for NOVEL" } };
   }
 
   const data: any = {};

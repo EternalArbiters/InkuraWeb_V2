@@ -6,6 +6,8 @@ import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 import ThumbCropper from "@/app/components/ThumbCropper";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
+import NovelRichTextEditor from "@/components/NovelRichTextEditor";
+import { novelContentHasMeaningfulContent } from "@/lib/novelContent";
 
 type Chapter = {
   id: string;
@@ -138,6 +140,11 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
 
     if (!autoNumber && !trimmedManualLabel) {
       setError("Isi Chapter Label kalau mode auto dimatikan.");
+      return;
+    }
+
+    if (workType === "NOVEL" && !novelContentHasMeaningfulContent(content)) {
+      setError("Content wajib diisi untuk NOVEL");
       return;
     }
 
@@ -336,16 +343,10 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       />
 
       {workType === "NOVEL" ? (
-        <label className="grid gap-2">
+        <div className="grid gap-2">
           <span className="text-sm font-semibold">Content</span>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={14}
-            placeholder="Tulis isi chapter..."
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </label>
+          <NovelRichTextEditor value={content} onChange={setContent} workId={workId} chapterId={chapter.id} />
+        </div>
       ) : (
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
           <div className="font-semibold">Comic pages</div>

@@ -6,6 +6,8 @@ import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFiles, summarizePreparedUploadFiles, type PreparedUploadFile } from "@/lib/uploadOptimization";
 import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 import ComicPageFilesPicker from "@/components/ComicPageFilesPicker";
+import NovelRichTextEditor from "@/components/NovelRichTextEditor";
+import { novelContentHasMeaningfulContent } from "@/lib/novelContent";
 
 type Props = {
   workId: string;
@@ -103,7 +105,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
     setNote(null);
     setCreatedChapterId(null);
 
-    if (workType === "NOVEL" && !content.trim()) {
+    if (workType === "NOVEL" && !novelContentHasMeaningfulContent(content)) {
       setError("Content wajib diisi untuk NOVEL");
       return;
     }
@@ -289,16 +291,10 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
       />
 
       {workType === "NOVEL" ? (
-        <label className="grid gap-2">
+        <div className="grid gap-2">
           <span className="text-sm font-semibold">Content</span>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={14}
-            placeholder="Write the contents of the chapter..."
-            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </label>
+          <NovelRichTextEditor value={content} onChange={setContent} workId={workId} />
+        </div>
       ) : (
         <div className="grid gap-3">
           <div className="grid gap-2">

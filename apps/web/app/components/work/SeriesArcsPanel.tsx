@@ -41,12 +41,14 @@ export default function SeriesArcsPanel({
   seriesTitle,
   works,
   currentWorkId,
+  currentWorkSlug,
   previousArc,
   nextArc,
 }: {
   seriesTitle?: string | null;
   works?: SeriesWork[];
   currentWorkId: string;
+  currentWorkSlug: string;
   previousArc?: ArcLink | null;
   nextArc?: ArcLink | null;
 }) {
@@ -54,11 +56,22 @@ export default function SeriesArcsPanel({
   const hasPanel = !!seriesTitle || items.length > 0 || previousArc || nextArc;
   if (!hasPanel) return null;
 
+  const titleNode = seriesTitle ? (
+    <Link
+      href={`/w/${currentWorkSlug}/series`}
+      className="mt-3 inline-flex text-2xl font-extrabold tracking-tight text-gray-900 transition hover:text-purple-600 dark:text-white dark:hover:text-purple-400"
+    >
+      {seriesTitle}
+    </Link>
+  ) : (
+    <div className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">Series</div>
+  );
+
   return (
     <section className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
       <div className="rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/30">
         <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">More in this series</div>
-        <div className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">{seriesTitle || "Series"}</div>
+        {titleNode}
 
         {items.length ? (
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

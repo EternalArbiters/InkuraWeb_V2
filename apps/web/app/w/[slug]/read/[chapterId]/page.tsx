@@ -11,6 +11,7 @@ import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import { getChapterDisplayTitle } from "@/lib/chapterLabel";
+import { getNovelReaderHtml } from "@/lib/novelContent";
 
 export const dynamic = "force-dynamic";
 
@@ -138,6 +139,23 @@ export default async function ReadChapterPage({
                   initialLiked={!!(chapter as any).viewerLiked}
                   initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
                 >
+                  <style>{`
+                    .novel-reader-content p, .novel-reader-content div { margin: 0 0 1.1rem; }
+                    .novel-reader-content h1, .novel-reader-content h2, .novel-reader-content h3, .novel-reader-content h4 { margin: 1.6rem 0 0.8rem; font-weight: 700; line-height: 1.25; }
+                    .novel-reader-content h1 { font-size: 1.8rem; }
+                    .novel-reader-content h2 { font-size: 1.45rem; }
+                    .novel-reader-content h3 { font-size: 1.2rem; }
+                    .novel-reader-content ul, .novel-reader-content ol { margin: 0 0 1.2rem 1.4rem; }
+                    .novel-reader-content li { margin: 0.3rem 0; }
+                    .novel-reader-content blockquote { margin: 1.25rem 0; border-left: 3px solid rgba(168,85,247,.75); padding-left: 1rem; opacity: .95; }
+                    .novel-reader-content hr { margin: 1.5rem 0; border: 0; border-top: 1px solid rgba(148,163,184,.35); }
+                    .novel-reader-content a { color: #a855f7; text-decoration: underline; }
+                    .novel-reader-content img { display: block; max-width: 100%; height: auto; margin: 1.25rem auto; border-radius: 1rem; }
+                    .novel-reader-content figure { margin: 1.25rem 0; }
+                    .novel-reader-content pre, .novel-reader-content code { white-space: pre-wrap; }
+                    .novel-reader-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+                    .novel-reader-content td, .novel-reader-content th { border: 1px solid rgba(148,163,184,.25); padding: .55rem .7rem; }
+                  `}</style>
                   {isComic ? (
                     <div className="-mx-0 sm:-mx-0 lg:mx-0 flex flex-col gap-0">
                       {Array.isArray(chapter.pages)
@@ -157,9 +175,12 @@ export default async function ReadChapterPage({
                       ) : null}
                     </div>
                   ) : (
-                    <article className="prose dark:prose-invert max-w-none px-4 lg:px-0">
+                    <article className="max-w-none px-4 lg:px-0">
                       {chapter.text?.content ? (
-                        <div className="whitespace-pre-wrap leading-relaxed">{chapter.text.content}</div>
+                        <div
+                          className="novel-reader-content text-[1.04rem] leading-8 text-gray-900 dark:text-gray-100"
+                          dangerouslySetInnerHTML={{ __html: getNovelReaderHtml(chapter.text.content) }}
+                        />
                       ) : (
                         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
                           <div className="text-lg font-bold">No text yet</div>
