@@ -1,3 +1,4 @@
+import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import Link from "next/link";
 
 type SeriesWork = {
@@ -6,6 +7,21 @@ type SeriesWork = {
   title: string;
   coverImage?: string | null;
   seriesOrder?: number | null;
+  type?: string | null;
+  comicType?: string | null;
+  publishType?: string | null;
+  isMature?: boolean | null;
+  language?: string | null;
+  completion?: string | null;
+  chapterCount?: number | null;
+  chapterLoveCount?: number | null;
+  ratingAvg?: number | null;
+  ratingCount?: number | null;
+  updatedAt?: string | Date | null;
+  genres?: { name?: string | null; slug?: string | null }[] | null;
+  deviantLoveTags?: { name?: string | null; slug?: string | null }[] | null;
+  author?: { username?: string | null; name?: string | null; image?: string | null } | null;
+  translator?: { username?: string | null; name?: string | null; image?: string | null } | null;
 };
 
 type ArcLink = {
@@ -68,6 +84,21 @@ export default function SeriesArcsPanel({
   currentWorkTitle,
   currentWorkCoverImage,
   currentWorkSeriesOrder,
+  currentWorkType,
+  currentWorkComicType,
+  currentWorkPublishType,
+  currentWorkIsMature,
+  currentWorkLanguage,
+  currentWorkCompletion,
+  currentWorkChapterCount,
+  currentWorkChapterLoveCount,
+  currentWorkRatingAvg,
+  currentWorkRatingCount,
+  currentWorkUpdatedAt,
+  currentWorkGenres,
+  currentWorkDeviantLoveTags,
+  currentWorkAuthor,
+  currentWorkTranslator,
   previousArc,
   nextArc,
 }: {
@@ -78,6 +109,21 @@ export default function SeriesArcsPanel({
   currentWorkTitle: string;
   currentWorkCoverImage?: string | null;
   currentWorkSeriesOrder?: number | null;
+  currentWorkType?: string | null;
+  currentWorkComicType?: string | null;
+  currentWorkPublishType?: string | null;
+  currentWorkIsMature?: boolean | null;
+  currentWorkLanguage?: string | null;
+  currentWorkCompletion?: string | null;
+  currentWorkChapterCount?: number | null;
+  currentWorkChapterLoveCount?: number | null;
+  currentWorkRatingAvg?: number | null;
+  currentWorkRatingCount?: number | null;
+  currentWorkUpdatedAt?: string | Date | null;
+  currentWorkGenres?: { name?: string | null; slug?: string | null }[] | null;
+  currentWorkDeviantLoveTags?: { name?: string | null; slug?: string | null }[] | null;
+  currentWorkAuthor?: { username?: string | null; name?: string | null; image?: string | null } | null;
+  currentWorkTranslator?: { username?: string | null; name?: string | null; image?: string | null } | null;
   previousArc?: ArcLink | null;
   nextArc?: ArcLink | null;
 }) {
@@ -89,6 +135,21 @@ export default function SeriesArcsPanel({
       title: currentWorkTitle,
       coverImage: currentWorkCoverImage || null,
       seriesOrder: typeof currentWorkSeriesOrder === "number" ? currentWorkSeriesOrder : null,
+      type: currentWorkType,
+      comicType: currentWorkComicType,
+      publishType: currentWorkPublishType,
+      isMature: currentWorkIsMature,
+      language: currentWorkLanguage,
+      completion: currentWorkCompletion,
+      chapterCount: currentWorkChapterCount,
+      chapterLoveCount: currentWorkChapterLoveCount,
+      ratingAvg: currentWorkRatingAvg,
+      ratingCount: currentWorkRatingCount,
+      updatedAt: currentWorkUpdatedAt,
+      genres: currentWorkGenres,
+      deviantLoveTags: currentWorkDeviantLoveTags,
+      author: currentWorkAuthor,
+      translator: currentWorkTranslator,
     },
     ...otherItems.filter((item) => item.id !== currentWorkId),
   ]);
@@ -121,35 +182,13 @@ export default function SeriesArcsPanel({
                 {nearbyItems.map((item) => {
                   const active = item.id === currentWorkId;
                   return (
-                    <Link
+                    <InteractiveWorkCard
                       key={item.id}
-                      href={`/w/${item.slug}`}
-                      className={`w-[9.25rem] shrink-0 snap-start overflow-hidden rounded-[10px] border transition sm:w-[9.75rem] ${
-                        active
-                          ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
-                          : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900"
-                      }`}
-                    >
-                      <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
-                        {item.coverImage ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">No cover</div>
-                        )}
-                        {typeof item.seriesOrder === "number" ? (
-                          <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">
-                            Arc {item.seriesOrder}
-                          </div>
-                        ) : null}
-                        {active ? (
-                          <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
-                        ) : null}
-                      </div>
-                      <div className="p-3">
-                        <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
-                      </div>
-                    </Link>
+                      work={item as any}
+                      className={`w-[9.25rem] shrink-0 snap-start sm:w-[9.75rem] ${active ? "border-purple-500/70 dark:border-purple-500" : ""}`}
+                      topLeftBadge={typeof item.seriesOrder === "number" ? `Arc ${item.seriesOrder}` : null}
+                      bottomRightBadge={active ? "Current" : null}
+                    />
                   );
                 })}
               </div>

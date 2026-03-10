@@ -91,6 +91,21 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
               title: true,
               coverImage: true,
               seriesOrder: true,
+              type: true,
+              comicType: true,
+              publishType: true,
+              isMature: true,
+              language: true,
+              completion: true,
+              chapterCount: true,
+              likeCount: true,
+              ratingAvg: true,
+              ratingCount: true,
+              updatedAt: true,
+              genres: { select: { name: true, slug: true } },
+              deviantLoveTags: { select: { name: true, slug: true } },
+              author: { select: { username: true, name: true, image: true } },
+              translator: { select: { username: true, name: true, image: true } },
             },
           },
         },
@@ -120,6 +135,7 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
           createdAt: true,
           publishedAt: true,
           isMature: true,
+          likeCount: true,
           thumbnailImage: true,
           thumbnailKey: true,
           thumbnailFocusX: true,
@@ -139,6 +155,10 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
   if (!work || work.status !== "PUBLISHED") {
     return { ok: false as const, status: 404 as const, error: "Not found" as const };
   }
+
+  const chapterLoveCount = Array.isArray(work.chapters)
+    ? work.chapters.reduce((sum: number, chapter: any) => sum + Number(chapter.likeCount ?? 0), 0)
+    : 0;
 
   const visibleChapters = Array.isArray(work.chapters)
     ? work.chapters.map((chapter: any) => ({
@@ -177,6 +197,7 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
       seriesWorks,
       previousArc,
       nextArc,
+      chapterLoveCount,
     },
   };
 }

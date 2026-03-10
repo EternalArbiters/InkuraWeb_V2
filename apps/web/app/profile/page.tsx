@@ -87,6 +87,7 @@ export default async function ProfilePage() {
             chapterCount: true,
             publishType: true,
             genres: { select: { name: true, slug: true } },
+            deviantLoveTags: { select: { name: true, slug: true } },
             author: { select: { name: true, username: true, image: true } },
           },
         },

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BackButton from "@/app/components/BackButton";
+import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,21 @@ type SeriesWorkCard = {
   title: string;
   coverImage?: string | null;
   seriesOrder?: number | null;
+  type?: string | null;
+  comicType?: string | null;
+  publishType?: string | null;
+  isMature?: boolean | null;
+  language?: string | null;
+  completion?: string | null;
+  chapterCount?: number | null;
+  chapterLoveCount?: number | null;
+  ratingAvg?: number | null;
+  ratingCount?: number | null;
+  updatedAt?: string | Date | null;
+  genres?: { name?: string | null; slug?: string | null }[] | null;
+  deviantLoveTags?: { name?: string | null; slug?: string | null }[] | null;
+  author?: { username?: string | null; name?: string | null; image?: string | null } | null;
+  translator?: { username?: string | null; name?: string | null; image?: string | null } | null;
 };
 
 function sortSeriesWorks(items: SeriesWorkCard[]) {
@@ -39,6 +55,21 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
       title: work.title,
       coverImage: work.coverImage || null,
       seriesOrder: typeof work.seriesOrder === "number" ? work.seriesOrder : null,
+      type: work.type,
+      comicType: work.comicType,
+      publishType: work.publishType,
+      isMature: work.isMature,
+      language: work.language,
+      completion: work.completion,
+      chapterCount: work.chapterCount,
+      chapterLoveCount: work.chapterLoveCount,
+      ratingAvg: work.ratingAvg,
+      ratingCount: work.ratingCount,
+      updatedAt: work.updatedAt,
+      genres: work.genres,
+      deviantLoveTags: work.deviantLoveTags,
+      author: work.author,
+      translator: work.translator,
     },
     ...((Array.isArray(work.seriesWorks) ? work.seriesWorks : []).map((item: any) => ({
       id: String(item.id),
@@ -46,6 +77,21 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
       title: String(item.title),
       coverImage: item.coverImage || null,
       seriesOrder: typeof item.seriesOrder === "number" ? item.seriesOrder : null,
+      type: item.type,
+      comicType: item.comicType,
+      publishType: item.publishType,
+      isMature: item.isMature,
+      language: item.language,
+      completion: item.completion,
+      chapterCount: item.chapterCount,
+      chapterLoveCount: item.chapterLoveCount,
+      ratingAvg: item.ratingAvg,
+      ratingCount: item.ratingCount,
+      updatedAt: item.updatedAt,
+      genres: item.genres,
+      deviantLoveTags: item.deviantLoveTags,
+      author: item.author,
+      translator: item.translator,
     })) as any[]),
   ]);
 
@@ -65,31 +111,13 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
           {allWorks.map((item) => {
             const active = item.id === work.id;
             return (
-              <Link
+              <InteractiveWorkCard
                 key={item.id}
-                href={`/w/${item.slug}`}
-                className={`overflow-hidden rounded-[10px] border transition ${
-                  active
-                    ? "border-purple-500/70 bg-purple-50/70 dark:border-purple-500 dark:bg-purple-950/20"
-                    : "border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900"
-                }`}
-              >
-                <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
-                  {item.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
-                  ) : null}
-                  {typeof item.seriesOrder === "number" ? (
-                    <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white">Arc {item.seriesOrder}</div>
-                  ) : null}
-                  {active ? (
-                    <div className="absolute bottom-2 right-2 rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">Current</div>
-                  ) : null}
-                </div>
-                <div className="p-3">
-                  <div className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
-                </div>
-              </Link>
+                work={item as any}
+                topLeftBadge={typeof item.seriesOrder === "number" ? `Arc ${item.seriesOrder}` : null}
+                bottomRightBadge={active ? "Current" : null}
+                className={active ? "border-purple-500/70 dark:border-purple-500" : ""}
+              />
             );
           })}
         </div>

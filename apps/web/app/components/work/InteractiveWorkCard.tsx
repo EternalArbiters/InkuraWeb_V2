@@ -33,6 +33,7 @@ type WorkCardData = {
   comicType?: string | null;
   publishType?: string | null;
   isMature?: boolean | null;
+  deviantLoveTags?: Genre[] | null;
   language?: string | null;
   completion?: string | null;
   chapterCount?: number | null;
@@ -110,10 +111,11 @@ function joinParts(parts: Array<string | null | undefined>) {
 
 function overlayTypeLabel(work: Pick<WorkCardData, "type" | "comicType">) {
   const comicType = titleCase(work.comicType);
-  if (comicType && comicType !== "Other") return comicType;
+  if (comicType && comicType !== "Other" && comicType !== "Unknown") return comicType;
 
   const type = titleCase(work.type);
-  return type || null;
+  if (type && type !== "Unknown") return type;
+  return "Work";
 }
 
 function genreText(genres?: Genre[] | null) {
@@ -140,6 +142,8 @@ type Props = {
   showBookmarkButton?: boolean;
   showUpdatedSubtitle?: boolean;
   analyticsClickEvent?: Record<string, unknown> | null;
+  topLeftBadge?: string | null;
+  bottomRightBadge?: string | null;
 };
 
 export default function InteractiveWorkCard({
@@ -150,6 +154,8 @@ export default function InteractiveWorkCard({
   showBookmarkButton = false,
   showUpdatedSubtitle = false,
   analyticsClickEvent = null,
+  topLeftBadge = null,
+  bottomRightBadge = null,
 }: Props) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -172,6 +178,7 @@ export default function InteractiveWorkCard({
       : null;
   const chapterLoveValue = typeof work?.chapterLoveCount === "number" ? String(work.chapterLoveCount) : null;
   const genresLabel = genreText(work?.genres);
+  const deviantLoveLabel = genreText(work?.deviantLoveTags);
 
   const handleTrackedClick = () => {
     if (analyticsClickEvent?.eventType) {
@@ -277,8 +284,14 @@ export default function InteractiveWorkCard({
               ) : null}
             </div>
 
+            {deviantLoveLabel ? (
+              <div className="mt-3 min-h-0 text-[11px] leading-5 text-white/86 line-clamp-1 md:line-clamp-2">
+                {deviantLoveLabel}
+              </div>
+            ) : null}
+
             {genresLabel ? (
-              <div className="mt-3 min-h-0 text-[11px] leading-5 text-white/78 line-clamp-2 md:line-clamp-4">
+              <div className={`mt-2 min-h-0 text-[11px] leading-5 text-white/78 ${deviantLoveLabel ? "line-clamp-1 md:line-clamp-3" : "line-clamp-2 md:line-clamp-4"}`}>
                 {genresLabel}
               </div>
             ) : (
@@ -301,6 +314,11 @@ export default function InteractiveWorkCard({
             controlsClass,
           ].join(" ")}
         >
+          {topLeftBadge ? (
+            <div className="rounded-full bg-black/70 px-3 py-1 text-[10px] font-bold text-white shadow-sm backdrop-blur-sm">
+              {topLeftBadge}
+            </div>
+          ) : null}
           {flag ? (
             <div
               className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm"
@@ -347,6 +365,13 @@ export default function InteractiveWorkCard({
             />
           ) : null}
         </div>
+
+        {bottomRightBadge ? (
+          <div className={["absolute bottom-2 right-2 z-30 transition duration-200", controlsClass].join(" ")}>
+            <div className="rounded-full bg-purple-600 px-2 py-1 text-[10px] font-bold text-white shadow-sm">{bottomRightBadge}</div>
+          </div>
+        ) : null}
+
       </div>
 
       <Link href={href} className="block px-3 pb-3 pt-3" onClick={handleTrackedClick}>

@@ -23,6 +23,7 @@ import {
   Languages,
   ShieldAlert,
   ListTree,
+  BarChart3,
   Layers,
   ChevronDown,
   ChevronUp,
@@ -113,6 +114,7 @@ export default function MobileNav({
     // Admin-only quick links
     ...(isAdmin ? [{ label: "Content Reports", href: "/admin/reports", Icon: ShieldAlert }] : []),
     ...(isAdmin ? [{ label: "Taxonomy", href: "/admin/taxonomy", Icon: ListTree }] : []),
+    ...(isAdmin ? [{ label: "Analytics", href: "/admin/analytics", Icon: BarChart3 }] : []),
   ];
 
 
