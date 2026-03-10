@@ -20,6 +20,11 @@ model User {
   avatarFocusX Int?
   avatarFocusY Int?
   avatarZoom   Float?
+  gender      UserGender?
+  birthMonth  Int?
+  birthYear   Int?
+  analyticsOnboardingCompletedAt DateTime?
+  demographicsUpdatedAt DateTime?
   role      Role     @default(USER)
 
   // Preferences
@@ -77,6 +82,11 @@ model User {
   // Auth
   passwordResetTokens PasswordResetToken[]
 
+  // Analytics
+  analyticsSessions AnalyticsSession[]
+  analyticsEvents AnalyticsEvent[]
+  analyticsDailyCreators AnalyticsDailyCreator[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -84,6 +94,60 @@ model User {
 enum Role {
   ADMIN
   USER
+}
+
+enum UserGender {
+  MALE
+  FEMALE
+  PREFER_NOT_TO_SAY
+}
+
+enum AnalyticsDeviceType {
+  MOBILE
+  TABLET
+  DESKTOP
+  BOT
+  UNKNOWN
+}
+
+enum AnalyticsEventType {
+  SESSION_SEEN
+  PAGE_VIEW
+  WORK_VIEW
+  CHAPTER_VIEW
+  BOOKMARK_ADD
+  BOOKMARK_REMOVE
+  WORK_LIKE
+  CHAPTER_LIKE
+  COMMENT_CREATE
+  RATING_SUBMIT
+  FOLLOW_USER
+  SEARCH_SUBMIT
+  SEARCH_RESULT_CLICK
+  SIGNUP_COMPLETE
+  LOGIN_SUCCESS
+  PROFILE_ONBOARDING_COMPLETE
+  WORK_PUBLISH
+  CHAPTER_PUBLISH
+  REPORT_CREATE
+}
+
+enum AnalyticsTrafficSource {
+  DIRECT
+  INTERNAL
+  SEARCH
+  SOCIAL
+  EXTERNAL
+  UNKNOWN
+}
+
+enum AnalyticsAgeBand {
+  UNDER_18
+  AGE_18_24
+  AGE_25_34
+  AGE_35_44
+  AGE_45_PLUS
+  UNKNOWN
 }
 
 enum WorkPublishType {
@@ -215,6 +279,9 @@ model Work {
 
   readingListItems ReadingListItem[]
 
+  analyticsEvents AnalyticsEvent[]
+  analyticsDailyWorks AnalyticsDailyWork[]
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -255,6 +322,8 @@ model Chapter {
   likes       ChapterLike[]
   readingProgresses ReadingProgress[]
 
+  analyticsEvents AnalyticsEvent[]
+  analyticsDailyChapters AnalyticsDailyChapter[]
 
   // v16.3: optional chapter thumbnail (cover) used in chapter list
   thumbnailImage String?
@@ -290,6 +359,8 @@ model Genre {
   updatedAt DateTime @updatedAt
 
   works     Work[]   @relation("WorkGenres")
+  analyticsEvents AnalyticsEvent[]
+  analyticsDailyGenres AnalyticsDailyGenre[]
 
   blockedByUsers User[] @relation("UserBlockedGenres")
 
@@ -759,6 +830,226 @@ model ComicPage {
 
   @@unique([chapterId, order])
   @@index([chapterId])
+}
+
+model AnalyticsSession {
+  id            String   @id @default(cuid())
+  userId        String?
+  sessionKey    String   @unique
+  ipHash        String?
+  userAgentHash String?
+  countryCode   String?
+  deviceType    AnalyticsDeviceType @default(UNKNOWN)
+
+  startedAt     DateTime @default(now())
+  lastSeenAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  events        AnalyticsEvent[]
+
+  @@index([userId, lastSeenAt])
+  @@index([startedAt])
+  @@index([lastSeenAt])
+  @@index([countryCode, lastSeenAt])
+  @@index([deviceType, lastSeenAt])
+}
+
+model AnalyticsEvent {
+  id              String   @id @default(cuid())
+  occurredAt      DateTime @default(now())
+  eventType       AnalyticsEventType
+
+  userId          String?
+  sessionId       String?
+  sessionKey      String?
+  isAuthenticated Boolean  @default(false)
+
+  ipHash          String?
+  userAgentHash   String?
+  countryCode     String?
+  deviceType      AnalyticsDeviceType @default(UNKNOWN)
+
+  path            String?
+  routeName       String?
+  referrer        String?
+  trafficSource   AnalyticsTrafficSource @default(UNKNOWN)
+
+  workId          String?
+  chapterId       String?
+  genreId         String?
+  actorUserId     String?
+  ownerUserId     String?
+
+  workType            WorkType?
+  publishType         WorkPublishType?
+  comicType           ComicType?
+  workOrigin          WorkOrigin?
+  translationLanguage String?
+  isMature            Boolean?
+  isDeviantLove       Boolean?
+
+  searchQuery         String?
+  searchType          String?
+  resultCount         Int?
+
+  metadata            Json?
+
+  createdAt           DateTime @default(now())
+
+  user                User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  session             AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  work                Work?             @relation(fields: [workId], references: [id], onDelete: SetNull)
+  chapter             Chapter?          @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  genre               Genre?            @relation(fields: [genreId], references: [id], onDelete: SetNull)
+
+  @@index([occurredAt])
+  @@index([eventType, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([sessionId, occurredAt])
+  @@index([workId, occurredAt])
+  @@index([chapterId, occurredAt])
+  @@index([genreId, occurredAt])
+  @@index([ownerUserId, occurredAt])
+  @@index([searchQuery, occurredAt])
+  @@index([eventType, workId, occurredAt])
+  @@index([eventType, chapterId, occurredAt])
+}
+
+model AnalyticsDailyOverview {
+  date              DateTime @id
+  uniqueVisitors    Int      @default(0)
+  activeUsers       Int      @default(0)
+  guestVisitors     Int      @default(0)
+  newUsers          Int      @default(0)
+  pageViews         Int      @default(0)
+  workViews         Int      @default(0)
+  chapterViews      Int      @default(0)
+  bookmarkAdds      Int      @default(0)
+  bookmarkRemoves   Int      @default(0)
+  workLikes         Int      @default(0)
+  chapterLikes      Int      @default(0)
+  commentsCreated   Int      @default(0)
+  ratingsSubmitted  Int      @default(0)
+  followsCreated    Int      @default(0)
+  searches          Int      @default(0)
+  reportsCreated    Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model AnalyticsDailyGenre {
+  date             DateTime
+  genreId          String
+  uniqueViewers    Int      @default(0)
+  workViews        Int      @default(0)
+  chapterViews     Int      @default(0)
+  bookmarkAdds     Int      @default(0)
+  likes            Int      @default(0)
+  comments         Int      @default(0)
+  ratingsCount     Int      @default(0)
+  ratingSum        Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  genre            Genre    @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([date, genreId])
+  @@index([genreId, date])
+}
+
+model AnalyticsDailyWork {
+  date              DateTime
+  workId            String
+  uniqueViewers     Int      @default(0)
+  views             Int      @default(0)
+  chapterViews      Int      @default(0)
+  bookmarkAdds      Int      @default(0)
+  likes             Int      @default(0)
+  comments          Int      @default(0)
+  ratingsCount      Int      @default(0)
+  ratingSum         Float    @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  work              Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@id([date, workId])
+  @@index([workId, date])
+  @@index([date, views])
+  @@index([date, uniqueViewers])
+}
+
+model AnalyticsDailyChapter {
+  date             DateTime
+  chapterId        String
+  uniqueViewers    Int      @default(0)
+  views            Int      @default(0)
+  likes            Int      @default(0)
+  comments         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  chapter          Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@id([date, chapterId])
+  @@index([chapterId, date])
+  @@index([date, views])
+}
+
+model AnalyticsDailyCreator {
+  date              DateTime
+  userId            String
+  publishedWorks    Int      @default(0)
+  publishedChapters Int      @default(0)
+  uniqueViewers     Int      @default(0)
+  workViews         Int      @default(0)
+  chapterViews      Int      @default(0)
+  bookmarkAdds      Int      @default(0)
+  likes             Int      @default(0)
+  comments          Int      @default(0)
+  followersGained   Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([date, userId])
+  @@index([userId, date])
+  @@index([date, uniqueViewers])
+}
+
+model AnalyticsDailySearch {
+  date            DateTime
+  normalizedQuery String
+  searchType      String
+  count           Int      @default(0)
+  zeroResultCount Int      @default(0)
+  clickCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@id([date, normalizedQuery, searchType])
+  @@index([date, count])
+}
+
+model AnalyticsDailyDemographic {
+  id               String   @id @default(cuid())
+  date             DateTime
+  gender           UserGender?
+  ageBand          AnalyticsAgeBand
+  uniqueUsers      Int      @default(0)
+  workViews        Int      @default(0)
+  chapterViews     Int      @default(0)
+  bookmarkAdds     Int      @default(0)
+  likes            Int      @default(0)
+  comments         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([date, gender, ageBand])
+  @@index([date, uniqueUsers])
 }
 
 enum MediaObjectType {

@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
@@ -19,8 +20,9 @@ export const POST = apiRoute(async (req: Request) => {
   if (!targetId || !reason) return json({ error: "targetId and reason are required" }, { status: 400 });
   if (reason.length > 500) return json({ error: "Reason too long" }, { status: 400 });
 
-  const comment = await prisma.comment.findUnique({ where: { id: targetId }, select: { id: true } });
+  const comment = await prisma.comment.findUnique({ where: { id: targetId }, select: { id: true, targetId: true } });
   if (!comment) return json({ error: "Comment not found" }, { status: 404 });
   const report = await prisma.report.create({ data: { reporterId: session.user.id, targetType: "COMMENT" as any, targetId, reason } });
+  await trackAnalyticsEventSafe({ req, eventType: "REPORT_CREATE", userId: session.user.id, path: req.url, routeName: "report.create", metadata: { targetType, targetId, reasonLength: reason.length, chapterId: comment.targetId } });
   return json({ ok: true, report }, { status: 201 });
 });

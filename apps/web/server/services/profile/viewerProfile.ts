@@ -14,6 +14,10 @@ const viewerProfileSelect = {
   avatarFocusY: true,
   avatarZoom: true,
   role: true,
+  gender: true,
+  birthMonth: true,
+  birthYear: true,
+  analyticsOnboardingCompletedAt: true,
   createdAt: true,
 } as const;
 

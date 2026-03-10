@@ -11,6 +11,7 @@ import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import { getNovelReaderHtml } from "@/lib/novelContent";
+import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 
 export const dynamic = "force-dynamic";
@@ -104,6 +105,24 @@ export default async function ReadChapterPage({
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <AnalyticsEventTracker
+        eventType="CHAPTER_VIEW"
+        payload={{
+          path: `/w/${work.slug}/read/${chapter.id}`,
+          routeName: "chapter.read",
+          workId: work.id,
+          chapterId: chapter.id,
+          ownerUserId: work.authorId,
+          workType: work.type,
+          publishType: work.publishType,
+          comicType: work.comicType,
+          workOrigin: work.origin,
+          translationLanguage: work.language,
+          isMature: !!(chapter.isMature || work.isMature),
+          isDeviantLove: Array.isArray(work.deviantLoveTags) && work.deviantLoveTags.length > 0,
+          genreIds: Array.isArray(work.genres) ? work.genres.map((genre: any) => genre.id).filter(Boolean) : [],
+        }}
+      />
       {/* Desktop dock (Pre / All / Next) */}
       <DesktopReaderDock workSlug={work.slug} prevId={prev ? prev.id : null} nextId={next ? next.id : null} />
       <ReaderFloatingSeed

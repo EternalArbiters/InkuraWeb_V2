@@ -109,6 +109,20 @@ DISCORD_CLIENT_SECRET=
 
 Kosongkan jika provider tersebut tidak dipakai.
 
+
+## Env opsional untuk throttling / rate limit
+
+```env
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+Keterangan:
+
+- dipakai oleh limiter server-side berbasis Upstash Redis
+- bila dua env ini tidak diisi, limiter tidak crash, tetapi otomatis bypass sambil mencatat warning
+- isi nilainya dari dashboard database Upstash Redis yang kamu pakai
+
 ## Env opsional untuk observability
 
 ```env

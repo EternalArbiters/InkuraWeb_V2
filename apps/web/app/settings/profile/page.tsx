@@ -29,6 +29,9 @@ export default async function EditProfilePage() {
             avatarFocusX: p.avatarFocusX,
             avatarFocusY: p.avatarFocusY,
             avatarZoom: p.avatarZoom,
+            gender: p.gender,
+            birthMonth: p.birthMonth,
+            birthYear: p.birthYear,
           }}
         />
       </div>

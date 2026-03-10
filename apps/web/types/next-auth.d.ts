@@ -8,6 +8,8 @@ declare module "next-auth" {
       role: string;
       name?: string | null;
       image?: string | null;
+      profileOnboardingComplete?: boolean;
+      analyticsOnboardingCompletedAt?: string | null;
     };
   }
 
@@ -17,5 +19,7 @@ declare module "next-auth" {
     role: string;
     name?: string | null;
     image?: string | null;
+    profileOnboardingComplete?: boolean;
+    analyticsOnboardingCompletedAt?: string | null;
   }
 }

@@ -18,6 +18,7 @@ import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
 import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
+import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 
 export const dynamic = "force-dynamic";
@@ -123,6 +124,23 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+        <AnalyticsEventTracker
+          eventType="WORK_VIEW"
+          payload={{
+            path: `/w/${work.slug}`,
+            routeName: "work.detail",
+            workId: work.id,
+            ownerUserId: work.authorId,
+            workType: work.type,
+            publishType: work.publishType,
+            comicType: work.comicType,
+            workOrigin: work.origin,
+            translationLanguage: work.language,
+            isMature: !!work.isMature,
+            isDeviantLove: Array.isArray(work.deviantLoveTags) && work.deviantLoveTags.length > 0,
+            genreIds: Array.isArray(work.genres) ? work.genres.map((genre: any) => genre.id).filter(Boolean) : [],
+          }}
+        />
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
             <div>

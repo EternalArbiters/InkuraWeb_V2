@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
@@ -20,9 +21,11 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     const existing = await prisma.bookmark.findUnique({ where: { userId_workId: { userId, workId } } });
     if (existing) {
       await prisma.bookmark.delete({ where: { userId_workId: { userId, workId } } });
+      await trackAnalyticsEventSafe({ req, eventType: "BOOKMARK_REMOVE", userId, workId, path: req.url, routeName: "work.bookmark" });
       return json({ ok: true, bookmarked: false });
     }
     await prisma.bookmark.create({ data: { userId, workId } });
+    await trackAnalyticsEventSafe({ req, eventType: "BOOKMARK_ADD", userId, workId, path: req.url, routeName: "work.bookmark" });
     return json({ ok: true, bookmarked: true });
   } catch (e) {
     console.error(e);

@@ -5,6 +5,13 @@ import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 import { revalidatePublicProfile } from "@/server/cache/publicContent";
+import {
+  hasCompleteDemographics,
+  normalizeBirthMonth,
+  normalizeBirthYear,
+  normalizeGender,
+} from "@/server/services/profile/demographics";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const runtime = "nodejs";
 
@@ -64,6 +71,19 @@ export const PATCH = apiRoute(async (req: Request) => {
     if (Number.isFinite(v)) data.avatarZoom = Math.max(1, Math.min(6, v));
   }
 
+  if ("gender" in body) {
+    const gender = normalizeGender(body.gender);
+    if (gender !== undefined) data.gender = gender;
+  }
+  if ("birthMonth" in body) {
+    const birthMonth = normalizeBirthMonth(body.birthMonth);
+    if (birthMonth !== undefined) data.birthMonth = birthMonth;
+  }
+  if ("birthYear" in body) {
+    const birthYear = normalizeBirthYear(body.birthYear);
+    if (birthYear !== undefined) data.birthYear = birthYear;
+  }
+
   if ("username" in body) {
     const next = normalizeUsername(body.username);
     if (!next) return json({ error: "Username is required" }, { status: 400 });
@@ -93,8 +113,36 @@ export const PATCH = apiRoute(async (req: Request) => {
   try {
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { username: true },
+      select: {
+        username: true,
+        gender: true,
+        birthMonth: true,
+        birthYear: true,
+        analyticsOnboardingCompletedAt: true,
+      },
     });
+
+    const completedBefore = hasCompleteDemographics({
+      gender: currentUser?.gender ?? null,
+      birthMonth: currentUser?.birthMonth ?? null,
+      birthYear: currentUser?.birthYear ?? null,
+    });
+
+    const nextGender = "gender" in data ? data.gender : currentUser?.gender ?? null;
+    const nextBirthMonth = "birthMonth" in data ? data.birthMonth : currentUser?.birthMonth ?? null;
+    const nextBirthYear = "birthYear" in data ? data.birthYear : currentUser?.birthYear ?? null;
+    const completedAfter = hasCompleteDemographics({
+      gender: nextGender,
+      birthMonth: nextBirthMonth,
+      birthYear: nextBirthYear,
+    });
+
+    if ("gender" in data || "birthMonth" in data || "birthYear" in data) {
+      data.demographicsUpdatedAt = new Date();
+      if (completedAfter && !currentUser?.analyticsOnboardingCompletedAt) {
+        data.analyticsOnboardingCompletedAt = new Date();
+      }
+    }
 
     const updated = await prisma.user.update({
       where: { id: session.user.id },
@@ -109,11 +157,25 @@ export const PATCH = apiRoute(async (req: Request) => {
         avatarFocusY: true,
         avatarZoom: true,
         role: true,
+        gender: true,
+        birthMonth: true,
+        birthYear: true,
+        analyticsOnboardingCompletedAt: true,
       },
     });
     revalidatePublicProfile(currentUser?.username || updated.username);
     if (currentUser?.username && currentUser.username !== updated.username) {
       revalidatePublicProfile(updated.username);
+    }
+
+    if (!completedBefore && completedAfter) {
+      await trackAnalyticsEventSafe({
+        req,
+        eventType: "PROFILE_ONBOARDING_COMPLETE",
+        userId: session.user.id,
+        path: "/api/me/profile",
+        routeName: "me.profile.patch",
+      });
     }
 
     return json({ ok: true, profile: updated });

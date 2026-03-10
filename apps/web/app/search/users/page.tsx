@@ -1,4 +1,5 @@
-import Link from "next/link";
+import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
+import AnalyticsTrackedLink from "@/app/components/analytics/AnalyticsTrackedLink";
 import { parseUserSearchParams, searchUsers, type UserSearchScope } from "@/server/services/search/userSearch";
 
 export const dynamic = "force-dynamic";
@@ -25,15 +26,16 @@ function avatarInitial(name: string) {
   return trimmed ? trimmed[0]?.toUpperCase() : "U";
 }
 
-function UserCard({ user }: { user: Awaited<ReturnType<typeof searchUsers>>["users"][number] }) {
+function UserCard({ user }: { user: Awaited<ReturnType<typeof searchUsers>>["users"][number] & { analyticsEvent?: Record<string, unknown> | null } }) {
   const displayName = (user.name && user.name.trim()) || user.username;
   const focusX = Number.isFinite(Number(user.avatarFocusX)) ? Number(user.avatarFocusX) : 50;
   const focusY = Number.isFinite(Number(user.avatarFocusY)) ? Number(user.avatarFocusY) : 50;
   const zoom = Number.isFinite(Number(user.avatarZoom)) ? Math.max(1, Number(user.avatarZoom)) : 1;
 
   return (
-    <Link
+    <AnalyticsTrackedLink
       href={`/u/${user.username}`}
+      analyticsEvent={user.analyticsEvent ?? null}
       className="rounded-2xl border border-gray-200 bg-white/70 p-4 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900"
     >
       <div className="flex items-start gap-4">
@@ -79,7 +81,7 @@ function UserCard({ user }: { user: Awaited<ReturnType<typeof searchUsers>>["use
           <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {joinedLabel(user.createdAt)}</div>
         </div>
       </div>
-    </Link>
+    </AnalyticsTrackedLink>
   );
 }
 
@@ -123,6 +125,19 @@ export default async function UserSearchPage({
           </button>
         </form>
 
+        {data.q ? (
+          <AnalyticsEventTracker
+            eventType="SEARCH_SUBMIT"
+            payload={{
+              path: "/search/users",
+              routeName: "search.users",
+              searchQuery: data.q,
+              searchType: data.scope,
+              resultCount: data.users.length,
+            }}
+          />
+        ) : null}
+
         <div className="mt-6 text-sm text-gray-600 dark:text-gray-300">
           {data.q ? (
             <>
@@ -135,8 +150,21 @@ export default async function UserSearchPage({
 
         {data.users.length ? (
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {data.users.map((user) => (
-              <UserCard key={user.id} user={user} />
+            {data.users.map((user, index) => (
+              <UserCard
+                key={user.id}
+                user={{
+                  ...user,
+                  analyticsEvent: data.q
+                    ? {
+                        eventType: "SEARCH_RESULT_CLICK",
+                        searchQuery: data.q,
+                        searchType: data.scope,
+                        metadata: { clickedUserId: user.id, position: index + 1 },
+                      }
+                    : null,
+                }}
+              />
             ))}
           </div>
         ) : (

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import SearchPresets from "@/components/SearchPresets";
 import { getSearchPageData, type SearchPageRawParams } from "@/server/services/search/searchPage";
+import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 
 import ActiveFiltersBar from "./_components/ActiveFiltersBar";
 import ResultsHeader from "./_components/ResultsHeader";
@@ -83,9 +84,29 @@ export default async function SearchPage({
 
         <ActiveFiltersBar hasActiveFilters={data.hasActiveFilters} />
 
+        {(data.q || data.tag || data.genre || data.author || data.translator || data.hasActiveFilters) ? (
+          <AnalyticsEventTracker
+            eventType="SEARCH_SUBMIT"
+            payload={{
+              path: "/search",
+              routeName: "search",
+              searchQuery: data.q || data.tag || data.genre || data.author || data.translator || "browse",
+              searchType: data.kind || "works",
+              resultCount: data.works.length,
+              metadata: {
+                hasActiveFilters: data.hasActiveFilters,
+                tag: data.tag || null,
+                genre: data.genre || null,
+                author: data.author || null,
+                translator: data.translator || null,
+              },
+            }}
+          />
+        ) : null}
+
         <ResultsHeader q={data.q} count={data.works.length} />
 
-        <WorksGrid works={data.works} canViewMature={data.canViewMature} />
+        <WorksGrid works={data.works} canViewMature={data.canViewMature} searchQuery={data.q || data.tag || data.genre || data.author || data.translator || undefined} searchType={data.kind || "works"} />
 
         <SearchPresets />
       </div>

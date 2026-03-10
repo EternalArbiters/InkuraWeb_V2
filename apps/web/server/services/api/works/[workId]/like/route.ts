@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
@@ -28,6 +29,9 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
       const updated = await tx.work.update({ where: { id: workId }, data: { likeCount: { increment: 1 } }, select: { likeCount: true } });
       return { liked: true, likeCount: updated.likeCount };
     });
+    if (result.liked) {
+      await trackAnalyticsEventSafe({ req, eventType: "WORK_LIKE", userId, workId, path: req.url, routeName: "work.like" });
+    }
     return json({ ok: true, ...result });
   } catch (e) {
     console.error(e);

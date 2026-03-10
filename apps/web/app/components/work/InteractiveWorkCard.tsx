@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import OriginFlag from "@/app/components/OriginFlag";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import { formatUpdatedAt } from "@/lib/time";
+import { sendAnalyticsEvent } from "@/lib/analyticsClient";
 
 type Person = {
   username?: string | null;
@@ -138,6 +139,7 @@ type Props = {
   blurImage?: boolean;
   showBookmarkButton?: boolean;
   showUpdatedSubtitle?: boolean;
+  analyticsClickEvent?: Record<string, unknown> | null;
 };
 
 export default function InteractiveWorkCard({
@@ -147,6 +149,7 @@ export default function InteractiveWorkCard({
   blurImage = false,
   showBookmarkButton = false,
   showUpdatedSubtitle = false,
+  analyticsClickEvent = null,
 }: Props) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -169,6 +172,12 @@ export default function InteractiveWorkCard({
       : null;
   const chapterLoveValue = typeof work?.chapterLoveCount === "number" ? String(work.chapterLoveCount) : null;
   const genresLabel = genreText(work?.genres);
+
+  const handleTrackedClick = () => {
+    if (analyticsClickEvent?.eventType) {
+      sendAnalyticsEvent(analyticsClickEvent as any);
+    }
+  };
 
   useEffect(() => {
     if (!active) return;
@@ -211,6 +220,7 @@ export default function InteractiveWorkCard({
           href={href}
           className={`absolute inset-0 z-0 block ${active ? "pointer-events-none" : ""}`}
           aria-label={title}
+          onClick={handleTrackedClick}
         />
 
         {work?.coverImage ? (
@@ -339,7 +349,7 @@ export default function InteractiveWorkCard({
         </div>
       </div>
 
-      <Link href={href} className="block px-3 pb-3 pt-3">
+      <Link href={href} className="block px-3 pb-3 pt-3" onClick={handleTrackedClick}>
         <div className="line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 dark:text-white sm:text-base">{title}</div>
         {showUpdatedSubtitle && updatedLabel ? (
           <div className="mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-gray-500 dark:text-gray-400">

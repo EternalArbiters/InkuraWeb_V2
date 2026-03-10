@@ -5,6 +5,7 @@ import { getSession } from "@/server/auth/session";
 import { commentListInclude } from "@/server/db/selectors";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const runtime = "nodejs";
 
@@ -62,6 +63,16 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
       });
     }
     return tx.comment.findUnique({ where: { id: comment.id }, include: commentListInclude });
+  });
+
+  await trackAnalyticsEventSafe({
+    req,
+    eventType: "COMMENT_CREATE",
+    userId: session.user.id,
+    chapterId,
+    path: req.url,
+    routeName: "chapter.comment.create",
+    metadata: { isSpoiler, attachmentCount: mediaRows.length },
   });
 
   return json({ ok: true, comment: created }, { status: 201 });

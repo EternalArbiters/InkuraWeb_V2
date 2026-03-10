@@ -5,6 +5,7 @@ import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,6 @@ export const POST = apiRoute(async (req: Request) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-
     const user = await prisma.user.create({
       data: {
         name: name || null,
@@ -52,6 +52,15 @@ export const POST = apiRoute(async (req: Request) => {
         image: "/images/default-avatar.png",
       },
       select: { id: true, email: true, username: true },
+    });
+
+    await trackAnalyticsEventSafe({
+      req,
+      eventType: "SIGNUP_COMPLETE",
+      userId: user.id,
+      path: "/api/auth/register",
+      routeName: "auth.register",
+      metadata: { username: user.username },
     });
 
     return json({ ok: true, user }, { status: 201 });

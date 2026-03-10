@@ -1,9 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import DashboardNavbar from "./DashboardNavbar";
 import FloatingActions from "./FloatingActions";
+import { maybeSendSessionSeen, sendAnalyticsEvent } from "@/lib/analyticsClient";
+
+function shouldShowNavbar(pathname: string) {
+  return pathname !== "/" && !pathname.startsWith("/auth");
+}
+
+function canBypassOnboarding(pathname: string) {
+  return pathname === "/onboarding" || pathname.startsWith("/auth") || pathname.startsWith("/api");
+}
 
 export default function LayoutClientWrapper({
   children,
@@ -11,8 +21,9 @@ export default function LayoutClientWrapper({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-
-  const showNavbar = pathname !== "/" && !pathname.startsWith("/auth");
+  const router = useRouter();
+  const { status, data: session } = useSession();
+  const showNavbar = shouldShowNavbar(pathname);
 
   useEffect(() => {
     const dark = localStorage.getItem("theme");
@@ -20,14 +31,23 @@ export default function LayoutClientWrapper({
     document.documentElement.classList.toggle("dark", isDark);
   }, []);
 
+  useEffect(() => {
+    if (!pathname || pathname.startsWith("/api")) return;
+    maybeSendSessionSeen(pathname);
+    sendAnalyticsEvent({ eventType: "PAGE_VIEW", path: pathname, routeName: pathname });
+  }, [pathname]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    const onboardingComplete = !!(session?.user as any)?.profileOnboardingComplete;
+    if (onboardingComplete || canBypassOnboarding(pathname)) return;
+    router.replace("/onboarding");
+  }, [pathname, router, session, status]);
+
   return (
     <>
       {showNavbar && <DashboardNavbar />}
-
-      {/* Floating quick actions (scroll-top, chat) */}
       {showNavbar && <FloatingActions />}
-
-      {/* Offset page content from the fixed navbar */}
       <div
         className={
           showNavbar

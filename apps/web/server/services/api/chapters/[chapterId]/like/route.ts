@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,9 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
       const updated = await tx.chapter.update({ where: { id: chapterId }, data: { likeCount: { increment: 1 } }, select: { likeCount: true } });
       return { liked: true, likeCount: updated.likeCount };
     });
+    if (result.liked) {
+      await trackAnalyticsEventSafe({ req, eventType: "CHAPTER_LIKE", userId, chapterId, path: req.url, routeName: "chapter.like" });
+    }
     return json({ ok: true, ...result });
   } catch (e) {
     console.error(e);

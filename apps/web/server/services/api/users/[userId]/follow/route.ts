@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ userId: string }> }) => {
   const { userId } = await params;
@@ -22,5 +23,6 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     return json({ ok: true, following: false });
   }
   await prisma.followUser.create({ data: { followerId: session.user.id, followingId: targetId } });
+  await trackAnalyticsEventSafe({ req, eventType: "FOLLOW_USER", userId: session.user.id, path: req.url, routeName: "user.follow", metadata: { targetUserId: targetId } });
   return json({ ok: true, following: true });
 });

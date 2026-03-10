@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
+import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 function clampRating(v: number) {
   if (!Number.isFinite(v)) return null;
@@ -32,6 +33,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     const ratingAvg = Number(agg._avg.value ?? 0);
     const ratingCount = Number(agg._count.value ?? 0);
     await prisma.work.update({ where: { id: workId }, data: { ratingAvg, ratingCount } });
+    await trackAnalyticsEventSafe({ req, eventType: "RATING_SUBMIT", userId, workId, path: req.url, routeName: "work.rate", metadata: { value } });
     return json({ ok: true, myRating: value, ratingAvg, ratingCount });
   } catch (e) {
     console.error(e);

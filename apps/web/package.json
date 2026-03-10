@@ -42,7 +42,8 @@
     "refactor:stage8": "node scripts/refactor-stage8-audit.js",
     "storage:audit": "tsx scripts/audit-image-storage.ts",
     "storage:reoptimize": "tsx scripts/reoptimize-images.ts",
-    "storage:cleanup-orphans": "tsx scripts/cleanup-orphaned-r2-objects.ts"
+    "storage:cleanup-orphans": "tsx scripts/cleanup-orphaned-r2-objects.ts",
+    "analytics:aggregate": "tsx scripts/aggregate-analytics.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -76,8 +77,8 @@
     "sharp": "^0.34.1",
     "@aws-sdk/client-s3": "^3.835.0",
     "@aws-sdk/s3-request-presigner": "^3.835.0",
-    "@upstash/ratelimit": "^2.0.5",
-    "@upstash/redis": "^1.35.3"
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.4"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.4",

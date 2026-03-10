@@ -20,6 +20,9 @@ type Initial = {
   avatarFocusX?: number | null;
   avatarFocusY?: number | null;
   avatarZoom?: number | null;
+  gender?: string | null;
+  birthMonth?: number | null;
+  birthYear?: number | null;
 };
 
 type AvatarPresignResponse = {
@@ -105,6 +108,9 @@ async function saveProfile(payload: {
   avatarFocusX: number;
   avatarFocusY: number;
   avatarZoom: number;
+  gender: string | null;
+  birthMonth: number | null;
+  birthYear: number | null;
 }) {
   const res = await fetch("/api/me/profile", {
     method: "PATCH",
@@ -128,6 +134,9 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
   const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 50);
   const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 50);
   const [avatarZoom, setAvatarZoom] = React.useState<number>(initial.avatarZoom ?? 1);
+  const [gender, setGender] = React.useState(initial.gender || "");
+  const [birthMonth, setBirthMonth] = React.useState<number | "">(initial.birthMonth ?? "");
+  const [birthYear, setBirthYear] = React.useState<number | "">(initial.birthYear ?? "");
 
   const [avatarUploading, setAvatarUploading] = React.useState(false);
   const [avatarOptimizationSummary, setAvatarOptimizationSummary] = React.useState<string | null>(null);
@@ -235,6 +244,9 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         avatarFocusX,
         avatarFocusY,
         avatarZoom,
+        gender: gender || null,
+        birthMonth: birthMonth === "" ? null : birthMonth,
+        birthYear: birthYear === "" ? null : birthYear,
       });
       await update();
       router.refresh();
@@ -282,6 +294,12 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         onNameChange={setName}
         username={username}
         onUsernameChange={(v) => setUsername(v.replace(/\s+/g, "").toLowerCase())}
+        gender={gender}
+        onGenderChange={setGender}
+        birthMonth={birthMonth}
+        onBirthMonthChange={setBirthMonth}
+        birthYear={birthYear}
+        onBirthYearChange={setBirthYear}
       />
 
       <div className="mt-6 flex items-center justify-end gap-3">

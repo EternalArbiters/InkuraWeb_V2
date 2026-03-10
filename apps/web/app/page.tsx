@@ -6,20 +6,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import LandingPage from "./components/LandingPage";
 
 function RootPageInner() {
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const router = useRouter();
   const params = useSearchParams();
   const next = params?.get("next") || "";
 
   useEffect(() => {
     if (status === "authenticated") {
+      const onboardingComplete = !!(session?.user as any)?.profileOnboardingComplete;
+      if (!onboardingComplete) {
+        router.push("/onboarding");
+        return;
+      }
       if (next && next.startsWith("/")) {
         router.push(next);
       } else {
         router.push("/home");
       }
     }
-  }, [status, router, next]);
+  }, [status, session, router, next]);
 
   if (status === "loading") {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
