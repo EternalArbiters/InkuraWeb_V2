@@ -4,10 +4,14 @@ import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
 import { apiRoute, json } from "@/server/http";
+import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 
 export const runtime = "nodejs";
 
 export const POST = apiRoute(async (req: Request) => {
+  const limited = await enforceRateLimitOrResponse({ req, policyName: "auth.register" });
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const name = (body?.name ?? "").trim();
@@ -43,11 +47,8 @@ export const POST = apiRoute(async (req: Request) => {
         username,
         email,
         password: hashed,
-        // v14: single admin account is email-gated.
         role: enforcedRoleFromEmail(email) as any,
-        // v14: creatorRole removed (publishType is per-work)
         adultConfirmed: false,
-        // v14: matureOptIn removed (adultConfirmed is enough)
         image: "/images/default-avatar.png",
       },
       select: { id: true, email: true, username: true },

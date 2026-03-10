@@ -3,10 +3,14 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import bcrypt from "bcryptjs";
 import { apiRoute, json } from "@/server/http";
+import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 
 export const runtime = "nodejs";
 
 export const POST = apiRoute(async (req: Request) => {
+  const limited = await enforceRateLimitOrResponse({ req, policyName: "auth.passwordReset.confirm" });
+  if (limited) return limited;
+
   try {
     const body = await req.json().catch(() => ({} as any));
     const token = String(body?.token || "").trim();

@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/server/mail/resend";
 import { apiRoute, json } from "@/server/http";
+import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 
 export const runtime = "nodejs";
 
@@ -17,11 +18,13 @@ function baseUrl() {
 }
 
 export const POST = apiRoute(async (req: Request) => {
+  const limited = await enforceRateLimitOrResponse({ req, policyName: "auth.passwordReset.request" });
+  if (limited) return limited;
+
   try {
     const body = await req.json().catch(() => ({} as any));
     const identifier = String(body?.identifier || "").trim();
 
-    // Always return ok to avoid account enumeration.
     if (!identifier) return json({ ok: true });
 
     const identifierLower = identifier.toLowerCase();
@@ -38,17 +41,15 @@ export const POST = apiRoute(async (req: Request) => {
 
     if (!user) return json({ ok: true });
 
-    // Cleanup old tokens for this user (best-effort)
     await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     await prisma.passwordResetToken.create({
       data: { token, userId: user.id, expiresAt },
     });
 
-    // Send email (best-effort; if Resend env not set, it's skipped)
     const resetUrl = `${baseUrl()}/reset-password?token=${encodeURIComponent(token)}`;
     await sendPasswordResetEmail({ to: user.email, resetUrl });
 
