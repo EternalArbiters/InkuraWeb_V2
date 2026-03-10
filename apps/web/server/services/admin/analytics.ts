@@ -207,7 +207,7 @@ export async function getAdminAnalyticsData(args: RangeArgs = {}) {
       reportsCreated: row.reportsCreated,
     })),
     topWorks: workRows.map((row) => ({
-      work: workMap.get(row.workId) || { id: row.workId, title: "Unknown work", slug: null },
+      work: workMap.get(row.workId) || { id: row.workId, title: "Unknown work", slug: null, type: "NOVEL", comicType: "UNKNOWN", publishType: "ORIGINAL", coverImage: null },
       metrics: {
         uniqueViewers: Number(row._sum.uniqueViewers || 0),
         views: Number(row._sum.views || 0),
