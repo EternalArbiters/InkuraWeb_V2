@@ -39,8 +39,10 @@ export default function LayoutClientWrapper({
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    const onboardingComplete = !!(session?.user as any)?.profileOnboardingComplete;
-    if (onboardingComplete || canBypassOnboarding(pathname)) return;
+
+    const onboardingState = (session?.user as any)?.profileOnboardingComplete;
+    if (onboardingState !== false || canBypassOnboarding(pathname)) return;
+
     router.replace("/onboarding");
   }, [pathname, router, session, status]);
 

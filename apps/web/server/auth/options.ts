@@ -290,6 +290,19 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      if (token.id && (token as any).profileOnboardingComplete == null) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: String(token.id) },
+          select: {
+            analyticsOnboardingCompletedAt: true,
+          },
+        });
+        if (dbUser) {
+          (token as any).analyticsOnboardingCompletedAt = dbUser.analyticsOnboardingCompletedAt?.toISOString?.() ?? null;
+          (token as any).profileOnboardingComplete = !!dbUser.analyticsOnboardingCompletedAt;
+        }
+      }
+
       if (token.email) {
         token.role = enforcedRoleFromEmail(String(token.email));
       }

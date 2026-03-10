@@ -13,8 +13,8 @@ function RootPageInner() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      const onboardingComplete = !!(session?.user as any)?.profileOnboardingComplete;
-      if (!onboardingComplete) {
+      const onboardingState = (session?.user as any)?.profileOnboardingComplete;
+      if (onboardingState === false) {
         router.push("/onboarding");
         return;
       }
