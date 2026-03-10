@@ -39,6 +39,12 @@ function normalize(value?: string | null) {
   return String(value || "").trim().toUpperCase();
 }
 
+function titleCase(value?: string | null) {
+  const normalized = String(value || "").trim().replace(/[_-]+/g, " ").toLowerCase();
+  if (!normalized) return null;
+  return normalized.replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
 function publishTypeLabel(publishType?: string | null) {
   const value = normalize(publishType);
   if (value === "ORIGINAL") return "Original";
@@ -47,21 +53,11 @@ function publishTypeLabel(publishType?: string | null) {
   return null;
 }
 
-function originFlagEmoji(input: Pick<WorkCardData, "type" | "comicType" | "language">) {
-  const type = normalize(input.type);
-  const comicType = normalize(input.comicType);
-  const lang = String(input.language || "")
+function translationFlagEmoji(language?: string | null) {
+  const lang = String(language || "")
     .trim()
     .toLowerCase()
     .split("-")[0];
-
-  if (type === "COMIC") {
-    if (comicType === "MANGA") return "🇯🇵";
-    if (comicType === "MANHWA") return "🇰🇷";
-    if (comicType === "MANHUA") return "🇨🇳";
-    if (comicType === "WESTERN") return "🌍";
-    if (comicType === "OTHER") return "🏳️";
-  }
 
   const map: Record<string, string> = {
     ja: "🇯🇵",
@@ -100,6 +96,14 @@ function joinParts(parts: Array<string | null | undefined>) {
   return parts.filter(Boolean).join(" • ");
 }
 
+function overlayTypeLabel(work: Pick<WorkCardData, "type" | "comicType">) {
+  const comicType = titleCase(work.comicType);
+  if (comicType && comicType !== "Other") return comicType;
+
+  const type = titleCase(work.type);
+  return type || null;
+}
+
 type Props = {
   work: WorkCardData;
   className?: string;
@@ -121,12 +125,13 @@ export default function InteractiveWorkCard({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const href = work?.slug ? `/w/${work.slug}` : work?.id ? `/work/${work.id}` : "#";
   const title = work?.title || "Untitled";
-  const flag = originFlagEmoji({ type: work?.type, comicType: work?.comicType, language: work?.language });
+  const flag = translationFlagEmoji(work?.language);
   const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
   const isUp = !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000;
   const updatedLabel = formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 });
   const publishLabel = publishTypeLabel(work?.publishType);
   const uploader = personLabel(work?.author) || personLabel(work?.translator);
+  const topLabel = overlayTypeLabel({ type: work?.type, comicType: work?.comicType });
   const statusLine = joinParts([
     typeof work?.chapterCount === "number" ? `${work.chapterCount} ch` : null,
     work?.completion ? String(work.completion) : null,
@@ -161,6 +166,7 @@ export default function InteractiveWorkCard({
   }, [active]);
 
   const overlayClass = active ? "opacity-100" : "opacity-0 group-hover:opacity-100";
+  const controlsClass = active ? "opacity-0 pointer-events-none" : "opacity-100 group-hover:opacity-0";
 
   return (
     <div
@@ -193,21 +199,25 @@ export default function InteractiveWorkCard({
           <div className="flex h-full w-full items-center justify-center text-xs text-gray-500 dark:text-gray-400">No cover</div>
         )}
 
-        <div className={[
-          "pointer-events-none absolute inset-0 z-20 bg-black/72 transition duration-200",
-          overlayClass,
-        ].join(" ")} />
+        <div
+          className={[
+            "pointer-events-none absolute inset-0 z-20 bg-black/72 transition duration-200",
+            overlayClass,
+          ].join(" ")}
+        />
 
-        <div className={[
-          "pointer-events-none absolute inset-0 z-40 flex flex-col justify-between p-3 pb-3 pt-14 text-white transition duration-200",
-          overlayClass,
-        ].join(" ")}>
+        <div
+          className={[
+            "pointer-events-none absolute inset-0 z-40 flex flex-col justify-between p-3 text-white transition duration-200",
+            overlayClass,
+          ].join(" ")}
+        >
           <div className="space-y-2 pr-1">
-            <div className="text-lg font-extrabold leading-tight line-clamp-3">{title}</div>
-            {uploader ? <div className="text-[12px] text-white/82 line-clamp-1">{uploader}</div> : null}
+            {topLabel ? <div className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-white/82">{topLabel}</div> : null}
+            {uploader ? <div className="text-[12px] text-white/88 line-clamp-1">{uploader}</div> : null}
 
             {(statusLine || ratingLine || updatedLabel) ? (
-              <div className="space-y-1 text-[12px] leading-relaxed text-white/86">
+              <div className="space-y-1 text-[12px] leading-relaxed text-white/90">
                 {statusLine ? <div>{statusLine}</div> : null}
                 {ratingLine ? <div>{ratingLine}</div> : null}
                 {updatedLabel ? <div>{updatedLabel}</div> : null}
@@ -216,21 +226,23 @@ export default function InteractiveWorkCard({
           </div>
 
           <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold">
-            {work?.type ? (
-              <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{String(work.type)}</span>
-            ) : null}
             {publishLabel ? <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{publishLabel}</span> : null}
-            {work?.isMature ? <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">18+</span> : null}
             {work?.language ? (
               <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{String(work.language).toUpperCase()}</span>
             ) : null}
+            {work?.isMature ? <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">18+</span> : null}
           </div>
         </div>
 
-        <div className="absolute left-2.5 top-2.5 z-30 flex flex-col items-start gap-1.5">
+        <div
+          className={[
+            "absolute left-2.5 top-2.5 z-30 flex flex-col items-start gap-1.5 transition duration-200",
+            controlsClass,
+          ].join(" ")}
+        >
           {flag ? (
-            <div className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm" title="Origin" aria-label="Origin">
-              <OriginFlag emoji={flag} />
+            <div className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm" title="Translation language" aria-label="Translation language">
+              <OriginFlag emoji={flag} title="Translation language" />
             </div>
           ) : null}
           {showRecentUpdateBadge && isUp ? (
@@ -240,7 +252,12 @@ export default function InteractiveWorkCard({
           ) : null}
         </div>
 
-        <div className="absolute right-2.5 top-2.5 z-30 flex flex-col items-end gap-1.5">
+        <div
+          className={[
+            "absolute right-2.5 top-2.5 z-30 flex flex-col items-end gap-1.5 transition duration-200",
+            controlsClass,
+          ].join(" ")}
+        >
           <button
             type="button"
             onClick={(event) => {
@@ -248,7 +265,7 @@ export default function InteractiveWorkCard({
               event.stopPropagation();
               setActive((prev) => !prev);
             }}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white shadow-sm backdrop-blur-sm transition hover:bg-black/60"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white shadow-sm transition hover:bg-black/60"
             aria-label={active ? "Hide work info" : "Show work info"}
             aria-pressed={active}
             title={active ? "Hide info" : "Show info"}
