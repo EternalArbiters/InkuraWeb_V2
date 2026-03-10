@@ -8,6 +8,7 @@ import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 import NovelRichTextEditor from "@/components/NovelRichTextEditor";
 import { novelContentHasMeaningfulContent } from "@/lib/novelContent";
+import FloatingNotice from "@/app/components/ui/FloatingNotice";
 
 type Chapter = {
   id: string;
@@ -185,11 +186,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
 
   return (
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
-      {error ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          {error}
-        </div>
-      ) : null}
+      <FloatingNotice open={!!error} title="Upload error" message={error || ""} onClose={() => setError(null)} />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
         <div className="text-sm text-gray-600 dark:text-gray-300">

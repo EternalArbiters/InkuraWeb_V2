@@ -4,6 +4,7 @@ import UploadPagesCard from "./components/UploadPagesCard";
 import ChapterCoverCard from "./components/ChapterCoverCard";
 import PagesGrid from "./components/PagesGrid";
 import { useComicPagesManager } from "./components/useComicPagesManager";
+import FloatingNotice from "@/app/components/ui/FloatingNotice";
 
 type Page = { id: string; imageUrl: string; order: number };
 
@@ -22,6 +23,7 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
     uploadSummary,
     loading,
     err,
+    setErr,
     pages: localPages,
     thumbnailImage: localThumbnailImage,
     replaceExisting,
@@ -41,11 +43,7 @@ export default function ComicPagesManager({ workId, chapterId, pages, thumbnailI
 
   return (
     <div className="grid gap-4">
-      {err ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          {err}
-        </div>
-      ) : null}
+      <FloatingNotice open={!!err} title="Upload error" message={err || ""} onClose={() => setErr(null)} />
 
       <UploadPagesCard
         files={files}

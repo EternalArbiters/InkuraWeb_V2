@@ -228,6 +228,7 @@ export function useComicPagesManager({
     uploadSummary,
     loading,
     err,
+    setErr,
     pages,
     thumbnailImage,
     replaceExisting,

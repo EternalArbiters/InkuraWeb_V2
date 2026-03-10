@@ -1,10 +1,9 @@
 import "server-only";
 
-import { Ratelimit } from "@upstash/ratelimit";
 import { getRequestPath } from "@/server/observability/api";
 import { logWarn } from "@/server/observability/logger";
 import { buildRateLimitIdentifier } from "./identify";
-import { RATE_LIMIT_POLICIES, type RateLimitPolicyName } from "./policies";
+import { RATE_LIMIT_POLICIES, type RateLimitPolicyName, type RateLimitWindow } from "./policies";
 import { getRedis } from "./redis";
 
 export type RateLimitDecision = {
@@ -17,28 +16,13 @@ export type RateLimitDecision = {
   identifier: string;
 };
 
-const ephemeralCache = new Map<string, number>();
-const ratelimiters = new Map<RateLimitPolicyName, Ratelimit>();
-
-function getRatelimiter(policyName: RateLimitPolicyName) {
-  const existing = ratelimiters.get(policyName);
-  if (existing) return existing;
-
-  const redis = getRedis();
-  if (!redis) return null;
-
-  const policy = RATE_LIMIT_POLICIES[policyName];
-  const limiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(policy.limit, policy.window),
-    prefix: `inkura:ratelimit:${policyName}`,
-    analytics: true,
-    ephemeralCache,
-    timeout: 500,
-  });
-
-  ratelimiters.set(policyName, limiter);
-  return limiter;
+function windowToMs(window: RateLimitWindow) {
+  const [valueRaw, unit] = window.split(" ") as [string, "s" | "m" | "h"];
+  const value = Number(valueRaw);
+  if (!Number.isFinite(value) || value <= 0) return 60_000;
+  if (unit === "s") return value * 1000;
+  if (unit === "m") return value * 60_000;
+  return value * 3_600_000;
 }
 
 export async function enforceRateLimit(args: {
@@ -64,17 +48,27 @@ export async function enforceRateLimit(args: {
     identifier,
   };
 
-  const ratelimiter = getRatelimiter(args.policyName);
-  if (!ratelimiter) return fallback;
+  const redis = getRedis() as any;
+  if (!redis) return fallback;
+
+  const windowMs = windowToMs(policy.window);
+  const now = Date.now();
+  const bucketStart = Math.floor(now / windowMs) * windowMs;
+  const reset = bucketStart + windowMs;
+  const redisKey = `inkura:ratelimit:${identifier}:${bucketStart}`;
 
   try {
-    const result = await ratelimiter.limit(identifier);
+    const current = Number(await redis.incr(redisKey));
+    if (current === 1) {
+      await redis.expire(redisKey, Math.max(1, Math.ceil(windowMs / 1000) + 5));
+    }
+
     const decision: RateLimitDecision = {
       enabled: true,
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
+      success: current <= policy.limit,
+      limit: policy.limit,
+      remaining: Math.max(0, policy.limit - current),
+      reset,
       policyName: args.policyName,
       identifier,
     };

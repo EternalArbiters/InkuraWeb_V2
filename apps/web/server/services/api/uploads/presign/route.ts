@@ -35,14 +35,19 @@ export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
 
-  const limited = await enforceRateLimitOrResponse({ req, policyName: "upload.presign", userId: session.user.id });
+  const body = await req.json().catch(() => ({} as any));
+  const scope = normalizeUploadScope(body?.scope ?? body?.kind);
+
+  const limited = await enforceRateLimitOrResponse({
+    req,
+    policyName: scope === "pages" ? "upload.presign.pages" : "upload.presign",
+    userId: session.user.id,
+  });
   if (limited) return limited;
 
   const me = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
   if (!me) return json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({} as any));
-  const scope = normalizeUploadScope(body?.scope ?? body?.kind);
   const filename = String(body?.filename || "upload").trim();
   const contentType = normalizeUploadContentType(filename, String(body?.contentType || body?.type || "").trim());
   const size = Number(body?.size ?? 0);

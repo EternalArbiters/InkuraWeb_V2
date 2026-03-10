@@ -19,9 +19,10 @@ export const RATE_LIMIT_POLICIES = {
   "comment.delete": { limit: 10, window: "10 m", identifier: "user" },
   "comment.react": { limit: 40, window: "1 m", identifier: "user" },
 
-  "upload.presign": { limit: 20, window: "10 m", identifier: "user_and_ip" },
-  "upload.avatar.presign": { limit: 10, window: "1 h", identifier: "user_and_ip" },
-  "upload.commit": { limit: 30, window: "10 m", identifier: "user_and_ip" },
+  "upload.presign": { limit: 60, window: "10 m", identifier: "user_and_ip" },
+  "upload.presign.pages": { limit: 600, window: "15 m", identifier: "user" },
+  "upload.avatar.presign": { limit: 20, window: "1 h", identifier: "user_and_ip" },
+  "upload.commit": { limit: 120, window: "10 m", identifier: "user_and_ip" },
 
   "work.bookmark": { limit: 40, window: "1 m", identifier: "user" },
   "work.like": { limit: 40, window: "1 m", identifier: "user" },

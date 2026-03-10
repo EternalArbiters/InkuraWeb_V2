@@ -8,6 +8,7 @@ import MultiSelectPicker, { PickerItem } from "@/components/MultiSelectPicker";
 import ComicPageFilesPicker from "@/components/ComicPageFilesPicker";
 import NovelRichTextEditor from "@/components/NovelRichTextEditor";
 import { novelContentHasMeaningfulContent } from "@/lib/novelContent";
+import FloatingNotice from "@/app/components/ui/FloatingNotice";
 
 type Props = {
   workId: string;
@@ -185,23 +186,14 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
   return (
     <form onSubmit={onSubmit} className="mt-6 grid gap-4">
-      {error ? (
-        <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/40 p-4 text-sm">
-          <div className="font-semibold">Error</div>
-          <div className="mt-1">{error}</div>
-          {createdChapterId ? (
-            <div className="mt-3">
-              <a
-                href={`/studio/works/${workId}/chapters/${createdChapterId}/pages`}
-                className="inline-flex items-center px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold bg-white/60 dark:bg-gray-900/40 hover:brightness-110"
-              >
-                Buka Manage Pages
-              </a>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
+      <FloatingNotice
+        open={!!error}
+        title="Upload error"
+        message={error || ""}
+        onClose={() => setError(null)}
+        actionHref={createdChapterId ? `/studio/works/${workId}/chapters/${createdChapterId}/pages` : undefined}
+        actionLabel={createdChapterId ? "Buka Manage Pages" : undefined}
+      />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
         <div className="text-sm text-gray-600 dark:text-gray-300">
