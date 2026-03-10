@@ -81,23 +81,23 @@ export async function trackAnalyticsEvent(input: TrackAnalyticsEventInput) {
     countryCode = ensured.countryCode;
     deviceType = ensured.deviceType;
   } else {
-    ipHash = null;
-    userAgentHash = null;
-    countryCode = null;
+    ipHash = hashValue(getRequestIp(req));
+    userAgentHash = hashValue(req?.headers.get("user-agent"));
+    countryCode = getRequestCountryCode(req);
   }
 
-  let workId = input.workId ?? null;
-  let chapterId = input.chapterId ?? null;
-  let ownerUserId = input.ownerUserId ?? null;
-  let workType = input.workType ?? null;
-  let publishType = input.publishType ?? null;
-  let comicType = input.comicType ?? null;
-  let workOrigin = input.workOrigin ?? null;
-  let translationLanguage = input.translationLanguage ?? null;
-  let isMature = typeof input.isMature === "boolean" ? input.isMature : null;
-  let isDeviantLove = typeof input.isDeviantLove === "boolean" ? input.isDeviantLove : null;
-  let genreIds = Array.isArray(input.genreIds) ? input.genreIds.filter(Boolean) : [];
-  let genreId = input.genreId ?? genreIds[0] ?? null;
+  let workId: string | null = input.workId ?? null;
+  let chapterId: string | null = input.chapterId ?? null;
+  let ownerUserId: string | null = input.ownerUserId ?? null;
+  let workType: "NOVEL" | "COMIC" | null = input.workType ?? null;
+  let publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD" | null = input.publishType ?? null;
+  let comicType: string | null = input.comicType ?? null;
+  let workOrigin: string | null = input.workOrigin ?? null;
+  let translationLanguage: string | null = input.translationLanguage ?? null;
+  let isMature: boolean | null = typeof input.isMature === "boolean" ? input.isMature : null;
+  let isDeviantLove: boolean | null = typeof input.isDeviantLove === "boolean" ? input.isDeviantLove : null;
+  let genreIds: string[] = Array.isArray(input.genreIds) ? input.genreIds.filter(Boolean) : [];
+  let genreId: string | null = input.genreId ?? genreIds[0] ?? null;
 
   if (chapterId && (!workId || !ownerUserId || !workType)) {
     const chapterSnapshot = await getAnalyticsChapterSnapshot(chapterId);
