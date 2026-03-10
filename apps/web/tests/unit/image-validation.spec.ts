@@ -28,13 +28,13 @@ describe("upload image validation", () => {
   });
 
 
-  it("allows sub-400 page widths when the uploaded page metadata is otherwise valid", () => {
+  it("accepts page uploads regardless of optimized dimensions", () => {
     const meta = readUploadOptimizationMeta({
       optimizationVersion: "pr5-upload-guardrails-v1",
       optimizedBytes: 320000,
       optimizedContentType: "image/webp",
       width: 320,
-      height: 2400,
+      height: 5400,
       compressionApplied: true,
       reason: "optimized",
     });

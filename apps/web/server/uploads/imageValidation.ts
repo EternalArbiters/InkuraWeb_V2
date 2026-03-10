@@ -57,6 +57,10 @@ export function expectsOptimizationMeta(scope: UploadOptimizationScope) {
   return scope === "avatar" || scope === "covers" || scope === "pages" || scope === "comment_images";
 }
 
+function shouldEnforceDimensionGuardrails(scope: UploadOptimizationScope) {
+  return scope !== "pages";
+}
+
 export function readUploadOptimizationMeta(input: unknown): UploadOptimizationMeta | undefined {
   if (!input || typeof input !== "object" || Array.isArray(input)) return undefined;
 
@@ -123,20 +127,22 @@ export function validateUploadOptimizationMeta(params: {
   }
 
   if (meta.width != null && meta.height != null) {
-    if (profile.minWidth != null && meta.width < profile.minWidth) {
-      throw new Error(`optimized width below minimum (${profile.minWidth}px)`);
-    }
-    if (profile.minHeight != null && meta.height < profile.minHeight) {
-      throw new Error(`optimized height below minimum (${profile.minHeight}px)`);
-    }
-    if (profile.maxWidth != null && meta.width > profile.maxWidth) {
-      throw new Error(`optimized width above maximum (${profile.maxWidth}px)`);
-    }
-    if (profile.maxHeight != null && meta.height > profile.maxHeight) {
-      throw new Error(`optimized height above maximum (${profile.maxHeight}px)`);
-    }
-    if (profile.maxLongEdge != null && Math.max(meta.width, meta.height) > profile.maxLongEdge) {
-      throw new Error(`optimized dimensions exceed long-edge limit (${profile.maxLongEdge}px)`);
+    if (shouldEnforceDimensionGuardrails(scope)) {
+      if (profile.minWidth != null && meta.width < profile.minWidth) {
+        throw new Error(`optimized width below minimum (${profile.minWidth}px)`);
+      }
+      if (profile.minHeight != null && meta.height < profile.minHeight) {
+        throw new Error(`optimized height below minimum (${profile.minHeight}px)`);
+      }
+      if (profile.maxWidth != null && meta.width > profile.maxWidth) {
+        throw new Error(`optimized width above maximum (${profile.maxWidth}px)`);
+      }
+      if (profile.maxHeight != null && meta.height > profile.maxHeight) {
+        throw new Error(`optimized height above maximum (${profile.maxHeight}px)`);
+      }
+      if (profile.maxLongEdge != null && Math.max(meta.width, meta.height) > profile.maxLongEdge) {
+        throw new Error(`optimized dimensions exceed long-edge limit (${profile.maxLongEdge}px)`);
+      }
     }
   } else {
     warnings.push("optimized_dimensions_missing");
