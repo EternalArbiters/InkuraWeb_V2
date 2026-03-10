@@ -154,6 +154,76 @@ export async function getViewerProfilePagePayload() {
   return { viewer };
 }
 
+
+export async function getPublicCollectionsPageData(username: string) {
+  const [{ viewer }, publicData] = await Promise.all([
+    getViewerProfilePagePayload(),
+    withCachedPublicData(
+      ["public-profile-collections:v1", username],
+      [publicProfilesTag(), publicProfileTag(username), publicReadingListsTag()],
+      PUBLIC_CONTENT_REVALIDATE.profile,
+      async () =>
+        profileHotspot("profile.publicCollections", { username }, () =>
+          prisma.user.findUnique({
+            where: { username },
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              readingLists: {
+                where: { isPublic: true },
+                orderBy: [{ updatedAt: "desc" }],
+                select: {
+                  id: true,
+                  slug: true,
+                  title: true,
+                  description: true,
+                  isPublic: true,
+                  updatedAt: true,
+                  _count: { select: { items: true } },
+                  items: {
+                    orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],
+                    take: 12,
+                    select: {
+                      work: {
+                        select: {
+                          id: true,
+                          slug: true,
+                          title: true,
+                          coverImage: true,
+                          authorId: true,
+                          isMature: true,
+                          genres: { select: { slug: true } },
+                          deviantLoveTags: { select: { slug: true } },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          })
+        )
+    ),
+  ]);
+
+  if (!publicData) {
+    return null;
+  }
+
+  const visibleLists = (publicData.readingLists || []).map((list) => ({
+    ...list,
+    itemCount: list._count.items,
+    items: (list.items || []).filter((item) => item.work && canViewWork(item.work, viewer)),
+  }));
+
+  return {
+    user: publicData,
+    viewer,
+    visibleLists,
+  };
+}
+
 export async function getProfilePageData(username: string) {
   const [publicData, viewerPayload] = await Promise.all([
     getPublicProfilePageData(username),

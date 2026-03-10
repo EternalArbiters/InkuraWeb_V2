@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 
 import HorizontalRail from "@/app/home/HorizontalRail";
 import WorkCardSquare from "@/app/home/WorkCardSquare";
-import ProfileCollectionCard from "@/app/components/user/ProfileCollectionCard";
+import ActionLink from "@/app/components/ActionLink";
+import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
 
@@ -246,16 +247,28 @@ export default async function ProfilePage() {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
-            <div>
-              <h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections you have shared with other readers.</p>
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections you have shared with other readers.</p>
+              </div>
+              <ActionLink href="/lists">See all</ActionLink>
             </div>
 
             {profile.readingLists.length ? (
-              <div className="mt-5 grid gap-4">
-                {profile.readingLists.map((list) => (
-                  <ProfileCollectionCard key={list.id} list={list as any} />
-                ))}
+              <div className="mt-5">
+                <HorizontalRail>
+                  {profile.readingLists.map((list) => (
+                    <CollectionRailCard
+                      key={list.id}
+                      href={`/lists/${list.slug}`}
+                      title={list.title}
+                      description={list.description}
+                      itemCount={Number(list._count?.items || 0)}
+                      items={Array.isArray(list.items) ? list.items : []}
+                    />
+                  ))}
+                </HorizontalRail>
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">

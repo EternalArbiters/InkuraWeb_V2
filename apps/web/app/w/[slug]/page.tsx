@@ -72,6 +72,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                   {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
                 </div>
                 <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl">{work.title}</h1>
+                {work.subtitle ? <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 md:text-base">{work.subtitle}</p> : null}
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   {isDeviant
                     ? "Karya ini ditandai Deviant Love. Untuk membaca, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
@@ -256,6 +257,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{work.title}</h1>
+              {work.subtitle ? <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 md:text-base">{work.subtitle}</p> : null}
 
               <div className="-mx-1 mt-4 hidden items-center gap-2 overflow-x-auto px-1 pb-1 md:flex md:flex-wrap md:overflow-visible">
                 <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />

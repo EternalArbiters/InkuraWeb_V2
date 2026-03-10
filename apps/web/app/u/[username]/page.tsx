@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import WorksGrid from "@/app/components/WorksGrid";
+import ActionLink from "@/app/components/ActionLink";
+import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import PublicUserLink from "@/app/components/user/PublicUserLink";
-import ProfileCollectionCard from "@/app/components/user/ProfileCollectionCard";
+import HorizontalRail from "@/app/home/HorizontalRail";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import { getProfilePageData } from "@/server/services/profile/publicProfilePage";
 
@@ -135,16 +137,28 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
           </section>
 
           <section className="mt-8">
-            <div>
-              <h2 className="text-xl font-extrabold tracking-tight">Collections</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections shared on this profile for other readers to explore.</p>
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-extrabold tracking-tight">Collections</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections shared on this profile for other readers to explore.</p>
+              </div>
+              <ActionLink href={`/u/${user.username}/collections`}>See all</ActionLink>
             </div>
 
             {visibleLists.length ? (
-              <div className="mt-4 grid gap-4">
-                {visibleLists.map((list) => (
-                  <ProfileCollectionCard key={list.id} list={list as any} />
-                ))}
+              <div className="mt-4">
+                <HorizontalRail>
+                  {visibleLists.map((list) => (
+                    <CollectionRailCard
+                      key={list.id}
+                      href={`/lists/${list.slug}`}
+                      title={list.title}
+                      description={list.description}
+                      itemCount={Number(list.itemCount || list._count?.items || 0)}
+                      items={Array.isArray(list.items) ? list.items : []}
+                    />
+                  ))}
+                </HorizontalRail>
               </div>
             ) : (
               <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 text-sm text-gray-600 dark:text-gray-300">

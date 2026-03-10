@@ -1,8 +1,10 @@
 import Link from "next/link";
-import WorksGrid from "../components/WorksGrid";
+
 import ActionLink from "@/app/components/ActionLink";
-import HorizontalRail from "@/app/home/HorizontalRail";
+import CollectionRailCard from "@/app/components/user/CollectionRailCard";
+import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import { ReadingProgressRailCard } from "@/app/components/library/ReadingProgressCard";
+import HorizontalRail from "@/app/home/HorizontalRail";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
 
@@ -10,7 +12,8 @@ export const dynamic = "force-dynamic";
 
 export default async function LibraryPage() {
   await requirePageUserId("/library");
-  const { bookmarks, progress, favorites, lists } = await getViewerLibrary();
+  const { bookmarks, progress, lists } = await getViewerLibrary();
+  const bookmarkWorks = bookmarks.map((entry) => entry.work).filter(Boolean);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -46,57 +49,50 @@ export default async function LibraryPage() {
         </div>
 
         <div className="mt-12">
-          <h2 className="text-lg font-bold">Bookmarks</h2>
-          {bookmarks.length === 0 ? (
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="text-lg font-bold">Bookmarks</h2>
+            <ActionLink href="/library/bookmarks">See all</ActionLink>
+          </div>
+          {bookmarkWorks.length === 0 ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No bookmarks yet.</p>
           ) : (
-            <div className="mt-6">
-              <WorksGrid works={bookmarks.map((b) => b.work) as any} showRecentUpdateBadge />
-            </div>
-          )}
-        </div>
-
-
-        <div className="mt-12">
-          <h2 className="text-lg font-bold">Favorites</h2>
-          {favorites.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No favorites yet.</p>
-          ) : (
-            <div className="mt-6">
-              <WorksGrid works={favorites.map((x: any) => x.work) as any} />
+            <div className="mt-4">
+              <HorizontalRail>
+                {bookmarkWorks.slice(0, 12).map((work: any) => (
+                  <InteractiveWorkCard
+                    key={work.id}
+                    work={work as any}
+                    className="snap-start shrink-0 w-[160px] sm:w-[190px]"
+                    showRecentUpdateBadge
+                  />
+                ))}
+              </HorizontalRail>
             </div>
           )}
         </div>
 
         <div className="mt-12">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-end justify-between gap-3">
             <h2 className="text-lg font-bold">Your Lists</h2>
-            <Link href="/lists" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-              Manage
-            </Link>
+            <ActionLink href="/lists">See all</ActionLink>
           </div>
 
           {lists.length === 0 ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No lists yet.</p>
           ) : (
-            <div className="mt-6 grid gap-6">
-              {lists.map((l: any) => (
-                <div key={l.id} className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <Link href={`/lists/${l.slug}`} className="font-extrabold hover:underline line-clamp-1">
-                      {l.title}
-                    </Link>
-                    <div className="text-xs text-gray-600 dark:text-gray-300">{l._count?.items ?? 0} items</div>
-                  </div>
-                  {Array.isArray(l.items) && l.items.length ? (
-                    <div className="mt-4">
-                      <WorksGrid works={l.items.map((it: any) => it.work) as any} />
-                    </div>
-                  ) : (
-                    <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">Empty.</div>
-                  )}
-                </div>
-              ))}
+            <div className="mt-4">
+              <HorizontalRail>
+                {lists.map((list: any) => (
+                  <CollectionRailCard
+                    key={list.id}
+                    href={`/lists/${list.slug}`}
+                    title={list.title}
+                    description={list.description}
+                    itemCount={Number(list._count?.items || 0)}
+                    items={Array.isArray(list.items) ? list.items : []}
+                  />
+                ))}
+              </HorizontalRail>
             </div>
           )}
         </div>
