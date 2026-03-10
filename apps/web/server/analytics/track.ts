@@ -81,9 +81,9 @@ export async function trackAnalyticsEvent(input: TrackAnalyticsEventInput) {
     countryCode = ensured.countryCode;
     deviceType = ensured.deviceType;
   } else {
-    ipHash = hashValue(getRequestIp(req));
-    userAgentHash = hashValue(req?.headers.get("user-agent"));
-    countryCode = getRequestCountryCode(req);
+    ipHash = null;
+    userAgentHash = null;
+    countryCode = null;
   }
 
   let workId: string | null = input.workId ?? null;
