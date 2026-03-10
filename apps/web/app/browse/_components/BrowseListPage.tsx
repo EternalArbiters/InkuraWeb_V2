@@ -6,9 +6,17 @@ type Props = {
   title: string;
   qs: string;
   emptyText?: string;
+  showBookmarkButton?: boolean;
+  showUpdatedSubtitle?: boolean;
 };
 
-export default async function BrowseListPage({ title, qs, emptyText }: Props) {
+export default async function BrowseListPage({
+  title,
+  qs,
+  emptyText,
+  showBookmarkButton = false,
+  showUpdatedSubtitle = false,
+}: Props) {
   let works: any[] = [];
 
   try {
@@ -31,7 +39,12 @@ export default async function BrowseListPage({ title, qs, emptyText }: Props) {
           {works?.length ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {works.map((work) => (
-                <InteractiveWorkCard key={work.id} work={work} />
+                <InteractiveWorkCard
+                  key={work.id}
+                  work={work}
+                  showBookmarkButton={showBookmarkButton}
+                  showUpdatedSubtitle={showUpdatedSubtitle}
+                />
               ))}
             </div>
           ) : (

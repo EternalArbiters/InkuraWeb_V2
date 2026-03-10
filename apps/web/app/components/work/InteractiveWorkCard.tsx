@@ -5,6 +5,7 @@ import { Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import OriginFlag from "@/app/components/OriginFlag";
+import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import { formatUpdatedAt } from "@/lib/time";
 
 type Person = {
@@ -31,6 +32,7 @@ type WorkCardData = {
   updatedAt?: string | Date | null;
   author?: Person;
   translator?: Person;
+  viewerBookmarked?: boolean | null;
 };
 
 function normalize(value?: string | null) {
@@ -103,6 +105,8 @@ type Props = {
   className?: string;
   showRecentUpdateBadge?: boolean;
   blurImage?: boolean;
+  showBookmarkButton?: boolean;
+  showUpdatedSubtitle?: boolean;
 };
 
 export default function InteractiveWorkCard({
@@ -110,6 +114,8 @@ export default function InteractiveWorkCard({
   className,
   showRecentUpdateBadge = false,
   blurImage = false,
+  showBookmarkButton = false,
+  showUpdatedSubtitle = false,
 }: Props) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -166,7 +172,11 @@ export default function InteractiveWorkCard({
       ].join(" ")}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-gray-900">
-        <Link href={href} className="absolute inset-0 z-0 block" aria-label={title} />
+        <Link
+          href={href}
+          className={`absolute inset-0 z-0 block ${active ? "pointer-events-none" : ""}`}
+          aria-label={title}
+        />
 
         {work?.coverImage ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -184,42 +194,42 @@ export default function InteractiveWorkCard({
         )}
 
         <div className={[
-          "pointer-events-none absolute inset-0 z-10 bg-black/60 transition duration-200",
+          "pointer-events-none absolute inset-0 z-20 bg-black/72 transition duration-200",
           overlayClass,
         ].join(" ")} />
 
         <div className={[
-          "pointer-events-none absolute inset-0 z-20 flex flex-col justify-end p-3 transition duration-200",
+          "pointer-events-none absolute inset-0 z-40 flex flex-col justify-between p-3 pb-3 pt-14 text-white transition duration-200",
           overlayClass,
         ].join(" ")}>
-          <div className="rounded-2xl border border-white/10 bg-black/35 p-3 text-white backdrop-blur-sm">
-            <div className="text-base font-extrabold leading-tight line-clamp-2">{title}</div>
-            {uploader ? <div className="mt-1 text-[11px] text-white/80 line-clamp-1">{uploader}</div> : null}
+          <div className="space-y-2 pr-1">
+            <div className="text-lg font-extrabold leading-tight line-clamp-3">{title}</div>
+            {uploader ? <div className="text-[12px] text-white/82 line-clamp-1">{uploader}</div> : null}
 
-            {(statusLine || updatedLabel || ratingLine) ? (
-              <div className="mt-2 space-y-1 text-[11px] leading-relaxed text-white/85">
+            {(statusLine || ratingLine || updatedLabel) ? (
+              <div className="space-y-1 text-[12px] leading-relaxed text-white/86">
                 {statusLine ? <div>{statusLine}</div> : null}
                 {ratingLine ? <div>{ratingLine}</div> : null}
                 {updatedLabel ? <div>{updatedLabel}</div> : null}
               </div>
             ) : null}
+          </div>
 
-            <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold">
-              {work?.type ? (
-                <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">{String(work.type)}</span>
-              ) : null}
-              {publishLabel ? <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">{publishLabel}</span> : null}
-              {work?.isMature ? <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">18+</span> : null}
-              {work?.language ? (
-                <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">{String(work.language).toUpperCase()}</span>
-              ) : null}
-            </div>
+          <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold">
+            {work?.type ? (
+              <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{String(work.type)}</span>
+            ) : null}
+            {publishLabel ? <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{publishLabel}</span> : null}
+            {work?.isMature ? <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">18+</span> : null}
+            {work?.language ? (
+              <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{String(work.language).toUpperCase()}</span>
+            ) : null}
           </div>
         </div>
 
-        <div className="absolute left-3 top-3 z-30 flex flex-col items-start gap-2">
+        <div className="absolute left-2.5 top-2.5 z-30 flex flex-col items-start gap-1.5">
           {flag ? (
-            <div className="rounded-full bg-black/55 px-3 py-1 text-[12px] leading-none text-white backdrop-blur" title="Origin" aria-label="Origin">
+            <div className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm" title="Origin" aria-label="Origin">
               <OriginFlag emoji={flag} />
             </div>
           ) : null}
@@ -230,24 +240,40 @@ export default function InteractiveWorkCard({
           ) : null}
         </div>
 
-        <button
-          type="button"
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setActive((prev) => !prev);
-          }}
-          className="absolute right-3 top-3 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-black/55 text-white backdrop-blur transition hover:bg-black/70"
-          aria-label={active ? "Hide work info" : "Show work info"}
-          aria-pressed={active}
-          title={active ? "Hide info" : "Show info"}
-        >
-          <Info size={16} strokeWidth={2.4} />
-        </button>
+        <div className="absolute right-2.5 top-2.5 z-30 flex flex-col items-end gap-1.5">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setActive((prev) => !prev);
+            }}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white shadow-sm backdrop-blur-sm transition hover:bg-black/60"
+            aria-label={active ? "Hide work info" : "Show work info"}
+            aria-pressed={active}
+            title={active ? "Hide info" : "Show info"}
+          >
+            <Info size={15} strokeWidth={2.35} />
+          </button>
+
+          {showBookmarkButton && work?.id ? (
+            <BookmarkIconButton
+              workId={work.id}
+              initialBookmarked={!!work.viewerBookmarked}
+              variant="overlay"
+              size="sm"
+            />
+          ) : null}
+        </div>
       </div>
 
       <Link href={href} className="block px-3 pb-3 pt-3">
         <div className="text-sm font-extrabold leading-snug text-gray-900 line-clamp-2 dark:text-white sm:text-base">{title}</div>
+        {showUpdatedSubtitle && updatedLabel ? (
+          <div className="mt-1 text-[11px] font-medium leading-snug text-gray-500 line-clamp-1 dark:text-gray-400">
+            {updatedLabel}
+          </div>
+        ) : null}
       </Link>
     </div>
   );
