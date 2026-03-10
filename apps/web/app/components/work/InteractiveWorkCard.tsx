@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Info } from "lucide-react";
+import { Heart, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import OriginFlag from "@/app/components/OriginFlag";
@@ -13,6 +13,15 @@ type Person = {
   name?: string | null;
   image?: string | null;
 } | null | undefined;
+
+type Genre =
+  | {
+      name?: string | null;
+      slug?: string | null;
+    }
+  | string
+  | null
+  | undefined;
 
 type WorkCardData = {
   id: string;
@@ -27,12 +36,14 @@ type WorkCardData = {
   completion?: string | null;
   chapterCount?: number | null;
   likeCount?: number | null;
+  chapterLoveCount?: number | null;
   ratingAvg?: number | null;
   ratingCount?: number | null;
   updatedAt?: string | Date | null;
   author?: Person;
   translator?: Person;
   viewerBookmarked?: boolean | null;
+  genres?: Genre[] | null;
 };
 
 function normalize(value?: string | null) {
@@ -104,6 +115,22 @@ function overlayTypeLabel(work: Pick<WorkCardData, "type" | "comicType">) {
   return type || null;
 }
 
+function genreText(genres?: Genre[] | null) {
+  if (!Array.isArray(genres) || genres.length === 0) return null;
+
+  const names = genres
+    .map((genre) => {
+      if (typeof genre === "string") return genre.trim();
+      if (genre?.name) return String(genre.name).trim();
+      if (genre?.slug) return titleCase(String(genre.slug));
+      return "";
+    })
+    .filter(Boolean);
+
+  const uniqueNames = Array.from(new Set(names));
+  return uniqueNames.length ? uniqueNames.join(", ") : null;
+}
+
 type Props = {
   work: WorkCardData;
   className?: string;
@@ -136,10 +163,12 @@ export default function InteractiveWorkCard({
     typeof work?.chapterCount === "number" ? `${work.chapterCount} ch` : null,
     work?.completion ? String(work.completion) : null,
   ]);
-  const ratingLine =
+  const ratingValue =
     typeof work?.ratingAvg === "number" && typeof work?.ratingCount === "number"
-      ? `★ ${(Math.round(work.ratingAvg * 10) / 10).toFixed(1)} (${work.ratingCount})`
+      ? `${(Math.round(work.ratingAvg * 10) / 10).toFixed(1)} (${work.ratingCount})`
       : null;
+  const chapterLoveValue = typeof work?.chapterLoveCount === "number" ? String(work.chapterLoveCount) : null;
+  const genresLabel = genreText(work?.genres);
 
   useEffect(() => {
     if (!active) return;
@@ -212,20 +241,42 @@ export default function InteractiveWorkCard({
             overlayClass,
           ].join(" ")}
         >
-          <div className="space-y-2 pr-1">
-            {topLabel ? <div className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-white/82">{topLabel}</div> : null}
-            {uploader ? <div className="text-[12px] text-white/88 line-clamp-1">{uploader}</div> : null}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="space-y-2 pr-1">
+              {topLabel ? <div className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-white/82">{topLabel}</div> : null}
+              {uploader ? <div className="line-clamp-1 text-[12px] text-white/88">{uploader}</div> : null}
 
-            {(statusLine || ratingLine || updatedLabel) ? (
-              <div className="space-y-1 text-[12px] leading-relaxed text-white/90">
-                {statusLine ? <div>{statusLine}</div> : null}
-                {ratingLine ? <div>{ratingLine}</div> : null}
-                {updatedLabel ? <div>{updatedLabel}</div> : null}
+              {(statusLine || ratingValue || chapterLoveValue || updatedLabel) ? (
+                <div className="space-y-1 text-[12px] leading-relaxed text-white/90">
+                  {statusLine ? <div>{statusLine}</div> : null}
+
+                  {(ratingValue || chapterLoveValue) ? (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      {ratingValue ? <div>★ {ratingValue}</div> : null}
+                      {chapterLoveValue ? (
+                        <div className="inline-flex items-center gap-1.5">
+                          <Heart size={12} className="fill-current" />
+                          <span>{chapterLoveValue}</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {updatedLabel ? <div>{updatedLabel}</div> : null}
+                </div>
+              ) : null}
+            </div>
+
+            {genresLabel ? (
+              <div className="mt-3 min-h-0 text-[11px] leading-5 text-white/78 line-clamp-2 md:line-clamp-4">
+                {genresLabel}
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-3 flex-1" />
+            )}
           </div>
 
-          <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold">
+          <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-semibold">
             {publishLabel ? <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{publishLabel}</span> : null}
             {work?.language ? (
               <span className="rounded-full bg-white/14 px-2.5 py-1 backdrop-blur-sm">{String(work.language).toUpperCase()}</span>
@@ -241,7 +292,11 @@ export default function InteractiveWorkCard({
           ].join(" ")}
         >
           {flag ? (
-            <div className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm" title="Translation language" aria-label="Translation language">
+            <div
+              className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm"
+              title="Translation language"
+              aria-label="Translation language"
+            >
               <OriginFlag emoji={flag} title="Translation language" />
             </div>
           ) : null}
@@ -265,12 +320,12 @@ export default function InteractiveWorkCard({
               event.stopPropagation();
               setActive((prev) => !prev);
             }}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white shadow-sm transition hover:bg-black/60"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white shadow-sm transition hover:bg-black/55"
             aria-label={active ? "Hide work info" : "Show work info"}
             aria-pressed={active}
             title={active ? "Hide info" : "Show info"}
           >
-            <Info size={15} strokeWidth={2.35} />
+            <Info size={13} strokeWidth={2.3} />
           </button>
 
           {showBookmarkButton && work?.id ? (
@@ -285,9 +340,9 @@ export default function InteractiveWorkCard({
       </div>
 
       <Link href={href} className="block px-3 pb-3 pt-3">
-        <div className="text-sm font-extrabold leading-snug text-gray-900 line-clamp-2 dark:text-white sm:text-base">{title}</div>
+        <div className="line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 dark:text-white sm:text-base">{title}</div>
         {showUpdatedSubtitle && updatedLabel ? (
-          <div className="mt-1 text-[11px] font-medium leading-snug text-gray-500 line-clamp-1 dark:text-gray-400">
+          <div className="mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-gray-500 dark:text-gray-400">
             {updatedLabel}
           </div>
         ) : null}

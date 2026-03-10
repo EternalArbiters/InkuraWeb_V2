@@ -80,6 +80,7 @@ export const workCardSelect = {
   publishType: true,
 
   warningTags: { select: nameSlugSelect },
+  genres: { select: nameSlugSelect },
   author: { select: userNameSelect },
   translator: { select: userNameSelect },
 } as const satisfies Prisma.WorkSelect;
@@ -99,6 +100,7 @@ export const workGridSelect = {
   ratingAvg: true,
   ratingCount: true,
   updatedAt: true,
+  genres: { select: nameSlugSelect },
   author: { select: userNameSelect },
 } as const satisfies Prisma.WorkSelect;
 

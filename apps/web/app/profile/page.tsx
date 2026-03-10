@@ -86,6 +86,7 @@ export default async function ProfilePage() {
             completion: true,
             chapterCount: true,
             publishType: true,
+            genres: { select: { name: true, slug: true } },
             author: { select: { name: true, username: true, image: true } },
           },
         },
@@ -144,10 +145,24 @@ export default async function ProfilePage() {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent("/profile")}`);
   }
 
+  const chapterLoveRows = profile.works.length
+    ? await prisma.chapter.groupBy({
+        by: ["workId"],
+        where: { workId: { in: profile.works.map((work) => work.id) }, status: "PUBLISHED" },
+        _sum: { likeCount: true },
+      })
+    : [];
+  const chapterLoveMap = new Map(chapterLoveRows.map((row) => [row.workId, Number(row._sum.likeCount ?? 0)]));
+
+  const worksWithChapterLove = profile.works.map((work) => ({
+    ...work,
+    chapterLoveCount: chapterLoveMap.get(work.id) ?? 0,
+  }));
+
   const displayName = profileName(profile);
   const avatar = profile.image || "/images/default-avatar.png";
-  const novelWorks = profile.works.filter((work) => work.type === "NOVEL");
-  const comicWorks = profile.works.filter((work) => work.type === "COMIC");
+  const novelWorks = worksWithChapterLove.filter((work) => work.type === "NOVEL");
+  const comicWorks = worksWithChapterLove.filter((work) => work.type === "COMIC");
   const avatarFocusX = Number.isFinite(Number(profile.avatarFocusX)) ? Number(profile.avatarFocusX) : 50;
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;

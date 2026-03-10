@@ -379,7 +379,24 @@ export async function listPublishedWorksFromSearchParams(
   const works = await profileHotspot("listPublishedWorks.findMany", probeMeta, () => prisma.work.findMany(query));
   const nextCursor = nextCursorFromRows(works as any, take);
 
-  let worksWithViewer: any[] = works as any;
+  const workIds = (works as any[]).map((work: any) => work.id).filter(Boolean);
+  const chapterLoveRows = workIds.length
+    ? await profileHotspot("listPublishedWorks.chapterLoveSums", { workCount: workIds.length }, () =>
+        prisma.chapter.groupBy({
+          by: ["workId"],
+          where: { workId: { in: workIds }, status: "PUBLISHED" },
+          _sum: { likeCount: true },
+        })
+      )
+    : [];
+  const chapterLoveMap = new Map(chapterLoveRows.map((row: any) => [row.workId, Number(row._sum?.likeCount ?? 0)]));
+
+  const worksEnriched = (works as any[]).map((work: any) => ({
+    ...work,
+    chapterLoveCount: chapterLoveMap.get(work.id) ?? 0,
+  }));
+
+  let worksWithViewer: any[] = worksEnriched as any;
   if (viewer?.id && works.length) {
     let interactions = options?.viewerWorkInteractions ?? null;
 
@@ -387,13 +404,13 @@ export async function listPublishedWorksFromSearchParams(
       interactions = await profileHotspot("listPublishedWorks.viewerInteractions", { workCount: works.length }, () =>
         getViewerWorkInteractions(
           viewer.id,
-          works.map((work: any) => work.id)
+          worksEnriched.map((work: any) => work.id)
         )
       );
     }
 
     if (interactions) {
-      worksWithViewer = applyViewerWorkInteractions(works as any[], interactions);
+      worksWithViewer = applyViewerWorkInteractions(worksEnriched as any[], interactions);
     }
   }
 
