@@ -253,6 +253,15 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
     return () => window.clearTimeout(timer);
   }, [pageDirection]);
 
+  React.useEffect(() => {
+    const node = wrapperRef.current;
+    if (!node) return;
+
+    const handleSelectStart = (event: Event) => event.preventDefault();
+    node.addEventListener("selectstart", handleSelectStart);
+    return () => node.removeEventListener("selectstart", handleSelectStart);
+  }, []);
+
   const goPrev = React.useCallback(() => {
     setPageDirection("prev");
     setPageIndex((current) => Math.max(0, current - 1));
@@ -288,7 +297,6 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       onCut={preventReactDefault}
       onContextMenu={preventReactDefault}
       onDragStart={preventReactDefault}
-      onSelectStart={preventReactDefault}
       onKeyDown={handleReactKeyDown}
       aria-label="Novel reader content"
     >

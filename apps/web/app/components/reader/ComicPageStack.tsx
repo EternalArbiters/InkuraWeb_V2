@@ -40,19 +40,29 @@ function ComicPageItem({
 }) {
   const [state, setState] = React.useState<"loading" | "loaded" | "error">("loading");
   const [meta, setMeta] = React.useState<ImageMeta | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const handleSelectStart = (event: Event) => event.preventDefault();
+    node.addEventListener("selectstart", handleSelectStart);
+    return () => node.removeEventListener("selectstart", handleSelectStart);
+  }, []);
 
   const aspectRatio = meta && meta.width > 0 && meta.height > 0 ? `${meta.width} / ${meta.height}` : undefined;
   const safeImageUrl = page.imageUrl.replace(/"/g, "\\\"");
 
   return (
     <div
+      ref={containerRef}
       className="relative isolate overflow-hidden bg-gray-200 dark:bg-gray-900 select-none"
       style={{ minHeight: "42vh", WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
       onContextMenu={(event) => event.preventDefault()}
       onDragStart={(event) => event.preventDefault()}
       onCopy={(event) => event.preventDefault()}
       onCut={(event) => event.preventDefault()}
-      onSelectStart={(event) => event.preventDefault()}
     >
       {state !== "loaded" ? <PageSkeleton index={index} total={total} state={state} /> : null}
 
