@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { Share2 } from "lucide-react";
 
 type Props = {
   path?: string;
   title?: string;
   className?: string;
+  iconOnlyOnMobile?: boolean;
 };
 
 function absoluteUrl(path: string) {
@@ -23,7 +25,12 @@ async function copyText(value: string) {
   }
 }
 
-export default function ProfileShareButton({ path = "/profile", title = "Inkura profile", className = "" }: Props) {
+export default function ProfileShareButton({
+  path = "/profile",
+  title = "Inkura profile",
+  className = "",
+  iconOnlyOnMobile = false,
+}: Props) {
   const [label, setLabel] = React.useState("Share Profile");
 
   React.useEffect(() => {
@@ -35,6 +42,8 @@ export default function ProfileShareButton({ path = "/profile", title = "Inkura 
   return (
     <button
       type="button"
+      aria-label={label}
+      title={label}
       onClick={async () => {
         const url = absoluteUrl(path);
         const nav = navigator as Navigator & { share?: (data: { title?: string; url?: string }) => Promise<void> };
@@ -54,7 +63,8 @@ export default function ProfileShareButton({ path = "/profile", title = "Inkura 
       }}
       className={className}
     >
-      {label}
+      <Share2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+      {iconOnlyOnMobile ? <span className="sr-only md:not-sr-only md:ml-2">{label}</span> : <span className="ml-2">{label}</span>}
     </button>
   );
 }

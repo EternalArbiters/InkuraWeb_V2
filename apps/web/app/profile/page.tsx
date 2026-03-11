@@ -245,17 +245,18 @@ export default async function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex flex-row flex-wrap items-stretch gap-3 md:flex-col md:items-end md:self-start">
+            <div className="flex items-center gap-3 md:flex-col md:items-end md:self-start">
               <Link
                 href="/settings/profile"
-                className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
+                className="inline-flex min-w-0 flex-1 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 md:flex-none"
               >
                 Edit Profile
               </Link>
               <ProfileShareButton
                 path={profile.username ? `/u/${profile.username}` : "/profile"}
                 title={`${displayName} · Inkura`}
-                className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+                iconOnlyOnMobile
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800 md:h-auto md:w-auto md:px-5 md:py-2.5"
               />
             </div>
           </div>
