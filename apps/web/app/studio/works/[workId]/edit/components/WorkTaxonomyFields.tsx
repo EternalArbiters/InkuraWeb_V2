@@ -45,14 +45,12 @@ export default function WorkTaxonomyFields({
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">Viewer wajib opt-in 18+.</div>
           </div>
         </label>
 
         {isMature ? (
           <MultiSelectPicker
             title="Warnings"
-            subtitle="NSFW / sensitive tags."
             items={warningTags}
             selectedIds={warningIds}
             onChange={setWarningIds}
@@ -63,9 +61,6 @@ export default function WorkTaxonomyFields({
           <input type="checkbox" checked={isDeviantLove} onChange={(e) => setIsDeviantLove(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">Deviant Love</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Tag khusus (butuh unlock). Jika tidak dicentang, tag DL akan dihapus.
-            </div>
           </div>
         </label>
 

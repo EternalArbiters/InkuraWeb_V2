@@ -5,7 +5,6 @@ import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import FollowToggleButton from "@/app/components/user/FollowToggleButton";
 import PublicProfileActionsMenu from "@/app/components/user/PublicProfileActionsMenu";
-import PublicUserLink from "@/app/components/user/PublicUserLink";
 import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
 import HorizontalRail from "@/app/home/HorizontalRail";
 import { parseProfileLinks } from "@/lib/profileUrls";
@@ -177,10 +176,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
           <section className="mt-8">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-extrabold tracking-tight">Published Works</h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  Works published by <PublicUserLink user={user} className="hover:text-purple-400" />.
-                </p>
+<h2 className="text-xl font-extrabold tracking-tight">Published Works</h2>
               </div>
             </div>
             <div className="mt-4">
@@ -191,8 +187,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
           <section className="mt-8">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <h2 className="text-xl font-extrabold tracking-tight">Collections</h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections shared on this profile for other readers to explore.</p>
+<h2 className="text-xl font-extrabold tracking-tight">Collections</h2>
               </div>
               <ActionLink href={`/u/${user.username}/collections`}>See all</ActionLink>
             </div>
@@ -221,8 +216,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
 
           <section className="mt-8">
             <div>
-              <h2 className="text-xl font-extrabold tracking-tight">Recent Reviews</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Latest ratings and review notes from this user.</p>
+<h2 className="text-xl font-extrabold tracking-tight">Recent Reviews</h2>
             </div>
 
             {visibleReviews.length ? (

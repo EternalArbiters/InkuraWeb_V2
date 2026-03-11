@@ -15,15 +15,13 @@ export default async function PublicCollectionsPage({ params }: { params: Promis
     notFound();
   }
 
-  const displayName = data.user.name || `@${data.user.username}`;
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Collections</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Public collections shared by {displayName}.</p>
+<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Collections</h1>
           </div>
           <Link
             href={`/u/${data.user.username}`}

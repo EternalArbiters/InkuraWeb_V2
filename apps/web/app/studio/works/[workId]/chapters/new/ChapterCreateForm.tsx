@@ -208,7 +208,6 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             <input type="checkbox" checked={autoLabel} onChange={(e) => setAutoLabel(e.target.checked)} />
             <div>
               <div className="text-sm font-semibold">Auto chapter label</div>
-              <div className="text-xs text-gray-600 dark:text-gray-300">Aktif: pakai urutan chapter otomatis. Mati: kamu bisa isi label sendiri seperti Prolog, Chapter 0, Bonus, dll.</div>
             </div>
           </label>
 
@@ -264,14 +263,12 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature (Chapter)</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">Viewer wajib opt-in 18+.</div>
           </div>
         </label>
       </div>
 
       <MultiSelectPicker
         title="NSFW (Chapter)"
-        subtitle="NSFW / sensitive tags specifically for this chapter."
         items={warningTags}
         selectedIds={warningIds}
         onChange={setWarningIds}
@@ -286,16 +283,10 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         <div className="grid gap-3">
           <div className="grid gap-2">
             <span className="text-sm font-semibold">Comic Pages</span>
-            <span className="text-xs text-gray-600 dark:text-gray-300">
-              Sekarang ada 4 cara upload: manual satu-satu, upload semua image, upload ZIP chapter, atau upload PDF chapter.
-            </span>
           </div>
 
           <ComicPageFilesPicker files={pages} setFiles={setPages} onBusyChange={setImportingPages} />
 
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            Setelah masuk antrean, halaman akan dioptimalkan di browser dulu sebelum upload ke R2 agar lebih ringan tanpa mengorbankan keterbacaan.
-          </span>
           {pageSummary ? (
             <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
               <div>

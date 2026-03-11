@@ -24,7 +24,7 @@ export default async function ProfileReviewsPage({
   const userId = await requirePageUserId("/profile/reviews");
   const resolvedSearchParams = (await searchParams) || {};
   const rawSort = Array.isArray(resolvedSearchParams.sort) ? resolvedSearchParams.sort[0] : resolvedSearchParams.sort;
-  const { items, total, sort } = await getViewerReviews(userId, { sort: rawSort, take: 100 });
+  const { items, sort } = await getViewerReviews(userId, { sort: rawSort, take: 100 });
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -34,8 +34,7 @@ export default async function ProfileReviewsPage({
             <Link href="/profile" className="text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
               ← Back to profile
             </Link>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-tight">All Reviews</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{total} review{total === 1 ? "" : "s"} on your profile.</p>
+<h1 className="mt-3 text-3xl font-extrabold tracking-tight">All Reviews</h1>
           </div>
           <ProfileSortSelect value={sort} label="Sort reviews" options={[...REVIEW_SORT_OPTIONS]} />
         </div>

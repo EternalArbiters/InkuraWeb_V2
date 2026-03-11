@@ -15,9 +15,6 @@ export default function WorkArcFields({
     <div className="grid gap-4 rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
       <div>
         <div className="text-sm font-semibold">Series</div>
-        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-          Pakai judul series yang sama di karya terkait, lalu atur urutan arc di sini atau lewat Manage Series.
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

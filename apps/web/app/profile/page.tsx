@@ -262,8 +262,7 @@ export default async function ProfilePage() {
         <section className="mt-8 rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-3xl font-extrabold tracking-tight">Published Works</h2>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Works you have published on Inkura.</p>
+<h2 className="text-3xl font-extrabold tracking-tight">Published Works</h2>
             </div>
           </div>
 
@@ -283,8 +282,7 @@ export default async function ProfilePage() {
           <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm self-start">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Collections you have shared with other readers.</p>
+<h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
               </div>
               <ActionLink href="/lists">See all</ActionLink>
             </div>
@@ -313,8 +311,7 @@ export default async function ProfilePage() {
           <div className="grid gap-8 self-start">
             <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
               <div>
-                <h2 className="text-2xl font-extrabold tracking-tight">Recent Reviews</h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Your latest ratings and short reviews.</p>
+<h2 className="text-2xl font-extrabold tracking-tight">Recent Reviews</h2>
               </div>
 
               {reviewFeed.items.length ? (
@@ -335,8 +332,7 @@ export default async function ProfilePage() {
 
             <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
               <div>
-                <h2 className="text-2xl font-extrabold tracking-tight">Recent Comments</h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Your latest comments across works and chapters.</p>
+<h2 className="text-2xl font-extrabold tracking-tight">Recent Comments</h2>
               </div>
 
               {commentFeed.items.length ? (

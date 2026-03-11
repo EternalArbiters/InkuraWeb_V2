@@ -62,8 +62,7 @@ export default function SignUpPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
       <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl shadow-2xl p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Daftar Inkura</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Buat akun untuk upload dan membaca.</p>
+<h1 className="text-2xl font-bold text-gray-900 dark:text-white">Daftar Inkura</h1>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
           <input

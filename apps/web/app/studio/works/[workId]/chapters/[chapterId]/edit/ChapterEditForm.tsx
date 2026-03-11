@@ -239,9 +239,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold">Chapter label</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Auto = sistem pakai nomor chapter. Manual = kamu bisa tulis sendiri label seperti Prolog, Bonus, atau Chapter 0.
-            </div>
           </div>
 
           <label className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm font-medium">
@@ -326,14 +323,12 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           <input type="checkbox" checked={isMature} onChange={(e) => setIsMature(e.target.checked)} />
           <div>
             <div className="text-sm font-semibold">18+ / Mature (Chapter)</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">Viewer wajib opt-in 18+.</div>
           </div>
         </label>
       </div>
 
       <MultiSelectPicker
         title="NSFW (Chapter)"
-        subtitle="NSFW / sensitive tags khusus chapter ini."
         items={warningTags}
         selectedIds={warningIds}
         onChange={setWarningIds}

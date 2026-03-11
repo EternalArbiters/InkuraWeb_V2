@@ -28,22 +28,22 @@ const MODE_COPY: Record<
 > = {
   manual: {
     label: "Manual satu per satu",
-    description: "Tambah image satu-satu. Cocok kalau kamu ingin urutkan halaman dengan sangat presisi.",
+    description: "",
     Icon: ImagePlus,
   },
   all: {
     label: "Upload semua image",
-    description: "Pilih banyak image sekaligus. File akan diurutkan otomatis berdasarkan nama file.",
+    description: "",
     Icon: Images,
   },
   zip: {
     label: "Upload ZIP chapter",
-    description: "Pilih satu file ZIP berisi image chapter. Inkura akan membacanya lalu mengubah isinya jadi daftar halaman.",
+    description: "",
     Icon: FileArchive,
   },
   pdf: {
     label: "Upload PDF chapter",
-    description: "Pilih satu file PDF. Inkura akan memecah tiap halaman PDF menjadi image halaman comic otomatis.",
+    description: "",
     Icon: FileText,
   },
 };
@@ -178,7 +178,7 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-semibold">{item.label}</div>
-                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{item.description}</div>
+                  {item.description ? <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{item.description}</div> : null}
                 </div>
               </div>
             </button>
@@ -189,7 +189,6 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
       <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">
         {mode === "manual" ? (
           <div className="grid gap-3">
-            <div className="text-sm text-gray-600 dark:text-gray-300">Tambah halaman satu per satu. Setelah masuk antrean, kamu bisa urutkan dengan tombol panah.</div>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
@@ -216,7 +215,6 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
 
         {mode === "all" ? (
           <div className="grid gap-3">
-            <div className="text-sm text-gray-600 dark:text-gray-300">Pilih banyak image sekaligus. Daftar akan dirapikan otomatis berdasarkan nama file, lalu masih bisa kamu atur ulang dengan panah.</div>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
@@ -243,7 +241,6 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
 
         {mode === "zip" ? (
           <div className="grid gap-3">
-            <div className="text-sm text-gray-600 dark:text-gray-300">Pilih satu file ZIP yang berisi semua image chapter. Isi ZIP akan dibaca lalu dimasukkan ke antrean halaman.</div>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
@@ -270,7 +267,6 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
 
         {mode === "pdf" ? (
           <div className="grid gap-3">
-            <div className="text-sm text-gray-600 dark:text-gray-300">Pilih satu file PDF chapter. Tiap halaman PDF akan di-render menjadi image comic agar tetap cocok dengan reader Inkura.</div>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"

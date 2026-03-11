@@ -15,8 +15,7 @@ export default async function EditProfilePage() {
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit Profile</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update your display name, username, short bio, and named profile links.</p>
+<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit Profile</h1>
           </div>
           <BackButton href="/home" />
         </div>

@@ -61,7 +61,7 @@ export default function WorkBasicsCard({
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold">Subtitles (optional)</div>
-            <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">0 sampai 5 subtitle. Klik Add sub title untuk menambah baris baru.</div>
+            <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">Maks. 5 subtitle.</div>
           </div>
           <button
             type="button"

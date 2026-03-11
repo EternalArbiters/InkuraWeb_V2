@@ -264,8 +264,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       />
 
       <div className="rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
-        <div className="text-sm font-semibold">Series (optional)</div>
-        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Use the same series title across works, then set the arc order.</div>
+<div className="text-sm font-semibold">Series (optional)</div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <label className="grid gap-2 text-sm">
             <span className="font-medium">Series title</span>
