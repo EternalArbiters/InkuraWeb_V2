@@ -1,5 +1,7 @@
-import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
-import AnalyticsTrackedLink from "@/app/components/analytics/AnalyticsTrackedLink";
+import * as React from "react";
+
+import { AnalyticsEventTracker } from "@/app/components/AnalyticsEventTracker";
+import AnalyticsTrackedLink from "@/app/components/AnalyticsTrackedLink";
 import { parseUserSearchParams, searchUsers, type UserSearchScope } from "@/server/services/search/userSearch";
 
 export const dynamic = "force-dynamic";
@@ -26,11 +28,25 @@ function avatarInitial(name: string) {
   return trimmed ? trimmed[0]?.toUpperCase() : "U";
 }
 
+function RoleChip({ tone, children }: { tone: "blue" | "purple" | "amber" | "gray"; children: React.ReactNode }) {
+  const toneClass =
+    tone === "blue"
+      ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200"
+      : tone === "purple"
+      ? "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-200"
+      : tone === "amber"
+      ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+      : "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-950/40 dark:text-gray-200";
+
+  return <span className={`rounded-full border px-2.5 py-1 font-semibold ${toneClass}`}>{children}</span>;
+}
+
 function UserCard({ user }: { user: Awaited<ReturnType<typeof searchUsers>>["users"][number] & { analyticsEvent?: Record<string, unknown> | null } }) {
   const displayName = (user.name && user.name.trim()) || user.username;
   const focusX = Number.isFinite(Number(user.avatarFocusX)) ? Number(user.avatarFocusX) : 50;
   const focusY = Number.isFinite(Number(user.avatarFocusY)) ? Number(user.avatarFocusY) : 50;
   const zoom = Number.isFinite(Number(user.avatarZoom)) ? Math.max(1, Number(user.avatarZoom)) : 1;
+  const hasRole = user.originalWorksCount > 0 || user.translationWorksCount > 0 || user.reuploadWorksCount > 0;
 
   return (
     <AnalyticsTrackedLink
@@ -62,21 +78,10 @@ function UserCard({ user }: { user: Awaited<ReturnType<typeof searchUsers>>["use
           <div className="truncate text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">{displayName}</div>
           <div className="mt-1 truncate text-sm text-gray-600 dark:text-gray-300">@{user.username}</div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs">
-            {user.publishedWorksCount > 0 ? (
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
-                Author · {user.publishedWorksCount}
-              </span>
-            ) : null}
-            {user.translatedWorksCount > 0 ? (
-              <span className="rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 font-semibold text-purple-700 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-200">
-                Translator · {user.translatedWorksCount}
-              </span>
-            ) : null}
-            {user.publishedWorksCount === 0 && user.translatedWorksCount === 0 ? (
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 font-semibold text-gray-700 dark:border-gray-800 dark:bg-gray-950/40 dark:text-gray-200">
-                User
-              </span>
-            ) : null}
+            {user.originalWorksCount > 0 ? <RoleChip tone="blue">Author · {user.originalWorksCount}</RoleChip> : null}
+            {user.translationWorksCount > 0 ? <RoleChip tone="purple">Translator · {user.translationWorksCount}</RoleChip> : null}
+            {user.reuploadWorksCount > 0 ? <RoleChip tone="amber">Reuploader · {user.reuploadWorksCount}</RoleChip> : null}
+            {!hasRole ? <RoleChip tone="gray">User</RoleChip> : null}
           </div>
           <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {joinedLabel(user.createdAt)}</div>
         </div>

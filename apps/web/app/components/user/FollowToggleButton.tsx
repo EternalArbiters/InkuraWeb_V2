@@ -9,9 +9,10 @@ type Props = {
   initialFollowing: boolean;
   requiresAuth?: boolean;
   size?: "default" | "small";
+  fullWidth?: boolean;
 };
 
-export default function FollowToggleButton({ userId, initialFollowing, requiresAuth = false, size = "default" }: Props) {
+export default function FollowToggleButton({ userId, initialFollowing, requiresAuth = false, size = "default", fullWidth = false }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -24,7 +25,7 @@ export default function FollowToggleButton({ userId, initialFollowing, requiresA
     return (
       <Link
         href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-        className={`inline-flex items-center justify-center rounded-full border border-purple-400/60 ${sizeClass} font-semibold text-purple-200 hover:bg-purple-500/10`}
+        className={`inline-flex items-center justify-center rounded-full border border-purple-400/60 ${fullWidth ? "w-full" : ""} ${sizeClass} font-semibold text-purple-200 hover:bg-purple-500/10`}
       >
         Follow
       </Link>
@@ -56,6 +57,7 @@ export default function FollowToggleButton({ userId, initialFollowing, requiresA
       }}
       className={[
         "inline-flex items-center justify-center rounded-full font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+        fullWidth ? "w-full" : "",
         sizeClass,
         following
           ? "border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"

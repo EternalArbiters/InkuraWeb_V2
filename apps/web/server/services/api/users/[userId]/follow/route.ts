@@ -18,13 +18,26 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
   if (!targetId) return json({ error: "userId required" }, { status: 400 });
   if (targetId === session.user.id) return json({ error: "Cannot follow yourself" }, { status: 400 });
 
-  const [existing, usernames] = await Promise.all([
+  const [existing, usernames, blockingState] = await Promise.all([
     prisma.followUser.findUnique({ where: { followerId_followingId: { followerId: session.user.id, followingId: targetId } } }),
     prisma.user.findMany({
       where: { id: { in: [session.user.id, targetId] } },
       select: { id: true, username: true },
     }),
+    prisma.userBlock.findFirst({
+      where: {
+        OR: [
+          { blockerId: session.user.id, blockedId: targetId },
+          { blockerId: targetId, blockedId: session.user.id },
+        ],
+      },
+      select: { blockerId: true },
+    }),
   ]);
+
+  if (blockingState) {
+    return json({ error: "Follow unavailable because one account has blocked the other" }, { status: 403 });
+  }
 
   const usernameById = new Map(usernames.map((user) => [user.id, user.username]));
 
@@ -34,6 +47,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     revalidatePublicProfile(usernameById.get(targetId));
     return json({ ok: true, following: false });
   }
+
   await prisma.followUser.create({ data: { followerId: session.user.id, followingId: targetId } });
   await trackAnalyticsEventSafe({ req, eventType: "FOLLOW_USER", userId: session.user.id, path: req.url, routeName: "user.follow", metadata: { targetUserId: targetId } });
   revalidatePublicProfile(usernameById.get(session.user.id));

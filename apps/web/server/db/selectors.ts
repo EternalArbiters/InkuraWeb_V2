@@ -24,6 +24,7 @@ export const userPublicSelect = {
   username: true,
   name: true,
   image: true,
+  role: true,
 } as const satisfies Prisma.UserSelect;
 
 export const nameSlugSelect = {

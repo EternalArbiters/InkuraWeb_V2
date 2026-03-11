@@ -4,6 +4,7 @@ import WorksGrid from "@/app/components/WorksGrid";
 import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import FollowToggleButton from "@/app/components/user/FollowToggleButton";
+import PublicProfileActionsMenu from "@/app/components/user/PublicProfileActionsMenu";
 import PublicUserLink from "@/app/components/user/PublicUserLink";
 import HorizontalRail from "@/app/home/HorizontalRail";
 import { displayUrlLabel, parseProfileUrls } from "@/lib/profileUrls";
@@ -24,9 +25,9 @@ function avatarInitial(name: string) {
 
 function StatCard({ label, value, href }: { label: string; value: number | string; href?: string }) {
   const content = (
-    <div className="rounded-2xl border border-transparent px-2 py-1 text-center transition hover:border-gray-200 hover:bg-white/40 dark:hover:border-gray-700 dark:hover:bg-white/5">
-      <div className="text-xl font-extrabold tracking-tight sm:text-2xl">{value}</div>
-      <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">{label}</div>
+    <div className="min-w-0 rounded-2xl border border-transparent px-1.5 py-1 text-center transition hover:border-gray-200 hover:bg-white/40 dark:hover:border-gray-700 dark:hover:bg-white/5">
+      <div className="text-lg font-extrabold tracking-tight sm:text-xl md:text-2xl">{value}</div>
+      <div className="mt-1 text-[11px] leading-tight text-gray-600 dark:text-gray-300 sm:text-xs md:text-sm">{label}</div>
     </div>
   );
 
@@ -93,7 +94,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
       return notFound();
     }
 
-    const { user, viewer, viewerFollowingUser, visibleWorks, visibleLists, visibleReviews } = data;
+    const { user, viewer, viewerFollowingUser, viewerBlockedUser, visibleWorks, visibleLists, visibleReviews } = data;
     const displayName = (user.name && user.name.trim()) || (user.username && user.username.trim()) || "Unknown";
     const isSelf = viewer?.id === user.id;
     const profileUrls = parseProfileUrls(user.profileUrlsJson, user.profileUrl);
@@ -138,18 +139,42 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
               </div>
 
               {!isSelf ? (
-                viewer ? (
-                  <FollowToggleButton userId={user.id} initialFollowing={viewerFollowingUser} />
+                <div className="md:self-start">
+                  <PublicProfileActionsMenu
+                    userId={user.id}
+                    username={user.username}
+                    displayName={displayName}
+                    initialBlocked={viewerBlockedUser}
+                    requiresAuth={!viewer}
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            {!isSelf ? (
+              <div className="mt-5">
+                {viewerBlockedUser ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="inline-flex w-full items-center justify-center rounded-full border border-red-300 px-5 py-3 text-sm font-semibold text-red-600 opacity-80 dark:border-red-900 dark:text-red-300"
+                  >
+                    Blocked
+                  </button>
+                ) : viewer ? (
+                  <div className="w-full">
+                    <FollowToggleButton userId={user.id} initialFollowing={viewerFollowingUser} fullWidth />
+                  </div>
                 ) : (
                   <Link
                     href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackPath)}`}
-                    className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
+                    className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
                   >
                     Follow
                   </Link>
-                )
-              ) : null}
-            </div>
+                )}
+              </div>
+            ) : null}
 
             <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
               <StatCard label="Works" value={user.stats?.publishedWorksCount || 0} />

@@ -6,6 +6,7 @@ import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
 import ProfileReviewCard from "@/app/components/user/ProfileReviewCard";
+import ProfileShareButton from "@/app/components/user/ProfileShareButton";
 import { displayUrlLabel, parseProfileUrls } from "@/lib/profileUrls";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
@@ -51,9 +52,9 @@ function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
 
 function ProfileStat({ label, value, href }: { label: string; value: number | string; href?: string }) {
   const content = (
-    <div className="rounded-2xl border border-transparent px-2 py-1 text-center transition hover:border-gray-200 hover:bg-white/40 dark:hover:border-gray-700 dark:hover:bg-white/5">
-      <div className="text-xl font-extrabold tracking-tight sm:text-2xl">{value}</div>
-      <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">{label}</div>
+    <div className="min-w-0 rounded-2xl border border-transparent px-1.5 py-1 text-center transition hover:border-gray-200 hover:bg-white/40 dark:hover:border-gray-700 dark:hover:bg-white/5">
+      <div className="text-lg font-extrabold tracking-tight sm:text-xl md:text-2xl">{value}</div>
+      <div className="mt-1 text-[11px] leading-tight text-gray-600 dark:text-gray-300 sm:text-xs md:text-sm">{label}</div>
     </div>
   );
 
@@ -244,13 +245,18 @@ export default async function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 md:justify-end">
+            <div className="flex flex-row flex-wrap items-stretch gap-3 md:flex-col md:items-end md:self-start">
               <Link
                 href="/settings/profile"
                 className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
               >
                 Edit Profile
               </Link>
+              <ProfileShareButton
+                path={profile.username ? `/u/${profile.username}` : "/profile"}
+                title={`${displayName} · Inkura`}
+                className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+              />
             </div>
           </div>
 

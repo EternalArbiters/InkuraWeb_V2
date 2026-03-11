@@ -225,7 +225,7 @@ export default function InteractiveWorkCard({
       <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-gray-900">
         <Link
           href={href}
-          className={`absolute inset-0 z-0 block ${active ? "pointer-events-none" : ""}`}
+          className="absolute inset-0 z-0 block"
           aria-label={title}
           onClick={handleTrackedClick}
         />

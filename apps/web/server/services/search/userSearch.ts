@@ -15,8 +15,9 @@ export type UserSearchResult = {
   avatarFocusY: number | null;
   avatarZoom: number | null;
   createdAt: Date;
-  publishedWorksCount: number;
-  translatedWorksCount: number;
+  originalWorksCount: number;
+  translationWorksCount: number;
+  reuploadWorksCount: number;
 };
 
 function normalizeScope(value: string | null | undefined): UserSearchScope {
@@ -76,14 +77,6 @@ export async function searchUsers(input: {
     });
   }
 
-  if (scope === "authors") {
-    andFilters.push({ works: { some: { status: "PUBLISHED" } } });
-  }
-
-  if (scope === "translators") {
-    andFilters.push({ translatedWorks: { some: { status: "PUBLISHED" } } });
-  }
-
   const users = await prisma.user.findMany({
     where: { AND: andFilters },
     orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
@@ -102,35 +95,28 @@ export async function searchUsers(input: {
 
   const userIds = users.map((user) => user.id);
 
-  const [authorCounts, translatorCounts] = await Promise.all([
-    userIds.length
-      ? prisma.work.groupBy({
-          by: ["authorId"],
-          where: {
-            status: "PUBLISHED",
-            authorId: { in: userIds },
-          },
-          _count: { _all: true },
-        })
-      : Promise.resolve([]),
-    userIds.length
-      ? prisma.work.groupBy({
-          by: ["translatorId"],
-          where: {
-            status: "PUBLISHED",
-            translatorId: { in: userIds },
-          },
-          _count: { _all: true },
-        })
-      : Promise.resolve([]),
-  ]);
+  const authoredTypeCounts = userIds.length
+    ? await prisma.work.groupBy({
+        by: ["authorId", "publishType"],
+        where: {
+          status: "PUBLISHED",
+          authorId: { in: userIds },
+        },
+        _count: { _all: true },
+      })
+    : [];
 
-  const authorCountMap = new Map(authorCounts.map((row) => [String(row.authorId), row._count._all]));
-  const translatorCountMap = new Map(
-    translatorCounts
-      .filter((row) => row.translatorId)
-      .map((row) => [String(row.translatorId), row._count._all])
-  );
+  const typeCountMaps = {
+    ORIGINAL: new Map<string, number>(),
+    TRANSLATION: new Map<string, number>(),
+    REUPLOAD: new Map<string, number>(),
+  };
+
+  for (const row of authoredTypeCounts) {
+    const map = typeCountMaps[row.publishType as keyof typeof typeCountMaps];
+    if (!map) continue;
+    map.set(String(row.authorId), row._count._all);
+  }
 
   const enriched: UserSearchResult[] = users
     .map((user) => ({
@@ -142,12 +128,13 @@ export async function searchUsers(input: {
       avatarFocusY: user.avatarFocusY,
       avatarZoom: user.avatarZoom,
       createdAt: user.createdAt,
-      publishedWorksCount: Number(authorCountMap.get(user.id) || 0),
-      translatedWorksCount: Number(translatorCountMap.get(user.id) || 0),
+      originalWorksCount: Number(typeCountMaps.ORIGINAL.get(user.id) || 0),
+      translationWorksCount: Number(typeCountMaps.TRANSLATION.get(user.id) || 0),
+      reuploadWorksCount: Number(typeCountMaps.REUPLOAD.get(user.id) || 0),
     }))
     .filter((user) => {
-      if (scope === "authors") return user.publishedWorksCount > 0;
-      if (scope === "translators") return user.translatedWorksCount > 0;
+      if (scope === "authors") return user.originalWorksCount > 0;
+      if (scope === "translators") return user.translationWorksCount > 0;
       return true;
     })
     .sort((a, b) => {
@@ -155,17 +142,18 @@ export async function searchUsers(input: {
       if (relevanceDiff !== 0) return relevanceDiff;
 
       if (scope === "authors") {
-        const authoredDiff = b.publishedWorksCount - a.publishedWorksCount;
+        const authoredDiff = b.originalWorksCount - a.originalWorksCount;
         if (authoredDiff !== 0) return authoredDiff;
       }
 
       if (scope === "translators") {
-        const translatedDiff = b.translatedWorksCount - a.translatedWorksCount;
+        const translatedDiff = b.translationWorksCount - a.translationWorksCount;
         if (translatedDiff !== 0) return translatedDiff;
       }
 
       const combinedCountDiff =
-        b.publishedWorksCount + b.translatedWorksCount - (a.publishedWorksCount + a.translatedWorksCount);
+        b.originalWorksCount + b.translationWorksCount + b.reuploadWorksCount -
+        (a.originalWorksCount + a.translationWorksCount + a.reuploadWorksCount);
       if (combinedCountDiff !== 0) return combinedCountDiff;
 
       return b.createdAt.getTime() - a.createdAt.getTime();

@@ -9,6 +9,7 @@ export type CommentUser = {
   username: string | null;
   name: string | null;
   image: string | null;
+  role?: string | null;
 };
 
 export type CommentMedia = {

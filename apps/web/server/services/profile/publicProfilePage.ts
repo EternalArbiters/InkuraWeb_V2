@@ -262,22 +262,36 @@ export async function getProfilePageData(username: string) {
     (review) => review.work && canViewWork(review.work, viewerPayload.viewer)
   );
 
-  const viewerFollowingUser = viewerPayload.viewer?.id && viewerPayload.viewer.id !== publicData.id
-    ? !!(await prisma.followUser.findUnique({
-        where: {
-          followerId_followingId: {
-            followerId: viewerPayload.viewer.id,
-            followingId: publicData.id,
+  const viewerId = viewerPayload.viewer?.id;
+
+  const [viewerFollowingUser, viewerBlockedUser] = viewerId && viewerId !== publicData.id
+    ? await Promise.all([
+        prisma.followUser.findUnique({
+          where: {
+            followerId_followingId: {
+              followerId: viewerId,
+              followingId: publicData.id,
+            },
           },
-        },
-        select: { followerId: true },
-      }))
-    : false;
+          select: { followerId: true },
+        }).then((row) => !!row),
+        prisma.userBlock.findUnique({
+          where: {
+            blockerId_blockedId: {
+              blockerId: viewerId,
+              blockedId: publicData.id,
+            },
+          },
+          select: { blockerId: true },
+        }).then((row) => !!row),
+      ])
+    : [false, false];
 
   return {
     user: publicData,
     viewer: viewerPayload.viewer,
     viewerFollowingUser,
+    viewerBlockedUser,
     visibleWorks,
     visibleLists,
     visibleReviews,
