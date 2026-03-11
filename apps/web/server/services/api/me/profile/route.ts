@@ -12,7 +12,7 @@ import {
   normalizeGender,
 } from "@/server/services/profile/demographics";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
-import { normalizeProfileUrls, serializeProfileUrls } from "@/lib/profileUrls";
+import { normalizeProfileLinks, serializeProfileLinks } from "@/lib/profileUrls";
 
 export const runtime = "nodejs";
 
@@ -64,10 +64,14 @@ export const PATCH = apiRoute(async (req: Request) => {
     data.bio = normalizeBio(body.bio);
   }
 
-  if ("profileUrls" in body || "profileUrl" in body) {
-    const urls = "profileUrls" in body ? normalizeProfileUrls(body.profileUrls) : normalizeProfileUrls(body.profileUrl);
-    data.profileUrlsJson = serializeProfileUrls(urls);
-    data.profileUrl = urls[0] ?? null;
+  if ("profileLinks" in body || "profileUrls" in body || "profileUrl" in body) {
+    const links = "profileLinks" in body
+      ? normalizeProfileLinks(body.profileLinks)
+      : "profileUrls" in body
+        ? normalizeProfileLinks(body.profileUrls)
+        : normalizeProfileLinks(body.profileUrl);
+    data.profileUrlsJson = serializeProfileLinks(links);
+    data.profileUrl = links[0]?.url ?? null;
   }
 
   if ("image" in body) {

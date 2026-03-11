@@ -6,8 +6,9 @@ import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import FollowToggleButton from "@/app/components/user/FollowToggleButton";
 import PublicProfileActionsMenu from "@/app/components/user/PublicProfileActionsMenu";
 import PublicUserLink from "@/app/components/user/PublicUserLink";
+import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
 import HorizontalRail from "@/app/home/HorizontalRail";
-import { displayUrlLabel, parseProfileUrls } from "@/lib/profileUrls";
+import { parseProfileLinks } from "@/lib/profileUrls";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import { getProfilePageData } from "@/server/services/profile/publicProfilePage";
 
@@ -97,7 +98,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     const { user, viewer, viewerFollowingUser, viewerBlockedUser, visibleWorks, visibleLists, visibleReviews } = data;
     const displayName = (user.name && user.name.trim()) || (user.username && user.username.trim()) || "Unknown";
     const isSelf = viewer?.id === user.id;
-    const profileUrls = parseProfileUrls(user.profileUrlsJson, user.profileUrl);
+    const profileLinks = parseProfileLinks(user.profileUrlsJson, user.profileUrl);
     const callbackPath = `/u/${user.username}`;
 
     return (
@@ -131,19 +132,9 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight break-words">{displayName}</h1>
                   <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">@{user.username}</div>
                   {user.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{user.bio}</p> : null}
-                  {profileUrls.length ? (
-                    <div className="mt-3 flex flex-col gap-1.5">
-                      {profileUrls.map((url) => (
-                        <a
-                          key={url}
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200 break-all"
-                        >
-                          {displayUrlLabel(url)}
-                        </a>
-                      ))}
+                  {profileLinks.length ? (
+                    <div className="mt-3">
+                      <ProfileLinksSheet links={profileLinks} />
                     </div>
                   ) : null}
                   <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Joined {joinedLabel(user.createdAt)}</div>

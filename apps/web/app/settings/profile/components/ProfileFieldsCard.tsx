@@ -1,5 +1,7 @@
 "use client";
 
+import { type ProfileLinkEntry } from "@/lib/profileUrls";
+
 const GENDERS = [
   { value: "", label: "Prefer not to say" },
   { value: "MALE", label: "Male" },
@@ -30,8 +32,8 @@ type Props = {
   onUsernameChange: (value: string) => void;
   bio: string;
   onBioChange: (value: string) => void;
-  profileUrls: string[];
-  onProfileUrlsChange: (value: string[]) => void;
+  profileLinks: ProfileLinkEntry[];
+  onProfileLinksChange: (value: ProfileLinkEntry[]) => void;
   gender: string;
   onGenderChange: (value: string) => void;
   birthMonth: number | "";
@@ -47,8 +49,8 @@ export default function ProfileFieldsCard({
   onUsernameChange,
   bio,
   onBioChange,
-  profileUrls,
-  onProfileUrlsChange,
+  profileLinks,
+  onProfileLinksChange,
   gender,
   onGenderChange,
   birthMonth,
@@ -57,7 +59,7 @@ export default function ProfileFieldsCard({
   onBirthYearChange,
 }: Props) {
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
-  const canAddUrl = profileUrls.length < 5;
+  const canAddUrl = profileLinks.length < 5;
 
   return (
     <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 grid gap-5">
@@ -105,15 +107,15 @@ export default function ProfileFieldsCard({
       <div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold text-gray-900 dark:text-white">Personal URLs</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 5 URL. Klik Add URL untuk menambah link baru.</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-white">Profile links</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 5 link. Beri judul singkat supaya tampil rapi seperti link sheet.</div>
           </div>
           <button
             type="button"
             disabled={!canAddUrl}
             onClick={() => {
               if (!canAddUrl) return;
-              onProfileUrlsChange([...profileUrls, ""]);
+              onProfileLinksChange([...profileLinks, { title: "", url: "" }]);
             }}
             className="rounded-full border border-purple-400/60 px-3 py-1.5 text-xs font-semibold text-purple-300 hover:bg-purple-500/10 disabled:opacity-40"
           >
@@ -122,32 +124,51 @@ export default function ProfileFieldsCard({
         </div>
 
         <div className="mt-3 grid gap-3">
-          {profileUrls.map((value, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
-                value={value}
-                onChange={(e) => {
-                  const next = [...profileUrls];
-                  next[index] = e.target.value.slice(0, 500);
-                  onProfileUrlsChange(next);
-                }}
-                maxLength={500}
-                placeholder={`https://your-site-${index + 1}.com`}
-                inputMode="url"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-              />
-              {profileUrls.length > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => onProfileUrlsChange(profileUrls.filter((_, itemIndex) => itemIndex !== index))}
-                  className="shrink-0 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                >
-                  Remove
-                </button>
-              ) : null}
+          {profileLinks.map((value, index) => (
+            <div key={index} className="rounded-2xl border border-gray-200/70 p-3 dark:border-gray-800/80">
+              <div className="grid gap-3 md:grid-cols-[0.42fr_0.58fr_auto] md:items-end">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">Title</div>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+                    value={value.title}
+                    onChange={(e) => {
+                      const next = [...profileLinks];
+                      next[index] = { ...next[index], title: e.target.value.slice(0, 60) };
+                      onProfileLinksChange(next);
+                    }}
+                    maxLength={60}
+                    placeholder={`Link ${index + 1}`}
+                  />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">URL</div>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+                    value={value.url}
+                    onChange={(e) => {
+                      const next = [...profileLinks];
+                      next[index] = { ...next[index], url: e.target.value.slice(0, 500) };
+                      onProfileLinksChange(next);
+                    }}
+                    maxLength={500}
+                    placeholder={`https://your-site-${index + 1}.com`}
+                    inputMode="url"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                </div>
+                {profileLinks.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => onProfileLinksChange(profileLinks.filter((_, itemIndex) => itemIndex !== index))}
+                    className="shrink-0 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
             </div>
           ))}
         </div>

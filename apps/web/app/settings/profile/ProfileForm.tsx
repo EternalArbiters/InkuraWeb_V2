@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 
 import { sendUploadMetric } from "@/lib/clientMetrics";
 import { buildOptimizationMeta } from "@/lib/r2UploadClient";
+import { type ProfileLinkEntry } from "@/lib/profileUrls";
 import { prepareUploadFile } from "@/lib/uploadOptimization";
 import AvatarPickerCard from "./components/AvatarPickerCard";
 import ProfileAlerts from "./components/ProfileAlerts";
@@ -17,7 +18,7 @@ type Initial = {
   name: string;
   username: string;
   bio: string;
-  profileUrls: string[];
+  profileLinks: ProfileLinkEntry[];
   image?: string | null;
   avatarFocusX?: number | null;
   avatarFocusY?: number | null;
@@ -107,7 +108,7 @@ async function saveProfile(payload: {
   name: string;
   username: string;
   bio: string | null;
-  profileUrls: string[];
+  profileLinks: ProfileLinkEntry[];
   image: string | null;
   avatarFocusX: number;
   avatarFocusY: number;
@@ -135,7 +136,9 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
   const [username, setUsername] = React.useState(initial.username || "");
   const [image, setImage] = React.useState(initial.image || "");
   const [bio, setBio] = React.useState(initial.bio || "");
-  const [profileUrls, setProfileUrls] = React.useState<string[]>(initial.profileUrls.length ? initial.profileUrls : [""]);
+  const [profileLinks, setProfileLinks] = React.useState<ProfileLinkEntry[]>(
+    initial.profileLinks.length ? initial.profileLinks : [{ title: "", url: "" }]
+  );
 
   const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 50);
   const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 50);
@@ -247,7 +250,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         name,
         username,
         bio: bio.trim() || null,
-        profileUrls,
+        profileLinks,
         image: image || null,
         avatarFocusX,
         avatarFocusY,
@@ -304,8 +307,8 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         onUsernameChange={(v) => setUsername(v.replace(/\s+/g, "").toLowerCase())}
         bio={bio}
         onBioChange={(v) => setBio(v.slice(0, 200))}
-        profileUrls={profileUrls}
-        onProfileUrlsChange={setProfileUrls}
+        profileLinks={profileLinks}
+        onProfileLinksChange={setProfileLinks}
         gender={gender}
         onGenderChange={setGender}
         birthMonth={birthMonth}

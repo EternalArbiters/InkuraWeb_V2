@@ -6,8 +6,9 @@ import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
 import ProfileReviewCard from "@/app/components/user/ProfileReviewCard";
+import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
 import ProfileShareButton from "@/app/components/user/ProfileShareButton";
-import { displayUrlLabel, parseProfileUrls } from "@/lib/profileUrls";
+import { parseProfileLinks } from "@/lib/profileUrls";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
 import { getViewerComments, getViewerReviews } from "@/server/services/profile/viewerActivity";
@@ -189,7 +190,7 @@ export default async function ProfilePage() {
   const avatarFocusX = Number.isFinite(Number(profile.avatarFocusX)) ? Number(profile.avatarFocusX) : 50;
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;
-  const profileUrls = parseProfileUrls(profile.profileUrlsJson, profile.profileUrl);
+  const profileLinks = parseProfileLinks(profile.profileUrlsJson, profile.profileUrl);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -218,22 +219,12 @@ export default async function ProfilePage() {
                 </div>
                 <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">{profile.email}</div>
                 {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{profile.bio}</p> : null}
-                {profileUrls.length ? (
-                  <div className="mt-3 flex flex-col gap-1.5">
-                    {profileUrls.map((url) => (
-                      <a
-                        key={url}
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200 break-all"
-                      >
-                        {displayUrlLabel(url)}
-                      </a>
-                    ))}
+                {profileLinks.length ? (
+                  <div className="mt-3">
+                    <ProfileLinksSheet links={profileLinks} />
                   </div>
                 ) : null}
-                {profileUrls.length < 5 ? (
+                {profileLinks.length < 5 ? (
                   <Link
                     href="/settings/profile"
                     className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"

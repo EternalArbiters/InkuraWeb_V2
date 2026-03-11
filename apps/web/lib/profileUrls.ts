@@ -1,8 +1,22 @@
+export type ProfileLinkEntry = {
+  title: string;
+  url: string;
+};
+
+const MAX_PROFILE_LINKS = 5;
+const MAX_PROFILE_LINK_TITLE = 60;
+
 export function displayUrlLabel(value: string) {
   return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
 }
 
-export function normalizeProfileUrlEntry(raw: unknown) {
+function normalizeProfileLinkTitle(raw: unknown, url: string) {
+  const value = String(raw ?? "").trim().replace(/\s+/g, " ");
+  if (value) return value.slice(0, MAX_PROFILE_LINK_TITLE);
+  return displayUrlLabel(url).slice(0, MAX_PROFILE_LINK_TITLE);
+}
+
+function normalizeProfileUrlEntry(raw: unknown) {
   const rawValue = String(raw ?? "").trim();
   if (!rawValue) return null;
 
@@ -19,23 +33,53 @@ export function normalizeProfileUrlEntry(raw: unknown) {
   }
 }
 
-export function normalizeProfileUrls(raw: unknown): string[] {
+export function normalizeProfileLink(raw: unknown): ProfileLinkEntry | null {
+  if (typeof raw === "string") {
+    const url = normalizeProfileUrlEntry(raw);
+    if (!url) return null;
+    return {
+      title: normalizeProfileLinkTitle("", url),
+      url,
+    };
+  }
+
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const candidate = raw as {
+    title?: unknown;
+    label?: unknown;
+    name?: unknown;
+    url?: unknown;
+    href?: unknown;
+  };
+  const url = normalizeProfileUrlEntry(candidate.url ?? candidate.href);
+  if (!url) return null;
+
+  return {
+    title: normalizeProfileLinkTitle(candidate.title ?? candidate.label ?? candidate.name, url),
+    url,
+  };
+}
+
+export function normalizeProfileLinks(raw: unknown): ProfileLinkEntry[] {
   const input = Array.isArray(raw) ? raw : raw == null ? [] : [raw];
-  const result: string[] = [];
+  const result: ProfileLinkEntry[] = [];
   const seen = new Set<string>();
 
   for (const item of input) {
-    const normalized = normalizeProfileUrlEntry(item);
-    if (!normalized || seen.has(normalized)) continue;
-    seen.add(normalized);
+    const normalized = normalizeProfileLink(item);
+    if (!normalized || seen.has(normalized.url)) continue;
+    seen.add(normalized.url);
     result.push(normalized);
-    if (result.length >= 5) break;
+    if (result.length >= MAX_PROFILE_LINKS) break;
   }
 
   return result;
 }
 
-export function parseProfileUrls(rawJson: unknown, fallbackSingle?: unknown): string[] {
+export function parseProfileLinks(rawJson: unknown, fallbackSingle?: unknown): ProfileLinkEntry[] {
   let parsed: unknown[] = [];
 
   if (Array.isArray(rawJson)) {
@@ -51,13 +95,25 @@ export function parseProfileUrls(rawJson: unknown, fallbackSingle?: unknown): st
     }
   }
 
-  const urls = normalizeProfileUrls(parsed);
-  if (urls.length) return urls;
-  return normalizeProfileUrls(fallbackSingle);
+  const links = normalizeProfileLinks(parsed);
+  if (links.length) return links;
+  return normalizeProfileLinks(fallbackSingle);
+}
+
+export function serializeProfileLinks(raw: unknown, fallbackSingle?: unknown) {
+  const links = normalizeProfileLinks(raw);
+  if (links.length) return JSON.stringify(links);
+  return JSON.stringify(normalizeProfileLinks(fallbackSingle));
+}
+
+export function normalizeProfileUrls(raw: unknown): string[] {
+  return normalizeProfileLinks(raw).map((entry) => entry.url);
+}
+
+export function parseProfileUrls(rawJson: unknown, fallbackSingle?: unknown): string[] {
+  return parseProfileLinks(rawJson, fallbackSingle).map((entry) => entry.url);
 }
 
 export function serializeProfileUrls(raw: unknown, fallbackSingle?: unknown) {
-  const urls = normalizeProfileUrls(raw);
-  if (urls.length) return JSON.stringify(urls);
-  return JSON.stringify(normalizeProfileUrls(fallbackSingle));
+  return JSON.stringify(normalizeProfileUrls(raw).length ? normalizeProfileLinks(raw) : normalizeProfileLinks(fallbackSingle));
 }
