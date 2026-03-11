@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { AnalyticsEventTracker } from "@/app/components/AnalyticsEventTracker";
-import AnalyticsTrackedLink from "@/app/components/AnalyticsTrackedLink";
+import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
+import AnalyticsTrackedLink from "@/app/components/analytics/AnalyticsTrackedLink";
 import { parseUserSearchParams, searchUsers, type UserSearchScope } from "@/server/services/search/userSearch";
 
 export const dynamic = "force-dynamic";
