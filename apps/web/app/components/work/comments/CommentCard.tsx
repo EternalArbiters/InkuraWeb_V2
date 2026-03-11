@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Check,
   CornerDownRight,
@@ -126,6 +126,8 @@ export default function CommentCard(props: CommentCardProps) {
   const isFocused = focusedId === c.id;
 
   const isReplyingHere = replyTo?.id === c.id;
+  const replyCount = Array.isArray(c.replies) ? c.replies.length : 0;
+  const [showReplies, setShowReplies] = useState(isFocused);
 
   const chapterContextLabel = useMemo(() => {
     if (!showChapterContext || !c.chapter) return null;
@@ -209,11 +211,7 @@ export default function CommentCard(props: CommentCardProps) {
         </div>
       ) : null}
 
-      {c.editedAtLabel ? (
-        <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Edited: {c.editedAtLabel}</div>
-      ) : null}
-
-      {hidden ? (
+            {hidden ? (
         <p className="mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400">
           (Komentar ini disembunyikan oleh moderator)
         </p>
@@ -224,7 +222,7 @@ export default function CommentCard(props: CommentCardProps) {
           className="mt-2 w-full text-left rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900"
         >
           <span className="inline-flex items-center gap-2">
-            <EyeOff className="w-4 h-4" />
+            <EyeOff className="h-3.5 w-3.5" />
             Hidden text — tap to reveal
           </span>
         </button>
@@ -239,21 +237,21 @@ export default function CommentCard(props: CommentCardProps) {
             <button
               type="button"
               onClick={onCancelEdit}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
               aria-label="Cancel edit"
               title="Cancel"
             >
-              <X className="w-4 h-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               disabled={isPending || !editingText.trim()}
               onClick={() => onSaveEdit(c.id)}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
               aria-label="Save edit"
               title="Save"
             >
-              <Check className="w-4 h-4" />
+              <Check className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -276,7 +274,7 @@ export default function CommentCard(props: CommentCardProps) {
         <button
           type="button"
           onClick={() => onToggleLike(c.id)}
-          className={`rounded-full px-3 py-1 text-xs font-semibold border ${
+          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
             viewerLiked
               ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
               : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
@@ -285,7 +283,7 @@ export default function CommentCard(props: CommentCardProps) {
           aria-label="Like"
         >
           <span className="inline-flex items-center gap-1.5">
-            <ThumbsUp className="w-3.5 h-3.5" />
+            <ThumbsUp className="h-3.5 w-3.5" />
             <span>{likeCount}</span>
           </span>
         </button>
@@ -293,7 +291,7 @@ export default function CommentCard(props: CommentCardProps) {
         <button
           type="button"
           onClick={() => onToggleDislike(c.id)}
-          className={`rounded-full px-3 py-1 text-xs font-semibold border ${
+          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
             viewerDisliked
               ? "border-gray-500/40 bg-gray-100 text-gray-900 dark:border-gray-400/30 dark:bg-gray-900/50 dark:text-gray-100"
               : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
@@ -302,7 +300,7 @@ export default function CommentCard(props: CommentCardProps) {
           aria-label="Dislike"
         >
           <span className="inline-flex items-center gap-1.5">
-            <ThumbsDown className="w-3.5 h-3.5" />
+            <ThumbsDown className="h-3.5 w-3.5" />
             <span>{dislikeCount}</span>
           </span>
         </button>
@@ -311,7 +309,7 @@ export default function CommentCard(props: CommentCardProps) {
           <button
             type="button"
             onClick={() => onStartReply(c)}
-            className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+            className={`inline-flex items-center justify-center h-8 w-8 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
               isReplyingHere
                 ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
                 : "border-gray-300 dark:border-gray-700"
@@ -319,7 +317,7 @@ export default function CommentCard(props: CommentCardProps) {
             title="Reply"
             aria-label="Reply"
           >
-            <CornerDownRight className="w-4 h-4" />
+            <CornerDownRight className="h-3.5 w-3.5" />
           </button>
         ) : null}
 
@@ -328,20 +326,20 @@ export default function CommentCard(props: CommentCardProps) {
             <button
               type="button"
               onClick={() => onStartEdit(c.id, c.body)}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
               title="Edit"
               aria-label="Edit"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={() => onDelete(c.id)}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
               title="Delete"
               aria-label="Delete"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
           </>
         ) : null}
@@ -349,7 +347,7 @@ export default function CommentCard(props: CommentCardProps) {
         <button
           type="button"
           onClick={() => onToggleReport(c.id)}
-          className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+          className={`inline-flex items-center justify-center h-8 w-8 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
             reportFor === c.id
               ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
               : "border-gray-300 dark:border-gray-700"
@@ -357,14 +355,14 @@ export default function CommentCard(props: CommentCardProps) {
           title="Report"
           aria-label="Report"
         >
-          <Flag className="w-4 h-4" />
+          <Flag className="h-3.5 w-3.5" />
         </button>
 
         {canModerate && depth === 0 && !hidden ? (
           <button
             type="button"
             onClick={() => onTogglePin(c.id, !isPinned)}
-            className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+            className={`inline-flex items-center justify-center h-8 w-8 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
               isPinned
                 ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-950/25 dark:text-purple-200"
                 : "border-gray-300 dark:border-gray-700"
@@ -372,7 +370,7 @@ export default function CommentCard(props: CommentCardProps) {
             title={isPinned ? "Unpin" : "Pin"}
             aria-label={isPinned ? "Unpin" : "Pin"}
           >
-            <Pin className="w-4 h-4" />
+            <Pin className="h-3.5 w-3.5" />
           </button>
         ) : null}
 
@@ -380,7 +378,7 @@ export default function CommentCard(props: CommentCardProps) {
           <button
             type="button"
             onClick={() => onToggleHide(c.id, !hidden)}
-            className={`inline-flex items-center justify-center w-9 h-9 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
+            className={`inline-flex items-center justify-center h-8 w-8 rounded-full border hover:bg-gray-50 dark:hover:bg-gray-900 ${
               hidden
                 ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-950/25 dark:text-amber-200"
                 : "border-gray-300 dark:border-gray-700"
@@ -388,10 +386,20 @@ export default function CommentCard(props: CommentCardProps) {
             title={hidden ? "Unhide" : "Hide"}
             aria-label={hidden ? "Unhide" : "Hide"}
           >
-            {hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            {hidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
           </button>
         ) : null}
       </div>
+
+      {!hidden && replyCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowReplies((prev) => !prev)}
+          className="mt-2 inline-flex text-[11px] font-semibold text-purple-600 transition hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
+        >
+          {showReplies ? `Hide reply (${replyCount})` : `See reply (${replyCount})`}
+        </button>
+      ) : null}
 
       {isReplyingHere ? (
         <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
@@ -413,21 +421,21 @@ export default function CommentCard(props: CommentCardProps) {
               <button
                 type="button"
                 onClick={onCancelReply}
-                className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                className="inline-flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
                 aria-label="Cancel reply"
                 title="Cancel"
               >
-                <X className="w-4 h-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
                 disabled={isPending || !replyText.trim()}
                 onClick={onSubmitReply}
-                className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
+                className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
                 aria-label="Send reply"
                 title="Send"
               >
-                <SendHorizonal className={`w-4 h-4 ${isPending ? "animate-pulse" : ""}`} />
+                <SendHorizonal className={`h-3.5 w-3.5 ${isPending ? "animate-pulse" : ""}`} />
               </button>
             </div>
           </div>
@@ -463,8 +471,8 @@ export default function CommentCard(props: CommentCardProps) {
         </div>
       ) : null}
 
-      {Array.isArray(c.replies) && c.replies.length ? (
-        <div className="mt-3 border-l border-gray-200 dark:border-gray-800 pl-3 space-y-3">
+      {showReplies && Array.isArray(c.replies) && c.replies.length ? (
+        <div className="mt-3 space-y-3 border-l border-gray-200 pl-3 dark:border-gray-800">
           {c.replies.map((r) => (
             <CommentCard
               key={r.id}

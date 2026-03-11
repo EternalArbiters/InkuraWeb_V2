@@ -126,6 +126,7 @@ export default function FloatingActions() {
   const [isPending, startTransition] = useTransition();
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(0);
+  const [readerChromeVisible, setReaderChromeVisible] = useState(false);
 
   useEffect(() => {
     if (!chapterId) return;
@@ -165,6 +166,28 @@ export default function FloatingActions() {
     return unsubscribe;
   }, [chapterId]);
 
+  useEffect(() => {
+    if (!isReader || typeof window === "undefined") {
+      setReaderChromeVisible(false);
+      return;
+    }
+
+    const syncFromDom = () => {
+      setReaderChromeVisible(document.documentElement.dataset.readerChromeVisible === "1");
+    };
+
+    const onVisibilityChange = (event: Event) => {
+      const custom = event as CustomEvent<{ visible?: boolean }>;
+      setReaderChromeVisible(!!custom.detail?.visible);
+    };
+
+    syncFromDom();
+    window.addEventListener("inkura:reader-chrome-visibility", onVisibilityChange as EventListener);
+    return () => {
+      window.removeEventListener("inkura:reader-chrome-visibility", onVisibilityChange as EventListener);
+    };
+  }, [isReader, pathname]);
+
   const toggleChapterLike = () => {
     if (!chapterId) return;
     startTransition(async () => {
@@ -183,14 +206,15 @@ export default function FloatingActions() {
     });
   };
 
+  const shouldHideScrollTop = hideScrollTop || (isReader && readerChromeVisible);
   const opacityClass = isReader ? "opacity-50 hover:opacity-85" : "opacity-95 hover:opacity-100";
   const containerClass = isReader
-    ? "fixed bottom-24 right-6 z-[80] flex flex-col items-end gap-3"
+    ? "fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3 md:bottom-24"
     : "fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3";
 
   return (
     <div className={containerClass}>
-      {!hideScrollTop ? (
+      {!shouldHideScrollTop ? (
       <CircleButton ariaLabel="Scroll to top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={opacityClass}>
         <ArrowUpIcon />
       </CircleButton>

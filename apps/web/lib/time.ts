@@ -45,3 +45,32 @@ export function formatUpdatedAt(
   if (diffDays < 1) return `Updated ${plural(diffHours, "hour")} ago`;
   return `Updated ${plural(diffDays, "day")} ago`;
 }
+
+
+/**
+ * Returns a relative label like:
+ * - "just now"
+ * - "12 minutes ago"
+ * - "3 hours ago"
+ * - "9 days ago"
+ * - "2 months ago"
+ */
+export function formatTimeAgo(value: DateLike, opts?: { now?: Date }) {
+  const d = toDate(value);
+  if (!d) return "";
+
+  const now = opts?.now ?? new Date();
+  const diffMs = Math.max(0, now.getTime() - d.getTime());
+  const diffMinutes = Math.floor(diffMs / (60 * 1000));
+  const diffHours = Math.floor(diffMs / (60 * 60 * 1000));
+  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffMinutes < 1) return "just now";
+  if (diffHours < 1) return `${plural(diffMinutes, "minute")} ago`;
+  if (diffDays < 1) return `${plural(diffHours, "hour")} ago`;
+  if (diffDays < 30) return `${plural(diffDays, "day")} ago`;
+  if (diffDays < 365) return `${plural(Math.max(1, diffMonths), "month")} ago`;
+  return `${plural(Math.max(1, diffYears), "year")} ago`;
+}

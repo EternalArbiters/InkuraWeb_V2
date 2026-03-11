@@ -48,8 +48,8 @@ export default function BookmarkIconButton({
     });
   };
 
-  const sizeClass = size === "sm" ? "h-8 w-8" : "h-9 w-9";
-  const iconSize = size === "sm" ? 16 : 18;
+  const sizeClass = size === "sm" ? "h-7 w-7" : "h-9 w-9";
+  const iconSize = size === "sm" ? 13 : 18;
 
   const toneClass =
     variant === "overlay"

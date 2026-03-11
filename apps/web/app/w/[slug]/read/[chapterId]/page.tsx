@@ -10,6 +10,7 @@ import ReaderChrome from "@/app/components/reader/ReaderChrome";
 import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
+import ProtectedNovelContent from "@/app/components/reader/ProtectedNovelContent";
 import { getNovelReaderHtml } from "@/lib/novelContent";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import { logPageRenderMetric } from "@/server/observability/metrics";
@@ -176,16 +177,14 @@ export default async function ReadChapterPage({
                       </div>
                     )
                   ) : (
-                    <article className="prose prose-neutral dark:prose-invert max-w-none px-4 lg:px-0 prose-p:leading-8 prose-li:leading-8 prose-headings:tracking-tight prose-img:rounded-2xl prose-img:mx-auto prose-figure:mx-0 prose-pre:whitespace-pre-wrap">
-                      {novelHtml ? (
-                        <div dangerouslySetInnerHTML={{ __html: novelHtml }} />
-                      ) : (
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-                          <div className="text-lg font-bold">No text yet</div>
-                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Chapter ini belum punya teks.</p>
-                        </div>
-                      )}
-                    </article>
+                    novelHtml ? (
+                      <ProtectedNovelContent html={novelHtml} />
+                    ) : (
+                      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 mx-4 lg:mx-0">
+                        <div className="text-lg font-bold">No text yet</div>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Chapter ini belum punya teks.</p>
+                      </div>
+                    )
                   )}
                 </ReaderChrome>
               </ContentWarningsGate>

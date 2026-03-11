@@ -1,3 +1,4 @@
+import { formatTimeAgo } from "@/lib/time";
 import type { CommentItem, DecoratedComment, SortMode } from "./types";
 
 export function normalizeSort(v: unknown): SortMode {
@@ -11,8 +12,8 @@ export function normalizeSort(v: unknown): SortMode {
 
 export function decorateTree(nodes: CommentItem[]): DecoratedComment[] {
   return (nodes || []).map((c) => {
-    const createdAtLabel = new Date(c.createdAt).toLocaleString();
-    const editedAtLabel = c.editedAt ? new Date(c.editedAt).toLocaleString() : null;
+    const createdAtLabel = formatTimeAgo(c.createdAt);
+    const editedAtLabel = c.editedAt ? formatTimeAgo(c.editedAt) : null;
     const displayName = c.user?.name || c.user?.username || "Unknown";
     return {
       ...c,

@@ -80,6 +80,17 @@ export default function ReaderChrome({
     setVisible((v) => !v);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+    root.dataset.readerChromeVisible = visible ? "1" : "0";
+    window.dispatchEvent(new CustomEvent("inkura:reader-chrome-visibility", { detail: { visible } }));
+    return () => {
+      root.dataset.readerChromeVisible = "0";
+      window.dispatchEvent(new CustomEvent("inkura:reader-chrome-visibility", { detail: { visible: false } }));
+    };
+  }, [visible]);
+
   return (
     <div className="relative" onClick={toggle}>
       {/* Mobile-only chrome (tap-to-toggle) */}
