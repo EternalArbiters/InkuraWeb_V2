@@ -142,7 +142,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                 <div className="md:self-start">
                   <PublicProfileActionsMenu
                     userId={user.id}
-                    username={user.username}
+                    username={user.username ?? username}
                     displayName={displayName}
                     initialBlocked={viewerBlockedUser}
                     requiresAuth={!viewer}
