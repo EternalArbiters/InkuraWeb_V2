@@ -14,6 +14,8 @@ type HtmlBlock = {
 };
 
 const READER_MODE_KEY = "inkura:novel-reader-mode";
+const MIN_SWIPE_PX = 140;
+const SWIPE_WIDTH_RATIO = 0.22;
 
 function preventDefault(event: Event) {
   event.preventDefault();
@@ -153,11 +155,6 @@ function buildPages(html: string, width: number, height: number) {
   return pages;
 }
 
-function relativeTouchDelta(start: number | null, end: number | null) {
-  if (start == null || end == null) return 0;
-  return end - start;
-}
-
 export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
   const [mode, setMode] = React.useState<ReaderMode>("scroll");
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -165,6 +162,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   const [viewport, setViewport] = React.useState({ width: 0, height: 0 });
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const touchStartX = React.useRef<number | null>(null);
+  const touchStartY = React.useRef<number | null>(null);
 
   const pages = React.useMemo(() => buildPages(html, viewport.width, viewport.height), [html, viewport.height, viewport.width]);
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, pages.length - 1));
@@ -249,7 +247,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
   React.useEffect(() => {
     if (!pageDirection) return;
-    const timer = window.setTimeout(() => setPageDirection(null), 260);
+    const timer = window.setTimeout(() => setPageDirection(null), 360);
     return () => window.clearTimeout(timer);
   }, [pageDirection]);
 
@@ -274,18 +272,31 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
   const onTouchStart = React.useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = event.changedTouches[0]?.clientX ?? null;
+    touchStartY.current = event.changedTouches[0]?.clientY ?? null;
   }, []);
 
   const onTouchEnd = React.useCallback((event: React.TouchEvent<HTMLDivElement>) => {
-    const deltaX = relativeTouchDelta(touchStartX.current, event.changedTouches[0]?.clientX ?? null);
+    const endX = event.changedTouches[0]?.clientX ?? null;
+    const endY = event.changedTouches[0]?.clientY ?? null;
+    const startX = touchStartX.current;
+    const startY = touchStartY.current;
     touchStartX.current = null;
-    if (Math.abs(deltaX) < 48) return;
+    touchStartY.current = null;
+
+    if (startX == null || startY == null || endX == null || endY == null) return;
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    const requiredSwipe = Math.max(MIN_SWIPE_PX, Math.floor(viewport.width * SWIPE_WIDTH_RATIO));
+
+    if (Math.abs(deltaX) < requiredSwipe) return;
+    if (Math.abs(deltaX) < Math.abs(deltaY) * 1.6) return;
+
     if (deltaX < 0) {
       goNext();
       return;
     }
     goPrev();
-  }, [goNext, goPrev]);
+  }, [goNext, goPrev, viewport.width]);
 
   const currentPage = pages[clampedPageIndex] || html;
 
@@ -302,15 +313,34 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
     >
       <style jsx>{`
         @keyframes novelPageNext {
-          0% { opacity: 0; transform: rotateY(-10deg) translateX(24px); transform-origin: left center; }
-          100% { opacity: 1; transform: rotateY(0deg) translateX(0); transform-origin: left center; }
+          0% { opacity: 0.2; transform: perspective(1600px) rotateY(-18deg) translateX(32px) scale(0.985); filter: brightness(0.9); }
+          60% { opacity: 1; transform: perspective(1600px) rotateY(4deg) translateX(-6px) scale(1); }
+          100% { opacity: 1; transform: perspective(1600px) rotateY(0deg) translateX(0) scale(1); filter: brightness(1); }
         }
         @keyframes novelPagePrev {
-          0% { opacity: 0; transform: rotateY(10deg) translateX(-24px); transform-origin: right center; }
-          100% { opacity: 1; transform: rotateY(0deg) translateX(0); transform-origin: right center; }
+          0% { opacity: 0.2; transform: perspective(1600px) rotateY(18deg) translateX(-32px) scale(0.985); filter: brightness(0.9); }
+          60% { opacity: 1; transform: perspective(1600px) rotateY(-4deg) translateX(6px) scale(1); }
+          100% { opacity: 1; transform: perspective(1600px) rotateY(0deg) translateX(0) scale(1); filter: brightness(1); }
         }
-        .novel-page-next { animation: novelPageNext 260ms ease; }
-        .novel-page-prev { animation: novelPagePrev 260ms ease; }
+        .novel-page-next { animation: novelPageNext 360ms cubic-bezier(.22,.8,.2,1); }
+        .novel-page-prev { animation: novelPagePrev 360ms cubic-bezier(.22,.8,.2,1); }
+        .novel-reader-surface {
+          font-size: 1rem;
+          line-height: 2rem;
+        }
+        .novel-reader-surface p, .novel-reader-surface div { margin: 0 0 1rem; }
+        .novel-reader-surface h1, .novel-reader-surface h2, .novel-reader-surface h3, .novel-reader-surface h4 { margin: 1.4rem 0 .8rem; font-weight: 700; line-height: 1.25; }
+        .novel-reader-surface h1 { font-size: 1.75rem; }
+        .novel-reader-surface h2 { font-size: 1.45rem; }
+        .novel-reader-surface h3 { font-size: 1.2rem; }
+        .novel-reader-surface ul, .novel-reader-surface ol { margin: 0 0 1rem 1.4rem; }
+        .novel-reader-surface li { margin: .25rem 0; }
+        .novel-reader-surface blockquote { margin: 1.2rem 0; border-left: 3px solid rgba(168,85,247,.75); padding-left: 1rem; opacity: .95; }
+        .novel-reader-surface img { display: block; max-width: min(100%, 760px); height: auto; margin: 1.2rem auto; border-radius: 1rem; }
+        .novel-reader-surface figure { margin: 1.2rem 0; }
+        .novel-reader-surface table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .novel-reader-surface td, .novel-reader-surface th { border: 1px solid rgba(148,163,184,.25); padding: .55rem .7rem; }
+        .novel-reader-surface pre, .novel-reader-surface code { white-space: pre-wrap; }
       `}</style>
 
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -340,7 +370,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
       {mode === "scroll" ? (
         <article
-          className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-8 prose-li:leading-8 prose-headings:tracking-tight prose-img:rounded-2xl prose-img:mx-auto prose-figure:mx-0 prose-pre:whitespace-pre-wrap select-none [&_*]:select-none"
+          className="novel-reader-surface max-w-none select-none text-gray-900 dark:text-gray-100 [&_*]:select-none"
           style={{
             WebkitTouchCallout: "none",
             WebkitUserSelect: "none",
@@ -353,7 +383,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       ) : (
         <div className="space-y-4">
           <div
-            className="relative overflow-hidden rounded-[28px] border border-gray-200 bg-white/85 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.65)] backdrop-blur dark:border-gray-800 dark:bg-gray-900/70"
+            className="relative overflow-hidden border border-gray-200 bg-white/85 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.65)] backdrop-blur dark:border-gray-800 dark:bg-gray-900/70"
             style={{
               minHeight: viewport.height ? `${viewport.height}px` : "70svh",
               WebkitTouchCallout: "none",
@@ -365,7 +395,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             onTouchEnd={onTouchEnd}
           >
             <article
-              className={`prose prose-neutral dark:prose-invert max-w-none h-full overflow-hidden px-5 py-6 lg:px-8 lg:py-8 prose-p:leading-8 prose-li:leading-8 prose-headings:tracking-tight prose-img:rounded-2xl prose-img:mx-auto prose-figure:mx-0 prose-pre:whitespace-pre-wrap select-none [&_*]:select-none ${pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""}`}
+              className={`novel-reader-surface max-w-none h-full overflow-hidden px-5 py-6 text-gray-900 select-none dark:text-gray-100 lg:px-8 lg:py-8 [&_*]:select-none ${pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""}`}
             >
               <div dangerouslySetInnerHTML={{ __html: currentPage }} />
             </article>
@@ -380,7 +410,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             >
               Previous page
             </button>
-            <div className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">Swipe left/right to turn pages</div>
+            <div className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">Swipe panjang kiri/kanan untuk membalik halaman</div>
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-900"

@@ -31,10 +31,20 @@ function ToolbarButton({ title, onPress, children, disabled }: ToolbarButtonProp
         event.preventDefault();
         if (!disabled) onPress();
       }}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white/80 text-gray-900 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-100"
+      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white/80 text-gray-900 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-100"
     >
       {children}
     </button>
+  );
+}
+
+function ToolbarRow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/92 px-3 py-2 shadow-[0_-16px_40px_-24px_rgba(15,23,42,0.7)] backdrop-blur dark:border-gray-800 dark:bg-gray-950/92 md:static md:border-none md:bg-transparent md:px-0 md:py-0 md:shadow-none">
+      <div className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -168,7 +178,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
   }, [uploadAndInsertImages]);
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3 pb-20 md:pb-0">
       <style>{`
         .novel-editor-surface p, .novel-editor-surface div { margin: 0 0 1rem; }
         .novel-editor-surface h1, .novel-editor-surface h2, .novel-editor-surface h3, .novel-editor-surface h4 { margin: 1.4rem 0 .8rem; font-weight: 700; line-height: 1.25; }
@@ -184,7 +194,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
         .novel-editor-surface td, .novel-editor-surface th { border: 1px solid rgba(148,163,184,.25); padding: .55rem .7rem; }
         .novel-editor-surface pre, .novel-editor-surface code { white-space: pre-wrap; }
       `}</style>
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-gray-200 bg-white/70 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+      <ToolbarRow>
         <ToolbarButton title="Bold" onPress={() => runCommand("bold")}>
           <Bold className="h-4 w-4" />
         </ToolbarButton>
@@ -237,9 +247,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
         <ToolbarButton title="Clear formatting" onPress={() => runCommand("removeFormat")}>
           <Eraser className="h-4 w-4" />
         </ToolbarButton>
-      </div>
+      </ToolbarRow>
 
-      <div className="rounded-3xl border border-purple-400/80 bg-white/70 shadow-[0_0_0_1px_rgba(168,85,247,0.15)] dark:bg-gray-900/60">
+      <div className="border border-purple-400/80 bg-white/70 shadow-[0_0_0_1px_rgba(168,85,247,0.15)] dark:bg-gray-900/60">
         <input
           ref={inputRef}
           type="file"
