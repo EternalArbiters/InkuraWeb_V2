@@ -103,9 +103,21 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
-          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 md:p-8">
-            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-              <div className="flex items-center gap-4 min-w-0">
+          <div className="relative rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 md:p-8">
+            {!isSelf ? (
+              <div className="absolute right-4 top-4 z-10 md:right-6 md:top-6">
+                <PublicProfileActionsMenu
+                  userId={user.id}
+                  username={user.username ?? username}
+                  displayName={displayName}
+                  initialBlocked={viewerBlockedUser}
+                  requiresAuth={!viewer}
+                />
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-6">
+              <div className="flex min-w-0 items-start gap-4 pr-14 sm:pr-16">
                 {user.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={user.image} alt={displayName} className="h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-gray-800" />
@@ -137,18 +149,6 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                   <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Joined {joinedLabel(user.createdAt)}</div>
                 </div>
               </div>
-
-              {!isSelf ? (
-                <div className="md:self-start">
-                  <PublicProfileActionsMenu
-                    userId={user.id}
-                    username={user.username ?? username}
-                    displayName={displayName}
-                    initialBlocked={viewerBlockedUser}
-                    requiresAuth={!viewer}
-                  />
-                </div>
-              ) : null}
             </div>
 
             {!isSelf ? (

@@ -68,7 +68,7 @@ export default function PublicProfileActionsMenu({
         type="button"
         aria-label="Profile actions"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 bg-white/70 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-100 dark:hover:bg-gray-800"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white/70 text-gray-700 shadow-sm backdrop-blur transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900/70 dark:text-gray-100 dark:hover:bg-gray-800 sm:h-11 sm:w-11"
       >
         <MoreVertical className="h-5 w-5" />
       </button>
