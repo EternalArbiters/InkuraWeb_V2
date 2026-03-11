@@ -4,6 +4,7 @@ import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
 import ProfileSortSelect from "@/app/components/user/ProfileSortSelect";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerComments } from "@/server/services/profile/viewerActivity";
+import LoadMoreList from "@/app/components/LoadMoreList";
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +40,11 @@ export default async function ProfileCommentsPage({
         </div>
 
         {items.length ? (
-          <div className="mt-6 grid gap-3">
+          <LoadMoreList className="mt-6 grid gap-3">
             {items.map((comment) => (
               <ProfileCommentCard key={comment.id} comment={comment} />
             ))}
-          </div>
+          </LoadMoreList>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
             No comments yet.

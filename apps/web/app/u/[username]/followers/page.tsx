@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ConnectionUserCard from "@/app/components/user/ConnectionUserCard";
 import { getPublicConnectionsPageData } from "@/server/services/profile/follows";
+import LoadMoreList from "@/app/components/LoadMoreList";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,11 @@ export default async function PublicFollowersPage({ params }: { params: Promise<
         </div>
 
         {data.items.length ? (
-          <div className="mt-6 grid gap-3">
+          <LoadMoreList className="mt-6 grid gap-3">
             {data.items.map((item) => (
               <ConnectionUserCard key={`${item.user.id}-${item.createdAt}`} user={item.user} />
             ))}
-          </div>
+          </LoadMoreList>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
             No followers yet.

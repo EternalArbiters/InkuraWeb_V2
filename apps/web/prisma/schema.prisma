@@ -221,6 +221,7 @@ model Work {
   slug        String     @unique
   title       String
   subtitle    String?
+  subtitleJson String   @default("[]") @db.Text
   description String?
   type        WorkType
   comicType   ComicType  @default(UNKNOWN)

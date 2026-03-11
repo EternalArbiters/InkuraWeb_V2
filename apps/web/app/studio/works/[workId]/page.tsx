@@ -4,6 +4,7 @@ import { getChapterDisplayTitle } from "@/lib/chapterLabel";
 import { redirect } from "next/navigation";
 import { ApiError } from "@/server/http";
 import { getStudioWorkById } from "@/server/services/studio/workById";
+import { parseWorkSubtitles } from "@/lib/workSubtitles";
 import DeleteChapterButton from "./DeleteChapterButton";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export default async function StudioWorkPage({
 
   const publishType = String(work.publishType || "ORIGINAL").toUpperCase();
   const isComic = work.type === "COMIC";
+  const subtitles = parseWorkSubtitles(work.subtitleJson, work.subtitle);
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -41,7 +43,13 @@ export default async function StudioWorkPage({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <div className="text-3xl font-extrabold tracking-tight">{work.title}</div>
-            {work.subtitle ? <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{work.subtitle}</div> : null}
+            {subtitles.length ? (
+              <div className="mt-1 grid gap-1 text-sm text-gray-600 dark:text-gray-300">
+                {subtitles.map((subtitle, index) => (
+                  <div key={`${work.id}-subtitle-${index}`}>{subtitle}</div>
+                ))}
+              </div>
+            ) : null}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{work.type}</span>
               <span className="px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800">{publishType}</span>

@@ -20,6 +20,7 @@ import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
 import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import { logPageRenderMetric } from "@/server/observability/metrics";
+import { parseWorkSubtitles } from "@/lib/workSubtitles";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
     const canViewMature = !!viewer?.canViewMature;
     const canViewDeviantLove = !!viewer?.canViewDeviantLove;
     const gateReason = (data as any).gateReason as string | undefined;
+    const subtitles = Array.isArray((work as any).subtitles) ? (work as any).subtitles : parseWorkSubtitles((work as any).subtitleJson, work.subtitle);
 
     if (gated) {
       const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
@@ -72,7 +74,13 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                   {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
                 </div>
                 <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl">{work.title}</h1>
-                {work.subtitle ? <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 md:text-base">{work.subtitle}</p> : null}
+                {subtitles.length ? (
+                  <div className="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">
+                    {subtitles.map((subtitle: string, index: number) => (
+                      <p key={`${work.id}-subtitle-${index}`}>{subtitle}</p>
+                    ))}
+                  </div>
+                ) : null}
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   {isDeviant
                     ? "Karya ini ditandai Deviant Love. Untuk membaca, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
@@ -257,7 +265,13 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{work.title}</h1>
-              {work.subtitle ? <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 md:text-base">{work.subtitle}</p> : null}
+              {subtitles.length ? (
+                  <div className="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">
+                    {subtitles.map((subtitle: string, index: number) => (
+                      <p key={`${work.id}-subtitle-${index}`}>{subtitle}</p>
+                    ))}
+                  </div>
+                ) : null}
 
               <div className="-mx-1 mt-4 hidden items-center gap-2 overflow-x-auto px-1 pb-1 md:flex md:flex-wrap md:overflow-visible">
                 <LikeButton workId={work.id} initialLiked={!!interactions.liked} initialCount={Number(work.likeCount ?? 0)} />

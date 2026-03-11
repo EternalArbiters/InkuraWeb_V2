@@ -24,6 +24,7 @@ export default function ListWorksGrid({
 }) {
   const [pending, startTransition] = useTransition();
   const [localItems, setLocalItems] = useState<Item[]>(items);
+  const [visibleCount, setVisibleCount] = useState(30);
 
   const remove = async (workId: string) => {
     startTransition(async () => {
@@ -42,10 +43,13 @@ export default function ListWorksGrid({
   };
 
   const works = localItems.map((it) => it.work).filter(Boolean);
+  const visibleWorks = works.slice(0, visibleCount);
+  const hasMore = visibleCount < works.length;
 
   return (
+    <>
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {works.map((w: any) => {
+      {visibleWorks.map((w: any) => {
         return (
           <div key={w.id} className="relative group overflow-hidden rounded-[10px] border border-gray-200 bg-white/70 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900/50">
             {isOwner ? (
@@ -100,5 +104,18 @@ export default function ListWorksGrid({
         </div>
       ) : null}
     </div>
+
+      {hasMore ? (
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((current) => Math.min(current + 30, works.length))}
+            className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900"
+          >
+            Load more
+          </button>
+        </div>
+      ) : null}
+    </>
   );
 }

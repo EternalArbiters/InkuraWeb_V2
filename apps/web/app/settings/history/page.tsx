@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ReadingProgressListCard } from "@/app/components/library/ReadingProgressCard";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listViewerProgress } from "@/server/services/progress/viewerProgress";
+import LoadMoreList from "@/app/components/LoadMoreList";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,11 @@ export default async function ReadingHistoryPage() {
         {progress.length === 0 ? (
           <p className="mt-6 text-sm text-gray-600 dark:text-gray-300">No history yet.</p>
         ) : (
-          <div className="mt-6 grid gap-3">
+          <LoadMoreList className="mt-6 grid gap-3">
             {progress.map((p) => (
               <ReadingProgressListCard key={p.id} progress={p as any} />
             ))}
-          </div>
+          </LoadMoreList>
         )}
       </div>
     </main>

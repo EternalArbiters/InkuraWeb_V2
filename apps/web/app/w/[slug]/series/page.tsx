@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BackButton from "@/app/components/BackButton";
+import LoadMoreList from "@/app/components/LoadMoreList";
 import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
 
@@ -107,7 +108,7 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
           <BackButton href={`/w/${work.slug}`} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <LoadMoreList className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {allWorks.map((item) => {
             const active = item.id === work.id;
             return (
@@ -120,7 +121,7 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
               />
             );
           })}
-        </div>
+        </LoadMoreList>
       </div>
     </main>
   );

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import { getPublicCollectionsPageData } from "@/server/services/profile/publicProfilePage";
+import LoadMoreList from "@/app/components/LoadMoreList";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export default async function PublicCollectionsPage({ params }: { params: Promis
             No collections yet.
           </div>
         ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <LoadMoreList className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {data.visibleLists.map((list) => (
               <CollectionRailCard
                 key={list.id}
@@ -48,7 +49,7 @@ export default async function PublicCollectionsPage({ params }: { params: Promis
                 items={Array.isArray(list.items) ? list.items : []}
               />
             ))}
-          </div>
+          </LoadMoreList>
         )}
       </div>
     </main>

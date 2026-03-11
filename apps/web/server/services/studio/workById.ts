@@ -8,6 +8,7 @@ import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
 import { isOwnerOrAdmin } from "./creator";
 import { requireCreatorSession } from "./session";
 import { assignWorkToSeries } from "./series";
+import { normalizeWorkSubtitles, serializeWorkSubtitles } from "@/lib/workSubtitles";
 
 function safeJsonArray(v: unknown): string[] {
   if (typeof v !== "string") return [];
@@ -66,6 +67,7 @@ export async function getStudioWorkById(workId: string) {
       slug: true,
       title: true,
       subtitle: true,
+      subtitleJson: true,
       description: true,
       type: true,
       comicType: true,
@@ -166,7 +168,8 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   const fd = await req.formData();
 
   const title = String(fd.get("title") || "").trim();
-  const subtitle = String(fd.get("subtitle") || "").trim() || null;
+  const subtitles = normalizeWorkSubtitles(safeJsonArray(fd.get("subtitleEntries")));
+  const subtitle = subtitles[0] || (String(fd.get("subtitle") || "").trim() || null);
   const description = String(fd.get("description") || "");
 
   const typeRaw = String(fd.get("type") || "").toUpperCase().trim();
@@ -293,6 +296,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     data: {
       title,
       subtitle,
+      subtitleJson: serializeWorkSubtitles(subtitles, subtitle),
       slug: nextSlug,
       description: description || null,
       ...(type ? { type } : {}),

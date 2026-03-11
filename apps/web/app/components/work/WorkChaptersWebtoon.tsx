@@ -78,6 +78,7 @@ export default function WorkChaptersWebtoon({
   const [rememberedReadChapterIds, setRememberedReadChapterIds] = React.useState<string[]>(() =>
     lastReadChapterId ? [String(lastReadChapterId)] : [],
   );
+  const [visibleCount, setVisibleCount] = React.useState(() => (typeof limit === "number" ? limit : 30));
 
   React.useEffect(() => {
     const syncRememberedReadChapters = () => {
@@ -116,8 +117,9 @@ export default function WorkChaptersWebtoon({
     return arr;
   }, [chapters, sort]);
 
-  const visibleChapters = typeof limit === "number" ? sorted.slice(0, limit) : sorted;
-  const hasMoreChapters = typeof limit === "number" && sorted.length > limit;
+  const effectiveLimit = typeof limit === "number" ? limit : visibleCount;
+  const visibleChapters = sorted.slice(0, effectiveLimit);
+  const hasMoreChapters = sorted.length > effectiveLimit;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
@@ -211,14 +213,24 @@ export default function WorkChaptersWebtoon({
         )}
       </div>
 
-      {hasMoreChapters && showAllHref ? (
-        <div className="mt-4">
-          <Link
-            href={showAllHref}
-            className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-          >
-            All Chapters
-          </Link>
+      {hasMoreChapters ? (
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          {showAllHref ? (
+            <Link
+              href={showAllHref}
+              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+            >
+              All Chapters
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setVisibleCount((current) => Math.min(current + 30, sorted.length))}
+              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+            >
+              Load more
+            </button>
+          )}
         </div>
       ) : null}
     </div>

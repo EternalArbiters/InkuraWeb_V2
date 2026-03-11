@@ -11,6 +11,7 @@ import {
 import { computeWorkGate } from "@/server/services/works/gating";
 import { getViewerBasic } from "@/server/services/works/viewer";
 import { profileHotspot } from "@/server/observability/profiling";
+import { parseWorkSubtitles } from "@/lib/workSubtitles";
 
 function stablePick(id: string, candidates: string[]) {
   if (!candidates.length) return null;
@@ -58,6 +59,7 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
       slug: true,
       title: true,
       subtitle: true,
+      subtitleJson: true,
       description: true,
       coverImage: true,
       type: true,
@@ -188,10 +190,13 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
       ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: "Next Arc" }
       : null;
 
+  const subtitles = parseWorkSubtitles(work.subtitleJson, work.subtitle);
+
   return {
     ok: true as const,
     work: {
       ...work,
+      subtitles,
       chapters: visibleChapters,
       seriesTitle: work.series?.title || null,
       seriesWorks,
@@ -244,6 +249,7 @@ export async function getViewerWorkPagePayload(work: any) {
         slug: work.slug,
         title: work.title,
         subtitle: work.subtitle,
+        subtitles: parseWorkSubtitles(work.subtitleJson, work.subtitle),
         coverImage: work.coverImage,
         type: work.type,
         comicType: work.comicType,

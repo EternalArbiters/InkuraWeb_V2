@@ -7,6 +7,7 @@ import { deletePublicUpload, saveCoverUpload } from "@/server/uploads/upload";
 import { requireCreatorSession } from "./session";
 import { assignWorkToSeries } from "./series";
 import { profileHotspot } from "@/server/observability/profiling";
+import { normalizeWorkSubtitles, serializeWorkSubtitles } from "@/lib/workSubtitles";
 
 function toStringArray(v: unknown): string[] {
   if (!v) return [];
@@ -71,7 +72,8 @@ export async function createStudioWork(req: Request) {
   const fd = await req.formData();
 
   const title = String(fd.get("title") || "").trim();
-  const subtitle = String(fd.get("subtitle") || "").trim() || null;
+  const subtitles = normalizeWorkSubtitles(toStringArray(fd.get("subtitleEntries")));
+  const subtitle = subtitles[0] || (String(fd.get("subtitle") || "").trim() || null);
   const description = String(fd.get("description") || "").trim();
 
   const typeRaw = String(fd.get("type") || "NOVEL").toUpperCase().trim();
@@ -156,6 +158,7 @@ export async function createStudioWork(req: Request) {
       slug,
       title,
       subtitle,
+      subtitleJson: serializeWorkSubtitles(subtitles, subtitle),
       description: description || null,
       type,
       comicType: type === "COMIC" ? comicType : "UNKNOWN",

@@ -1,5 +1,5 @@
 import ActionLink from "@/app/components/ActionLink";
-import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
+import WorksGrid from "@/app/components/WorksGrid";
 import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
 
 type Props = {
@@ -37,16 +37,11 @@ export default async function BrowseListPage({
 
         <div className="mt-7">
           {works?.length ? (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {works.map((work) => (
-                <InteractiveWorkCard
-                  key={work.id}
-                  work={work}
-                  showBookmarkButton={showBookmarkButton}
-                  showUpdatedSubtitle={showUpdatedSubtitle}
-                />
-              ))}
-            </div>
+            <WorksGrid
+              works={works}
+              showBookmarkButton={showBookmarkButton}
+              showUpdatedSubtitle={showUpdatedSubtitle}
+            />
           ) : (
             <div className="border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
               {emptyText || "No items."}

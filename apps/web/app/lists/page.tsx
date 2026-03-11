@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
+import LoadMoreList from "@/app/components/LoadMoreList";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +89,7 @@ export default async function ListsPage() {
             </div>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <LoadMoreList className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {lists.map((l) => {
               const count = l._count?.items ?? 0;
               const previews = Array.isArray(l.items) ? l.items.map((x) => x.work).filter(Boolean) : [];
@@ -137,7 +138,7 @@ export default async function ListsPage() {
                 </Link>
               );
             })}
-          </div>
+          </LoadMoreList>
         )}
       </div>
     </main>
