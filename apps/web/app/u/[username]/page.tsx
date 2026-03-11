@@ -20,6 +20,10 @@ function avatarInitial(name: string) {
   return trimmed ? trimmed[0]?.toUpperCase() : "U";
 }
 
+function displayUrlLabel(value: string) {
+  return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+}
+
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="min-w-[96px]">
@@ -111,6 +115,16 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight truncate">{displayName}</h1>
                   <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">@{user.username}</div>
                   {user.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{user.bio}</p> : null}
+                  {user.profileUrl ? (
+                    <a
+                      href={user.profileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200 break-all"
+                    >
+                      {displayUrlLabel(user.profileUrl)}
+                    </a>
+                  ) : null}
                   <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Joined {joinedLabel(user.createdAt)}</div>
                 </div>
               </div>

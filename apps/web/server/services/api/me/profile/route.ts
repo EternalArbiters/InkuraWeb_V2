@@ -35,6 +35,23 @@ function normalizeBio(raw: unknown) {
   return v.slice(0, 200);
 }
 
+function normalizeProfileUrl(raw: unknown) {
+  const rawValue = String(raw ?? "").trim();
+  if (!rawValue) return null;
+
+  const withProtocol = /^https?:\/\//i.test(rawValue)
+    ? rawValue
+    : `https://${rawValue.replace(/^\/+/, "")}`;
+
+  try {
+    const parsed = new URL(withProtocol);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return parsed.toString().slice(0, 500);
+  } catch {
+    return null;
+  }
+}
+
 function normalizeImage(raw: unknown) {
   const v = String(raw ?? "").trim();
   if (!v) return null;
@@ -61,6 +78,10 @@ export const PATCH = apiRoute(async (req: Request) => {
 
   if ("bio" in body) {
     data.bio = normalizeBio(body.bio);
+  }
+
+  if ("profileUrl" in body) {
+    data.profileUrl = normalizeProfileUrl(body.profileUrl);
   }
 
   if ("image" in body) {
@@ -163,6 +184,7 @@ export const PATCH = apiRoute(async (req: Request) => {
         username: true,
         name: true,
         bio: true,
+        profileUrl: true,
         image: true,
         avatarFocusX: true,
         avatarFocusY: true,

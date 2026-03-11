@@ -17,6 +17,7 @@ type Initial = {
   name: string;
   username: string;
   bio: string;
+  profileUrl: string;
   image?: string | null;
   avatarFocusX?: number | null;
   avatarFocusY?: number | null;
@@ -106,6 +107,7 @@ async function saveProfile(payload: {
   name: string;
   username: string;
   bio: string | null;
+  profileUrl: string | null;
   image: string | null;
   avatarFocusX: number;
   avatarFocusY: number;
@@ -133,6 +135,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
   const [username, setUsername] = React.useState(initial.username || "");
   const [image, setImage] = React.useState(initial.image || "");
   const [bio, setBio] = React.useState(initial.bio || "");
+  const [profileUrl, setProfileUrl] = React.useState(initial.profileUrl || "");
 
   const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 50);
   const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 50);
@@ -244,6 +247,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         name,
         username,
         bio: bio.trim() || null,
+        profileUrl: profileUrl.trim() || null,
         image: image || null,
         avatarFocusX,
         avatarFocusY,
@@ -300,6 +304,8 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         onUsernameChange={(v) => setUsername(v.replace(/\s+/g, "").toLowerCase())}
         bio={bio}
         onBioChange={(v) => setBio(v.slice(0, 200))}
+        profileUrl={profileUrl}
+        onProfileUrlChange={setProfileUrl}
         gender={gender}
         onGenderChange={setGender}
         birthMonth={birthMonth}

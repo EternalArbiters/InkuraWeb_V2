@@ -46,6 +46,7 @@ async function loadPublicProfilePageData(username: string) {
       username: true,
       name: true,
       bio: true,
+      profileUrl: true,
       image: true,
       createdAt: true,
       works: {

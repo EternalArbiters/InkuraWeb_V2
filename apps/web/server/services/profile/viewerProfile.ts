@@ -10,6 +10,7 @@ const viewerProfileSelect = {
   username: true,
   name: true,
   bio: true,
+  profileUrl: true,
   image: true,
   avatarFocusX: true,
   avatarFocusY: true,

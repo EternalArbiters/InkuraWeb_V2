@@ -25,6 +25,10 @@ function profileName(user: { name: string | null; username: string | null; email
   return user.name || user.username || user.email.split("@")[0] || "User";
 }
 
+function displayUrlLabel(value: string) {
+  return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+}
+
 function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
   if (!works.length) return null;
 
@@ -87,6 +91,7 @@ export default async function ProfilePage() {
         username: true,
         name: true,
         bio: true,
+        profileUrl: true,
         image: true,
         avatarFocusX: true,
         avatarFocusY: true,
@@ -207,6 +212,23 @@ export default async function ProfilePage() {
                 </div>
                 <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">{profile.email}</div>
                 {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{profile.bio}</p> : null}
+                {profile.profileUrl ? (
+                  <a
+                    href={profile.profileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200 break-all"
+                  >
+                    {displayUrlLabel(profile.profileUrl)}
+                  </a>
+                ) : (
+                  <Link
+                    href="/settings/profile"
+                    className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
+                  >
+                    + Add URL
+                  </Link>
+                )}
                 <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {formatDate(profile.createdAt)}</div>
               </div>
             </div>

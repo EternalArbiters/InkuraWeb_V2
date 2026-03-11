@@ -29,6 +29,8 @@ type Props = {
   onUsernameChange: (v: string) => void;
   bio: string;
   onBioChange: (v: string) => void;
+  profileUrl: string;
+  onProfileUrlChange: (v: string) => void;
   gender: string;
   onGenderChange: (v: string) => void;
   birthMonth: number | "";
@@ -44,6 +46,8 @@ export default function ProfileFieldsCard({
   onUsernameChange,
   bio,
   onBioChange,
+  profileUrl,
+  onProfileUrlChange,
   gender,
   onGenderChange,
   birthMonth,
@@ -90,6 +94,22 @@ export default function ProfileFieldsCard({
           placeholder="Tell readers a little about yourself"
         />
         <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 200 karakter.</div>
+      </div>
+
+      <div>
+        <div className="text-sm font-semibold text-gray-900 dark:text-white">Personal URL</div>
+        <input
+          className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+          value={profileUrl}
+          onChange={(e) => onProfileUrlChange(e.target.value.slice(0, 500))}
+          maxLength={500}
+          placeholder="https://your-site.com"
+          inputMode="url"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+        />
+        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Tambahkan satu URL pribadi yang ingin ditampilkan di profile.</div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
