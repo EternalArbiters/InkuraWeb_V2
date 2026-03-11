@@ -11,6 +11,7 @@ const viewerProfileSelect = {
   name: true,
   bio: true,
   profileUrl: true,
+  profileUrlsJson: true,
   image: true,
   avatarFocusX: true,
   avatarFocusY: true,

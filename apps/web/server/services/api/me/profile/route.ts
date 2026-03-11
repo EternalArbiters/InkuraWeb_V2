@@ -12,6 +12,7 @@ import {
   normalizeGender,
 } from "@/server/services/profile/demographics";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
+import { normalizeProfileUrls, serializeProfileUrls } from "@/lib/profileUrls";
 
 export const runtime = "nodejs";
 
@@ -33,23 +34,6 @@ function normalizeBio(raw: unknown) {
   const v = String(raw ?? "").replace(/\r\n/g, "\n").trim();
   if (!v) return null;
   return v.slice(0, 200);
-}
-
-function normalizeProfileUrl(raw: unknown) {
-  const rawValue = String(raw ?? "").trim();
-  if (!rawValue) return null;
-
-  const withProtocol = /^https?:\/\//i.test(rawValue)
-    ? rawValue
-    : `https://${rawValue.replace(/^\/+/, "")}`;
-
-  try {
-    const parsed = new URL(withProtocol);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
-    return parsed.toString().slice(0, 500);
-  } catch {
-    return null;
-  }
 }
 
 function normalizeImage(raw: unknown) {
@@ -80,8 +64,10 @@ export const PATCH = apiRoute(async (req: Request) => {
     data.bio = normalizeBio(body.bio);
   }
 
-  if ("profileUrl" in body) {
-    data.profileUrl = normalizeProfileUrl(body.profileUrl);
+  if ("profileUrls" in body || "profileUrl" in body) {
+    const urls = "profileUrls" in body ? normalizeProfileUrls(body.profileUrls) : normalizeProfileUrls(body.profileUrl);
+    data.profileUrlsJson = serializeProfileUrls(urls);
+    data.profileUrl = urls[0] ?? null;
   }
 
   if ("image" in body) {
@@ -185,6 +171,7 @@ export const PATCH = apiRoute(async (req: Request) => {
         name: true,
         bio: true,
         profileUrl: true,
+        profileUrlsJson: true,
         image: true,
         avatarFocusX: true,
         avatarFocusY: true,

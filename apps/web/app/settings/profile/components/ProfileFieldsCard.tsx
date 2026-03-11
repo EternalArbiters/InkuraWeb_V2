@@ -1,10 +1,11 @@
 "use client";
 
 const GENDERS = [
-  { value: "", label: "Select gender" },
+  { value: "", label: "Prefer not to say" },
   { value: "MALE", label: "Male" },
   { value: "FEMALE", label: "Female" },
-  { value: "PREFER_NOT_TO_SAY", label: "Prefer not to say" },
+  { value: "NON_BINARY", label: "Non-binary" },
+  { value: "OTHER", label: "Other" },
 ];
 
 const MONTHS = [
@@ -24,19 +25,19 @@ const MONTHS = [
 
 type Props = {
   name: string;
-  onNameChange: (v: string) => void;
+  onNameChange: (value: string) => void;
   username: string;
-  onUsernameChange: (v: string) => void;
+  onUsernameChange: (value: string) => void;
   bio: string;
-  onBioChange: (v: string) => void;
-  profileUrl: string;
-  onProfileUrlChange: (v: string) => void;
+  onBioChange: (value: string) => void;
+  profileUrls: string[];
+  onProfileUrlsChange: (value: string[]) => void;
   gender: string;
-  onGenderChange: (v: string) => void;
+  onGenderChange: (value: string) => void;
   birthMonth: number | "";
-  onBirthMonthChange: (v: number | "") => void;
+  onBirthMonthChange: (value: number | "") => void;
   birthYear: number | "";
-  onBirthYearChange: (v: number | "") => void;
+  onBirthYearChange: (value: number | "") => void;
 };
 
 export default function ProfileFieldsCard({
@@ -46,8 +47,8 @@ export default function ProfileFieldsCard({
   onUsernameChange,
   bio,
   onBioChange,
-  profileUrl,
-  onProfileUrlChange,
+  profileUrls,
+  onProfileUrlsChange,
   gender,
   onGenderChange,
   birthMonth,
@@ -55,30 +56,35 @@ export default function ProfileFieldsCard({
   birthYear,
   onBirthYearChange,
 }: Props) {
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 1899 }, (_, index) => currentYear - index);
+  const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+  const canAddUrl = profileUrls.length < 5;
 
   return (
-    <div className="grid gap-4">
+    <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 grid gap-5">
       <div>
         <div className="text-sm font-semibold text-gray-900 dark:text-white">Display name</div>
         <input
           className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
           value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Your name"
+          onChange={(e) => onNameChange(e.target.value.slice(0, 60))}
+          maxLength={60}
+          placeholder="Your display name"
         />
       </div>
 
       <div>
         <div className="text-sm font-semibold text-gray-900 dark:text-white">Username</div>
         <input
-          className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 font-mono text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+          className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
           value={username}
           onChange={(e) => onUsernameChange(e.target.value)}
-          placeholder="your-username"
+          maxLength={24}
+          placeholder="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
         />
-        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Lowercase and hyphen recommended.</div>
+        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">3–24 chars. Use letters, numbers, dash, underscore.</div>
       </div>
 
       <div>
@@ -87,7 +93,7 @@ export default function ProfileFieldsCard({
           <div className="text-xs text-gray-500 dark:text-gray-400">{bio.length}/200</div>
         </div>
         <textarea
-          className="mt-1 min-h-[110px] w-full resize-y rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+          className="mt-1 h-32 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
           value={bio}
           onChange={(e) => onBioChange(e.target.value.slice(0, 200))}
           maxLength={200}
@@ -97,19 +103,54 @@ export default function ProfileFieldsCard({
       </div>
 
       <div>
-        <div className="text-sm font-semibold text-gray-900 dark:text-white">Personal URL</div>
-        <input
-          className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
-          value={profileUrl}
-          onChange={(e) => onProfileUrlChange(e.target.value.slice(0, 500))}
-          maxLength={500}
-          placeholder="https://your-site.com"
-          inputMode="url"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-        />
-        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Tambahkan satu URL pribadi yang ingin ditampilkan di profile.</div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-white">Personal URLs</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 5 URL. Klik Add URL untuk menambah link baru.</div>
+          </div>
+          <button
+            type="button"
+            disabled={!canAddUrl}
+            onClick={() => {
+              if (!canAddUrl) return;
+              onProfileUrlsChange([...profileUrls, ""]);
+            }}
+            className="rounded-full border border-purple-400/60 px-3 py-1.5 text-xs font-semibold text-purple-300 hover:bg-purple-500/10 disabled:opacity-40"
+          >
+            + Add URL
+          </button>
+        </div>
+
+        <div className="mt-3 grid gap-3">
+          {profileUrls.map((value, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <input
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+                value={value}
+                onChange={(e) => {
+                  const next = [...profileUrls];
+                  next[index] = e.target.value.slice(0, 500);
+                  onProfileUrlsChange(next);
+                }}
+                maxLength={500}
+                placeholder={`https://your-site-${index + 1}.com`}
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              {profileUrls.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => onProfileUrlsChange(profileUrls.filter((_, itemIndex) => itemIndex !== index))}
+                  className="shrink-0 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

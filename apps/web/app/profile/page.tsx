@@ -6,6 +6,7 @@ import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
 import ProfileReviewCard from "@/app/components/user/ProfileReviewCard";
+import { displayUrlLabel, parseProfileUrls } from "@/lib/profileUrls";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
 import { getViewerComments, getViewerReviews } from "@/server/services/profile/viewerActivity";
@@ -23,10 +24,6 @@ function formatDate(value: Date | string | null | undefined) {
 
 function profileName(user: { name: string | null; username: string | null; email: string }) {
   return user.name || user.username || user.email.split("@")[0] || "User";
-}
-
-function displayUrlLabel(value: string) {
-  return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
 }
 
 function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
@@ -52,13 +49,19 @@ function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
   );
 }
 
-function ProfileStat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="min-w-[96px]">
-      <div className="text-2xl font-extrabold tracking-tight">{value}</div>
-      <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{label}</div>
+function ProfileStat({ label, value, href }: { label: string; value: number | string; href?: string }) {
+  const content = (
+    <div className="rounded-2xl border border-transparent px-2 py-1 text-center transition hover:border-gray-200 hover:bg-white/40 dark:hover:border-gray-700 dark:hover:bg-white/5">
+      <div className="text-xl font-extrabold tracking-tight sm:text-2xl">{value}</div>
+      <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">{label}</div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return content;
 }
 
 function MoreButton({ href, children }: { href: string; children: string }) {
@@ -92,6 +95,7 @@ export default async function ProfilePage() {
         name: true,
         bio: true,
         profileUrl: true,
+        profileUrlsJson: true,
         image: true,
         avatarFocusX: true,
         avatarFocusY: true,
@@ -184,6 +188,7 @@ export default async function ProfilePage() {
   const avatarFocusX = Number.isFinite(Number(profile.avatarFocusX)) ? Number(profile.avatarFocusX) : 50;
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;
+  const profileUrls = parseProfileUrls(profile.profileUrlsJson, profile.profileUrl);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -212,23 +217,29 @@ export default async function ProfilePage() {
                 </div>
                 <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">{profile.email}</div>
                 {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{profile.bio}</p> : null}
-                {profile.profileUrl ? (
-                  <a
-                    href={profile.profileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200 break-all"
-                  >
-                    {displayUrlLabel(profile.profileUrl)}
-                  </a>
-                ) : (
+                {profileUrls.length ? (
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    {profileUrls.map((url) => (
+                      <a
+                        key={url}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200 break-all"
+                      >
+                        {displayUrlLabel(url)}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+                {profileUrls.length < 5 ? (
                   <Link
                     href="/settings/profile"
                     className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                   >
                     + Add URL
                   </Link>
-                )}
+                ) : null}
                 <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {formatDate(profile.createdAt)}</div>
               </div>
             </div>
@@ -243,18 +254,18 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
             <ProfileStat label="Works" value={publishedWorksCount} />
-            <ProfileStat label="Followers" value={followersCount} />
-            <ProfileStat label="Following" value={followingCount} />
+            <ProfileStat label="Followers" value={followersCount} href="/profile/followers" />
+            <ProfileStat label="Following" value={followingCount} href="/profile/following" />
           </div>
         </section>
 
         <section className="mt-8 rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-extrabold tracking-tight">Published Works</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Works you have published on Inkura.</p>
+              <h2 className="text-3xl font-extrabold tracking-tight">Published Works</h2>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Works you have published on Inkura.</p>
             </div>
           </div>
 

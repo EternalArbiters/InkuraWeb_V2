@@ -47,7 +47,11 @@ async function loadPublicProfilePageData(username: string) {
       name: true,
       bio: true,
       profileUrl: true,
+      profileUrlsJson: true,
       image: true,
+      avatarFocusX: true,
+      avatarFocusY: true,
+      avatarZoom: true,
       createdAt: true,
       works: {
         where: { status: "PUBLISHED" },
@@ -157,7 +161,7 @@ async function loadPublicProfilePageData(username: string) {
 
 export async function getPublicProfilePageData(username: string) {
   return withCachedPublicData(
-    ["public-profile-page:v2", username],
+    ["public-profile-page:v3", username],
     [publicProfilesTag(), publicProfileTag(username), publicWorksTag(), publicReadingListsTag()],
     PUBLIC_CONTENT_REVALIDATE.profile,
     async () => profileHotspot("profile.public", { username }, () => loadPublicProfilePageData(username))
@@ -168,7 +172,6 @@ export async function getViewerProfilePagePayload() {
   const viewer = await profileHotspot("profile.viewerPayload", {}, () => getViewerBasic());
   return { viewer };
 }
-
 
 export async function getPublicCollectionsPageData(username: string) {
   const [{ viewer }, publicData] = await Promise.all([
@@ -259,9 +262,22 @@ export async function getProfilePageData(username: string) {
     (review) => review.work && canViewWork(review.work, viewerPayload.viewer)
   );
 
+  const viewerFollowingUser = viewerPayload.viewer?.id && viewerPayload.viewer.id !== publicData.id
+    ? !!(await prisma.followUser.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: viewerPayload.viewer.id,
+            followingId: publicData.id,
+          },
+        },
+        select: { followerId: true },
+      }))
+    : false;
+
   return {
     user: publicData,
     viewer: viewerPayload.viewer,
+    viewerFollowingUser,
     visibleWorks,
     visibleLists,
     visibleReviews,
