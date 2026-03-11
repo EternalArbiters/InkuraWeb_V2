@@ -284,7 +284,7 @@ export default function ThumbCropper({
                 title="Reset"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-              </button>
+              </button>     
 
               <button
                 type="button"
