@@ -85,7 +85,13 @@ export async function aggregateAnalyticsDay(day: Date) {
   const nextDate = addUtcDays(date, 1);
 
   const events = await prisma.analyticsEvent.findMany({
-    where: { occurredAt: { gte: date, lt: nextDate } },
+    where: {
+      occurredAt: { gte: date, lt: nextDate },
+      OR: [
+        { userId: null },
+        { user: { is: { role: "USER" } } },
+      ],
+    },
     select: {
       id: true,
       eventType: true,
@@ -103,7 +109,7 @@ export async function aggregateAnalyticsDay(day: Date) {
     },
   });
 
-  const newUsers = await prisma.user.count({ where: { createdAt: { gte: date, lt: nextDate } } });
+  const newUsers = await prisma.user.count({ where: { createdAt: { gte: date, lt: nextDate }, role: "USER" } });
   const eventUserIds = Array.from(new Set(events.map((event) => event.userId).filter(Boolean))) as string[];
   const users = eventUserIds.length
     ? await prisma.user.findMany({

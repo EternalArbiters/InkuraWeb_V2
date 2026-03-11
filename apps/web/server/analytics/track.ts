@@ -17,6 +17,21 @@ function normalizeText(value: unknown, max = 240) {
   return text.slice(0, max);
 }
 
+async function shouldSkipAnalyticsForActor(args: { userId?: string | null; path?: string | null; routeName?: string | null }) {
+  const path = String(args.path || "").trim();
+  const routeName = String(args.routeName || "").trim().toLowerCase();
+
+  if (path.startsWith("/admin") || routeName.startsWith("admin")) return true;
+  if (!args.userId) return false;
+
+  const actor = await prisma.user.findUnique({
+    where: { id: args.userId },
+    select: { role: true },
+  });
+
+  return actor?.role === "ADMIN";
+}
+
 function getTrafficSource(req?: Request | null): AnalyticsTrafficSource {
   const referrer = normalizeText(req?.headers.get("referer"), 500);
   if (!referrer) return AnalyticsTrafficSource.DIRECT;
@@ -133,6 +148,10 @@ export async function trackAnalyticsEvent(input: TrackAnalyticsEventInput) {
   }
 
   const resolvedPath = input.path ?? (req ? new URL(req.url).pathname : null);
+
+  if (await shouldSkipAnalyticsForActor({ userId, path: resolvedPath, routeName: input.routeName ?? null })) {
+    return { sessionKey };
+  }
 
   await prisma.analyticsEvent.create({
     data: {

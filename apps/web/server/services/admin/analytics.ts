@@ -1,6 +1,6 @@
 import "server-only";
 
-import { AnalyticsAgeBand, type UserGender } from "@prisma/client";
+import { AnalyticsAgeBand, Prisma, type UserGender } from "@prisma/client";
 import prisma from "@/server/db/prisma";
 import { requireAdminSession } from "@/server/http/auth";
 import { normalizeDateRange, startOfUtcDay, toIsoDate } from "@/server/analytics/aggregate/utils";
@@ -11,6 +11,48 @@ type RangeArgs = {
   days?: number | null;
   limit?: number | null;
 };
+
+function analyticsRangeWindow(start: Date, end: Date) {
+  return { occurredAt: { gte: start, lt: new Date(startOfUtcDay(end).getTime() + 86400000) } };
+}
+
+function includedAnalyticsEventWhere(start: Date, end: Date): Prisma.AnalyticsEventWhereInput {
+  return {
+    ...analyticsRangeWindow(start, end),
+    OR: [
+      { userId: null },
+      { user: { is: { role: "USER" } } },
+    ],
+  };
+}
+
+function includedAuthenticatedAnalyticsEventWhere(start: Date, end: Date): Prisma.AnalyticsEventWhereInput {
+  return {
+    ...analyticsRangeWindow(start, end),
+    userId: { not: null },
+    user: { is: { role: "USER" } },
+  };
+}
+
+function excludedAdminAnalyticsEventWhere(start: Date, end: Date): Prisma.AnalyticsEventWhereInput {
+  return {
+    ...analyticsRangeWindow(start, end),
+    userId: { not: null },
+    user: { is: { role: "ADMIN" } },
+  };
+}
+
+
+function aggregateEventTypeRows(rows: Array<{ userId: string | null; eventType: string; _count: { _all: number } }>) {
+  const map = new Map<string, Record<string, number>>();
+  for (const row of rows) {
+    if (!row.userId) continue;
+    const bucket = map.get(row.userId) || {};
+    bucket[row.eventType] = Number(row._count._all || 0);
+    map.set(row.userId, bucket);
+  }
+  return map;
+}
 
 function sumRows<T extends Record<string, any>>(rows: T[], numericKeys: string[]) {
   return rows.reduce(
@@ -32,6 +74,7 @@ async function getActiveUserWindowCount(days: number) {
     where: {
       occurredAt: { gte: startInclusive, lt: endExclusive },
       userId: { not: null },
+      user: { is: { role: "USER" } },
     },
     select: { userId: true },
   });
@@ -43,8 +86,9 @@ export async function getAdminAnalyticsData(args: RangeArgs = {}) {
 
   const { start, end } = normalizeDateRange(args);
   const limit = Math.max(1, Math.min(50, Number(args.limit || 10)));
+  const excludedAdminWhere = excludedAdminAnalyticsEventWhere(start, end);
 
-  const [overviewRows, workRows, genreRows, creatorRows, searchRows, demographicRows, dau, wau, mau] = await Promise.all([
+  const [overviewRows, workRows, genreRows, creatorRows, searchRows, demographicRows, dau, wau, mau, includedAccounts, excludedAdminAccounts] = await Promise.all([
     prisma.analyticsDailyOverview.findMany({
       where: { date: { gte: start, lte: end } },
       orderBy: { date: "asc" },
@@ -123,6 +167,14 @@ export async function getAdminAnalyticsData(args: RangeArgs = {}) {
     }),
     getActiveUserWindowCount(7),
     getActiveUserWindowCount(30),
+    prisma.analyticsEvent.findMany({
+      where: includedAuthenticatedAnalyticsEventWhere(start, end),
+      select: { userId: true },
+    }).then((rows) => new Set(rows.map((row) => row.userId).filter(Boolean)).size),
+    prisma.analyticsEvent.findMany({
+      where: excludedAdminWhere,
+      select: { userId: true },
+    }).then((rows) => new Set(rows.map((row) => row.userId).filter(Boolean)).size),
   ]);
 
   const totals = sumRows(overviewRows, [
@@ -253,6 +305,10 @@ export async function getAdminAnalyticsData(args: RangeArgs = {}) {
       zeroResultCount: Number(row._sum.zeroResultCount || 0),
       clickCount: Number(row._sum.clickCount || 0),
     })),
+    dataQuality: {
+      includedAccounts,
+      excludedAdminAccounts,
+    },
     demographics: {
       byGender: ([null, "MALE", "FEMALE", "PREFER_NOT_TO_SAY"] as Array<UserGender | null>).map((gender) => {
         const rows = demographicRows.filter((row) => row.gender === gender);
@@ -289,5 +345,127 @@ export async function getAdminAnalyticsData(args: RangeArgs = {}) {
         },
       })),
     },
+  };
+}
+
+export async function getAdminAnalyticsDetailData(args: RangeArgs = {}) {
+  await requireAdminSession();
+
+  const { start, end } = normalizeDateRange(args);
+  const limit = Math.max(10, Math.min(200, Number(args.limit || 50)));
+  const includedWhere = includedAnalyticsEventWhere(start, end);
+  const includedAuthenticatedWhere = includedAuthenticatedAnalyticsEventWhere(start, end);
+  const excludedAdminWhere = excludedAdminAnalyticsEventWhere(start, end);
+
+  const [includedEventsTotal, excludedAdminEventsTotal, guestEventRows, includedUserSummaryRows, includedUserEventTypeRows, excludedAdminSummaryRows, excludedAdminEventTypeRows, recentIncludedEvents] = await Promise.all([
+    prisma.analyticsEvent.count({ where: includedWhere }),
+    prisma.analyticsEvent.count({ where: excludedAdminWhere }),
+    prisma.analyticsEvent.findMany({
+      where: { ...includedWhere, userId: null },
+      select: { sessionKey: true },
+    }),
+    prisma.analyticsEvent.groupBy({
+      by: ["userId"],
+      where: includedAuthenticatedWhere,
+      _count: { _all: true },
+      _min: { occurredAt: true },
+      _max: { occurredAt: true },
+    }),
+    prisma.analyticsEvent.groupBy({
+      by: ["userId", "eventType"],
+      where: includedAuthenticatedWhere,
+      _count: { _all: true },
+    }),
+    prisma.analyticsEvent.groupBy({
+      by: ["userId"],
+      where: excludedAdminWhere,
+      _count: { _all: true },
+      _min: { occurredAt: true },
+      _max: { occurredAt: true },
+    }),
+    prisma.analyticsEvent.groupBy({
+      by: ["userId", "eventType"],
+      where: excludedAdminWhere,
+      _count: { _all: true },
+    }),
+    prisma.analyticsEvent.findMany({
+      where: includedWhere,
+      orderBy: { occurredAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        occurredAt: true,
+        eventType: true,
+        path: true,
+        userId: true,
+        sessionKey: true,
+      },
+    }),
+  ]);
+
+  const includedEventTypeMap = aggregateEventTypeRows(includedUserEventTypeRows);
+  const excludedAdminEventTypeMap = aggregateEventTypeRows(excludedAdminEventTypeRows);
+
+  const identityIds = Array.from(
+    new Set([
+      ...includedUserSummaryRows.map((row) => row.userId).filter(Boolean),
+      ...excludedAdminSummaryRows.map((row) => row.userId).filter(Boolean),
+      ...recentIncludedEvents.map((row) => row.userId).filter(Boolean),
+    ])
+  ) as string[];
+
+  const identities = identityIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: identityIds } },
+        select: { id: true, username: true, name: true, email: true, image: true, role: true },
+      })
+    : [];
+  const identityMap = new Map(identities.map((user) => [user.id, user]));
+
+  const includedAccounts = includedUserSummaryRows
+    .map((row) => ({
+      user: identityMap.get(row.userId || "") || null,
+      totalEvents: Number(row._count._all || 0),
+      firstSeenAt: row._min.occurredAt?.toISOString?.() ?? null,
+      lastSeenAt: row._max.occurredAt?.toISOString?.() ?? null,
+      eventTypes: includedEventTypeMap.get(row.userId || "") || {},
+    }))
+    .sort((a, b) => b.totalEvents - a.totalEvents);
+
+  const excludedAdminAccounts = excludedAdminSummaryRows
+    .map((row) => ({
+      user: identityMap.get(row.userId || "") || null,
+      totalEvents: Number(row._count._all || 0),
+      firstSeenAt: row._min.occurredAt?.toISOString?.() ?? null,
+      lastSeenAt: row._max.occurredAt?.toISOString?.() ?? null,
+      eventTypes: excludedAdminEventTypeMap.get(row.userId || "") || {},
+    }))
+    .sort((a, b) => b.totalEvents - a.totalEvents);
+
+  const guestSessions = new Set(guestEventRows.map((row) => row.sessionKey).filter(Boolean)).size;
+
+  return {
+    range: {
+      start: toIsoDate(start),
+      end: toIsoDate(end),
+      days: Math.max(1, Math.floor((startOfUtcDay(end).getTime() - startOfUtcDay(start).getTime()) / 86400000) + 1),
+    },
+    summary: {
+      includedEventsTotal,
+      includedAccounts: includedAccounts.length,
+      guestSessions,
+      excludedAdminEventsTotal,
+      excludedAdminAccounts: excludedAdminAccounts.length,
+    },
+    includedAccounts,
+    excludedAdminAccounts,
+    recentIncludedEvents: recentIncludedEvents.map((event) => ({
+      id: event.id,
+      occurredAt: event.occurredAt.toISOString(),
+      eventType: event.eventType,
+      path: event.path,
+      sessionKey: event.sessionKey,
+      user: event.userId ? identityMap.get(event.userId) || null : null,
+    })),
   };
 }

@@ -396,6 +396,24 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
         </form>
       </section>
 
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-200">Included accounts</div>
+          <div className="mt-3 text-3xl font-black tracking-tight">{compact(Number(data.dataQuality.includedAccounts || 0))}</div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Akun non-admin yang ikut dihitung di range aktif.</div>
+        </div>
+        <div className="rounded-3xl border border-rose-200 bg-rose-50/70 p-5 dark:border-rose-900/40 dark:bg-rose-950/20">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-200">Excluded admin accounts</div>
+          <div className="mt-3 text-3xl font-black tracking-tight">{compact(Number(data.dataQuality.excludedAdminAccounts || 0))}</div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Aktivitas admin tidak masuk aggregate analytics.</div>
+        </div>
+        <div className="rounded-3xl border border-blue-200 bg-blue-50/70 p-5 dark:border-blue-900/40 dark:bg-blue-950/20">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700 dark:text-blue-200">Audit view</div>
+          <div className="mt-3 text-lg font-black tracking-tight">See detail</div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Buka detail untuk melihat akun yang ikut dihitung dan akun admin yang dikecualikan.</div>
+        </div>
+      </section>
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {buildInsights(data).map((item) => (
           <div key={item.label} className="rounded-3xl border border-blue-100 bg-blue-50/70 p-5 dark:border-blue-900/40 dark:bg-blue-950/20">
