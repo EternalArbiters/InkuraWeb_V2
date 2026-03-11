@@ -15,7 +15,7 @@ export default async function EditProfilePage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit Profile</h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update your display name and username.</p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Update your display name, username, and short bio.</p>
           </div>
           <BackButton href="/home" />
         </div>
@@ -25,6 +25,7 @@ export default async function EditProfilePage() {
             email: p.email,
             username: p.username ?? "",
             name: p.name ?? "",
+            bio: p.bio ?? "",
             image: p.image,
             avatarFocusX: p.avatarFocusX,
             avatarFocusY: p.avatarFocusY,

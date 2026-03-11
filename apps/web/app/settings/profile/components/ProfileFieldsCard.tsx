@@ -27,6 +27,8 @@ type Props = {
   onNameChange: (v: string) => void;
   username: string;
   onUsernameChange: (v: string) => void;
+  bio: string;
+  onBioChange: (v: string) => void;
   gender: string;
   onGenderChange: (v: string) => void;
   birthMonth: number | "";
@@ -40,6 +42,8 @@ export default function ProfileFieldsCard({
   onNameChange,
   username,
   onUsernameChange,
+  bio,
+  onBioChange,
   gender,
   onGenderChange,
   birthMonth,
@@ -71,6 +75,21 @@ export default function ProfileFieldsCard({
           placeholder="your-username"
         />
         <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Lowercase and hyphen recommended.</div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-semibold text-gray-900 dark:text-white">Bio</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{bio.length}/200</div>
+        </div>
+        <textarea
+          className="mt-1 min-h-[110px] w-full resize-y rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
+          value={bio}
+          onChange={(e) => onBioChange(e.target.value.slice(0, 200))}
+          maxLength={200}
+          placeholder="Tell readers a little about yourself"
+        />
+        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 200 karakter.</div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

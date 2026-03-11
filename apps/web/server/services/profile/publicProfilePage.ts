@@ -45,6 +45,7 @@ async function loadPublicProfilePageData(username: string) {
       id: true,
       username: true,
       name: true,
+      bio: true,
       image: true,
       createdAt: true,
       works: {
@@ -137,12 +138,25 @@ async function loadPublicProfilePageData(username: string) {
     return null;
   }
 
-  return user;
+  const [publishedWorksCount, followersCount, followingCount] = await Promise.all([
+    prisma.work.count({ where: { authorId: user.id, status: "PUBLISHED" } }),
+    prisma.followUser.count({ where: { followingId: user.id } }),
+    prisma.followUser.count({ where: { followerId: user.id } }),
+  ]);
+
+  return {
+    ...user,
+    stats: {
+      publishedWorksCount,
+      followersCount,
+      followingCount,
+    },
+  };
 }
 
 export async function getPublicProfilePageData(username: string) {
   return withCachedPublicData(
-    ["public-profile-page:v1", username],
+    ["public-profile-page:v2", username],
     [publicProfilesTag(), publicProfileTag(username), publicWorksTag(), publicReadingListsTag()],
     PUBLIC_CONTENT_REVALIDATE.profile,
     async () => profileHotspot("profile.public", { username }, () => loadPublicProfilePageData(username))

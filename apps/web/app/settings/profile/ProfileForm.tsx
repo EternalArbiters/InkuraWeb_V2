@@ -16,6 +16,7 @@ type Initial = {
   email: string;
   name: string;
   username: string;
+  bio: string;
   image?: string | null;
   avatarFocusX?: number | null;
   avatarFocusY?: number | null;
@@ -104,6 +105,7 @@ async function presignAvatarUpload(
 async function saveProfile(payload: {
   name: string;
   username: string;
+  bio: string | null;
   image: string | null;
   avatarFocusX: number;
   avatarFocusY: number;
@@ -130,6 +132,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
   const [name, setName] = React.useState(initial.name || "");
   const [username, setUsername] = React.useState(initial.username || "");
   const [image, setImage] = React.useState(initial.image || "");
+  const [bio, setBio] = React.useState(initial.bio || "");
 
   const [avatarFocusX, setAvatarFocusX] = React.useState<number>(initial.avatarFocusX ?? 50);
   const [avatarFocusY, setAvatarFocusY] = React.useState<number>(initial.avatarFocusY ?? 50);
@@ -240,6 +243,7 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
       await saveProfile({
         name,
         username,
+        bio: bio.trim() || null,
         image: image || null,
         avatarFocusX,
         avatarFocusY,
@@ -294,6 +298,8 @@ export default function ProfileForm({ initial }: { initial: Initial }) {
         onNameChange={setName}
         username={username}
         onUsernameChange={(v) => setUsername(v.replace(/\s+/g, "").toLowerCase())}
+        bio={bio}
+        onBioChange={(v) => setBio(v.slice(0, 200))}
         gender={gender}
         onGenderChange={setGender}
         birthMonth={birthMonth}

@@ -15,6 +15,7 @@ model User {
   username  String?  @unique
   password  String?
   name      String?
+  bio       String?  @db.VarChar(200)
   image     String?
   // Avatar framing (object-position + scale) so user can adjust PP like WA/IG
   avatarFocusX Int?

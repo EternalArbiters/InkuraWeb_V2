@@ -48,6 +48,15 @@ function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
   );
 }
 
+function ProfileStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="min-w-[96px]">
+      <div className="text-2xl font-extrabold tracking-tight">{value}</div>
+      <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{label}</div>
+    </div>
+  );
+}
+
 function MoreButton({ href, children }: { href: string; children: string }) {
   return (
     <div className="mt-5">
@@ -69,7 +78,7 @@ export default async function ProfilePage() {
 
   const userId = session.user.id;
 
-  const [profile, publishedWorksCount, publicListsCount, reviewsCount, commentsCount, reviewFeed, commentFeed] = await Promise.all([
+  const [profile, publishedWorksCount, followersCount, followingCount, reviewsCount, commentsCount, reviewFeed, commentFeed] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -77,6 +86,7 @@ export default async function ProfilePage() {
         email: true,
         username: true,
         name: true,
+        bio: true,
         image: true,
         avatarFocusX: true,
         avatarFocusY: true,
@@ -136,7 +146,8 @@ export default async function ProfilePage() {
       },
     }),
     prisma.work.count({ where: { authorId: userId, status: "PUBLISHED" } }),
-    prisma.readingList.count({ where: { ownerId: userId, isPublic: true } }),
+    prisma.followUser.count({ where: { followingId: userId } }),
+    prisma.followUser.count({ where: { followerId: userId } }),
     prisma.review.count({ where: { userId } }),
     prisma.comment.count({ where: { userId } }),
     getViewerReviews(userId, { sort: "newest", take: 3 }),
@@ -195,6 +206,7 @@ export default async function ProfilePage() {
                   {profile.username ? `@${profile.username}` : profile.email}
                 </div>
                 <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">{profile.email}</div>
+                {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{profile.bio}</p> : null}
                 <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {formatDate(profile.createdAt)}</div>
               </div>
             </div>
@@ -209,19 +221,10 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 md:max-w-xl">
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/50 p-4">
-              <div className="text-2xl font-extrabold">{publishedWorksCount}</div>
-              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Published works</div>
-            </div>
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/50 p-4">
-              <div className="text-2xl font-extrabold">{publicListsCount}</div>
-              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Collections</div>
-            </div>
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/50 p-4">
-              <div className="text-2xl font-extrabold">{reviewsCount}</div>
-              <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Reviews</div>
-            </div>
+          <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <ProfileStat label="Works" value={publishedWorksCount} />
+            <ProfileStat label="Followers" value={followersCount} />
+            <ProfileStat label="Following" value={followingCount} />
           </div>
         </section>
 

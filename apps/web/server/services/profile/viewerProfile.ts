@@ -9,6 +9,7 @@ const viewerProfileSelect = {
   email: true,
   username: true,
   name: true,
+  bio: true,
   image: true,
   avatarFocusX: true,
   avatarFocusY: true,

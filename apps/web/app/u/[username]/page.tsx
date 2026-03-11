@@ -22,7 +22,7 @@ function avatarInitial(name: string) {
 
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
+    <div className="min-w-[96px]">
       <div className="text-2xl font-extrabold tracking-tight">{value}</div>
       <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{label}</div>
     </div>
@@ -110,14 +110,15 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                 <div className="min-w-0">
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight truncate">{displayName}</h1>
                   <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">@{user.username}</div>
+                  {user.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{user.bio}</p> : null}
                   <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Joined {joinedLabel(user.createdAt)}</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 w-full md:w-auto md:min-w-[340px]">
-                <StatCard label="Published Works" value={visibleWorks.length} />
-                <StatCard label="Collections" value={visibleLists.length} />
-                <StatCard label="Reviews" value={visibleReviews.length} />
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4 w-full md:w-auto md:min-w-[340px]">
+                <StatCard label="Works" value={user.stats?.publishedWorksCount || 0} />
+                <StatCard label="Followers" value={user.stats?.followersCount || 0} />
+                <StatCard label="Following" value={user.stats?.followingCount || 0} />
               </div>
             </div>
           </div>

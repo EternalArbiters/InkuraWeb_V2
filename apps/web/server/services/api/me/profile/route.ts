@@ -29,6 +29,12 @@ function normalizeName(raw: unknown) {
   return v.slice(0, 60);
 }
 
+function normalizeBio(raw: unknown) {
+  const v = String(raw ?? "").replace(/\r\n/g, "\n").trim();
+  if (!v) return null;
+  return v.slice(0, 200);
+}
+
 function normalizeImage(raw: unknown) {
   const v = String(raw ?? "").trim();
   if (!v) return null;
@@ -51,6 +57,10 @@ export const PATCH = apiRoute(async (req: Request) => {
 
   if ("name" in body) {
     data.name = normalizeName(body.name);
+  }
+
+  if ("bio" in body) {
+    data.bio = normalizeBio(body.bio);
   }
 
   if ("image" in body) {
@@ -152,6 +162,7 @@ export const PATCH = apiRoute(async (req: Request) => {
         email: true,
         username: true,
         name: true,
+        bio: true,
         image: true,
         avatarFocusX: true,
         avatarFocusY: true,
