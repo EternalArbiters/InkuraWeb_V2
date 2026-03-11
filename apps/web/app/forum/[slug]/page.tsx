@@ -7,10 +7,6 @@ export default async function ForumThreadPage({ params: paramsPromise }: { param
     <PageScaffold
       title={` Forum: ${params.slug}`}
       description="Thread forum (placeholder) supaya link /forum/* tidak 404."
-      crumbs={[
-        { label: "Home", href: "/home" },
-        { label: "Forum", href: `/forum/${params.slug}` },
-      ]}
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 space-y-4">
         <p className="text-sm text-gray-600 dark:text-gray-300">

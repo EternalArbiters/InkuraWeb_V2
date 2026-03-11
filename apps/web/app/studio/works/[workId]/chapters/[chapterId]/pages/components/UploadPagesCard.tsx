@@ -90,9 +90,6 @@ export default function UploadPagesCard({
           {loading ? "Working..." : importing ? "Processing import..." : preparing ? "Preparing..." : replaceExisting ? "Replace" : "Upload"}
         </button>
       </div>
-      <div className="text-xs text-gray-600 dark:text-gray-300">
-        Tip: upload large chapters in batches (e.g. 10–20 pages). Comic pages are optimized in the browser before upload.
-      </div>
     </div>
   );
 }

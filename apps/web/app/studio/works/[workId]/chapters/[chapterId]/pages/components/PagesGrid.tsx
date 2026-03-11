@@ -25,7 +25,6 @@ export default function PagesGrid({
       <div className="flex items-center justify-between">
         <div>
           <div className="font-semibold">Pages ({pages.length})</div>
-          <div className="text-xs text-gray-600 dark:text-gray-300">Pakai tombol panah untuk atur urutan halaman sesukamu.</div>
         </div>
         <BackButton href={`/studio/works/${workId}`} />
       </div>

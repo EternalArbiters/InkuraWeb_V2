@@ -223,7 +223,6 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
               >
                 Pilih semua image
               </button>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Urutan awal mengikuti nama file seperti 001, 002, 003, dst.</span>
             </div>
             <input
               ref={allInputRef}

@@ -14,9 +14,6 @@ export default function ChapterCoverCard({
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="font-semibold">Chapter cover</div>
-          <div className="text-xs text-gray-600 dark:text-gray-300">
-            Dipakai untuk thumbnail di list chapter.
-          </div>
         </div>
         {thumbnailImage ? (
           <button

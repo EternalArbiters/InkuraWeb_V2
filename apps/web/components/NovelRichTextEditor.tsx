@@ -258,9 +258,6 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
           onChange={(event) => void handleImagePick(event.target.files)}
           className="hidden"
         />
-        <div className="border-b border-gray-200 px-5 py-3 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">
-          Paste dari Word / web akan mempertahankan format dasar. Kamu juga bisa paste atau drop gambar langsung di editor ini.
-        </div>
         <div className="relative">
           {isEmpty ? <div className="pointer-events-none absolute left-5 top-4 text-2xl text-gray-400">{placeholder}</div> : null}
           <div
@@ -296,7 +293,6 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400">
-        <span>Fitur cepat: bold, italic, underline, strike, heading, list, quote, link, garis, undo/redo, paste format, paste/drop image.</span>
         {helperText ? <span>{helperText}</span> : null}
       </div>
     </div>

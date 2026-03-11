@@ -22,12 +22,6 @@ export default async function LibraryPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Library</h1>
           </div>
-          <Link
-            href="/home"
-            className="rounded-full px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Home
-          </Link>
         </div>
 
         <div className="mt-10">
@@ -73,7 +67,7 @@ export default async function LibraryPage() {
 
         <div className="mt-12">
           <div className="flex items-end justify-between gap-3">
-            <h2 className="text-lg font-bold">Your Lists</h2>
+            <h2 className="text-lg font-bold">Your Collections</h2>
             <ActionLink href="/lists">See all</ActionLink>
           </div>
 

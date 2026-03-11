@@ -32,9 +32,9 @@ export default function WorkPublishTypeCard({
       {needsSource ? (
         <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/40 p-4 text-sm">
           <div className="font-semibold">Peringatan hak cipta</div>
-          <div className="mt-1">
-            Jika terjadi pelanggaran hak cipta, kamu bisa dipermasalahkan. Kamu akan diberikan waktu untuk menarik karya itu dalam
-            <b> 1 minggu</b> setelah notifikasi diberikan. Jika tidak, karya akan dihapus otomatis oleh Inkura.
+          <div className="mt-1 text-sm">
+            Jika pemilik karya melaporkan adanya pelanggaran hak cipta, kamu bisa dipermasalahkan. Untuk menghindari kerugian yang diterima Inkura, pembaca dan dirimu sendiri. Kamu akan diberikan waktu untuk menarik karya itu dalam
+            <b> 1 minggu</b> setelah notifikasi diberikan. Jika dalam waktu itu, karya tidak di hapus, karya akan dihapus otomatis oleh Inkura.
           </div>
         </div>
       ) : null}

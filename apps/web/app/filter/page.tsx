@@ -6,10 +6,6 @@ export default function FilterPage() {
     <PageScaffold
       title=" Filter"
       description="Filter sekarang ada di Search (MVP). Halaman ini disiapkan untuk filter advanced nanti."
-      crumbs={[
-        { label: "Home", href: "/home" },
-        { label: "Filter", href: "/filter" },
-      ]}
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <p className="text-sm text-gray-600 dark:text-gray-300">

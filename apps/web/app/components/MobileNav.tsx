@@ -102,7 +102,7 @@ export default function MobileNav({
 
     { label: "Library", href: "/library", Icon: Bookmark },
     { label: "History", href: "/settings/history", Icon: History },
-    { label: "Lists", href: "/lists", Icon: Layers },
+    { label: "Collection", href: "/lists", Icon: Layers },
 
     { label: "Notifications", href: "/notifications", Icon: Bell },
     { label: "Upload", href: "/studio", Icon: Upload },

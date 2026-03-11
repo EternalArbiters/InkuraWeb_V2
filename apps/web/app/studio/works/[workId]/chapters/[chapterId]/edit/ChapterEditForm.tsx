@@ -199,9 +199,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="font-semibold">Chapter cover</div>
-            <div className="text-xs text-gray-600 dark:text-gray-300">
-              Thumbnail yang tampil di list chapter (Webtoon-style). Kalau kosong, sistem ambil otomatis.
-            </div>
           </div>
         </div>
 
@@ -302,9 +299,6 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
             placeholder={autoNumber ? `Chapter ${number}` : "Optional title / subtitle"}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            Kalau dikosongkan, sistem akan pakai {autoNumber ? `Chapter ${number}` : "Chapter Label"} sebagai judul default.
-          </span>
         </label>
 
         <label className="grid gap-2">

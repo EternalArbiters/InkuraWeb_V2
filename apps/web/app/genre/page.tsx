@@ -16,10 +16,6 @@ export default async function GenrePage() {
   return (
     <PageScaffold
       title="Genre"
-      crumbs={[
-        { label: "Home", href: "/home" },
-        { label: "Genre", href: "/genre" },
-      ]}
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <div className="flex items-end justify-between gap-3">

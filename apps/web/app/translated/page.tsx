@@ -5,10 +5,6 @@ export default function TranslatedPage() {
   return (
     <PageScaffold
       title="Translated"
-      crumbs={[
-        { label: "Home", href: "/home" },
-        { label: "Translated", href: "/translated" },
-      ]}
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <div className="mt-6">

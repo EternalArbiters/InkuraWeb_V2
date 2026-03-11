@@ -87,12 +87,6 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                     : "Karya ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings."}
                 </p>
 
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <Link href="/settings/account" className="rounded-xl bg-purple-600 px-4 py-2 font-semibold text-white hover:brightness-110">
-                    {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
-                  </Link>
-                </div>
-
                 {work.coverImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={work.coverImage} alt={work.title} className="mt-6 w-full max-w-sm border border-gray-200 blur-md dark:border-gray-800" />
