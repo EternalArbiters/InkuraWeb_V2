@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import HorizontalRail from "@/app/home/HorizontalRail";
 import WorkCardSquare from "@/app/home/WorkCardSquare";
 import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
+import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
+import ProfileReviewCard from "@/app/components/user/ProfileReviewCard";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
+import { getViewerComments, getViewerReviews } from "@/server/services/profile/viewerActivity";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +37,26 @@ function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
         </div>
       </div>
 
-      <div className="mt-3">
-        <HorizontalRail>
+      <div className="mt-3 overflow-x-auto overscroll-x-contain no-scrollbar -mx-4 px-4">
+        <div className="flex w-max gap-3 md:gap-4 snap-x snap-mandatory">
           {works.map((work) => (
             <WorkCardSquare key={work.id} work={work} />
           ))}
-        </HorizontalRail>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function MoreButton({ href, children }: { href: string; children: string }) {
+  return (
+    <div className="mt-5">
+      <Link
+        href={href}
+        className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+      >
+        {children}
+      </Link>
     </div>
   );
 }
@@ -54,7 +69,7 @@ export default async function ProfilePage() {
 
   const userId = session.user.id;
 
-  const [profile, publishedWorksCount, publicListsCount, reviewsCount] = await Promise.all([
+  const [profile, publishedWorksCount, publicListsCount, reviewsCount, commentsCount, reviewFeed, commentFeed] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -118,29 +133,14 @@ export default async function ProfilePage() {
             },
           },
         },
-        reviews: {
-          orderBy: { updatedAt: "desc" },
-          take: 6,
-          select: {
-            id: true,
-            rating: true,
-            title: true,
-            body: true,
-            createdAt: true,
-            updatedAt: true,
-            work: {
-              select: {
-                title: true,
-                slug: true,
-              },
-            },
-          },
-        },
       },
     }),
     prisma.work.count({ where: { authorId: userId, status: "PUBLISHED" } }),
     prisma.readingList.count({ where: { ownerId: userId, isPublic: true } }),
     prisma.review.count({ where: { userId } }),
+    prisma.comment.count({ where: { userId } }),
+    getViewerReviews(userId, { sort: "newest", take: 3 }),
+    getViewerComments(userId, { sort: "newest", take: 3 }),
   ]);
 
   if (!profile) {
@@ -246,7 +246,7 @@ export default async function ProfilePage() {
         </section>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
+          <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm self-start">
             <div className="flex items-end justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
@@ -256,19 +256,18 @@ export default async function ProfilePage() {
             </div>
 
             {profile.readingLists.length ? (
-              <div className="mt-5">
-                <HorizontalRail>
-                  {profile.readingLists.map((list) => (
-                    <CollectionRailCard
-                      key={list.id}
-                      href={`/lists/${list.slug}`}
-                      title={list.title}
-                      description={list.description}
-                      itemCount={Number(list._count?.items || 0)}
-                      items={Array.isArray(list.items) ? list.items : []}
-                    />
-                  ))}
-                </HorizontalRail>
+              <div className="mt-5 grid gap-4">
+                {profile.readingLists.map((list) => (
+                  <CollectionRailCard
+                    key={list.id}
+                    href={`/lists/${list.slug}`}
+                    title={list.title}
+                    description={list.description}
+                    itemCount={Number(list._count?.items || 0)}
+                    items={Array.isArray(list.items) ? list.items : []}
+                    layout="stack"
+                  />
+                ))}
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
@@ -277,37 +276,51 @@ export default async function ProfilePage() {
             )}
           </section>
 
-          <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
-            <div>
-              <h2 className="text-2xl font-extrabold tracking-tight">Recent Reviews</h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Your latest ratings and short reviews.</p>
-            </div>
+          <div className="grid gap-8 self-start">
+            <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
+              <div>
+                <h2 className="text-2xl font-extrabold tracking-tight">Recent Reviews</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Your latest ratings and short reviews.</p>
+              </div>
 
-            {profile.reviews.length ? (
-              <div className="mt-5 grid gap-3">
-                {profile.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/40 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <Link href={review.work?.slug ? `/w/${review.work.slug}` : "#"} className="font-semibold hover:underline truncate">
-                        {review.work?.title || "Untitled work"}
-                      </Link>
-                      <div className="shrink-0 text-sm font-semibold">★ {review.rating.toFixed(1)}</div>
-                    </div>
-                    {review.title ? <div className="mt-2 text-sm font-semibold">{review.title}</div> : null}
-                    <div className="mt-2 text-sm text-gray-700 dark:text-gray-200 line-clamp-3 whitespace-pre-wrap">{review.body}</div>
-                    <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">{formatDate(review.updatedAt || review.createdAt)}</div>
+              {reviewFeed.items.length ? (
+                <>
+                  <div className="mt-5 grid gap-3">
+                    {reviewFeed.items.map((review) => (
+                      <ProfileReviewCard key={review.id} review={review} />
+                    ))}
                   </div>
-                ))}
+                  {reviewsCount > 3 ? <MoreButton href="/profile/reviews">All reviews</MoreButton> : null}
+                </>
+              ) : (
+                <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
+                  No reviews yet.
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
+              <div>
+                <h2 className="text-2xl font-extrabold tracking-tight">Recent Comments</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Your latest comments across works and chapters.</p>
               </div>
-            ) : (
-              <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-                No reviews yet.
-              </div>
-            )}
-          </section>
+
+              {commentFeed.items.length ? (
+                <>
+                  <div className="mt-5 grid gap-3">
+                    {commentFeed.items.map((comment) => (
+                      <ProfileCommentCard key={comment.id} comment={comment} />
+                    ))}
+                  </div>
+                  {commentsCount > 3 ? <MoreButton href="/profile/comments">All comments</MoreButton> : null}
+                </>
+              ) : (
+                <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
+                  No comments yet.
+                </div>
+              )}
+            </section>
+          </div>
         </div>
       </div>
     </main>

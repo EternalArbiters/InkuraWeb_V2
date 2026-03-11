@@ -15,6 +15,7 @@ type CollectionRailCardProps = {
   description?: string | null;
   itemCount?: number;
   items?: PreviewEntry[];
+  layout?: "rail" | "stack";
 };
 
 function pickWork(entry: PreviewEntry) {
@@ -23,13 +24,13 @@ function pickWork(entry: PreviewEntry) {
   return entry;
 }
 
-export default function CollectionRailCard({ href, title, description, itemCount = 0, items = [] }: CollectionRailCardProps) {
+export default function CollectionRailCard({ href, title, description, itemCount = 0, items = [], layout = "rail" }: CollectionRailCardProps) {
   const previews = items.map((entry) => pickWork(entry)).filter(Boolean).slice(0, 3) as WorkPreview[];
 
   return (
     <Link
       href={href}
-      className="snap-start shrink-0 w-[240px] sm:w-[280px] overflow-hidden rounded-[22px] border border-gray-200/80 bg-white/60 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-800 dark:bg-[#08142e]/90"
+      className={`${layout === "stack" ? "w-full" : "snap-start shrink-0 w-[240px] sm:w-[280px]"} overflow-hidden rounded-[22px] border border-gray-200/80 bg-white/60 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-800 dark:bg-[#08142e]/90`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
