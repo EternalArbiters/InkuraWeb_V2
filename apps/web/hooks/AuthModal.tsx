@@ -57,7 +57,7 @@ export default function AuthModal() {
 
       const data = await reg.json();
       if (!reg.ok) {
-        setError(data?.error || "Registrasi gagal");
+        setError(data?.error || "Registration failed");
         return;
       }
 
@@ -76,7 +76,7 @@ export default function AuthModal() {
       }
     } catch (e) {
       console.error(e);
-      setError("Registrasi gagal");
+      setError("Registration failed");
     }
   };
 
@@ -151,7 +151,7 @@ export default function AuthModal() {
               {isLogin ? (
                 <input
                   type="text"
-                  placeholder="Email atau Username"
+                  placeholder="Email or Username"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"

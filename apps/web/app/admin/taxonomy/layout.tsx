@@ -23,7 +23,7 @@ export default async function AdminTaxonomyLayout({ children }: { children: Reac
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Admin • Taxonomy</h1>
-          <p className="text-sm text-neutral-500">Kelola genre, tags, warnings, dan deviant love langsung dari web.</p>
+          <p className="text-sm text-neutral-500">Manage genres, tags, warnings, and Deviant Love directly from the web UI.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <NavLink href="/admin/reports" label="Reports" />

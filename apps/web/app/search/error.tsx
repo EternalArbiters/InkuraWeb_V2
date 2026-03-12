@@ -10,8 +10,8 @@ type Props = {
 export default function SearchError({ error, reset }: Props) {
   return (
     <ErrorView
-      title="Pencarian bermasalah"
-      message="Terjadi kesalahan saat memuat hasil pencarian. Coba lagi."
+      title="Search error"
+      message="An error occurred while loading the search results. Please try again."
       error={error}
       reset={reset}
       homeHref="/search"

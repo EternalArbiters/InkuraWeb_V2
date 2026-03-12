@@ -4,7 +4,7 @@ export default function AppDownloadPage() {
   return (
     <PageScaffold
       title=" App Download"
-      description="Placeholder. Nanti diisi link Play Store / App Store."
+      description="Placeholder. Play Store / App Store links will be added later."
       crumbs={[
         { label: "Home", href: "/home" },
         { label: "App Download", href: "/app-download" },

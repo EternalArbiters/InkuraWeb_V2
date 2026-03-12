@@ -14,7 +14,7 @@ export function tooManyRequestsFromRateLimit(result: RateLimitDecision) {
     {
       ok: false,
       error: "too_many_requests",
-      message: `Terlalu banyak request. Coba lagi dalam ${retryAfterSeconds} detik.`,
+      message: `Too many requests. Try again in ${retryAfterSeconds} seconds.`,
     },
     {
       status: 429,

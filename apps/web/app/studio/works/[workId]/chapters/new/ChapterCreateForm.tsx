@@ -107,14 +107,14 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
     setCreatedChapterId(null);
 
     if (workType === "NOVEL" && !novelContentHasMeaningfulContent(content)) {
-      setError("Content wajib diisi untuk NOVEL");
+      setError("Content is required for NOVEL");
       return;
     }
 
     setLoading(true);
     try {
       // Step 1: create chapter (metadata + novel content only)
-      setNote("Membuat chapter...");
+      setNote("Creating chapter...");
 
       const payload: any = {
         workId,
@@ -142,7 +142,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
       // Step 2: if comic + pages selected, optimize in browser, upload to R2 (presigned), then commit.
       if (workType === "COMIC" && pages.length) {
-        setNote(`Menyiapkan optimasi ${pages.length} halaman...`);
+        setNote(`Preparing optimization for ${pages.length} pages...`);
         const preparedUploads =
           preparedPages.length === pages.length ? preparedPages : await prepareUploadFiles({ scope: "pages", files: pages });
 
@@ -150,8 +150,8 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         for (let i = 0; i < preparedUploads.length; i += 1) {
           const prepared = preparedUploads[i];
           const savedBytes = Math.max(0, prepared.originalBytes - prepared.optimizedBytes);
-          const noteSuffix = savedBytes > 0 ? ` (hemat ${formatBytes(savedBytes)})` : "";
-          setNote(`Upload halaman ${i + 1}/${preparedUploads.length}${noteSuffix}...`);
+          const noteSuffix = savedBytes > 0 ? ` (save ${formatBytes(savedBytes)})` : "";
+          setNote(`Uploading page ${i + 1}/${preparedUploads.length}${noteSuffix}...`);
           const up = await presignAndUpload({
             scope: "pages",
             file: prepared.originalFile,
@@ -163,7 +163,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
           uploads.push({ url: up.url, key: up.key, order: i + 1 });
         }
 
-        setNote("Menyimpan daftar halaman...");
+        setNote("Saving page list...");
         const commitRes = await fetch(`/api/studio/chapters/${chapterId}/pages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -171,7 +171,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         });
         const commitJson = await commitRes.json();
         if (!commitRes.ok) {
-          throw new Error(commitJson?.error || "Gagal menyimpan halaman. Chapter sudah dibuat; coba upload ulang di Manage Pages.");
+          throw new Error(commitJson?.error || "Failed to save the pages. The chapter was created; please re-upload them in Manage Pages.");
         }
       }
 
@@ -192,7 +192,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         message={error || ""}
         onClose={() => setError(null)}
         actionHref={createdChapterId ? `/studio/works/${workId}/chapters/${createdChapterId}/pages` : undefined}
-        actionLabel={createdChapterId ? "Buka Manage Pages" : undefined}
+        actionLabel={createdChapterId ? "Open Manage Pages" : undefined}
       />
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
@@ -290,12 +290,12 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
           {pageSummary ? (
             <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
               <div>
-                {pageSummary.count} file · sebelum {formatBytes(pageSummary.originalBytes)}
+                {pageSummary.count} files · before {formatBytes(pageSummary.originalBytes)}
                 {pageSummary.ready ? ` · sesudah ${formatBytes(pageSummary.optimizedBytes)}` : " · menyiapkan optimasi..."}
               </div>
               {pageSummary.ready ? (
                 <div>
-                  Hemat {formatBytes(pageSummary.bytesSaved)} · {pageSummary.compressedCount}/{pageSummary.count} halaman disesuaikan otomatis.
+                  Saved {formatBytes(pageSummary.bytesSaved)} · {pageSummary.compressedCount}/{pageSummary.count} pages adjusted automatically.
                 </div>
               ) : null}
             </div>

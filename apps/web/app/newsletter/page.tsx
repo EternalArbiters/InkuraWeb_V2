@@ -5,7 +5,7 @@ export default function NewsletterPage() {
   return (
     <PageScaffold
       title=" Newsletter"
-      description="Placeholder. Nanti diisi form subscribe."
+      description="Placeholder. A subscribe form will be added later."
       crumbs={[
         { label: "Home", href: "/home" },
         { label: "Newsletter", href: "/newsletter" },
@@ -13,7 +13,7 @@ export default function NewsletterPage() {
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Coming soon. Untuk sekarang, balik ke feed.
+          Coming soon. For now, go back to the feed.
         </p>
         <div className="mt-4">
           <Link

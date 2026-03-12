@@ -1,4 +1,4 @@
 # server/services
 
-Tempat business-logic (rules) kalau nanti mau dipisah dari route handler.
-Contoh: publishWork(), createChapterWithPages(), dsb.
+Tempat business-logic (rules) if later mau dipisah from route handler.
+Examples: publishWork(), createChapterWithPages(), etc.

@@ -21,7 +21,7 @@ export default function HeroSection({ next, onLogin, onSignup }: Props) {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 -mt-24 mb-8">
           <div className="rounded-2xl border border-purple-200/40 dark:border-purple-500/20 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl shadow-lg px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="text-sm text-gray-800 dark:text-gray-100">
-              Kamu perlu login untuk mengakses <span className="font-semibold">{next}</span>
+              You need to sign in to access <span className="font-semibold">{next}</span>
             </div>
             <div className="flex gap-2">
               <button

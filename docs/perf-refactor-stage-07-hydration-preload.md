@@ -1,69 +1,69 @@
 # Perf refactor stage 07 — hydration preload and dynamic cleanup
 
-Stage 7 fokus ke dua hal yang masih tersisa setelah stage 6:
+Stage 7 focuses on two things that still tersisa after stage 6:
 
-1. Mengurangi request tambahan setelah hydration untuk halaman detail work dan reader.
-2. Menghapus `force-dynamic` yang redundan pada page wrapper yang tidak membutuhkannya secara eksplisit.
+1. Reduce request additional after hydration for page detail work and reader.
+2. Remove `force-dynamic` that redunand pada page wrapper that not membutuhkannya secara eksplcontentt.
 
-Prinsip yang tetap dijaga:
-- tidak menghilangkan fitur
-- API route tetap dipertahankan
-- state interaktif client tetap berjalan setelah page tampil
+The principles that remain unchanged:
+- do not remove features
+- API route still kept
+- interactive client state still works after the page is shown
 
-## Perubahan utama
+## Perubahan main
 
-### 1. Preload review di work detail
+### 1. Preload review in work detail
 
-Sebelum stage 7, `ReviewSection` selalu melakukan fetch ke:
+Before stage 7, `ReviewSection` always fetched to:
 - `/api/works/[workId]/reviews`
 
-setelah hydration, walaupun halaman work sudah dirender dari server.
+after hydration, even though page work is already rendered on the server.
 
-Sekarang server page `/w/[slug]` memuat review awal langsung lewat service server:
+Sekarang server page `/w/[slug]` load review awal directly through service server:
 - `server/services/reviews/listWorkReviews.ts`
 
-Lalu hasil awal dipassing ke:
+Lalu initial result is passed to:
 - `app/components/work/ReviewSection.tsx`
 - `app/components/work/reviews/useReviews.ts`
 
 Dampak:
-- halaman detail work tidak wajib memicu request review tambahan saat pertama kali dibuka
-- refresh interaktif setelah submit/edit/delete tetap memakai endpoint API yang sama
+- page detail work no longer needs to trigger a request review additional when first opened
+- refresh interactive after submit/edit/delete still uses the same API endpoint
 
-### 2. Preload comment di work detail dan reader
+### 2. Preload comments on work detail and reader
 
-Sebelum stage 7, `CommentSection` selalu fetch ke `/api/comments` saat mount.
+Before stage 7, `CommentSection` sethen fetch to `/api/comments` on mount.
 
-Sekarang data comment awal dimuat di server untuk:
+Now the initial comment data is loaded on the server for:
 - `/w/[slug]`
 - `/w/[slug]/read/[chapterId]`
 - `/w/[slug]/read/[chapterId]/comments`
 
-Service yang dipakai:
+Services used:
 - `server/services/comments/fetchComments.ts`
 
-Hook client sekarang bisa menerima seed data awal:
+The client hook can now receive initial seed data:
 - `app/components/work/comments/useComments.ts`
 
 Dampak:
-- work detail tidak lagi wajib memicu request comment agregat saat mount
-- reader mobile/desktop tidak lagi wajib memicu request comment preview terpisah saat mount
-- halaman komentar chapter penuh juga bisa tampil dengan data awal dari server
-- aksi reply/edit/like/dislike tetap memakai endpoint API yang sama
+- work detail no longer needs to trigger a request comment agregat on mount
+- reader mobile/desktop no longer needs to trigger a request comment preview terpisah on mount
+- the full chapter comments page can also render with initial server data
+- aksi reply/edit/like/dislike still uses the same API endpoint
 
-### 3. Reuse logic review API ke service server
+### 3. Reuse logic review API to service server
 
-GET route review sekarang memakai service yang sama dengan server page:
+GET route review now memakai service same with server page:
 - `server/services/reviews/listWorkReviews.ts`
 - `server/services/api/works/[workId]/reviews/route.ts`
 
 Hasilnya:
-- logic gating dan sorting review tidak terduplikasi
-- page server dan API memakai kontrak data yang sama
+- review gating and sorting logic are not duplicated
+- the server page and API use the same data contract
 
-### 4. Dynamic cleanup yang aman
+### 4. Dynamic cleanup safe
 
-`force-dynamic` dihapus dari page wrapper yang tidak perlu memaksakan dynamic secara eksplisit:
+`force-dynamic` was removed from page wrappers that do not need to force dynamic rendering explicitly:
 - `app/admin/notify/page.tsx`
 - `app/browse/latest-translations/page.tsx`
 - `app/browse/new-originals/page.tsx`
@@ -74,11 +74,11 @@ Hasilnya:
 - `app/read/comic/[workId]/[chapterId]/page.tsx`
 - `app/read/novel/[workId]/[chapterId]/page.tsx`
 
-Catatan:
-- beberapa route tetap akan menjadi dynamic secara otomatis bila child/service membaca session/cookies
-- tujuan perubahan ini adalah menghapus pemaksaan yang redundan, bukan mengubah fitur auth/gating
+Note:
+- some routes will still become dynamic automatically if their child/service reads session or cookies
+- the purpose of this change is removing pemaksaan that redunand, not to change auth/gating behavior
 
-## File penting yang berubah
+## Important changed files
 
 - `apps/web/app/w/[slug]/page.tsx`
 - `apps/web/app/w/[slug]/read/[chapterId]/page.tsx`
@@ -93,18 +93,18 @@ Catatan:
 
 ## Expected effect
 
-Stage 7 tidak terutama menurunkan jumlah query DB total; yang diturunkan adalah:
-- request tambahan browser setelah hydration
-- function invocation tambahan untuk fetch review/comment awal
-- latency UI awal sebelum review/comment muncul
+Stage 7 not especially menurunkan jumlah query DB total; what is reduced is:
+- additional browser requests after hydration
+- function invocation additional for fetch review/comment awal
+- initial UI latency before reviews/comments appear
 
 ## Catatan verifikasi
 
-Yang bisa diverifikasi di environment kerja ini:
+What can be verified in this working environment:
 - scanner baseline statis berjalan
 - hotspot `force-dynamic` turun
-- page detail/reader sudah membawa seed data awal ke komponen client
+- page detail/reader already membawa seed data awal to komponen client
 
-Yang belum bisa diklaim penuh di environment ini:
+What still cannot be fully claimed in this environment:
 - `npm run verify` end-to-end
-- typecheck final bila dependency/type workspace belum terpasang lengkap
+- final typecheck if workspace dependencies/types are not fully installed

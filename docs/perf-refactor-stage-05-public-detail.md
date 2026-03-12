@@ -1,28 +1,28 @@
 # Perf refactor stage 05 — public detail and reading-list fan-out
 
-Tahap 5 fokus menutup sisa self-fetch server page di jalur publik yang sering dibuka user:
+Tahap 5 fokus menutup sisa self-fetch server page in jflow public that sering dibuka user:
 
 - detail work `/w/[slug]`
-- daftar chapter `/w/[slug]/chapters`
+- chapter list `/w/[slug]/chapters`
 - reader chapter `/w/[slug]/read/[chapterId]`
-- halaman komentar reader `/w/[slug]/read/[chapterId]/comments`
-- reading list pribadi `/lists`
-- reading list publik `/lists/[slug]`
+- page comments reader `/w/[slug]/read/[chapterId]/comments`
+- reading list private `/lists`
+- reading list public `/lists/[slug]`
 - redirect legacy `/work/[workId]`, `/read/novel/[workId]/[chapterId]`, `/read/comic/[workId]/[chapterId]`
 
-## Masalah sebelum tahap 5
+## Masalah before stage 5
 
-Walaupun tahap 1–4 sudah memangkas banyak fan-out, halaman publik paling penting masih melakukan pola ini:
+Walaupun stage 1–4 already memangkas banyak fan-out, page public paling penting still melakukan pola this:
 
 `server page -> fetch /api/... -> route handler -> service/db`
 
 Dampaknya:
 
-- satu page render tetap menghasilkan invocation tambahan
-- redirect legacy ikut memukul function internal hanya untuk mencari slug
-- detail work dan reader menduplikasi boundary HTTP internal padahal sudah ada service server-only yang cocok untuk dipakai langsung
+- satu page render still menghasilkan invocation additional
+- redirect legacy ikut memukul function internal only for mencari slug
+- detail work and reader menduplikasi boundary HTTP internal padathing already there is service server-only that suitable for direct use
 
-## Perubahan utama
+## Perubahan main
 
 ### 1. Service lookup slug work
 
@@ -30,47 +30,47 @@ Ditambahkan:
 
 - `apps/web/server/services/works/workSlug.ts`
 
-Service ini dipakai ulang oleh:
+This service is reused by:
 
 - legacy redirect pages
 - API `/api/works/[workId]`
 
-### 2. Service detail work publik
+### 2. Service detail work public
 
 Ditambahkan:
 
 - `apps/web/server/services/works/workPage.ts`
 
-Service ini memindahkan logika detail work ke reusable server service:
+Service this memindahkan logika detail work to reusable server service:
 
 - lookup work by slug
 - gating mature / deviant love
-- visibility chapter
+- vcontentbility chapter
 - viewer interactions (like, bookmark, rating)
 - reading progress
 - previous / next arc derivation
 - thumbnail fallback chapter
 
-Dipakai oleh:
+Used by:
 
 - `app/w/[slug]/page.tsx`
 - `app/w/[slug]/chapters/page.tsx`
 - API `/api/works/slug/[slug]`
 
-### 3. Service reader chapter publik
+### 3. Service reader chapter public
 
 Ditambahkan:
 
 - `apps/web/server/services/chapters/readChapter.ts`
 
-Service ini memusatkan:
+Service this memusatkan:
 
 - lookup chapter + work
 - gating chapter/work
 - chapter like viewer
-- payload reader untuk work/chapter
+- payload reader for work/chapter
 
-Dipakai oleh:
+Used by:
 
 - `app/w/[slug]/read/[chapterId]/page.tsx`
 - `app/w/[slug]/read/[chapterId]/comments/page.tsx`
@@ -82,56 +82,56 @@ Ditambahkan:
 
 - `apps/web/server/services/readingLists/readingLists.ts`
 
-Service ini memusatkan:
+Service this memusatkan:
 
 - list reading list milik viewer
-- reading list publik/private by slug
-- filtering item yang tetap menghormati gate mature / deviant love
+- reading list public/private by slug
+- filtering item that still menghormati gate mature / deviant love
 
-Dipakai oleh:
+Used by:
 
 - `app/lists/page.tsx`
 - `app/lists/[slug]/page.tsx`
 - API `/api/lists`
 - API `/api/lists/public/[slug]`
 
-## Kenapa ini aman
+## Kenapa this safe
 
-- fitur tidak dihapus
-- API route tetap dipertahankan untuk client-side behavior yang masih memerlukannya
-- server page hanya berhenti memutar request lewat HTTP internal untuk data yang sama
-- shape payload tetap dijaga agar UI tidak berubah
+- features not dihapus
+- API route is still kept for client-side behavior that still memerlukannya
+- the server page stops routing requests through internal HTTP for the same data
+- shape payload still dijaga so that UI not berubah
 
-## Dampak yang ditargetkan
+## Dampak that ditargetkan
 
-Tahap 5 menurunkan invocation pada jalur publik paling sering dibuka, terutama:
+Tahap 5 menurunkan invocation pada jflow public most frequently opened, especially:
 
 - open work detail
 - open reader
 - open reading list
-- redirect dari route legacy ke slug route baru
+- redirect from route legacy to slug route new
 
-Secara statis, hasil baseline berubah dari:
+Secara statis, hasil baseline berubah from:
 
 - server-page import `apiJson()`: `14 -> 5`
-- total call `apiJson()` di `app/**`: `17 -> 8`
+- total call `apiJson()` in `app/**`: `17 -> 8`
 
-Sisa hotspot `apiJson()` setelah tahap ini tinggal area:
+Sisa hotspot `apiJson()` after stage this tinggal area:
 
 - admin reports
 - studio work detail
 - studio chapter create/edit/pages
 
-Artinya sisa fan-out terbesar sekarang sudah terkonsentrasi di surface creator/admin, bukan lagi di public reader flow.
+Artinya sisa fan-out terbesar now already terkonsentrasi in surface creator/admin, no longer in the public reader flow.
 
-## File baru
+## File new
 
 - `apps/web/server/services/works/workSlug.ts`
 - `apps/web/server/services/works/workPage.ts`
 - `apps/web/server/services/chapters/readChapter.ts`
 - `apps/web/server/services/readingLists/readingLists.ts`
 
-## File yang diubah
+## File that diubah
 
 - `apps/web/app/w/[slug]/page.tsx`
 - `apps/web/app/w/[slug]/chapters/page.tsx`
@@ -150,8 +150,8 @@ Artinya sisa fan-out terbesar sekarang sudah terkonsentrasi di surface creator/a
 
 ## Catatan verifikasi
 
-Verifikasi minimum yang berhasil dijalankan di environment kerja ini:
+Minimum verification that was successfully run in this working environment:
 
 - `node apps/web/scripts/refactor-stage0-baseline.js`
 
-Environment container ini masih belum stabil untuk `npm install` / Prisma / type packages penuh, jadi tahap ini belum mengklaim `npm run verify` pass penuh.
+Environment container this still not yet stabil for `npm install` / Prisma / type packages penuh, become stage this not yet mengklaim `npm run verify` pass penuh.

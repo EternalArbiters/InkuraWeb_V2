@@ -108,7 +108,7 @@ export default function PublicProfileActionsMenu({
             disabled={pending !== null}
             onClick={async () => {
               if (requiresAuth) return ensureAuth();
-              const reason = window.prompt(`Kenapa akun @${username} mau direport?`);
+              const reason = window.prompt(`Why do you want to report @${username}?`);
               if (!reason || !reason.trim()) return;
               setPending("report");
               try {

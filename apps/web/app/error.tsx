@@ -10,8 +10,8 @@ type Props = {
 export default function GlobalErrorBoundary({ error, reset }: Props) {
   return (
     <ErrorView
-      title="Terjadi Kesalahan"
-      message="Ada yang bermasalah di sisi aplikasi. Kamu bisa coba lagi."
+      title="An Error Occurred"
+      message="Something went wrong on the application side. You can try again."
       error={error}
       reset={reset}
       homeHref="/home"

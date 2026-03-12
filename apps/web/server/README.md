@@ -1,14 +1,14 @@
 # `apps/web/server/*`
 
-Folder ini berisi **server-only modules**.
+Folder this bercontent **server-only modules**.
 
 Aturan:
 
-- Jangan import modul di sini dari komponen client (`"use client"`).
-- Tambahkan `import "server-only";` di setiap file server-only.
-- Untuk helper yang pakai browser APIs, letakkan di `lib/*` atau `hooks/*` dan beri marker `import "client-only";`.
+- Do not import modules here from client components (`"use client"`).
+- Tambahkan `import "server-only";` in setiap file server-only.
+- For helper that use browser APIs, letakkan in `lib/*` or `hooks/*` and beri marker `import "client-only";`.
 
-Subfolder utama:
+Subfolder main:
 
 - `auth/` — NextAuth config, session helpers, require user/admin
 - `db/` — Prisma client singleton

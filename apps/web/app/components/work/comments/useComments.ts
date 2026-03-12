@@ -105,7 +105,7 @@ export function useComments({
             const res = await fetch(`/api/comments?${qs.toString()}`, { cache: "no-store" as any });
             const json = await res.json().catch(() => ({} as any));
             if (!res.ok) {
-              throw new Error(json?.error || "Gagal memuat comments");
+              throw new Error(json?.error || "Failed to load comments");
             }
             return {
               comments: (json?.comments || []) as CommentItem[],
@@ -119,7 +119,7 @@ export function useComments({
         setCommentsState(data.comments);
         setLoading(false);
       } catch (error: any) {
-        onErrorRef.current?.(error?.message || "Gagal memuat comments");
+        onErrorRef.current?.(error?.message || "Failed to load comments");
         setLoading(false);
       }
     },

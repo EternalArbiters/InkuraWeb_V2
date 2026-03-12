@@ -7,7 +7,7 @@ import Image from "next/image";
 
 type Message = {
   from: "elya" | "user";
-  role: "ADMIN" | "USER" | "elya"; // tambahkan "elya" agar tidak error
+  role: "ADMIN" | "USER" | "elya"; // add "elya" to avoid errors
   text: string;
 };
 
@@ -16,7 +16,7 @@ export default function ChatElyaPage() {
     {
       from: "elya",
       role: "elya",
-      text: "Halo~ Aku di sini untuk mendengarkanmu ",
+      text: "Hi~ I'm here to listen to you ",
     },
   ]);
   const [input, setInput] = useState("");
@@ -52,12 +52,12 @@ export default function ChatElyaPage() {
       const elyaMessage: Message = {
         from: "elya",
         role: "elya",
-        text: data.reply || "Elya tidak bisa membalas (⁠╥⁠﹏⁠╥⁠)",
+        text: data.reply || "Elya can't reply right now (⁠╥⁠﹏⁠╥⁠)",
       };
 
       setMessages((prev) => [...prev, elyaMessage]);
     } catch (error) {
-      console.error("Gagal menghubungi Elyanna:", error);
+      console.error("Failed to reach Elyanna:", error);
       setMessages((prev) => [
         ...prev,
         {
@@ -151,7 +151,7 @@ export default function ChatElyaPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Tulis sesuatu untuk Elya..."
+            placeholder="Write something to Elya..."
             className="flex-1 px-4 py-2 rounded-full text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none text-black dark:text-white"
           />
           <button

@@ -1,37 +1,37 @@
 # Perf Refactor — Tahap 1 Fan-out Request Reduction
 
-Tahap 1 fokus ke satu target: **mengurangi fan-out request dari server page ke API internal** tanpa menghilangkan fitur apa pun.
+Tahap 1 focuses on one target: **reducing fan-out requests from server pages to internal APIs** without removing any features.
 
-## Sasaran tahap ini
+## Sasaran stage this
 
-Masalah awal di baseline tahap 0:
+Masalah awal in baseline stage 0:
 
-- `app/home/page.tsx` melakukan 5x `apiJson()` ke `/api/works`
-- `app/search/page.tsx` melakukan fetch server-side untuk prefs, taxonomy, lalu `/api/works`
-- `app/settings/account/page.tsx` memanggil prefs + 3 taxonomy endpoint
-- `app/studio/new/page.tsx` memanggil prefs + 3 taxonomy endpoint
-- `app/studio/works/[workId]/edit/page.tsx` memanggil detail work + 3 taxonomy endpoint
+- `app/home/page.tsx` melakukan 5x `apiJson()` to `/api/works`
+- `app/search/page.tsx` melakukan fetch server-side for prefs, taxonomy, then `/api/works`
+- `app/settings/account/page.tsx` calls prefs + 3 taxonomy endpoint
+- `app/studio/new/page.tsx` calls prefs + 3 taxonomy endpoint
+- `app/studio/works/[workId]/edit/page.tsx` calls detail work + 3 taxonomy endpoint
 
 Pola tersebut membuat satu page render berubah menjadi banyak invocation server internal.
 
-## Perubahan yang masuk di tahap 1
+## Perubahan that enter in stage 1
 
-### 1. Home page berhenti self-fetch ke `/api/works`
+### 1. Home page berhenti self-fetch to `/api/works`
 
 `apps/web/app/home/page.tsx`
 
-Sekarang home memanggil loader server langsung:
+Sekarang home calls loader server directly:
 
 - `apps/web/server/services/home/getHomePageData.ts`
 - `apps/web/server/services/works/listPublishedWorks.ts`
 
-API route `/api/works` tetap dipertahankan untuk client / external caller yang masih membutuhkannya.
+API route `/api/works` is still kept for client / external caller that still membutuhkannya.
 
-### 2. Search page berhenti self-fetch ke prefs, taxonomy, dan `/api/works`
+### 2. Search page berhenti self-fetch to prefs, taxonomy, and `/api/works`
 
 `apps/web/app/search/page.tsx`
 
-Sekarang search langsung memakai service server:
+Sekarang search directly memakai service server:
 
 - `getViewerPreferences()`
 - `listActiveGenres()`
@@ -39,78 +39,78 @@ Sekarang search langsung memakai service server:
 - `listActiveDeviantLoveTags()`
 - `listPublishedWorksFromSearchParams()`
 
-Behavior filter, gating, dan hasil search tetap dipertahankan.
+Behavior filter, gating, and hasil search still kept.
 
-### 3. Settings account berhenti self-fetch ke API internal
+### 3. Settings account berhenti self-fetch to API internal
 
 `apps/web/app/settings/account/page.tsx`
 
-Sekarang page ini mengambil:
+Sekarang page this mengambil:
 
-- preferences langsung dari service server
-- taxonomy langsung dari service server
+- preferences directly from service server
+- taxonomy directly from service server
 
-Redirect login tetap dipertahankan.
+Redirect login still kept.
 
-### 4. Studio create/edit berhenti self-fetch ke API internal
+### 4. Studio create/edit berhenti self-fetch to API internal
 
-File yang dibenahi:
+File that dibenahi:
 
 - `apps/web/app/studio/new/page.tsx`
 - `apps/web/app/studio/works/[workId]/edit/page.tsx`
 
-Studio tetap punya behavior yang sama:
+Studio still punya behavior same:
 
-- unauthorized → redirect ke signin
-- edit work yang gagal di-load → redirect balik ke detail studio work
+- unauthorized → redirect to signin
+- edit work that failed in-load → redirect balik to detail studio work
 
-### 5. Service reusable baru untuk menghindari duplikasi logic page vs API
+### 5. Service reusable new to avoid duplikasi logic page vs API
 
 Ditambahkan:
 
 - `apps/web/server/services/preferences/viewerPreferences.ts`
 - `apps/web/server/services/taxonomy/publicTaxonomy.ts`
 
-API route berikut sekarang reuse service yang sama, jadi kontrak API tetap hidup tanpa copy-paste logic baru:
+API route berikut now reuse service same, become kontrak API still hidup without copy-paste logic new:
 
 - `/api/me/preferences`
 - `/api/genres`
 - `/api/warnings`
 - `/api/deviant-love`
 
-### 6. `listPublishedWorks` bisa dipakai langsung dari page server
+### 6. `listPublishedWorks` can used directly from page server
 
 `apps/web/server/services/works/listPublishedWorks.ts`
 
-Ditambahkan entrypoint baru:
+Ditambahkan entrypoint new:
 
 - `listPublishedWorksFromSearchParams(searchParams)`
 
-Sehingga server page tidak perlu membangun HTTP request internal hanya untuk memakai logic yang sama.
+Sehingga server page not perlu membangun HTTP request internal only for memakai logic same.
 
 ## Dampak baseline statis
 
-Setelah tahap 1, hasil scan `npm run refactor:stage0` menjadi:
+Setelah stage 1, hasil scan `npm run refactor:stage0` menjadi:
 
-- `force-dynamic` exports: **45** _(belum disentuh di tahap ini)_
-- server-page import `apiJson()`: **25** _(turun dari 30)_
-- total call `apiJson()` di `app/**`: **29** _(turun dari 50)_
-- `cache: "no-store"`: **7** _(belum disentuh di tahap ini)_
-- header `Cache-Control: no-store`: **4** _(belum disentuh di tahap ini)_
-- `setInterval()`: **3** _(belum disentuh di tahap ini)_
+- `force-dynamic` exports: **45** _(not yet disentuh in stage this)_
+- server-page import `apiJson()`: **25** _(turun from 30)_
+- total call `apiJson()` in `app/**`: **29** _(turun from 50)_
+- `cache: "no-store"`: **7** _(not yet disentuh in stage this)_
+- header `Cache-Control: no-store`: **4** _(not yet disentuh in stage this)_
+- `setInterval()`: **3** _(not yet disentuh in stage this)_
 
-## Delta dibanding baseline tahap 0
+## Delta dibanding baseline stage 0
 
-Perubahan statis yang paling terasa:
+Perubahan statis that most terasa:
 
 - server-page import `apiJson()` turun **30 → 25**
-- total call `apiJson()` di `app/**` turun **50 → 29**
+- total call `apiJson()` in `app/**` turun **50 → 29**
 
-Artinya tahap 1 sudah memangkas sebagian besar hotspot self-fetch terbesar tanpa mengubah fitur.
+Artinya stage 1 already memangkas sebagian besar hotspot self-fetch terbesar without mengubah features.
 
-## Catatan yang sengaja belum disentuh
+## Catatan that intentionally not yet disentuh
 
-Tahap 1 **belum** menyentuh:
+Tahap 1 **not yet** menyentuh:
 
 - root `force-dynamic`
 - strategi cache taxonomy/API
@@ -118,18 +118,18 @@ Tahap 1 **belum** menyentuh:
 - dedupe query viewer/prefs lintas rail/home/search
 - middleware surface
 
-Itu memang ditahan untuk tahap berikutnya agar risiko regresi tetap kecil.
+Itu memang ditahan for stage berikutnya so that rcontentko regresi still kecil.
 
-## Verifikasi minimum untuk tahap ini
+## Verifikasi minimum for stage this
 
 - scan statis: `npm run refactor:stage0`
-- cek manual: `docs/REGRESSION_CHECKLIST.md`
+- check manual: `docs/REGRESSION_CHECKLIST.md`
 
-Catatan container kerja saat tahap ini dibuat:
+Catatan container work saat stage this dibuat:
 
-- scan statis berhasil dijalankan
-- pemasangan dependency sempat tidak stabil, jadi verifikasi penuh `npm run verify` belum bisa dikonfirmasi bersih dari container ini
+- the static scan ran successfully
+- pemasangan dependency sempat not stabil, become verifikasi penuh `npm run verify` not yet can dikonfirmasi bersih from container this
 
-## Baseline untuk tahap 2
+## Baseline for stage 2
 
-Tahap 2 harus dimulai dari ZIP hasil tahap 1 ini, bukan dari snapshot sebelumnya.
+Tahap 2 must dimulai from ZIP hasil stage 1 this, not from snapshot beforenya.

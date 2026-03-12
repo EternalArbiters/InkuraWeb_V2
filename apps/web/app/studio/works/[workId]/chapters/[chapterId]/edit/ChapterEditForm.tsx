@@ -140,12 +140,12 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
     const trimmedTitle = title.trim();
 
     if (!autoNumber && !trimmedManualLabel) {
-      setError("Isi Chapter Label kalau mode auto dimatikan.");
+      setError("Fill in the Chapter Label if auto mode is turned off.");
       return;
     }
 
     if (workType === "NOVEL" && !novelContentHasMeaningfulContent(content)) {
-      setError("Content wajib diisi untuk NOVEL");
+      setError("Content is required for NOVEL");
       return;
     }
 
@@ -336,7 +336,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       ) : (
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
           <div className="font-semibold">Comic pages</div>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Halaman comic dikelola di halaman "Manage Pages".</p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Comic pages are managed on the "Manage Pages" page.</p>
         </div>
       )}
 
@@ -346,7 +346,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           value={authorNote}
           onChange={(e) => setAuthorNote(e.target.value)}
           rows={5}
-          placeholder="Pesan dari author/uploader untuk chapter ini..."
+          placeholder="Message from the author/uploader for this chapter..."
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
         />
       </label>

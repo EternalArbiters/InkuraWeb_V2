@@ -2,12 +2,12 @@ import Link from "next/link";
 
 export default function IconButton({
   icon,
-  label, // masih bisa diterima tapi gak dipakai
+  label, // still accepted but not used
   onClick,
   href
 }: {
   icon: React.ReactNode;
-  label?: string; // boleh opsional sekarang
+  label?: string; // optional now
   onClick?: () => void;
   href?: string;
 }) {

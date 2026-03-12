@@ -21,19 +21,18 @@ export default function ConfirmDeviantLoveDialog({ open, setOpen, onConfirm }: P
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Peringatan Deviant Love</DialogTitle>
+          <DialogTitle>Deviant Love Warning</DialogTitle>
           <DialogDescription>
-            Dengan mencentang ini. Anda menyatakan bahwa anda tidak sedang berada di bawah tekanan apapun. Anda bertanggung
-            jawab sendiri atas apa yang anda lihat. Ini berisi konten yang mungkin ekstrem.
+            By checking this box, you confirm that you are not under any pressure and that you accept responsibility for what you choose to view. This content may be extreme.
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
           <Button variant="outline" type="button" onClick={() => setOpen(false)}>
-            Tidak, saya tidak mau.
+            No, I do not want to continue.
           </Button>
           <Button type="button" onClick={onConfirm}>
-            Ya, saya mengerti.
+            Yes, I understand.
           </Button>
         </DialogFooter>
       </DialogContent>

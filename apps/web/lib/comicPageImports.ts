@@ -125,7 +125,7 @@ async function loadJsZip(): Promise<JSZipStatic> {
   if (!window.JSZip) {
     await loadScriptOnce(ZIP_CDN_URL);
   }
-  if (!window.JSZip) throw new Error("JSZip gagal dimuat di browser");
+  if (!window.JSZip) throw new Error("JSZip failed to load in the browser");
   return window.JSZip;
 }
 
@@ -165,7 +165,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("Gagal membuat image hasil render"));
+          reject(new Error("Failed to create the rendered image"));
           return;
         }
         resolve(blob);
@@ -184,7 +184,7 @@ export async function importComicPagesFromZip(zipFile: File): Promise<File[]> {
     .sort((a, b) => NATURAL_COLLATOR.compare(a.name, b.name));
 
   if (!entries.length) {
-    throw new Error("ZIP tidak berisi file image yang didukung");
+    throw new Error("The ZIP does not contain supported image files");
   }
 
   const files: File[] = [];
@@ -214,7 +214,7 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         canvas.width = Math.max(1, Math.ceil(viewport.width));
         canvas.height = Math.max(1, Math.ceil(viewport.height));
         const context = canvas.getContext("2d", { alpha: false });
-        if (!context) throw new Error("Canvas 2D context tidak tersedia");
+        if (!context) throw new Error("Canvas 2D context is unavailable");
         context.fillStyle = "#ffffff";
         context.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: context, viewport, background: "#ffffff" }).promise;
@@ -236,7 +236,7 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
   }
 
   if (!files.length) {
-    throw new Error("PDF tidak menghasilkan halaman image");
+    throw new Error("The PDF did not produce any image pages");
   }
 
   return files;

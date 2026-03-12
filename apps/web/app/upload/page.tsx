@@ -5,7 +5,7 @@ export default function UploadPage() {
   return (
     <PageScaffold
       title="⬆ Upload"
-      description="Upload sudah pindah ke Creator Studio (Work → Chapter → isi teks/pages)."
+      description="Uploads have moved to Creator Studio (Work → Chapter → text/pages)."
       crumbs={[
         { label: "Home", href: "/home" },
         { label: "Upload", href: "/upload" },
@@ -15,14 +15,14 @@ export default function UploadPage() {
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
           <h2 className="text-xl font-bold">Creator Studio</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Buat Work (NOVEL/COMIC), bikin Chapter, lalu upload: teks untuk novel atau images untuk comic.
+            Create a Work (NOVEL/COMIC), create a Chapter, then upload: text for novels or images for comics.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/studio"
               className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110"
             >
-              Buka Studio
+              Open Studio
             </Link>
             <Link
               href="/studio/new"
@@ -36,7 +36,7 @@ export default function UploadPage() {
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
           <h2 className="text-xl font-bold">Reader</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Reader mendukung NOVEL (text) dan COMIC (vertical pages).
+            The reader supports NOVEL (text) and COMIC (vertical pages).
           </p>
           <div className="mt-4">
             <Link

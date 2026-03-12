@@ -31,7 +31,7 @@ export default function ContentWarningsGate({ storageKey, title, warnings, child
       <div className="text-sm font-semibold text-amber-900 dark:text-amber-100">Content Warning</div>
       <div className="mt-1 text-2xl font-bold">{title}</div>
       <div className="mt-3 text-sm text-amber-900/80 dark:text-amber-100/80">
-        Konten ini ditandai memiliki peringatan:
+        This content is marked with the following warnings:
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
@@ -56,7 +56,7 @@ export default function ContentWarningsGate({ storageKey, title, warnings, child
             setOk(true);
           }}
         >
-          Saya Mengerti, Lanjut
+          I Understand, Continue
         </button>
         <BackButton
           href="/search"
@@ -65,7 +65,7 @@ export default function ContentWarningsGate({ storageKey, title, warnings, child
       </div>
 
       <div className="mt-3 text-xs text-amber-900/70 dark:text-amber-100/70">
-        Catatan: persetujuan disimpan per halaman di browser ini.
+        Note: this acknowledgment is stored per page in this browser.
       </div>
     </div>
   );

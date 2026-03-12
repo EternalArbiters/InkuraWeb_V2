@@ -1,6 +1,6 @@
 # Stage 16 — production query evidence template
 
-Gunakan template ini saat menutup Tahap D dengan data production nyata.
+Gunakan template this saat menutup Tahap D with data production nyata.
 
 ## Header
 
@@ -21,8 +21,8 @@ Gunakan template ini saat menutup Tahap D dengan data production nyata.
 
 - service file:
 - query family:
-- filter utama:
-- sort utama:
+- filter main:
+- sort main:
 - expected row count:
 - actual row count:
 
@@ -34,7 +34,7 @@ Gunakan template ini saat menutup Tahap D dengan data production nyata.
 - rows scanned:
 - rows returned:
 - index used:
-- join/filter paling mahal:
+- join/filter paling mathing:
 
 ## Putusan
 
@@ -43,18 +43,18 @@ Gunakan template ini saat menutup Tahap D dengan data production nyata.
 - [ ] trim select
 - [ ] split query
 - [ ] cache public result
-- [ ] revisit after more traffic
+- [ ] revcontentt after more traffic
 
-## Patch yang diambil
+## Patch that diambil
 
 - files changed:
 - migration/index:
 - risk:
 - rollback note:
 
-## Verifikasi setelah patch
+## Verifikasi after patch
 
-- p95/p99 sebelum:
-- p95/p99 sesudah:
-- slow query masih muncul?
+- p95/p99 before:
+- p95/p99 sealready:
+- slow query still appear?
 - side effect / regression:

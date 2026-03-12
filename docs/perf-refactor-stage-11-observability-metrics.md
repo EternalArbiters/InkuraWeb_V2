@@ -1,14 +1,14 @@
-# Perf Refactor Stage 11 — observability dan metrics
+# Perf Refactor Stage 11 — observability and metrics
 
-Tahap ini menambah observability yang lebih operasional untuk iterasi performa berikutnya.
+This stage menambah observability that more operasional for iterasi performa berikutnya.
 
 ## Sasaran
 
-- tahu API route mana yang benar-benar lambat
-- tahu query Prisma mana yang jadi hotspot nyata
-- punya jejak waktu render untuk page besar
-- punya metrik polling unread badge dari browser
-- punya metrik upload client (durasi + ukuran before/after) untuk baseline sebelum tahap kompres upload
+- tahu API route mana that benar-benar lambat
+- tahu query Prisma mana that become hotspot nyata
+- punya jejak waktu render for page besar
+- punya metrik polling unread badge from browser
+- punya metrik upload client (durasi + ukuran before/after) for baseline before stage kompres upload
 
 ## Yang ditambahkan
 
@@ -16,24 +16,24 @@ Tahap ini menambah observability yang lebih operasional untuk iterasi performa b
 
 `apps/web/server/http/route.ts`
 
-- semua route yang lewat `apiRoute()` sekarang otomatis:
+- all route that through `apiRoute()` now otomatis:
   - menambahkan header `server-timing`
-  - log `api.slow_route` bila durasi melewati threshold
-  - tetap mempertahankan structured error logging yang sudah ada
+  - log `api.slow_route` if durasi methroughi threshold
+  - still mempertahankan structured error logging already there is
 
 ### 2. Slow Prisma query metrics
 
 `apps/web/server/db/prisma.ts`
 `apps/web/server/observability/metrics.ts`
 
-- Prisma singleton sekarang mengaktifkan event `query`
+- Prisma singleton now mengactivekan event `query`
 - query lambat akan dilog sebagai `db.slow_query`
-- query preview dipendekkan agar log tetap aman dan terbaca
-- optional `INKURA_LOG_QUERIES=1` bisa dipakai untuk investigasi yang lebih verbose
+- query preview dipendekkan so that log still safe and terbaca
+- optional `INKURA_LOG_QUERIES=1` can used for investigasi that more verbose
 
 ### 3. Server page render timing
 
-Page besar yang sekarang melog metrik render:
+Page besar current melog metrik render:
 
 - `/home`
 - `/w/[slug]`
@@ -41,48 +41,48 @@ Page besar yang sekarang melog metrik render:
 - `/lists/[slug]`
 - `/u/[username]`
 
-Event yang keluar:
+Event that exit:
 
 - `page.render`
 - `page.slow_render`
 
 ## 4. Client metric ingestion
 
-Route baru:
+Route new:
 
 - `/api/client-metrics`
 
-File baru:
+File new:
 
 - `apps/web/lib/clientMetrics.ts`
 - `apps/web/server/services/api/client-metrics/route.ts`
 - `apps/web/app/api/client-metrics/route.ts`
 
-Tujuan route ini adalah menerima metrik ringan dari browser dan meneruskannya ke structured log server.
+Tujuan route this adalah menerima metrik ringan from browser and meneruskannya to structured log server.
 
 ## 5. Unread polling metrics
 
 `apps/web/app/components/NavCountBadge.tsx`
 
-Badge unread sekarang mengirim metrik:
+Badge unread now mengirim metrik:
 
-- endpoint yang dipoll
-- trigger (`mount`, `timer`, `focus`, `visibility`, `external`, `online`)
+- endpoint that dipoll
+- trigger (`mount`, `timer`, `focus`, `vcontentbility`, `external`, `online`)
 - durasi fetch
 - count hasil
-- interval sejak poll sebelumnya
+- interval sejak poll beforenya
 
 Ini memberi jejak nyata tentang frekuensi polling unread count.
 
 ## 6. Upload client metrics
 
-File yang disentuh:
+File that disentuh:
 
 - `apps/web/lib/r2UploadClient.ts`
 - `apps/web/lib/commentMediaClient.ts`
 - `apps/web/app/settings/profile/ProfileForm.tsx`
 
-Metrik yang dikirim:
+Metrik that dikirim:
 
 - `scope`
 - `beforeBytes`
@@ -94,10 +94,10 @@ Metrik yang dikirim:
 - `compressionApplied`
 - `outcome`
 
-Catatan:
+Note:
 
-- karena tahap kompres upload belum dikerjakan, `beforeBytes` dan `afterBytes` saat ini masih sama
-- struktur metrik ini sengaja sudah disiapkan supaya Tahap upload compression nanti tinggal mengisi ukuran hasil optimasi
+- because stage kompres upload not yet dikerjakan, `beforeBytes` and `afterBytes` currently still sama
+- structure metrik this intentionally already dcontentapkan so that Tahap upload compression later tinggal mengcontent ukuran hasil optimasi
 
 ## Threshold default
 
@@ -108,8 +108,8 @@ Catatan:
 
 ## Dampak
 
-Tahap ini belum menghemat performa secara langsung sebesar split cache/query, tetapi sangat penting karena:
+This stage not yet menghemat performa secara directly sebesar split cache/query, tetapi sangat penting because:
 
-- mengurangi optimasi yang sifatnya menebak-nebak
-- mempermudah identifikasi route/query/page yang paling mahal
-- menyiapkan baseline upload metrics sebelum kompres browser-side dikerjakan
+- reducing optimasi that sifatnya menebak-nebak
+- mempermudah identifikasi route/query/page that most mathing
+- menyiapkan baseline upload metrics before kompres browser-side dikerjakan

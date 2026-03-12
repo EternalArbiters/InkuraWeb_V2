@@ -101,14 +101,14 @@ export default function ProfileFieldsCard({
           maxLength={200}
           placeholder="Tell readers a little about yourself"
         />
-        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 200 karakter.</div>
+        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 200 characters.</div>
       </div>
 
       <div>
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold text-gray-900 dark:text-white">Profile links</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maksimal 5 link. Beri judul singkat supaya tampil rapi seperti link sheet.</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 5 links. Give each one a short title so it displays neatly like a link sheet.</div>
           </div>
           <button
             type="button"

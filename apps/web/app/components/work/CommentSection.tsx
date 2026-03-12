@@ -179,14 +179,14 @@ export default function CommentSection({
         }
         const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
-          setError(data?.error || "Gagal kirim reply");
+          setError(data?.error || "Failed to send reply");
           return;
         }
         setReplyTo(null);
         setReplyText("");
         await refreshComments({ force: true });
       } catch {
-        setError("Gagal kirim reply");
+        setError("Failed to send reply");
       }
     });
   };
@@ -202,7 +202,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal like comment");
+        setError(data?.error || "Failed to like comment");
         return;
       }
       setComments((prev) =>
@@ -228,7 +228,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal dislike comment");
+        setError(data?.error || "Failed to dislike comment");
         return;
       }
       setComments((prev) =>
@@ -262,7 +262,7 @@ export default function CommentSection({
   const saveEdit = (commentId: string) => {
     const body = editingText.trim();
     if (!body) {
-      setError("Comment tidak boleh kosong");
+      setError("Comment cannot be empty");
       return;
     }
     startTransition(async () => {
@@ -277,7 +277,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal edit comment");
+        setError(data?.error || "Failed to edit comment");
         return;
       }
       const updated = data?.comment;
@@ -304,7 +304,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal delete comment");
+        setError(data?.error || "Failed to delete comment");
         return;
       }
       setComments((prev) => removeFromTree(prev, commentId));
@@ -326,7 +326,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal update comment");
+        setError(data?.error || "Failed to update comment");
         return;
       }
       setInfo(hide ? "Comment disembunyikan" : "Comment ditampilkan lagi");
@@ -349,7 +349,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal pin comment");
+        setError(data?.error || "Failed to pin comment");
         return;
       }
       setInfo(pin ? "Comment pinned" : "Comment unpinned");
@@ -363,7 +363,7 @@ export default function CommentSection({
     setUnauthorized(false);
     const reason = reportReason.trim();
     if (!reason) {
-      setError("Alasan report wajib diisi");
+      setError("A report reason is required");
       return;
     }
     startTransition(async () => {
@@ -378,7 +378,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Gagal kirim report");
+        setError(data?.error || "Failed to send report");
         return;
       }
       setInfo("Report terkirim. Terima kasih!");
@@ -470,7 +470,7 @@ export default function CommentSection({
         <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
           {unauthorized ? (
             <span>
-              Kamu belum login.{" "}
+              You are not signed in yet.{" "}
               <Link
                 className="font-semibold text-purple-600 dark:text-purple-400 hover:underline"
                 href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}

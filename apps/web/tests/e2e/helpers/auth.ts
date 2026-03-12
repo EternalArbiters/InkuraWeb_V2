@@ -7,7 +7,7 @@ export async function signInAsSeedAdmin(page: Page) {
   await page.goto('/auth/signin');
   await page.getByPlaceholder('Email atau username').fill(ADMIN_EMAIL);
   await page.getByPlaceholder('Password').fill(ADMIN_PASSWORD);
-  await page.getByRole('button', { name: 'Masuk' }).click();
+  await page.getByRole('button', { name: 'Sign In' }).click();
   await page.waitForURL(/\/home(?:\?.*)?$/);
   await expect(page).toHaveURL(/\/home(?:\?.*)?$/);
 }

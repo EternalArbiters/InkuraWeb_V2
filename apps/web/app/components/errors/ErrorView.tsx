@@ -13,8 +13,8 @@ type Props = {
 };
 
 export default function ErrorView({
-  title = "Terjadi Kesalahan",
-  message = "Maaf, terjadi kesalahan saat memuat halaman ini.",
+  title = "An Error Occurred",
+  message = "Sorry, an error occurred while loading this page.",
   homeHref = "/home",
   backHref,
   error,
@@ -52,7 +52,7 @@ export default function ErrorView({
               onClick={() => reset()}
               className="px-4 py-2 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
             >
-              Coba lagi
+              Try again
             </button>
           ) : null}
 
@@ -61,7 +61,7 @@ export default function ErrorView({
               href={backHref}
               className="px-4 py-2 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105"
             >
-              Kembali
+              Back
             </Link>
           ) : null}
 
@@ -69,12 +69,12 @@ export default function ErrorView({
             href={homeHref}
             className="px-4 py-2 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105"
           >
-            Ke Beranda
+            Go to Home
           </Link>
         </div>
 
         <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-          Kalau ini terus terjadi, coba refresh halaman atau login ulang. Jika perlu, laporkan ke admin.
+          If this keeps happening, try refreshing the page or signing in again. If needed, report it to the admin.
         </p>
       </div>
     </main>

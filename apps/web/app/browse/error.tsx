@@ -11,7 +11,7 @@ export default function BrowseError({ error, reset }: Props) {
   return (
     <ErrorView
       title="Browse bermasalah"
-      message="Terjadi kesalahan saat memuat daftar karya. Coba lagi."
+      message="An error occurred while loading the list of works. Please try again."
       error={error}
       reset={reset}
       homeHref="/browse"

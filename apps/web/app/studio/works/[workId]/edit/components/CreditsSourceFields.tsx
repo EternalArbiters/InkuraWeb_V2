@@ -49,7 +49,7 @@ export default function CreditsSourceFields({
             value={originalTranslatorCredit}
             onChange={(e) => setOriginalTranslatorCredit(e.target.value)}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            placeholder="Contoh: Nama translator / group"
+            placeholder="Example: Translator name / group"
           />
         </label>
       ) : null}
@@ -70,7 +70,7 @@ export default function CreditsSourceFields({
           value={companyCredit}
           onChange={(e) => setCompanyCredit(e.target.value)}
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          placeholder="Contoh: Kakao, Naver, Shueisha, dll"
+          placeholder="Example: Kakao, Naver, Shueisha, etc."
         />
       </label>
 

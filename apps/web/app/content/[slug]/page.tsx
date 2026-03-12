@@ -11,7 +11,7 @@ export default async function ContentDetailPage({ params: paramsPromise }: Props
   return (
     <PageScaffold
       title={` Content: ${params.slug}`}
-      description="Detail karya (placeholder) supaya semua link /content/* tidak 404."
+      description="Work detail placeholder so all /content/* links do not 404."
       crumbs={[
         { label: "Home", href: "/home" },
         { label: "Content", href: `/content/${params.slug}` },
@@ -19,7 +19,7 @@ export default async function ContentDetailPage({ params: paramsPromise }: Props
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 space-y-4">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Nanti di sini: cover, sinopsis, tags, tombol follow/bookmark, daftar chapter, dan stats.
+          Future here: cover, synopsis, tags, follow/bookmark button, chapter list, and stats.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link

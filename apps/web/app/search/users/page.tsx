@@ -13,9 +13,9 @@ function scopeLabel(scope: UserSearchScope) {
 }
 
 function scopeDescription(scope: UserSearchScope) {
-  if (scope === "authors") return "Search account author berdasarkan username atau nama profil.";
-  if (scope === "translators") return "Search account translator berdasarkan username atau nama profil.";
-  return "Search semua akun publik berdasarkan username atau nama profil.";
+  if (scope === "authors") return "Search author accounts by username or profile name.";
+  if (scope === "translators") return "Search translator accounts by username or profile name.";
+  return "Search all public accounts by username or profile name.";
 }
 
 function joinedLabel(input: Date | string) {
@@ -146,7 +146,7 @@ export default async function UserSearchPage({
         <div className="mt-6 text-sm text-gray-600 dark:text-gray-300">
           {data.q ? (
             <>
-              {data.users.length} result untuk <span className="font-semibold text-gray-900 dark:text-white">“{data.q}”</span>
+              {data.users.length} results for <span className="font-semibold text-gray-900 dark:text-white">“{data.q}”</span>
             </>
           ) : (
             <>{data.users.length} result</>
@@ -174,7 +174,7 @@ export default async function UserSearchPage({
           </div>
         ) : (
           <div className="mt-6 rounded-2xl border border-gray-200 bg-white/70 p-6 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-300">
-            Belum ada hasil yang cocok.
+            No matching results yet.
           </div>
         )}
       </div>

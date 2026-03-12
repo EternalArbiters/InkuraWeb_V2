@@ -83,8 +83,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 ) : null}
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   {isDeviant
-                    ? "Karya ini ditandai Deviant Love. Untuk membaca, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
-                    : "Karya ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings."}
+                    ? "This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings."
+                    : "This work is marked 18+. To read it, you need to unlock it and opt in under Settings."}
                 </p>
 
                 {work.coverImage ? (
@@ -95,8 +95,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 {viewer && (isDeviant ? !canViewDeviantLove : !canViewMature) ? (
                   <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
                     {isDeviant
-                      ? "Deviant Love locked. Pastikan kamu sudah centang 18+ lalu unlock Deviant Love."
-                      : 'NSFW locked. Pastikan kamu sudah centang "I am 18+" dan aktifkan "Include mature content".'}
+                      ? "Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love."
+                      : 'NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content".'}
                   </div>
                 ) : null}
               </div>

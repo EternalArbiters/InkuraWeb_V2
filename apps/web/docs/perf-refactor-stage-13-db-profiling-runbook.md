@@ -1,14 +1,14 @@
 # Stage 13 — DB profiling runbook
 
-Tujuan tahap ini adalah menutup gap Tahap D dengan workflow profiling yang bisa diulang, bukan menebak-nebak index.
+The goal of this stage is menutup gap Tahap D with workflow profiling that can diulang, not menebak-nebak index.
 
-## Sumber sinyal yang dipakai
+## Sumber sinyal used
 
-- `db.slow_query` dari Prisma query logging
-- `db.profile_probe` dari hotspot service probes
-- `api.slow_route` dan `page.slow_render` untuk mencari route/page yang mendorong query mahal
+- `db.slow_query` from Prisma query logging
+- `db.profile_probe` from hotspot service probes
+- `api.slow_route` and `page.slow_render` for mencari route/page that mendorong query mathing
 
-## Probe yang sekarang tersedia
+## Probe current tersedia
 
 - `listPublishedWorks.findMany`
 - `listPublishedWorks.viewerInteractions`
@@ -25,35 +25,35 @@ Tujuan tahap ini adalah menutup gap Tahap D dengan workflow profiling yang bisa 
 - `library.viewer`
 - `studioWorks.list`
 
-Set `INKURA_PROFILE_HOTSPOTS=1` bila ingin melihat probe yang tidak slow juga, untuk sesi profiling singkat.
+Set `INKURA_PROFILE_HOTSPOTS=1` if ingin see probe that not slow juga, for sesi profiling singkat.
 
 ## Prosedur profiling
 
-1. Nyalakan traffic nyata atau ulangi flow yang paling sering dipakai.
-2. Kumpulkan `db.profile_probe` selama 10–30 menit.
-3. Kelompokkan berdasarkan `probe` dan fingerprint/filter meta.
+1. Nyalakan traffic nyata or ulangi flow that most sering used.
+2. Kumpulkan `db.profile_probe` seold 10–30 menit.
+3. Kelompokkan berdasarkan `probe` and fingerprint/filter meta.
 4. Ambil kandidat teratas berdasarkan:
    - frekuensi
    - durasi p95/p99
    - dampak user-facing (`api.slow_route`, `page.slow_render`)
-5. Cocokkan probe dengan `db.slow_query` yang muncul pada rentang waktu yang sama.
-6. Ambil query mentah/fingerprint, lalu jalankan `EXPLAIN ANALYZE` di DB.
-7. Dokumentasikan hasil sebelum menambah index atau memecah query.
+5. Cocokkan probe with `db.slow_query` that appear pada rentang waktu same.
+6. Ambil query mentah/fingerprint, then jalankan `EXPLAIN ANALYZE` in DB.
+7. Dokumentasikan hasil before menambah index or memecah query.
 
 ## Template pencatatan hasil
 
-Untuk setiap kandidat, catat:
+For setiap kandidat, catat:
 
 - probe
 - file/service asal
 - fingerprint filter/sort
 - p95/p99 durasi
 - query preview / SQL fingerprint
-- jumlah row yang diproses
-- apakah index saat ini kepakai
+- jumlah row that diproses
+- apakah index currently keuse
 - keputusan: keep / add index / trim select / split query / cache
 
-## Hotspot pertama yang wajib diperiksa
+## Hotspot pertama that required diperiksa
 
 1. `listPublishedWorks.findMany`
    - variasi `newest`, `liked`, `rated`
@@ -62,16 +62,16 @@ Untuk setiap kandidat, catat:
 3. `library.viewer`
 4. `studioWorks.list`
 
-## Definisi selesai Tahap D berikutnya
+## Defincontent complete Tahap D berikutnya
 
-Tahap D dianggap benar-benar tuntas setelah ada minimal:
+Tahap D dianggap benar-benar tuntas after there is minimal:
 
-- 3 fingerprint query `listPublishedWorks` dengan `EXPLAIN ANALYZE`
-- 1 fingerprint untuk notifications
-- 1 fingerprint untuk library atau studio works
-- keputusan index/query tuning terdokumentasi berdasarkan hasil di atas
+- 3 fingerprint query `listPublishedWorks` with `EXPLAIN ANALYZE`
+- 1 fingerprint for notifications
+- 1 fingerprint for library or studio works
+- keputusan index/query tuning terdokumentasi berdasarkan hasil in atas
 
 
 ## Artefak pencatatan
 
-Gunakan `docs/perf-refactor-stage-16-production-query-evidence-template.md` untuk setiap query/fingerprint yang masuk shortlist.
+Gunakan `docs/perf-refactor-stage-16-production-query-evidence-template.md` for setiap query/fingerprint that enter shortlist.

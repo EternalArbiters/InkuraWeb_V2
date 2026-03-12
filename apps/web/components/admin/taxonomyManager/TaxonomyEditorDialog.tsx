@@ -48,7 +48,7 @@ export default function TaxonomyEditorDialog({
         <DialogHeader>
           <DialogTitle>{editing ? "Edit item" : "Create item"}</DialogTitle>
           <DialogDescription>
-            Perubahan ini langsung tersimpan ke database. “Deactivate” hanya menonaktifkan (soft delete).
+            These changes are saved to the database immediately. “Deactivate” only disables the item (soft delete).
           </DialogDescription>
         </DialogHeader>
 
@@ -74,7 +74,7 @@ export default function TaxonomyEditorDialog({
               className="w-full rounded-lg border border-neutral-200 bg-transparent px-3 py-2 font-mono text-sm outline-none focus:ring-2 focus:ring-neutral-200 dark:border-neutral-800 dark:focus:ring-neutral-800"
               placeholder={name ? slugFromName(name) : "e.g. manhwa"}
             />
-            <div className="text-xs text-neutral-500">Kosongkan kalau mau auto dari name.</div>
+            <div className="text-xs text-neutral-500">Leave blank to auto-generate from the name.</div>
           </InlineField>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

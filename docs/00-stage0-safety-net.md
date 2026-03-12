@@ -1,29 +1,29 @@
-# Tahap 0 – Safety Net (sebelum refactor besar)
+# Tahap 0 – Safety Net (before refactor besar)
 
-> Lihat index dokumen: `README.md`
+> Lihat index document: `README.md`
 
-- Setiap perubahan wajib lewat *gate* otomatis (`verify`) + checklist manual regresi.
+- Setiap perubahan required through *gate* otomatis (`verify`) + checklist manual regresi.
 
-> Repo ZIP ini sudah mencakup Tahap 0: `apps/web/.env.example`, update `verify`, dan dokumen checklist.
+> Repo ZIP this already mencakup Tahap 0: `apps/web/.env.example`, update `verify`, and document checklist.
 
 ---
 
 ## 1) Kunci baseline (Git)
 
-Kalau kamu pakai Git, lakukan ini **sebelum** mulai refactor:
+If kamu use Git, lakukan this **before** mulai refactor:
 
 ```bash
 git checkout -b cleaned-stage0
-# atau kalau sudah ada branch
+# or if a branch already exists
 
 git tag inkura-cleaned-stage0
 ```
 
-Tujuannya: kapan pun ada bug besar, kamu bisa balik ke baseline dengan cepat.
+Tujuannya: kapan pun there is bug besar, kamu can balik to baseline with cepat.
 
 ---
 
-## 2) Setup lokal cepat
+## 2) Setup local cepat
 
 ### Install
 
@@ -33,18 +33,18 @@ npm install
 
 ### ENV
 
-Copy contoh ENV:
+Copy example ENV:
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Isi minimal:
+Minimum contents:
 - `DATABASE_URL`
 - `DIRECT_URL`
 - `NEXTAUTH_SECRET`
 - `NEXTAUTH_URL`
-- `R2_ENDPOINT` (atau `R2_ACCOUNT_ID`)
+- `R2_ENDPOINT` (or `R2_ACCOUNT_ID`)
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
 - `R2_BUCKET`
@@ -54,25 +54,25 @@ Isi minimal:
 
 ## 3) Gate otomatis
 
-Jalankan ini setiap sebelum/ sesudah perubahan besar:
+Jalankan this setiap before/ sealready perubahan besar:
 
 ```bash
 npm run verify
 ```
 
-`verify` pada snapshot final ini akan menjalankan:
+`verify` pada snapshot final this akan menjalankan:
 - Prisma schema validation + generate client
 - Typecheck (tsc)
 - Unit tests (Vitest)
 - Next.js production build
 
-Untuk baseline hotspot performa statis sebelum mulai refactor, jalankan juga:
+For baseline hotspot performa statis before mulai refactor, jalankan juga:
 
 ```bash
 npm run refactor:stage0
 ```
 
-Opsional tapi disarankan (butuh DB terkoneksi):
+Optional tapi disarankan (butuh DB terconnection):
 
 ```bash
 npm run sanity:db
@@ -80,7 +80,7 @@ npm run sanity:db
 
 ---
 
-## 4) Checklist regresi manual (wajib sebelum merge)
+## 4) Checklist regresi manual (required before merge)
 
 Lihat: `REGRESSION_CHECKLIST.md`
 

@@ -12,8 +12,8 @@ export default function GlobalError({ error, reset }: Props) {
     <html lang="en">
       <body className="antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <ErrorView
-          title="Terjadi Kesalahan"
-          message="Ada kesalahan fatal di aplikasi. Kamu bisa coba lagi."
+          title="An Error Occurred"
+          message="A fatal application error occurred. You can try again."
           error={error}
           reset={reset}
           homeHref="/home"

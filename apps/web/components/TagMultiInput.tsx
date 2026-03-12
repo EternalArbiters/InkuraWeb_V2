@@ -21,7 +21,7 @@ export default function TagMultiInput({
   label = "Tags",
   value,
   onChange,
-  placeholder = "Ketik tag lalu Enter (atau pilih saran) ...",
+  placeholder = "Type a tag then press Enter (or choose a suggestion) ...",
   maxTags = 50,
 }: Props) {
   const [input, setInput] = React.useState("");
@@ -144,7 +144,7 @@ export default function TagMultiInput({
       </div>
 
       <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-        Tips: tekan <b>Enter</b> atau koma untuk menambah.
+        Tip: press <b>Enter</b> or comma to add a tag.
       </div>
     </div>
   );

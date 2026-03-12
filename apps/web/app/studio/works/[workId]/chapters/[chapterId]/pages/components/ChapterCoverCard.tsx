@@ -43,11 +43,11 @@ export default function ChapterCoverCard({
         <div className="text-sm text-gray-700 dark:text-gray-200">
           {thumbnailImage ? (
             <div className="text-xs text-gray-600 dark:text-gray-300">
-              Cover sudah dipilih. Atur posisi/zoom di halaman Edit Chapter.
+              A cover has been selected. Adjust its position and zoom on the Edit Chapter page.
             </div>
           ) : (
             <div className="text-xs text-gray-600 dark:text-gray-300">
-              Belum pilih cover. Sistem akan ambil otomatis dari halaman chapter.
+              No cover selected yet. The system will automatically take one from the chapter pages.
             </div>
           )}
         </div>

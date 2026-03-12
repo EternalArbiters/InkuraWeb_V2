@@ -50,7 +50,7 @@ export default function UploadPagesCard({
       <div>
         <div className="font-semibold">Upload pages</div>
         <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-          Kamu bisa upload manual satu-satu, upload semua image, import ZIP chapter, atau import PDF chapter.
+          You can upload files manually one by one, upload all images at once, import a chapter ZIP, or import a chapter PDF.
         </div>
       </div>
 
@@ -59,12 +59,12 @@ export default function UploadPagesCard({
       {summary ? (
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
           <div>
-            {summary.count} file · sebelum {formatBytes(summary.originalBytes)}
-            {summary.ready ? ` · sesudah ${formatBytes(summary.optimizedBytes)}` : " · menyiapkan optimasi..."}
+            {summary.count} files · before {formatBytes(summary.originalBytes)}
+            {summary.ready ? ` · after ${formatBytes(summary.optimizedBytes)}` : " · preparing optimization..."}
           </div>
           {summary.ready ? (
             <div>
-              Hemat {formatBytes(summary.bytesSaved)} · {summary.compressedCount}/{summary.count} halaman disesuaikan otomatis.
+              Saved {formatBytes(summary.bytesSaved)} · {summary.compressedCount}/{summary.count} pages adjusted automatically.
             </div>
           ) : null}
         </div>

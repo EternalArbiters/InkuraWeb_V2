@@ -11,7 +11,7 @@ export default function ResultsHeader({ q, count }: Props) {
       <div className="text-sm text-gray-600 dark:text-gray-300">
         {q ? (
           <span>
-            Hasil untuk <b>"{q}"</b> • {count} item
+            Results for <b>"{q}"</b> • {count} items
           </span>
         ) : (
           <span>{count} item</span>

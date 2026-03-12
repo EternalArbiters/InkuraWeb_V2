@@ -3,17 +3,17 @@
 Tujuan PR 1:
 - menyiapkan **kontrak optimasi upload image** per scope,
 - menambahkan **util optimizer terpusat**,
-- menjaga perilaku upload saat ini tetap aman (**belum mengubah flow produksi**),
-- memberi landasan untuk PR berikutnya tanpa menghilangkan fitur.
+- menjaga perilaku upload currently still safe (**not yet mengubah flow produksi**),
+- memberi landasan for PR berikutnya without menghilangkan features.
 
-## Scope yang harus tertutup di akhir roadmap
+## Scope that must tertutup in akhir roadmap
 
 - `avatar`
 - `covers`
 - `comment_images`
 - `pages`
 
-Scope yang **tidak** dipaksa optimasi pada fase awal:
+Scope that **not** dipaksa optimasi pada fase awal:
 - `comment_gifs`
 - `files`
 
@@ -23,10 +23,10 @@ Scope yang **tidak** dipaksa optimasi pada fase awal:
 - Max upload bytes: **2 MB**
 - Output target: **WebP**
 - Resize target: max **640 × 640**
-- Aspect target: **1:1 visual intent**, tetapi **tanpa hard crop** di tahap optimasi
+- Aspect target: **1:1 visual intent**, tetapi **without hard crop** in stage optimasi
 - Quality target: **0.82**
 - Metadata: **strip**
-- Catatan: focus / zoom tetap dikendalikan UI profile yang sudah ada
+- Note: focus / zoom still dikendalikan UI profile already there is
 
 ### Cover
 - Max upload bytes: **2 MB**
@@ -35,51 +35,51 @@ Scope yang **tidak** dipaksa optimasi pada fase awal:
 - Aspect target: **3:4**
 - Quality target: **0.82**
 - Metadata: **strip**
-- Catatan: baseline ini sengaja mengikuti kontrak output lama agar tidak mengubah tampilan cover secara mendadak
+- Note: baseline this intentionally mengikuti kontrak output old so that not mengubah tampilan cover secara mendadak
 
 ### Comment Image
 - Max upload bytes: **2 MB**
 - Output target: **WebP**
-- Resize target: max **1280 px** pada sisi terpanjang
+- Resize target: max **1280 px** pada scontent terpanjang
 - Quality target: **0.80**
 - Metadata: **strip**
-- Catatan: hash dedupe nantinya harus dihitung dari **blob hasil optimasi final**
+- Note: hash dedupe laternya must dihitung from **blob hasil optimasi final**
 
 ### Comic Page
 - Max upload bytes: **5 MB**
 - Output target: **WebP**
-- Resize target: adaptif, dengan guardrail:
+- Resize target: adaptif, with guardrail:
   - max width **1800 px**
   - max height **3200 px**
   - max long edge **2400 px**
   - max megapixels **6 MP**
 - Quality target: **0.88**
 - Metadata: **strip**
-- Catatan: readability lebih penting daripada savings agresif
+- Note: readability more penting daripada savings agresif
 
 ## Prinsip keputusan optimasi
 
-1. **Jangan upscale file kecil**.
-2. **Normalize orientation** dan buang metadata lewat re-encode canvas.
-3. **Skip recompress** bila file sudah modern, kecil, dan tidak perlu resize.
-4. **Preserve alpha** dengan output alpha-safe (`image/webp`) bila perlu.
-5. **Jangan sentuh animated GIF** pada fase awal.
-6. **PR 1 tidak mengubah caller**; hanya menyiapkan pondasi agar PR lanjutan bisa mengalihkan flow upload secara bertahap.
+1. **Do not upscale file kecil**.
+2. **Normalize orientation** and buang metadata through re-encode canvas.
+3. **Skip recompress** if file already modern, kecil, and not perlu resize.
+4. **Preserve alpha** with output alpha-safe (`image/webp`) if perlu.
+5. **Do not sentuh animated GIF** pada fase awal.
+6. **PR 1 not mengubah caller**; only menyiapkan pondasi so that PR continuean can mengalihkan flow upload secara bertahap.
 
 ## Dampak PR 1
 
-PR ini aman untuk diterapkan dulu karena:
-- belum memaksa flow upload baru,
-- belum mengubah kontrak API caller aktif,
-- belum menonaktifkan fallback server yang ada.
+PR this safe for diterapkan first because:
+- not yet memaksa flow upload new,
+- not yet mengubah kontrak API caller active,
+- not yet medeactivate fallback server that there is.
 
-Tahap berikutnya akan mengaktifkan optimizer pada:
+Tahap berikutnya akan mengactivekan optimizer pada:
 1. avatar,
 2. comment images,
 3. comic pages,
 4. cover create/edit,
 5. hardening server,
-6. backfill bucket lama.
+6. backfill bucket old.
 
 
 ## PR 3 status

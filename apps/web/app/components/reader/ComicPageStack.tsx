@@ -117,7 +117,7 @@ function ComicPageItem({
 
       {state === "error" ? (
         <div className="absolute inset-x-0 bottom-4 z-[3] mx-auto w-fit rounded-full bg-red-600/85 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-          Gagal memuat halaman
+          Failed to load page
         </div>
       ) : null}
     </div>

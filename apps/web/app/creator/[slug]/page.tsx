@@ -6,7 +6,7 @@ export default async function CreatorPage({ params: paramsPromise }: { params: P
   return (
     <PageScaffold
       title={` Creator: ${params.slug}`}
-      description="Profil creator (placeholder) supaya link /creator/* tidak 404."
+      description="Creator profile placeholder so /creator/* links do not 404."
       crumbs={[
         { label: "Home", href: "/home" },
         { label: "Creator", href: `/creator/${params.slug}` },
@@ -14,7 +14,7 @@ export default async function CreatorPage({ params: paramsPromise }: { params: P
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 space-y-4">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Nanti: bio, daftar karya, follower count, tombol follow, dan social links.
+          Future: bio, work list, follower count, follow button, and social links.
         </p>
         <Link
           href="/all"

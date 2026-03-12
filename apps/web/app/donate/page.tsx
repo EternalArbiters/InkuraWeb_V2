@@ -6,7 +6,7 @@ export default function DonatePage() {
   return (
     <PageScaffold
       title="Donate For Inkura"
-      description="Terima kasih sudah membantu pengembangan Inkura. Scan QR code di bawah untuk donasi."
+      description="Thank you for supporting Inkura's development. Scan the QR code below to donate."
     >
       <div className="max-w-md">
         <div className="border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">

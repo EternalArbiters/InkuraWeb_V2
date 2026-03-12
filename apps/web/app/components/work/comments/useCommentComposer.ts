@@ -133,7 +133,7 @@ export function useCommentComposer({
         }
         const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
-          onError?.(data?.error || "Gagal kirim comment");
+          onError?.(data?.error || "Failed to send comment");
           return;
         }
 
@@ -141,7 +141,7 @@ export function useCommentComposer({
         setFiles([]);
         await onSubmitted?.();
       } catch (e: any) {
-        const msg = e?.message || "Gagal kirim comment";
+        const msg = e?.message || "Failed to send comment";
         if (String(msg).toLowerCase().includes("unauthorized")) {
           onUnauthorized?.();
           return;

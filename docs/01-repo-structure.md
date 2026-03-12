@@ -1,19 +1,19 @@
 # Repo structure & tooling (Stage 1)
 
-Tujuan dokumen ini: menjelaskan struktur repo Inkura yang sekarang (v13+) supaya konsisten, gampang dipahami, dan nggak bikin dev baru “nyasar”.
+The purpose of this document: explain the current Inkura repo structure (v13+) so it stays consistent, easy to understand, and does not make new developers feel lost.
 
 ## Package manager
 
-Repo ini memakai **npm** dan **npm workspaces**.
+This repo uses **npm** and **npm workspaces**.
 
-- Lockfile sumber kebenaran: `package-lock.json` (di root)
-- Workspace utama: `apps/web`
+- Lockfile sumber kebenaran: `package-lock.json` (in root)
+- Workspace main: `apps/web`
 
-> Catatan: file konfigurasi pnpm (`pnpm-workspace.yaml`) **sudah dihapus** supaya tidak ada sinyal ganda.
+> Note: file konfigurasi pnpm (`pnpm-workspace.yaml`) **has already been removed** so that not there is mixed signals.
 
-### Command yang biasa dipakai
+### Command that biasa used
 
-Dari root:
+From the repo root:
 
 ```bash
 npm install
@@ -21,7 +21,7 @@ npm run dev
 npm run verify
 ```
 
-Atau langsung di app:
+Or run directly in the app:
 
 ```bash
 cd apps/web
@@ -30,9 +30,9 @@ npm run dev
 npm run verify
 ```
 
-## Layout folder
+## Folder layout
 
-Di repo ini hanya ada **1 aplikasi runtime**:
+In this repo only there is **1 aplikasi runtime**:
 
 - `apps/web/` — Next.js app (App Router)
   - `app/` — routes UI + API (`app/api/*`)
@@ -40,38 +40,38 @@ Di repo ini hanya ada **1 aplikasi runtime**:
   - `prisma/` — schema, migrations, seed
   - `components/` — komponen UI reusable (shadcn-like)
   - `hooks/` — custom React hooks
-  - `lib/` — helpers umum (hindari server-only di sini)
+  - `lib/` — helpers general (avoid server-only in sini)
 
 Repo-level:
 
-- `docs/` — dokumen kerja/refactor (stage roadmap, checklist)
-- `README.md` — overview fitur & setup
+- `docs/` — working/refactor documents (stage roadmap, checklist)
+- `README.md` — feature overview and setup
 
 ## Env files
 
-Contoh env ada di:
+Example env file:
 
 - `apps/web/.env.example`
 
-Cara pakai lokal:
+How to use it locally:
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-> Jangan commit `.env.local` atau file env yang berisi secrets.
+> Do not commit `.env.local` or file env that bercontent secrets.
 
-## Prinsip boundary (server vs client)
+## Boundary principles (server vs client)
 
-- Apa pun yang menyentuh DB / credentials / storage harus tinggal di `apps/web/server/*` atau `apps/web/app/api/*`.
-- Modul server-only sebaiknya memasang marker `server-only` untuk mencegah kebawa ke client.
+- Apa pun that menyentuh DB / credentials / storage must tinggal in `apps/web/server/*` or `apps/web/app/api/*`.
+- Modul server-only should memasang marker `server-only` to prevent kebawa to client.
 
-Detail lengkap aturan boundary ada di `03-server-client-boundary.md`.
+Full boundary rules are documented in `03-server-client-boundary.md`.
 
 ## Definition of done – Stage 1
 
-Stage 1 dianggap selesai jika:
+Stage 1 is considered complete if:
 
-- Repo cuma memberikan sinyal **1 toolchain** (npm) dan tidak ada config ganda yang membingungkan.
-- Struktur folder + dokumen “entry point” jelas.
-- `npm run verify` tetap lulus (tanpa ubah behavior fitur).
+- Repo cuma memberikan sinyal **1 toolchain** (npm) and not there is config ganda that membingungkan.
+- Struktur folder + document “entry point” clear.
+- `npm run verify` still pass (without change behavior features).

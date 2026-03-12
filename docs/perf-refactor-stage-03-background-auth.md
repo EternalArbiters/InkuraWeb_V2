@@ -1,24 +1,24 @@
 # Perf Refactor — Tahap 3 Background Requests & Auth Surface
 
-Tahap 3 fokus ke dua hal yang paling terasa di billing/runtime setelah tahap 2:
+Tahap 3 focuses on two things that most terasa in billing/runtime after stage 2:
 
-1. **mengurangi request background yang terus menembak server**
-2. **memindahkan proteksi route user biasa dari edge middleware ke server page yang memang butuh auth**
+1. **reducing request background that terus menembak server**
+2. **memindahkan proteksi route user biasa from edge middleware to server page that memang butuh auth**
 
-Tahap ini dibangun langsung di atas ZIP hasil tahap 2.
+This stage dibangun directly in atas ZIP hasil stage 2.
 
-## Sasaran tahap ini
+## Sasaran stage this
 
-Masalah yang masih tersisa setelah tahap 2:
+Masalah that still tersisa after stage 2:
 
-- unread badge navbar masih polling terus dari client
-- guest user tetap bisa ikut memicu unread-count request dari navbar
-- middleware masih berpotensi menjadi permukaan auth yang terlalu lebar dibanding kebutuhan sebenarnya
-- beberapa page auth-heavy masih self-fetch ke API internal walau datanya bisa diambil langsung dari service server
+- unread badge navbar still polling terus from client
+- guest user still can ikut memicu unread-count request from navbar
+- middleware still berpotensi menjadi permukaan auth that terthen lebar dibanding kebutuhan sebenarnya
+- several page auth-heavy still self-fetch to API internal walau datanya can diambil directly from service server
 
-## Perubahan yang masuk di tahap 3
+## Perubahan that enter in stage 3
 
-### 1. Middleware dipersempit hanya untuk area admin
+### 1. Middleware dipersempit only for area admin
 
 File:
 
@@ -26,22 +26,22 @@ File:
 
 Perubahan:
 
-- matcher sekarang tinggal `"/admin/:path*"`
-- proteksi `/home`, `/library`, `/notifications`, `/settings`, dan `/studio` dipindah ke server page yang memang merender route tersebut
+- matcher now tinggal `"/admin/:path*"`
+- proteksi `/home`, `/library`, `/notifications`, `/settings`, and `/studio` dipindah to server page that memang merender route tersebut
 
 Dampak:
 
-- edge request untuk area user biasa turun signifikan
-- admin tetap punya short-circuit edge guard + server-side guard
-- fitur auth tidak hilang, hanya boundary-nya dipindah ke tempat yang lebih hemat
+- edge request for area user biasa turun signifikan
+- admin still punya short-circuit edge guard + server-side guard
+- features auth not hilang, only boundary-nya dipindah to tempat that more hemat
 
-### 2. Page user biasa sekarang guard auth sendiri di server
+### 2. Page user biasa now guard auth sendiri in server
 
-File baru:
+File new:
 
 - `apps/web/server/auth/pageAuth.ts`
 
-File yang memakai helper ini:
+File that memakai helper this:
 
 - `apps/web/app/home/page.tsx`
 - `apps/web/app/library/page.tsx`
@@ -53,11 +53,11 @@ File yang memakai helper ini:
 
 Dampak:
 
-- redirect login tetap ada
-- callback path tetap eksplisit di page
-- route user biasa tidak perlu lagi selalu melewati edge middleware hanya untuk memastikan session
+- redirect login still there is
+- callback path still eksplcontentt in page
+- route user biasa not perlu lagi sethen methroughi edge middleware only to ensure session
 
-### 3. Navbar badge tidak lagi hammer server tiap 30 detik
+### 3. Navbar badge not lagi hammer server tiap 30 detik
 
 File:
 
@@ -70,22 +70,22 @@ File:
 
 Perubahan:
 
-- polling badge sekarang **visibility-aware** dan **focus-aware**
-- polling period dinaikkan menjadi **90 detik** saat tab visible
-- tab hidden tidak terus polling
-- guest user tidak lagi memicu unread-count request untuk badge auth-only
-- mark-read notif dan submit admin report sekarang memicu **event-driven refresh** badge, jadi UI tetap responsif tanpa polling agresif
-- implementasi polling diubah dari `setInterval()` ke `setTimeout()` terjadwal supaya lebih mudah dihentikan saat tab hidden
+- polling badge now **vcontentbility-aware** and **focus-aware**
+- polling period dinaikkan menjadi **90 detik** saat tab vcontentble
+- tab hidden not terus polling
+- guest user not lagi memicu unread-count request for badge auth-only
+- mark-read notif and submit admin report now memicu **event-driven refresh** badge, become UI still responsif without polling agresif
+- implementasi polling diubah from `setInterval()` to `setTimeout()` terjadwal so that more mudah dihentikan saat tab hidden
 
 Dampak:
 
 - background request noise turun
-- desktop navbar tetap menunjukkan unread count
-- perubahan count setelah aksi user tetap terlihat cepat
+- desktop navbar still point tokan unread count
+- perubahan count after aksi user still terlihat cepat
 
-### 4. Beberapa page auth-heavy berhenti self-fetch ke API internal
+### 4. Beberapa page auth-heavy berhenti self-fetch to API internal
 
-Page yang sekarang mengambil data langsung dari service server:
+Page current mengambil data directly from service server:
 
 - `apps/web/app/library/page.tsx`
 - `apps/web/app/notifications/page.tsx`
@@ -94,7 +94,7 @@ Page yang sekarang mengambil data langsung dari service server:
 - `apps/web/app/studio/page.tsx`
 - `apps/web/app/studio/series/page.tsx`
 
-Service baru/reuse yang dipakai:
+Service new/reuse used:
 
 - `apps/web/server/services/library/viewerLibrary.ts`
 - `apps/web/server/services/notifications/viewerNotifications.ts`
@@ -102,49 +102,49 @@ Service baru/reuse yang dipakai:
 - `apps/web/server/services/profile/viewerProfile.ts`
 - `apps/web/server/services/studio/works.ts` (`listStudioWorksForViewer`)
 
-API route tetap dipertahankan, tapi sekarang route dan page berbagi logic yang sama.
+API route still kept, tapi now route and page berbagi logic same.
 
 ## Dampak baseline statis
 
-Setelah tahap 3, hasil scan `npm run refactor:stage0` menjadi:
+Setelah stage 3, hasil scan `npm run refactor:stage0` menjadi:
 
-- `force-dynamic` exports: **37** _(belum disentuh di tahap ini)_
+- `force-dynamic` exports: **37** _(not yet disentuh in stage this)_
 - server-page import `apiJson()`: **20 → 14**
-- total call `apiJson()` di `app/**`: **24 → 17**
-- `fetch cache:no-store`: **7** _(belum disentuh di tahap ini)_
-- `Cache-Control no-store`: **0** _(tetap)_
+- total call `apiJson()` in `app/**`: **24 → 17**
+- `fetch cache:no-store`: **7** _(not yet disentuh in stage this)_
+- `Cache-Control no-store`: **0** _(still)_
 - `setInterval()`: **3 → 2**
 
-Tambahan perubahan non-baseline yang penting:
+Tambahan perubahan non-baseline that penting:
 
-- `middleware` matcher turun dari banyak prefix user route menjadi hanya **`/admin/:path*`**
+- `middleware` matcher turun from banyak prefix user route menjadi only **`/admin/:path*`**
 
-## Yang sengaja belum disentuh
+## Intentionally not touched yet
 
-Tahap 3 belum menyentuh:
+Tahap 3 not yet menyentuh:
 
-- work detail / reader page yang masih memakai `apiJson()`
-- studio chapter detail/edit/page manager yang masih self-fetch
+- work detail / reader page that still memakai `apiJson()`
+- studio chapter detail/edit/page manager that still self-fetch
 - dedupe session / viewer lookup lintas service
-- optimasi query Prisma yang lebih dalam
+- optimasi query Prisma that more dalam
 
-Itu memang ditahan untuk tahap 4 agar risiko regresi tetap kecil.
+Itu memang ditahan for stage 4 so that rcontentko regresi still kecil.
 
 ## Verifikasi minimum
 
 - `npm run refactor:stage0`
-- cek manual unread badge saat:
+- check manual unread badge saat:
   - login vs guest
-  - tab visible vs hidden
+  - tab vcontentble vs hidden
   - mark notification read
   - kirim admin report
 - `docs/REGRESSION_CHECKLIST.md`
 
-Catatan container kerja saat tahap ini dibuat:
+Catatan container work saat stage this dibuat:
 
-- scan statis berhasil dijalankan
-- verifikasi penuh `npm run verify` masih belum bisa dikonfirmasi bersih karena dependency belum terpasang di environment container ini
+- the static scan ran successfully
+- verifikasi penuh `npm run verify` still not yet can dikonfirmasi bersih because dependency not yet terpasang in environment container this
 
-## Baseline untuk tahap 4
+## Baseline for stage 4
 
-Tahap 4 harus dimulai dari ZIP hasil tahap 3 ini, bukan dari snapshot tahap 2.
+Tahap 4 must dimulai from ZIP hasil stage 3 this, not from snapshot stage 2.

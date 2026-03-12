@@ -35,7 +35,7 @@ export default function PublishToggle({
 
         const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
-          setError(data?.error || "Gagal update status");
+          setError(data?.error || "Failed to update status");
           return;
         }
 
@@ -43,7 +43,7 @@ export default function PublishToggle({
         onStatusChange?.(nextStatus);
       } catch (e) {
         console.error(e);
-        setError("Gagal update status");
+        setError("Failed to update status");
       }
     });
   };

@@ -21,20 +21,18 @@ export default function ConfirmAdultDialog({ open, setOpen, onConfirm }: Props) 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Peringatan 18+</DialogTitle>
+          <DialogTitle>18+ Warning</DialogTitle>
           <DialogDescription>
-            Dengan mencentang kotak ini. Anda sudah setuju bahwa dosa anda ditanggung sendiri. Developer tidak bertanggung jawab
-            ataupun berbagi dosa dengan apapun yang anda baca. Ini adalah peringatan terakhir. Bacaan anda selanjutnya penuh
-            dosa~ kami tidak akan ikut bertanggung jawab.
+            By checking this box, you acknowledge that you are responsible for the content you choose to read. The developers are not responsible for what you access. This is your final warning.
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
           <Button variant="outline" type="button" onClick={() => setOpen(false)}>
-            Tidak, saya tidak mau.
+            No, I do not want to continue.
           </Button>
           <Button type="button" onClick={onConfirm}>
-            Ya, saya tau itu.
+            Yes, I understand.
           </Button>
         </DialogFooter>
       </DialogContent>

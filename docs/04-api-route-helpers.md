@@ -1,27 +1,27 @@
 # Tahap 4 — API Route Helpers & Konvensi
 
-Tujuan tahap ini adalah merapikan layer API (Next.js App Router route handlers) **tanpa mengubah fitur** dengan:
+The goal of this stage is clean up layer API (Next.js App Router route handlers) **without mengubah features** with:
 
-- mengurangi boilerplate `NextResponse.json(...)` yang tersebar
-- membuat pola error handling konsisten
+- reduce boilerplate `NextResponse.json(...)` that tersebar
+- membuat pola consistent error handling
 - menyatukan akses session (`getSession()`)
-- menyediakan helper parsing request yang aman (JSON + meta client)
+- provide safe request-parsing helpers (JSON + meta client)
 
-## Perubahan utama
+## Perubahan main
 
-### 1) Helper API untuk Response JSON
+### 1) Helper API for Response JSON
 Lokasi: `apps/web/server/http/response.ts`
 
-Gunakan helper berikut di route handlers:
+Gunakan helper berikut in route handlers:
 
 - `json(data, { status })`
 - `error(message, status)`
 
-dan beberapa shortcut:
+and several shortcut:
 
 - `badRequest()`, `unauthorized()`, `forbidden()`, `notFound()`, `conflict()`, `internalError()`, dll.
 
-Catatan: format error **tetap sama** dengan kode sebelumnya, yaitu:
+Note: format error **still sama** with kode beforenya, yaitu:
 
 ```ts
 { error: string }
@@ -30,12 +30,12 @@ Catatan: format error **tetap sama** dengan kode sebelumnya, yaitu:
 ### 2) Wrapper route handler: `apiRoute(...)`
 Lokasi: `apps/web/server/http/route.ts`
 
-Wrapper ini menangkap error yang dilempar dari dalam handler dan mengubahnya menjadi response JSON:
+Wrapper this menangkap error that dilempar from dalam handler and mengubahnya menjadi response JSON:
 
 - `throw new ApiError(400, "message")` → `{ error: "message" }` status 400
 - `throw new Error("UNAUTHORIZED")` → status 401
 - `throw new Error("FORBIDDEN")` → status 403
-- error lain → status 500 (dan di-log)
+- error lain → status 500 (and in-log)
 
 Route handler kini dianjurkan diekspor sebagai const:
 
@@ -50,15 +50,15 @@ export const GET = apiRoute(async (req: Request) => {
 ### 3) Session wrapper
 Lokasi: `apps/web/server/auth/session.ts`
 
-Route handler yang butuh session sebaiknya memakai:
+Route handler that butuh session should memakai:
 
 ```ts
 import { getSession } from "@/server/auth/session";
 ```
 
-Agar konsisten (menghindari copy-paste `getServerSession(authOptions)`).
+Agar consistent (avoid copy-paste `getServerSession(authOptions)`).
 
-Tambahan helper (opsional):
+Tambahan helper (optional):
 - `requireSessionUserId()`
 - `requireAdminSession()`
 
@@ -67,14 +67,14 @@ Lokasi: `apps/web/server/http/auth.ts`
 ### 4) Safe request parsing helpers
 Lokasi: `apps/web/server/http/request.ts`
 
-- `readJsonObject(req)` → selalu menghasilkan object (fallback `{}`) seperti pola lama `req.json().catch(() => ({}))`
+- `readJsonObject(req)` → sethen menghasilkan object (fallback `{}`) seperti pola old `req.json().catch(() => ({}))`
 - `getClientMeta(req)` → `{ ip, userAgent }`
-- `asString`, `asOptionalBool`, `toJsonSafe` (utility umum)
+- `asString`, `asOptionalBool`, `toJsonSafe` (utility general)
 
 ## Definition of Done (Tahap 4)
 
-- Semua route handlers memakai `apiRoute(...)` (error handling konsisten).
-- Semua response JSON memakai helper `json(...)` (mengurangi boilerplate `NextResponse.json`).
-- Akses session menggunakan `getSession()` wrapper (bukan `getServerSession(authOptions)`).
-- Tidak ada perubahan fitur: jalankan `REGRESSION_CHECKLIST.md`.
+- All route handlers memakai `apiRoute(...)` (consistent error handling).
+- Semua response JSON memakai helper `json(...)` (reduce boilerplate `NextResponse.json`).
+- Akses session menggunakan `getSession()` wrapper (not `getServerSession(authOptions)`).
+- There is no feature change: jalankan `REGRESSION_CHECKLIST.md`.
 

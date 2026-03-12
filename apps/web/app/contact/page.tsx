@@ -5,7 +5,7 @@ export default function ContactPage() {
   return (
     <PageScaffold
       title=" Contact"
-      description="Placeholder halaman kontak."
+      description="Placeholder contact page."
       crumbs={[
         { label: "Home", href: "/home" },
         { label: "Contact", href: "/contact" },
@@ -13,7 +13,7 @@ export default function ContactPage() {
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Coming soon. Untuk sekarang, bisa balik ke feed.
+          Coming soon. For now, you can go back to the feed.
         </p>
         <div className="mt-4">
           <Link

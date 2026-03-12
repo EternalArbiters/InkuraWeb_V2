@@ -95,7 +95,7 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
             </div>
             <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Included accounts and excluded admin activity</h1>
             <p className="mt-2 max-w-3xl text-sm text-gray-600 dark:text-gray-300 md:text-base">
-              Range aktif {formatDate(data.range.start)} — {formatDate(data.range.end)}. Halaman ini nunjukin akun non-admin yang ikut dihitung, guest session anonim, dan akun admin yang dikeluarkan dari analytics.
+              Active range {formatDate(data.range.start)} — {formatDate(data.range.end)}. This page shows the non-admin accounts included in the calculation, anonymous guest sessions, and admin accounts excluded from analytics.
             </p>
           </div>
 
@@ -111,17 +111,17 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <SummaryCard label="Included events" value={compact(data.summary.includedEventsTotal)} hint="Semua event yang benar-benar dipakai analytics setelah admin difilter keluar." tone="border-blue-200 bg-blue-50/70 text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-200" />
-          <SummaryCard label="Included accounts" value={compact(data.summary.includedAccounts)} hint="Akun user non-admin yang punya event di range ini." tone="border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-200" />
-          <SummaryCard label="Guest sessions" value={compact(data.summary.guestSessions)} hint="Visitor anonim tanpa akun yang tetap masuk sebagai traffic publik." tone="border-violet-200 bg-violet-50/70 text-violet-700 dark:border-violet-900/40 dark:bg-violet-950/20 dark:text-violet-200" />
-          <SummaryCard label="Excluded admin events" value={compact(data.summary.excludedAdminEventsTotal)} hint="Event admin yang sengaja dikeluarkan dari analytics utama." tone="border-rose-200 bg-rose-50/70 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-200" />
+          <SummaryCard label="Included events" value={compact(data.summary.includedEventsTotal)} hint="All events actually used by analytics after admin activity is filtered out." tone="border-blue-200 bg-blue-50/70 text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-200" />
+          <SummaryCard label="Included accounts" value={compact(data.summary.includedAccounts)} hint="Non-admin user accounts that have events in this range." tone="border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-200" />
+          <SummaryCard label="Guest sessions" value={compact(data.summary.guestSessions)} hint="Anonymous visitors without accounts that still count as public traffic." tone="border-violet-200 bg-violet-50/70 text-violet-700 dark:border-violet-900/40 dark:bg-violet-950/20 dark:text-violet-200" />
+          <SummaryCard label="Excluded admin events" value={compact(data.summary.excludedAdminEventsTotal)} hint="Admin events intentionally excluded from the main analytics." tone="border-rose-200 bg-rose-50/70 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-200" />
         </section>
 
         <section className="mt-8 rounded-[28px] border border-gray-200 bg-white/90 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900/80 md:p-6">
           <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-lg font-bold md:text-xl">Included accounts</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Akun ini masuk ke pendataan analytics utama.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">This account is included in the primary analytics dataset.</p>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">{data.includedAccounts.length} accounts</div>
           </div>
@@ -148,7 +148,7 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
                   <div>{formatDateTime(item.lastSeenAt)}</div>
                 </div>
               )) : (
-                <div className="px-4 py-8 text-sm text-gray-500 dark:text-gray-400">Belum ada akun non-admin yang tercatat di range ini.</div>
+                <div className="px-4 py-8 text-sm text-gray-500 dark:text-gray-400">No non-admin accounts have been recorded in this range yet.</div>
               )}
             </div>
           </div>
@@ -158,7 +158,7 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
           <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-lg font-bold md:text-xl">Excluded admin accounts</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Akun admin yang terdeteksi tetapi tidak dipakai dalam aggregate utama.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Admin accounts detected but not used in the primary aggregate.</p>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">{data.excludedAdminAccounts.length} accounts</div>
           </div>
@@ -185,7 +185,7 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
                   <div>{formatDateTime(item.lastSeenAt)}</div>
                 </div>
               )) : (
-                <div className="px-4 py-8 text-sm text-gray-500 dark:text-gray-400">Belum ada aktivitas admin yang perlu dikecualikan di range ini.</div>
+                <div className="px-4 py-8 text-sm text-gray-500 dark:text-gray-400">There is no admin activity that needs to be excluded in this range yet.</div>
               )}
             </div>
           </div>
@@ -195,7 +195,7 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
           <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-lg font-bold md:text-xl">Recent included events</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Sample event terbaru yang dipakai analytics setelah admin disaring keluar.</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Latest sample events used by analytics after admin activity is filtered out.</p>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Showing {data.recentIncludedEvents.length} latest events</div>
           </div>
@@ -216,7 +216,7 @@ export default async function AdminAnalyticsDetailsPage({ searchParams: searchPa
                   <div className="truncate">{identityLabel(item.user)}</div>
                 </div>
               )) : (
-                <div className="px-4 py-8 text-sm text-gray-500 dark:text-gray-400">Belum ada event yang bisa ditampilkan untuk range ini.</div>
+                <div className="px-4 py-8 text-sm text-gray-500 dark:text-gray-400">There are no events to display for this range yet.</div>
               )}
             </div>
           </div>

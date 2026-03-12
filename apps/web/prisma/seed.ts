@@ -121,7 +121,7 @@ async function main() {
     create: {
       slug: novelSlug,
       title: novelTitle,
-      description: "Contoh karya NOVEL untuk demo reader + studio (v8 taxonomy + warning).",
+      description: "Sample NOVEL work for the reader + studio demo (v8 taxonomy + warning).",
       type: WorkType.NOVEL,
       status: WorkStatus.PUBLISHED,
       coverImage: "/images/novel1.png",
@@ -156,7 +156,7 @@ async function main() {
             text: {
               create: {
                 content:
-                  "Selamat datang di Inkura.\n\nIni contoh konten NOVEL.\n\nCoba buka Studio → Work → New Chapter / Edit Chapter.",
+                  "Welcome to Inkura.\n\nThis is sample NOVEL content.\n\nTry opening Studio → Work → New Chapter / Edit Chapter.",
               },
             },
           },
@@ -175,7 +175,7 @@ async function main() {
     create: {
       slug: comicSlug,
       title: comicTitle,
-      description: "Contoh karya COMIC untuk demo upload pages + reader.",
+      description: "Sample COMIC work for the upload-pages + reader demo.",
       type: WorkType.COMIC,
       status: WorkStatus.PUBLISHED,
       coverImage: "/images/comic1.png",
@@ -228,7 +228,7 @@ async function main() {
     create: {
       slug: matureSlug,
       title: matureTitle,
-      description: "Demo karya yang ditandai Mature + warning tags (untuk ngetes gating).",
+      description: "Demo work marked as Mature + warning tags (for gating tests).",
       type: WorkType.NOVEL,
       status: WorkStatus.PUBLISHED,
       coverImage: "/images/novel2.png",
@@ -261,7 +261,7 @@ async function main() {
             warningTags: { connect: [{ id: pickWarning("Sexual Content").id }] },
             text: {
               create: {
-                content: "Ini chapter demo Mature.\n\nKalau kamu belum opt-in di Settings, halaman ini bakal kegate.",
+                content: "This is a Mature demo chapter.\n\nIf you have not opted in under Settings, this page will be gated.",
               },
             },
           },
@@ -280,7 +280,7 @@ async function main() {
     create: {
       slug: deviantSlug,
       title: deviantTitle,
-      description: "Demo karya yang ditandai Deviant Love tags (untuk ngetes gating).",
+      description: "Demo work marked with Deviant Love tags (for gating tests).",
       type: WorkType.NOVEL,
       status: WorkStatus.PUBLISHED,
       coverImage: "/images/novel3.png",
@@ -313,7 +313,7 @@ async function main() {
             text: {
               create: {
                 content:
-                  "Ini chapter demo Deviant Love.\n\nKalau kamu belum unlock di Settings, halaman ini bakal kegate.",
+                  "This is a Deviant Love demo chapter.\n\nIf you have not unlocked it in Settings, this page will be gated.",
               },
             },
           },

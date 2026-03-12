@@ -41,13 +41,13 @@ export async function sendPasswordResetEmail(params: { to: string; resetUrl: str
   const html = `
     <div style="font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.5">
       <h2>Reset password</h2>
-      <p>Kamu minta reset password Inkura. Klik tombol di bawah untuk set password baru.</p>
+      <p>You requested an Inkura password reset. Click the button below to set a new password.</p>
       <p style="margin:16px 0">
         <a href="${params.resetUrl}" style="display:inline-block;padding:10px 14px;background:#111;color:#fff;border-radius:8px;text-decoration:none">
           Reset password
         </a>
       </p>
-      <p>Kalau kamu tidak merasa meminta reset password, abaikan email ini.</p>
+      <p>If you did not request a password reset, ignore this email.</p>
     </div>
   `.trim();
   return sendEmail({ to: params.to, subject, html });

@@ -6,9 +6,9 @@ import CustomCursor from "./components/CustomCursor";
 import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
 
-// Root layout sengaja dibiarkan `auto` agar hanya page/route yang memang butuh
-// render per-request yang menjadi dynamic. Ini menghindari seluruh app ikut
-// terhitung dynamic hanya karena beberapa halaman membaca session/DB.
+// The root layout is intentionally left as `auto` so only pages/routes that truly need
+// per-request rendering become dynamic. This prevents the entire app from also being
+// considered dynamic just because a few pages read session/DB data.
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -21,7 +21,7 @@ export default function CustomCursor() {
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    document.body.style.cursor = "none"; // Sembunyikan kursor asli
+    document.body.style.cursor = "none"; // Hide the native cursor
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);

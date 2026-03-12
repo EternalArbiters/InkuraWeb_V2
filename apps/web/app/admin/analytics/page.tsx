@@ -45,7 +45,7 @@ export default async function AdminAnalyticsPage({ searchParams: searchParamsPro
             </div>
             <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Audience, content, and growth in one place</h1>
             <p className="mt-2 max-w-3xl text-sm text-gray-600 dark:text-gray-300 md:text-base">
-              Lihat traffic, engagement, genre favorit, creator performance, dan search behavior dari data agregat harian Inkura.
+              See traffic, engagement, favorite genres, creator performance, and search behavior from Inkura's daily aggregated data.
             </p>
           </div>
 

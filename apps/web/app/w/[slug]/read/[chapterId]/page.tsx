@@ -60,15 +60,15 @@ export default async function ReadChapterPage({
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{work.title}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               {isDeviant
-                ? "Chapter ini ditandai Deviant Love. Untuk membaca, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
-                : "Chapter ini ditandai 18+. Untuk membaca, kamu perlu unlock + opt-in di Settings."}
+                ? "This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings."
+                : "This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings."}
             </p>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Link
                 href="/settings/account"
                 className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110"
               >
-                {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
+                {isDeviant ? "Open Settings (unlock 18+ + Deviant Love)" : "Open Settings (unlock + opt in to 18+)"}
               </Link>
               <Link
                 href={`/w/${work.slug}`}
@@ -172,7 +172,7 @@ export default async function ReadChapterPage({
                       <div className="mx-4 lg:mx-0 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
                         <div className="text-lg font-bold">No pages yet</div>
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                          Chapter ini belum punya halaman. (Creator bisa upload via Studio.)
+                          This chapter has no pages yet. (Creators can upload them via Studio.)
                         </p>
                       </div>
                     )
@@ -182,7 +182,7 @@ export default async function ReadChapterPage({
                     ) : (
                       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 mx-4 lg:mx-0">
                         <div className="text-lg font-bold">No text yet</div>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Chapter ini belum punya teks.</p>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">This chapter has no text yet.</p>
                       </div>
                     )
                   )}

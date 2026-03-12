@@ -46,10 +46,10 @@ export function useMobileHeaderVisibility({
       const clickedInsideSidebar = target.closest("aside");
       const clickedInsideHeader = target.closest("header");
 
-      // Kalau klik terjadi di dalam sidebar atau header, jangan tutup
+      // If the click happens inside the sidebar or header, do not close it
       if (clickedInsideSidebar || clickedInsideHeader) return;
 
-      // Kalau klik terjadi di luar sidebar dan header
+      // If the click happens outside the sidebar and header
       if (isMenuOpen && !showMobileNav) {
         setIsMenuOpen(false);
         setShowMobileNav(true);

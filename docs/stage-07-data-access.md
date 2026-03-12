@@ -1,8 +1,8 @@
 # Stage 7 — Data access & performa (rapih + stabil)
 
-Target tahap ini: **tanpa ubah perilaku fitur**, tapi query Prisma jadi lebih konsisten, payload lebih predictable, dan refactor berikutnya tidak tersandung copy‑paste include/select yang beda‑beda.
+Target stage this: **without change perilaku features**, tapi query Prisma become more consistent, payload more predictable, and refactor berikutnya not tersandung copy‑paste include/select that beda‑beda.
 
-## Perubahan utama
+## Perubahan main
 
 ### 1) Prisma select/include presets
 
@@ -10,17 +10,17 @@ Ditambah:
 
 - `apps/web/server/db/selectors.ts`
 
-Isinya preset `select/include` yang sering dipakai, misalnya:
+Isinya preset `select/include` that sering used, misalnya:
 
-- `workCardSelect` → untuk list card work (browse/search/home)
-- `commentListInclude` → include user + attachments(media) untuk comments
-- `notificationSelect` → field notifications yang konsisten
+- `workCardSelect` → for list card work (browse/search/home)
+- `commentListInclude` → include user + attachments(media) for comments
+- `notificationSelect` → field notifications that consistent
 - leaf presets: `userPublicSelect`, `userNameSelect`, `nameSlugSelect`, dll.
 
 Tujuannya:
 
-- mengurangi duplikasi `select: { ... }` di banyak file
-- memudahkan audit payload (kalau mau nambah/hapus field, cukup di 1 tempat)
+- reducing duplikasi `select: { ... }` in banyak file
+- memudahkan audit payload (if mau nambah/hapus field, cukup in 1 tempat)
 
 ### 2) Pagination helper (offset + cursor)
 
@@ -33,11 +33,11 @@ Helper:
 - `parseTake`, `parseSkip`, `parseCursor`
 - `nextCursorFromRows`
 
-Catatan:
+Note:
 
 - **Tidak memaksa UI berubah**.
-- Endpoint yang sudah pakai offset (`skip/take`) tetap jalan.
-- Endpoint bisa opt‑in cursor (`cursor/take`) untuk list yang lebih stabil.
+- Endpoint already use offset (`skip/take`) still jalan.
+- Endpoint can opt‑in cursor (`cursor/take`) for list that more stabil.
 
 ### 3) Works list endpoint: cursor-ready + select preset
 
@@ -50,7 +50,7 @@ Perubahan:
 - memakai `workCardSelect`
 - orderBy dibuat deterministic (ditambah tie-breaker `id`)
 - optional cursor pagination via query param `cursor`
-- response ditambah `nextCursor` (tidak mengganggu client lama)
+- response ditambah `nextCursor` (not mengganggu client old)
 
 ### 4) Notifications endpoint: select preset + cursor-ready
 
@@ -67,11 +67,11 @@ Perubahan:
 
 ### 5) Comments: include preset
 
-Beberapa tempat yang sebelumnya copy‑paste include sekarang memakai `commentListInclude`.
+Beberapa tempat that beforenya copy‑paste include now memakai `commentListInclude`.
 
 ## Index & perf hygiene (Prisma)
 
-Ditambah index yang aman dan relevan dengan query yang sering dipakai:
+Ditambah index safe and relevant with query that sering used:
 
 - Work browsing:
   - `@@index([status, updatedAt])`
@@ -83,8 +83,8 @@ Perubahan schema:
 
 - `apps/web/prisma/schema.prisma`
 
-Migration tambahan:
+Migration additional:
 
 - `apps/web/prisma/migrations/20260305000000_stage7_perf_indexes/migration.sql`
 
-> Migration memakai `CREATE INDEX IF NOT EXISTS` supaya lebih aman jika index sudah dibuat manual di environment tertentu.
+> Migration memakai `CREATE INDEX IF NOT EXISTS` so that safer if index already dibuat manual in environment tertentu.

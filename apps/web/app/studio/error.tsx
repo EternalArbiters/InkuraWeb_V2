@@ -11,7 +11,7 @@ export default function StudioError({ error, reset }: Props) {
   return (
     <ErrorView
       title="Studio mengalami kendala"
-      message="Terjadi kesalahan saat memuat Studio. Coba lagi atau kembali ke daftar karya."
+      message="An error occurred while loading Studio. Try again or return to the works list."
       error={error}
       reset={reset}
       homeHref="/studio"

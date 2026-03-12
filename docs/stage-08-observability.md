@@ -1,13 +1,13 @@
 # Stage 8 — Observability & Error Hygiene
 
-Tujuan: ketika bug muncul, kita bisa **debug cepat** tanpa mengubah fitur.
+Tujuan: ketika bug appear, kita can **debug cepat** without mengubah features.
 
-Stage ini fokus pada 2 hal:
+Stage this fokus pada 2 thing:
 
-1) **Server logging** yang lebih terstruktur (minimal: request id + route + status + userId bila ada).
-2) **UI error boundary** yang konsisten di route penting.
+1) **Server logging** that more terstructure (minimal: request id + route + status + userId if there is).
+2) **UI error boundary** that consistent in route penting.
 
-> Catatan: ini bukan “fitur baru”. Tidak ada perubahan flow user. Ini rapihin instrumentation.
+> Note: this not “features new”. Tidak there is perubahan flow user. Ini rapihin instrumentation.
 
 ---
 
@@ -18,16 +18,16 @@ Stage ini fokus pada 2 hal:
 - `apps/web/server/observability/api.ts`
 
 ### Implementasi
-- `apiRoute()` (`apps/web/server/http/route.ts`) sekarang:
-  - membuat/menentukan **requestId** (ambil dari header `x-request-id` / `x-vercel-id` / `cf-ray`, atau generate baru)
-  - menambahkan header **`x-request-id`** pada **semua response** (best-effort)
-  - melakukan **JSON logging** untuk:
+- `apiRoute()` (`apps/web/server/http/route.ts`) now:
+  - membuat/menentukan **requestId** (ambil from header `x-request-id` / `x-vercel-id` / `cf-ray`, or generate new)
+  - menambahkan header **`x-request-id`** pada **all response** (best-effort)
+  - melakukan **JSON logging** for:
     - response status **>= 500** (`api.response_error`)
     - unhandled exception (`api.unhandled_error`)
-  - (opsional) log semua request jika `INKURA_LOG_REQUESTS=1`
+  - (optional) log all request if `INKURA_LOG_REQUESTS=1`
 
 ### Shape log
-Contoh (disederhanakan):
+Example (disederhanakan):
 
 ```json
 {
@@ -47,7 +47,7 @@ Contoh (disederhanakan):
 ```
 
 ### Env vars
-Tambahan opsional (lihat `apps/web/.env.example`):
+Tambahan optional (lihat `apps/web/.env.example`):
 - `INKURA_LOG_LEVEL=info` (debug/info/warn/error)
 - `INKURA_LOG_REQUESTS=1` (log setiap request API)
 - `INKURA_SERVICE_NAME=...`
@@ -71,13 +71,13 @@ Tambahan opsional (lihat `apps/web/.env.example`):
 ### Shared UI
 - `apps/web/app/components/errors/ErrorView.tsx`
 
-Semua error boundary menggunakan UI yang sama (card + CTA "Coba lagi" + link back/home), sehingga:
-- UX konsisten
-- lebih mudah maintenance
+Semua error boundary menggunakan UI same (card + CTA "Try again" + link back/home), sehingga:
+- UX consistent
+- more mudah maintenance
 
 ---
 
 ## Definition of Done
 - Semua API response menyertakan `x-request-id`.
-- Unhandled server errors menghasilkan log JSON yang konsisten (requestId + route + status + userId jika ada).
-- Error boundary tersedia untuk route penting dan tampil konsisten.
+- Unhandled server errors menghasilkan log JSON that consistent (requestId + route + status + userId if there is).
+- Error boundary tersedia for route penting and tampil consistent.

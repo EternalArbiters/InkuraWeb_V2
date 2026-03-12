@@ -121,7 +121,7 @@ export default function TaxonomyManagerInner({ kind, title }: { kind: Kind; titl
   }
 
   async function deactivate(item: Item) {
-    if (!confirm(`Nonaktifkan "${item.name}"? (soft delete)`)) return;
+    if (!confirm(`Deactivate "${item.name}"? (soft delete)`)) return;
     setSaving(true);
     setErr(null);
     try {

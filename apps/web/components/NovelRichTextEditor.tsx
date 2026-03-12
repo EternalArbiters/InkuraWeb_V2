@@ -48,7 +48,7 @@ function ToolbarRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function NovelRichTextEditor({ value, onChange, placeholder = "Tulis isi chapter...", workId, chapterId }: Props) {
+export default function NovelRichTextEditor({ value, onChange, placeholder = "Write the chapter content...", workId, chapterId }: Props) {
   const editorRef = React.useRef<HTMLDivElement | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const selectionRef = React.useRef<Range | null>(null);
@@ -145,10 +145,10 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
     async (files: File[]) => {
       if (!files.length) return;
       setUploadingImage(true);
-      setHelperText(`Mengupload ${files.length} gambar...`);
+      setHelperText(`Uploading ${files.length} images...`);
       try {
         for (const [index, file] of files.entries()) {
-          setHelperText(`Mengupload gambar ${index + 1}/${files.length}...`);
+          setHelperText(`Uploading image ${index + 1}/${files.length}...`);
           const prepared = await prepareUploadFile({ scope: "pages", file });
           const upload = await presignAndUpload({
             scope: "pages",
@@ -160,9 +160,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
           });
           insertHtmlAtCaret(`<figure><img src="${upload.url}" alt="${file.name.replace(/\"/g, "")}"></figure><p><br></p>`);
         }
-        setHelperText("Gambar dimasukkan ke isi chapter.");
+        setHelperText("The image was inserted into the chapter content.");
       } catch (error) {
-        setHelperText(error instanceof Error ? error.message : "Gagal upload gambar.");
+        setHelperText(error instanceof Error ? error.message : "Failed to upload image.");
       } finally {
         setUploadingImage(false);
         window.setTimeout(() => setHelperText(null), 2200);
@@ -225,7 +225,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Tu
         <ToolbarButton
           title="Link"
           onPress={() => {
-            const url = window.prompt("Masukkan URL link");
+            const url = window.prompt("Enter the link URL");
             if (!url) return;
             runCommand("createLink", url);
           }}

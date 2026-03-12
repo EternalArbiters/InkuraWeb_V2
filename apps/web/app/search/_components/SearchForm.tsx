@@ -356,7 +356,7 @@ export default function SearchForm({
                 <LockLabel text="Deviant Love" />
               </div>
               <div className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-100/80">
-                Deviant Love tersegel. Konfirmasi beberapa hal di setting untuk membukanya. Peringatan, membuka jenis genre ini dapat merusak kewarasan!
+                Deviant Love is locked. Confirm the required settings to unlock it. Warning: opening this genre may be psychologically disturbing!
               </div>
             </div>
           )}
@@ -395,7 +395,7 @@ export default function SearchForm({
                 <LockLabel text="NSFW" />
               </div>
               <div className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-100/80">
-                NSFW tersegel. Konfirmasi beberapa hal di setting untuk membukanya. Anak dibawah umur dilarang membukanya.
+                NSFW is locked. Confirm the required settings to unlock it. Minors are not allowed to open it.
               </div>
             </div>
           )}

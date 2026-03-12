@@ -1,19 +1,19 @@
 # Inkura Deployment (Shortcut)
 
-Untuk panduan deploy final stage 10, buka:
+For the final stage 10 deployment guide, open:
 
 - `docs/deployment-runbook.md`
 - `docs/env-vars.md`
 
-Catatan historis yang masih relevan:
+Catatan historis that still relevant:
 
 - `apps/web/docs/V15_DEPLOYMENT_NOTES.md`
 
 ## TL;DR
 
-- target deploy utama: **Vercel + Neon + Cloudflare R2**
-- env wajib: `DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
-- upload butuh env R2 yang lengkap
+- target deploy main: **Vercel + Neon + Cloudflare R2**
+- required env: `DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
+- upload butuh env R2 that lengkap
 - build pipeline memakai `vercel-build`
 - production menjalankan `prisma migrate deploy`
-- preview default **tidak** auto-migrate kecuali `INKURA_MIGRATE_PREVIEW=1`
+- preview default **not** auto-migrate kecuali `INKURA_MIGRATE_PREVIEW=1`

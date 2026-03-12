@@ -17,7 +17,7 @@ export default function NewListForm() {
 
     const t = title.trim();
     if (!t) {
-      setError("Title wajib diisi.");
+      setError("Title is required.");
       return;
     }
 
@@ -57,7 +57,7 @@ export default function NewListForm() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/30"
-          placeholder='contoh: "Romance Indo"'
+          placeholder='example: "Indonesian Romance"'
         />
       </div>
 
@@ -76,7 +76,7 @@ export default function NewListForm() {
         <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
         <span>
           Make public (shareable){" "}
-          <span className="text-xs text-gray-600 dark:text-gray-300">— works di dalam list tetap mengikuti gate 18+/Deviant Love viewer</span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">— works inside the list still follow the viewer's 18+/Deviant Love gate</span>
         </span>
       </label>
 

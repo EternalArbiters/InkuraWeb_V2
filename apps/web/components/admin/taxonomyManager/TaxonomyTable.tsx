@@ -75,7 +75,7 @@ export default function TaxonomyTable({
         <div>
           <div className="text-lg font-semibold">{title}</div>
           <div className="text-sm text-neutral-500">
-            {description || "Create / edit / nonaktifkan (soft delete) dan atur urutan."}
+            {description || "Create / edit / deactivate (soft delete) and manage order."}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -247,7 +247,7 @@ export default function TaxonomyTable({
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs text-neutral-500">
           {reorderDisabled
-            ? "Reorder dimatikan saat search aktif (clear search untuk reorder)."
+            ? "Reordering is disabled while search is active (clear search to reorder)."
             : orderDirty
               ? "Order changed (not saved yet)."
               : ""}

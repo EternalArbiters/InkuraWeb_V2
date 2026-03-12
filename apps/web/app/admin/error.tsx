@@ -10,8 +10,8 @@ type Props = {
 export default function AdminError({ error, reset }: Props) {
   return (
     <ErrorView
-      title="Halaman Admin bermasalah"
-      message="Terjadi kesalahan saat memuat halaman Admin. Coba lagi atau kembali ke dashboard admin."
+      title="Admin page error"
+      message="An error occurred while loading the Admin page. Try again or return to the admin dashboard."
       error={error}
       reset={reset}
       homeHref="/admin"

@@ -1,21 +1,21 @@
 # Perf Refactor — Tahap 4 Query Dedupe & Batching
 
-Tahap 4 fokus ke **mengurangi query berulang dalam request yang sama** tanpa mengubah fitur atau kontrak API.
+Tahap 4 focuses on **reducing repeated queries in the same request** without changing features or API contracts.
 
-Tahap ini dibangun langsung di atas ZIP hasil tahap 3.
+This stage is built directly on top of the ZIP produced by stage 3.
 
-## Sasaran tahap ini
+## Sasaran stage this
 
-Masalah yang masih tersisa setelah tahap 3:
+Masalah that still tersisa after stage 3:
 
-- lookup session dan viewer prefs masih bisa kebaca berulang di server request yang sama
-- halaman `/search` masih membaca viewer prefs lalu masuk ke listing work yang membaca viewer lagi
-- halaman `/home` memang sudah tidak self-fetch ke API internal, tetapi untuk viewer yang login masih memicu query interaksi rail berkali-kali
-- helper prefs dan helper viewer masih punya jalur query yang tumpang tindih
+- lookup session and viewer prefs still can kebaca berulang in server request same
+- page `/search` still reads viewer preferences and then enters work listing that reads the viewer again
+- page `/home` memang already not self-fetch to API internal, tetapi for viewer that is logged in still memicu query interaksi rail berkali-kali
+- helper prefs and helper viewer still punya jflow query that tumpang tindih
 
-## Perubahan yang masuk di tahap 4
+## Changes included in stage 4
 
-### 1. Session dan viewer lookup sekarang request-scoped cached
+### 1. Session and viewer lookup now request-scoped cached
 
 File:
 
@@ -25,16 +25,16 @@ File:
 
 Perubahan:
 
-- `getSession()` sekarang dibungkus `react cache()`
-- `getViewerBasic()` dan `getViewerWithPrefs()` sekarang memakai lookup user ter-cache per request
-- `getViewerPreferences()` tidak lagi query user sendiri; sekarang memetakan hasil dari `getViewerWithPrefs()`
+- `getSession()` now dibungkus `react cache()`
+- `getViewerBasic()` and `getViewerWithPrefs()` now memakai lookup user ter-cache per request
+- `getViewerPreferences()` not lagi query user sendiri; now memetakan hasil from `getViewerWithPrefs()`
 
 Dampak:
 
-- satu request server yang butuh session + prefs + gating tidak lagi membaca user berkali-kali
-- helper berbeda tetap bisa dipakai tanpa mengubah fitur, tetapi sekarang berbagi sumber data yang sama
+- satu request server that needs session + prefs + gating not lagi reading user berkali-kali
+- helper berbeda still can used without mengubah features, tetapi now berbagi sumber data same
 
-### 2. Listing works sekarang bisa menerima viewer preloaded
+### 2. Listing works now can menerima viewer preloaded
 
 File:
 
@@ -42,35 +42,35 @@ File:
 
 Perubahan:
 
-- `listPublishedWorksFromSearchParams()` sekarang menerima opsi `viewer`
-- caller server page bisa meneruskan viewer yang sudah dimiliki, jadi tidak perlu lookup ulang di dalam list service
-- service juga menerima opsi untuk mematikan query interaksi per-list saat caller ingin melakukan batching sendiri
+- `listPublishedWorksFromSearchParams()` now menerima opsi `viewer`
+- caller server page can meneruskan viewer already dimiliki, become does not need to look the viewer up again inside the list service
+- service juga menerima opsi for mematikan query interaksi per-list saat caller ingin melakukan batching sendiri
 
 Dampak:
 
-- caller seperti `/search` dan `/home` bisa menghemat satu lapis lookup viewer/prefs
-- API route tetap bekerja seperti sebelumnya karena opsi ini bersifat tambahan, bukan breaking change
+- caller seperti `/search` and `/home` can menghemat satu lapis lookup viewer/prefs
+- API route still bekerja seperti beforenya because opsi this is additive, not a breaking change
 
-### 3. Rail `/home` sekarang batch viewer interactions sekali saja
+### 3. Rail `/home` now batch viewer interactions sekali saja
 
 File:
 
 - `apps/web/server/services/home/getHomePageData.ts`
-- `apps/web/server/services/works/viewerInteractions.ts` _(baru)_
+- `apps/web/server/services/works/viewerInteractions.ts` _(new)_
 
 Perubahan:
 
-- home rails tetap mengambil 5 list work sesuai behavior lama
-- tetapi flag viewer interaction (`viewerFavorited`, `viewerBookmarked`) tidak lagi dihitung per rail
-- semua work id dari 5 rail dikumpulkan dulu, lalu likes + bookmarks viewer diambil **sekali batch**
-- hasil batch kemudian diaplikasikan kembali ke tiap rail
+- home rails still mengambil 5 list work sesuai behavior old
+- tetapi flag viewer interaction (`viewerFavorited`, `viewerBookmarked`) not lagi dihitung per rail
+- all work id from 5 rail dikumpulkan first, then likes + bookmarks viewer diambil **sekali batch**
+- the batch results are then applied back to each rail
 
 Dampak:
 
-- untuk viewer login, query interaksi home turun dari **10 query** (5 likes + 5 bookmarks) menjadi **2 query** total
-- UI rail tetap menerima flag yang sama seperti sebelumnya
+- for viewer login, query interaksi home turun from **10 query** (5 likes + 5 bookmarks) menjadi **2 query** total
+- UI rail still menerima flag same seperti beforenya
 
-### 4. Halaman `/search` sekarang reuse viewer yang sama untuk filter dan hasil
+### 4. Haoldn `/search` now reuse viewer same for filter and hasil
 
 File:
 
@@ -78,18 +78,18 @@ File:
 
 Perubahan:
 
-- page sekarang memakai `getViewerWithPrefs()` langsung
-- viewer yang sama dipakai untuk:
+- page now memakai `getViewerWithPrefs()` directly
+- viewer same used for:
   - default language preference
   - unlock logic mature / deviant love
-  - memanggil `listPublishedWorksFromSearchParams()`
+  - calls `listPublishedWorksFromSearchParams()`
 
 Dampak:
 
-- request `/search` tidak lagi memisahkan lookup prefs dan lookup viewer untuk listing
-- fitur filter tetap sama
+- request `/search` not lagi memisahkan lookup prefs and lookup viewer for listing
+- features filter still sama
 
-### 5. Unit test kecil ditambahkan untuk helper interaction mapping
+### 5. Unit test kecil ditambahkan for helper interaction mapping
 
 File:
 
@@ -97,44 +97,44 @@ File:
 
 Perubahan:
 
-- memastikan flag `viewerFavorited` dan `viewerBookmarked` tetap terpasang benar saat hasil batch diaplikasikan ke row work
+- memastikan flag `viewerFavorited` and `viewerBookmarked` still terpasang benar saat hasil batch diaplikasikan to row work
 
 ## Dampak baseline statis
 
-Scan statis `npm run refactor:stage0` tidak banyak berubah di tahap ini karena fokus tahap 4 adalah **dedupe query runtime**, bukan pengurangan jumlah file dynamic atau jumlah self-fetch baru.
+Scan statis `npm run refactor:stage0` not banyak berubah in stage this because fokus stage 4 adalah **dedupe query runtime**, not pengurangan jumlah file dynamic or jumlah self-fetch new.
 
-Ekspektasi dampak utama tahap 4 ada di runtime:
+Ekspektasi dampak main stage 4 there is in runtime:
 
 - query user/session per request turun
-- query interaksi rail `/home` turun tajam untuk viewer login
-- request `/search` menghindari lookup viewer duplikat
+- query interaksi rail `/home` turun tajam for viewer login
+- request `/search` avoid lookup viewer duplikat
 
-## Yang sengaja belum disentuh
+## Intentionally not touched yet
 
-Tahap 4 belum menyentuh:
+Tahap 4 not yet menyentuh:
 
-- work detail / reader dan jalur chapter edit yang masih punya peluang batching lain
-- penambahan index DB baru lewat migration Prisma
-- invalidation cache yang lebih agresif di level data publik
+- work detail / reader and jflow chapter edit that still punya peluang batching lain
+- penambahan index DB new through migration Prisma
+- invalidation cache that more agresif in level data public
 
-Itu sengaja ditahan supaya tahap ini tetap aman dan tidak memaksa migration schema.
+That is intentionally deferred so this stage remains safe and does not force a schema migration.
 
 ## Verifikasi minimum
 
 - `npm run refactor:stage0`
-- cek manual `/home` saat login:
-  - rail tetap muncul
-  - state bookmark/favorite tetap benar
-- cek manual `/search`:
-  - default language tetap mengikuti prefs
-  - mature/deviant filters tetap terkunci/terbuka sesuai prefs
+- check manual `/home` saat login:
+  - rail still appear
+  - state bookmark/favorite still benar
+- check manual `/search`:
+  - default language still mengikuti prefs
+  - mature/deviant filters still terkunci/terbuka sesuai prefs
 - `docs/REGRESSION_CHECKLIST.md`
 
-Catatan container kerja saat tahap ini dibuat:
+Catatan container work saat stage this dibuat:
 
-- scan statis berhasil dijalankan
-- verifikasi penuh `npm run verify` masih belum bisa dikonfirmasi bersih karena dependency workspace / Prisma CLI belum stabil di environment container ini
+- the static scan ran successfully
+- verifikasi penuh `npm run verify` still not yet can dikonfirmasi bersih because dependency workspace / Prisma CLI not yet stabil in environment container this
 
-## Baseline untuk tahap 5
+## Baseline for stage 5
 
-Tahap 5 harus dimulai dari ZIP hasil tahap 4 ini, bukan dari snapshot tahap 3.
+Tahap 5 must start from this stage 4 ZIP, not from the stage 3 snapshot.

@@ -27,22 +27,22 @@ const MODE_COPY: Record<
   }
 > = {
   manual: {
-    label: "Manual satu per satu",
+    label: "Manual one by one",
     description: "",
     Icon: ImagePlus,
   },
   all: {
-    label: "Upload semua image",
+    label: "Upload all images",
     description: "",
     Icon: Images,
   },
   zip: {
-    label: "Upload ZIP chapter",
+    label: "Upload chapter ZIP",
     description: "",
     Icon: FileArchive,
   },
   pdf: {
-    label: "Upload PDF chapter",
+    label: "Upload chapter PDF",
     description: "",
     Icon: FileText,
   },
@@ -110,40 +110,40 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
   function appendManualFiles(fileList: FileList | null) {
     const incoming = normalizeImageFiles(Array.from(fileList || []));
     if (!incoming.length) {
-      setImportError("Pilih image yang valid untuk halaman comic.");
+      setImportError("Select valid image files for comic pages.");
       return;
     }
     setImportError(null);
-    setImportNote(`${incoming.length} image ditambahkan ke antrean halaman.`);
+    setImportNote(`${incoming.length} images added to the page queue.`);
     setFiles((prev) => [...prev, ...incoming]);
   }
 
   function replaceWithAllImages(fileList: FileList | null) {
     const incoming = normalizeImageFiles(Array.from(fileList || []));
     if (!incoming.length) {
-      setImportError("Pilih image yang valid untuk halaman comic.");
+      setImportError("Select valid image files for comic pages.");
       return;
     }
     setImportError(null);
-    setImportNote(`${incoming.length} image siap diupload.`);
+    setImportNote(`${incoming.length} images ready to upload.`);
     setFiles(incoming);
   }
 
   async function importArchive(kind: "zip" | "pdf", file: File | null) {
     if (!file) return;
     setImportError(null);
-    setImportNote(kind === "zip" ? "Membaca file ZIP..." : "Mengurai PDF menjadi halaman image...");
+    setImportNote(kind === "zip" ? "Reading ZIP file..." : "Converting PDF into image pages...");
     setImporting(true);
     try {
       const imported = kind === "zip" ? await importComicPagesFromZip(file) : await importComicPagesFromPdf(file);
       setFiles(imported);
       setImportNote(
         kind === "zip"
-          ? `${imported.length} image berhasil diambil dari ZIP.`
-          : `${imported.length} halaman PDF berhasil diubah menjadi image.`
+          ? `${imported.length} images were extracted from the ZIP successfully.`
+          : `${imported.length} PDF pages were converted to images successfully.`
       );
     } catch (error) {
-      setImportError(error instanceof Error ? error.message : "Gagal memproses file.");
+      setImportError(error instanceof Error ? error.message : "Failed to process the file.");
       setImportNote(null);
     } finally {
       setImporting(false);
@@ -195,9 +195,9 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
                 onClick={() => manualInputRef.current?.click()}
                 className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
               >
-                Tambah image
+                Add images
               </button>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Format yang didukung: JPG, PNG, WEBP, GIF, BMP, AVIF</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Supported formats: JPG, PNG, WEBP, GIF, BMP, AVIF</span>
             </div>
             <input
               ref={manualInputRef}
@@ -221,7 +221,7 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
                 onClick={() => allInputRef.current?.click()}
                 className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
               >
-                Pilih semua image
+                Choose all images
               </button>
             </div>
             <input
@@ -247,9 +247,9 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
                 disabled={importing}
                 className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 dark:border-gray-800 dark:hover:bg-gray-900"
               >
-                {importing ? "Memproses ZIP..." : "Pilih file ZIP"}
+                {importing ? "Processing ZIP..." : "Choose ZIP file"}
               </button>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Pastikan file di dalam ZIP berupa image halaman comic.</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Make sure the files inside the ZIP are comic page images.</span>
             </div>
             <input
               ref={zipInputRef}
@@ -273,9 +273,9 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
                 disabled={importing}
                 className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 dark:border-gray-800 dark:hover:bg-gray-900"
               >
-                {importing ? "Memproses PDF..." : "Pilih file PDF"}
+                {importing ? "Processing PDF..." : "Choose PDF file"}
               </button>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Cocok untuk chapter yang sudah jadi dalam bentuk PDF.</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Ideal for chapters that already exist as PDF files.</span>
             </div>
             <input
               ref={pdfInputRef}
@@ -297,8 +297,8 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
       <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold">Antrean halaman</div>
-            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{files.length} halaman • total {formatBytes(totalBytes)}</div>
+            <div className="text-sm font-semibold">Page queue</div>
+            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{files.length} pages • total {formatBytes(totalBytes)}</div>
           </div>
           {files.length ? (
             <button
@@ -307,14 +307,14 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
               className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
             >
               <X className="h-4 w-4" />
-              Kosongkan antrean
+              Clear queue
             </button>
           ) : null}
         </div>
 
         {previewFiles.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-gray-200 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-            Belum ada halaman di antrean.
+            There are no pages in the queue yet.
           </div>
         ) : (
           <div className="mt-4 grid gap-3">

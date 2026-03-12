@@ -1,29 +1,29 @@
 # Stage 10 — Dokumentasi & Runbook final
 
-Tujuan stage 10 adalah menutup rangkaian perapian dengan membuat repo ini **mudah dioperasikan oleh developer baru** tanpa perlu menebak-nebak struktur, env, deploy flow, atau cara debug masalah umum.
+Tujuan stage 10 adalah menutup rangkaian perapian with membuat repo this **mudah dioperasikan oleh developer new** without perlu menebak-nebak structure, env, deploy flow, or cara debug masalah general.
 
-Stage ini tidak menambah fitur produk. Fokusnya adalah:
+Stage this not menambah features produk. Fokusnya adalah:
 
-- README root yang benar-benar mencerminkan state repo saat ini
-- dokumentasi env vars yang lengkap dan konsisten
-- deployment runbook untuk Vercel + Neon + R2
-- panduan reset database, seeding, dan sanity check
+- README root that benar-benar mencerminkan state repo currently
+- dokumentasi env vars that lengkap and consistent
+- deployment runbook for Vercel + Neon + R2
+- panduan reset database, seeding, and sanity check
 - panduan debug upload issues
 
-## Yang diselesaikan di stage 10
+## Yang diselesaikan in stage 10
 
 ### 1) README final repo
 
-README root sekarang berfungsi sebagai entry point utama untuk:
+README root now berfungsi sebagai entry point main for:
 
 - mengenali arsitektur repo
-- setup lokal cepat
+- setup local cepat
 - command penting
-- daftar dokumen yang perlu dibaca
+- list document that perlu dibaca
 
 ### 2) Sumber kebenaran env vars
 
-Dokumen `env-vars.md` dan `apps/web/.env.example` disejajarkan dengan pemakaian env aktual di kode, termasuk:
+Dokumen `env-vars.md` and `apps/web/.env.example` disejajarkan with pemakaian env aktual in kode, terenter:
 
 - NextAuth
 - Neon/Postgres
@@ -34,36 +34,36 @@ Dokumen `env-vars.md` dan `apps/web/.env.example` disejajarkan dengan pemakaian 
 
 ### 3) Runbook deploy
 
-Deploy sekarang terdokumentasi dari sudut pandang operasional:
+Deploy now terdokumentasi from sudut panandg operasional:
 
-- env wajib
+- required env
 - pilihan root directory Vercel
 - behavior `vercel-build`
 - kapan migrate dijalankan
-- checklist sesudah deploy
+- checklist sealready deploy
 
-### 4) Runbook database lokal
+### 4) Runbook database local
 
-Developer baru sekarang punya satu dokumen untuk:
+Developer new now punya satu document for:
 
-- reset database lokal dengan aman
+- reset database local with safe
 - seed data awal
 - menjalankan sanity check
-- membedakan perintah lokal vs production
+- membedakan command local vs production
 
 ### 5) Runbook upload debugging
 
-Masalah upload adalah salah satu area yang paling sering membingungkan. Stage 10 menutup gap itu dengan panduan yang menjelaskan:
+Masalah upload adalah salah satu area that most sering membingungkan. Stage 10 menutup gap that with panduan that explain:
 
 - urutan flow presign → upload → commit
-- jenis error yang umum
+- jenis error that general
 - size/type rules
-- env mana yang biasanya jadi sumber masalah
-- cara memakai `x-request-id` untuk melacak error di log
+- env mana that biasanya become sumber masalah
+- cara memakai `x-request-id` for melacak error in log
 
-## Alur onboarding yang direkomendasikan
+## Alur onboarding that direkomendasikan
 
-Untuk developer baru, urutan paling aman adalah:
+For developer new, urutan safest adalah:
 
 1. baca `README.md`
 2. copy `apps/web/.env.example` menjadi `.env.local`
@@ -71,18 +71,18 @@ Untuk developer baru, urutan paling aman adalah:
 4. jalankan `npm run db:init`
 5. jalankan `npm run dev`
 6. jalankan `npm run verify`
-7. cek `REGRESSION_CHECKLIST.md` sebelum perubahan besar
+7. check `REGRESSION_CHECKLIST.md` before perubahan besar
 
 ## Definition of Done stage 10
 
-Stage 10 dianggap selesai bila:
+Stage 10 dianggap complete if:
 
-- developer baru bisa menjalankan repo dari nol tanpa bertanya file mana yang harus dibuka dulu
-- env yang dipakai kode tercermin di dokumen dan `.env.example`
-- deploy flow ke Vercel/Neon/R2 terdokumentasi jelas
-- reset DB, seed, dan sanity check punya panduan tersendiri
-- masalah upload punya panduan debug yang bisa langsung dipakai
+- developer new can menjalankan repo from scratch without bertanya file mana that must dibuka first
+- env used kode tercermin in document and `.env.example`
+- deploy flow to Vercel/Neon/R2 terdokumentasi clear
+- reset DB, seed, and sanity check punya panduan tersendiri
+- masalah upload punya panduan debug that can directly used
 
 ## Catatan
 
-Stage 10 adalah penutup roadmap perapian. Snapshot setelah stage ini seharusnya menjadi baseline paling lengkap untuk pekerjaan berikutnya, karena seluruh perubahan stage 0–10 sudah terakumulasi di sini.
+Stage 10 adalah penutup roadmap perapian. Snapshot after stage this semustnya menjadi baseline paling lengkap for pekerjaan berikutnya, because seluruh perubahan stage 0–10 already terakumulasi in sini.

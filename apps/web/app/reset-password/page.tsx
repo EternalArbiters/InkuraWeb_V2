@@ -17,9 +17,9 @@ function ResetPasswordInner() {
     e.preventDefault();
     setError("");
 
-    if (!token) return setError("Token tidak ada di URL.");
-    if (password.length < 6) return setError("Password minimal 6 karakter.");
-    if (password !== confirm) return setError("Konfirmasi password tidak sama.");
+    if (!token) return setError("Token is missing from the URL.");
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
+    if (password !== confirm) return setError("Password confirmation does not match.");
 
     setStatus("loading");
     const res = await fetch("/api/auth/password-reset/confirm", {
@@ -31,7 +31,7 @@ function ResetPasswordInner() {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       setStatus("error");
-      setError((json as { error?: string })?.error || "Gagal reset password.");
+      setError((json as { error?: string })?.error || "Failed to reset password.");
       return;
     }
 
@@ -44,29 +44,29 @@ function ResetPasswordInner() {
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl">
         <h1 className="text-xl font-semibold">Reset Password</h1>
         <p className="mt-2 text-sm text-white/70">
-          Masukkan password baru kamu. Link reset berlaku terbatas.
+          Enter your new password. Reset links are only valid for a limited time.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
           <div>
-            <label className="text-sm text-white/80">Password baru</label>
+            <label className="text-sm text-white/80">New password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 outline-none focus:border-white/30"
-              placeholder="Minimal 6 karakter"
+              placeholder="Minimum 6 characters"
             />
           </div>
 
           <div>
-            <label className="text-sm text-white/80">Konfirmasi password</label>
+            <label className="text-sm text-white/80">Confirm password</label>
             <input
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="mt-1 w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 outline-none focus:border-white/30"
-              placeholder="Ulangi password"
+              placeholder="Repeat password"
             />
           </div>
 
@@ -81,12 +81,12 @@ function ResetPasswordInner() {
             disabled={status === "loading"}
             className="w-full rounded-xl bg-white text-black font-medium py-2 hover:bg-white/90 disabled:opacity-60"
           >
-            {status === "loading" ? "Memproses..." : status === "ok" ? "Berhasil! Mengalihkan..." : "Reset Password"}
+            {status === "loading" ? "Processing..." : status === "ok" ? "Success! Redirecting..." : "Reset Password"}
           </button>
         </form>
 
         <div className="mt-4 text-xs text-white/50">
-          Kalau link error/expired, minta ulang lewat menu “Forgot password”.
+          If the link is invalid or expired, request a new one via “Forgot password”.
         </div>
       </div>
     </div>
@@ -96,7 +96,7 @@ function ResetPasswordInner() {
 export default function ResetPasswordPage() {
   return (
     <Suspense
-      fallback={<div className="min-h-screen bg-[#0B0B10] text-white flex items-center justify-center p-6">Memuat...</div>}
+      fallback={<div className="min-h-screen bg-[#0B0B10] text-white flex items-center justify-center p-6">Loading...</div>}
     >
       <ResetPasswordInner />
     </Suspense>

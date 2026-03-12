@@ -188,7 +188,7 @@ export default function WorkBasicsCard({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="min-h-[120px] rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
-          placeholder="Sinopsis singkat..."
+          placeholder="Short synopsis..."
         />
       </div>
 

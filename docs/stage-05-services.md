@@ -1,17 +1,17 @@
 # Stage 05 — Service Layer (Business Logic)
 
-Tujuan tahap ini: **memindahkan “business logic” keluar dari API route handler** supaya route jadi tipis (orchestration), sementara rules + transaksi + query kompleks terkumpul di `server/services/**`.
+Tujuan stage this: **memindahkan “business logic” exit from API route handler** so that route become tipis (orchestration), sementara rules + transaksi + query kompleks terkumpul in `server/services/**`.
 
-> Prinsip: *tanpa mengubah behavior/fitur*, hanya merapikan struktur.
+> Prinsip: *without mengubah behavior/features*, only clean up structure.
 
-## Struktur baru
+## Struktur new
 
-Lokasi utama:
+Lokasi main:
 
 - `apps/web/server/services/works/*`
-  - `listPublishedWorks.ts` — logika utama GET `/api/works` (filtering, gating, sort, pagination, viewer flags)
+  - `listPublishedWorks.ts` — logika main GET `/api/works` (filtering, gating, sort, pagination, viewer flags)
   - `viewer.ts` — helper ambil viewer + preferences
-  - `gating.ts` — helper gating mature/deviant (dipakai bertahap)
+  - `gating.ts` — helper gating mature/deviant (used bertahap)
 
 - `apps/web/server/services/comments/*`
   - `fetchComments.ts` — logika GET `/api/comments`
@@ -24,10 +24,10 @@ Lokasi utama:
   - `works.ts` — listing studio works + create work (multipart)
   - `workById.ts` — GET/PATCH/DELETE `/api/studio/works/[workId]`
   - `chapters.ts` — create chapter + GET/PATCH chapter editor
-  - `chapterPages.ts` — upload/replace pages untuk comic chapter
+  - `chapterPages.ts` — upload/replace pages for comic chapter
   - `session.ts`, `creator.ts` — helper auth/role/permission
 
-## Route yang dibuat tipis
+## Route that dibuat tipis
 
 - `GET /api/works` → `server/services/works/listPublishedWorks.ts`
 - `GET/POST /api/comments` → `server/services/comments/*`
@@ -41,6 +41,6 @@ Lokasi utama:
 
 ## Catatan kompatibilitas
 
-- Response shape dan status code dipertahankan semirip mungkin dengan stage sebelumnya.
-- Side-effect notifications untuk comment/pin/new chapter tetap **best-effort** (error tidak menggagalkan request utama).
+- Response shape and status code kept semirip mungkin with stage beforenya.
+- Side-effect notifications for comment/pin/new chapter still **best-effort** (error not mengfailedkan request main).
 

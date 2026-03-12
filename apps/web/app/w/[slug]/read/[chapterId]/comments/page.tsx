@@ -51,8 +51,8 @@ export default async function ChapterCommentsPage({
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{work.title}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               {isDeviant
-                ? "Chapter ini ditandai Deviant Love. Untuk baca & komen, kamu perlu unlock 18+ dan unlock Deviant Love di Settings."
-                : "Chapter ini ditandai 18+. Untuk baca & komen, kamu perlu unlock + opt-in di Settings."}
+                ? "This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings."
+                : "This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings."}
             </p>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Link href="/settings/account" className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110">

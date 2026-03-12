@@ -10,8 +10,8 @@ type Props = {
 export default function WorkSlugError({ error, reset }: Props) {
   return (
     <ErrorView
-      title="Gagal memuat karya"
-      message="Terjadi kesalahan saat memuat halaman karya. Coba lagi."
+      title="Failed to load work"
+      message="An error occurred while loading the work page. Please try again."
       error={error}
       reset={reset}
       homeHref="/browse"

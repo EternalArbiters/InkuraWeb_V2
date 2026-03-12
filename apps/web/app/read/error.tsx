@@ -11,7 +11,7 @@ export default function ReaderError({ error, reset }: Props) {
   return (
     <ErrorView
       title="Reader mengalami kendala"
-      message="Terjadi kesalahan saat memuat chapter. Coba lagi atau kembali ke halaman karya."
+      message="An error occurred while loading the chapter. Try again or return to the work page."
       error={error}
       reset={reset}
       homeHref="/browse"

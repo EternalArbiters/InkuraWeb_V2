@@ -1,57 +1,57 @@
 # Perf Refactor — Tahap 0 Baseline & Guardrails
 
-Dokumen ini adalah baseline kerja untuk refactor performa Inkura berikutnya.
+This document adalah baseline work for refactor performa Inkura berikutnya.
 
 ## Guardrails non-negotiable
 
-1. **Tidak menghilangkan fitur apa pun**
-2. Setiap tahap selesai harus menghasilkan **ZIP repo utuh versi terbaru**
-3. Tahap berikutnya **selalu** dimulai dari hasil tahap sebelumnya
-4. Setiap perubahan harus lolos `npm run verify` sebelum dianggap siap lanjut
-5. Setelah tiap tahap, cek ulang `docs/REGRESSION_CHECKLIST.md`
+1. **Tidak menghilangkan features apa pun**
+2. Setiap stage complete must menghasilkan **ZIP repo utuh versi ternew**
+3. Tahap berikutnya **sethen** dimulai from hasil stage beforenya
+4. Setiap perubahan must lolos `npm run verify` before dianggap siap continue
+5. Setelah tiap stage, check again `docs/REGRESSION_CHECKLIST.md`
 
-## Fokus masalah yang sedang dibenahi
+## Fokus masalah that seandg dibenahi
 
-Berdasarkan audit awal, tekanan usage Vercel paling besar datang dari kombinasi:
+Berdasarkan audit awal, tekanan usage Vercel paling besar datang from kombinasi:
 
-- render `force-dynamic` yang terlalu luas
-- server page yang memanggil API internal sendiri lewat `apiJson()`
-- fetch `no-store` yang mematikan peluang cache
-- polling background yang terus memukul endpoint
-- middleware + auth surface yang terlalu sering tersentuh
+- render `force-dynamic` that terthen luas
+- server page that calls API internal sendiri through `apiJson()`
+- fetch `no-store` that mematikan peluang cache
+- polling background that terus memukul endpoint
+- middleware + auth surface that terthen sering tersentuh
 
-## Urutan tahap refactor
+## Urutan stage refactor
 
 ### Tahap 0
-Safety net dan baseline. Tidak mengubah fitur produk.
+Safety net and baseline. Tidak mengubah features produk.
 
 ### Tahap 1
-Kurangi fan-out request dari server page ke API internal.
+Kurangi fan-out request from server page to API internal.
 
 ### Tahap 2
-Rapikan strategi dynamic/static/caching tanpa mengubah behavior user-facing.
+Rapikan strategi dynamic/static/caching without mengubah behavior user-facing.
 
 ### Tahap 3
-Hematkan polling background dan permukaan auth/middleware.
+Hematkan polling background and permukaan auth/middleware.
 
 ### Tahap 4
-Dedupe query, batching, dan perbaikan DB/data access.
+Dedupe query, batching, and perbaikan DB/data access.
 
 ### Tahap 5
-Burn-in, verifikasi akhir, dan rollout.
+Burn-in, verifikasi akhir, and rollout.
 
-## Snapshot scan statis untuk ZIP ini
+## Snapshot scan statis for ZIP this
 
-Hasil `npm run refactor:stage0` pada snapshot tahap 0 ini:
+Hasil `npm run refactor:stage0` pada snapshot stage 0 this:
 
 - `force-dynamic` exports: **45**
 - server-page import `apiJson()`: **30** file
-- total call `apiJson()` di `app/**`: **50**
+- total call `apiJson()` in `app/**`: **50**
 - `cache: "no-store"`: **7**
 - header `Cache-Control: no-store`: **4**
 - `setInterval()`: **3**
 
-Rail / page yang paling menonjol untuk tahap berikutnya:
+Rail / page that most menonjol for stage berikutnya:
 
 - `apps/web/app/home/page.tsx` → 5 call `apiJson()`
 - `apps/web/app/search/page.tsx` → 4 call `apiJson()`
@@ -61,44 +61,44 @@ Rail / page yang paling menonjol untuk tahap berikutnya:
 
 ## Snapshot hotspot awal
 
-Hotspot utama yang akan jadi target tahap berikutnya:
+Hotspot main that akan become target stage berikutnya:
 
 - `apps/web/app/layout.tsx`
   - memaksa root app `force-dynamic`
 - `apps/web/server/http/apiJson.ts`
   - fetch internal memakai `cache: "no-store"`
 - `apps/web/app/home/page.tsx`
-  - fan-out beberapa `apiJson()` sekaligus
+  - fan-out several `apiJson()` sekaligus
 - `apps/web/app/search/page.tsx`
-  - banyak fetch server-side untuk prefs + taxonomy + works
+  - banyak fetch server-side for prefs + taxonomy + works
 - `apps/web/app/components/NavCountBadge.tsx`
-  - polling `setInterval(..., 30000)` ke unread count
+  - polling `setInterval(..., 30000)` to unread count
 - `apps/web/middleware.ts`
   - matcher area auth/protected cukup luas
 
 ## Cara ambil baseline statis
 
-Dari root repo:
+From root repo:
 
 ```bash
 npm run refactor:stage0
 ```
 
-Perintah itu akan memindai hotspot statis seperti:
+Perintah that akan memindai hotspot statis seperti:
 
 - `force-dynamic`
-- import/call `apiJson()` di server page
+- import/call `apiJson()` in server page
 - `cache: "no-store"`
 - header `Cache-Control: no-store`
 - `setInterval()`
 
-Tujuannya bukan menggantikan profiling runtime, tapi memberi baseline cepat yang repeatable setiap sebelum/sesudah refactor.
+Tujuannya not menggantikan profiling runtime, tapi memberi baseline cepat that repeatable setiap before/sealready refactor.
 
-## Definition of done tahap 0
+## Definition of done stage 0
 
-Tahap 0 dianggap selesai bila:
+Tahap 0 dianggap complete if:
 
-- safety net sudah terdokumentasi
-- baseline hotspot bisa dipindai ulang dengan satu command
-- tidak ada fitur yang berubah
-- repo siap dijadikan titik awal untuk tahap 1
+- safety net already terdokumentasi
+- baseline hotspot can dipindai again with satu command
+- not there is features changed
+- repo siap dijadikan titik awal for stage 1

@@ -1,42 +1,42 @@
 # Debug upload issues
 
-Dokumen ini membantu melacak masalah upload yang paling umum di Inkura, terutama untuk cover, comic pages, dan comment media.
+This document membantu melacak masalah upload that most general in Inkura, especially for cover, comic pages, and comment media.
 
 ## Gambaran flow upload
 
-### Cover dan comic pages
+### Cover and comic pages
 
 Alur normalnya:
 
-1. client meminta presign ke `POST /api/uploads/presign`
-2. server memvalidasi session, ownership, scope, size, dan content type
-3. client upload langsung ke Cloudflare R2 memakai `uploadUrl`
-4. key/public URL dipersist ke DB lewat endpoint studio yang relevan
+1. client meminta presign to `POST /api/uploads/presign`
+2. server memvalidasi session, ownership, scope, size, and content type
+3. client upload directly to Cloudflare R2 memakai `uploadUrl`
+4. key/public URL dipersist to DB through endpoint studio that are relevant
 
 ### Comment media
 
 Alurnya sedikit berbeda:
 
 1. client menghitung `sha256`
-2. client meminta presign ke `POST /api/uploads/presign`
-3. kalau object dengan hash yang sama sudah ada, server bisa mengembalikan `exists: true`
-4. kalau belum ada, client upload ke R2
-5. client memanggil `POST /api/uploads/commit`
-6. server memverifikasi object di storage lalu membuat / update `MediaObject`
+2. client meminta presign to `POST /api/uploads/presign`
+3. if object with hash same already there is, server can mengembalikan `exists: true`
+4. if not yet there is, client upload to R2
+5. client calls `POST /api/uploads/commit`
+6. server memverifikasi object in storage then membuat / update `MediaObject`
 
-## Batas file dan content type yang berlaku
+## Batas file and content type that berlaku
 
-Berdasarkan rules saat ini:
+Berdasarkan rules currently:
 
-- `covers` → maks 2MB, hanya `image/webp`, `image/png`, `image/jpeg`
-- `pages` → maks 5MB, hanya `image/webp`, `image/png`, `image/jpeg`
-- `comment_images` → maks 2MB, hanya `image/webp`, `image/png`, `image/jpeg`
-- `comment_gifs` → maks 5MB, hanya `image/gif`
-- `files` → maks 20MB, `application/pdf` atau `application/octet-stream`
+- `covers` → maks 2MB, only `image/webp`, `image/png`, `image/jpeg`
+- `pages` → maks 5MB, only `image/webp`, `image/png`, `image/jpeg`
+- `comment_images` → maks 2MB, only `image/webp`, `image/png`, `image/jpeg`
+- `comment_gifs` → maks 5MB, only `image/gif`
+- `files` → maks 20MB, `application/pdf` or `application/octet-stream`
 
 ## Cara triage paling cepat
 
-Saat upload gagal, cek 3 langkah ini di browser devtools Network:
+Saat upload failed, check 3 langkah this in browser devtools Network:
 
 ### 1) Presign request
 
@@ -44,88 +44,88 @@ Cek response `POST /api/uploads/presign`.
 
 Yang perlu dilihat:
 
-- status 200 atau bukan
-- message error bila 4xx/5xx
-- `x-request-id` untuk korelasi log
-- apakah response berisi `uploadUrl`, `key`, dan `publicUrl`
-- untuk comment media, apakah `exists: true`
+- status 200 or not
+- message error if 4xx/5xx
+- `x-request-id` for korelasi log
+- apakah response bercontent `uploadUrl`, `key`, and `publicUrl`
+- for comment media, apakah `exists: true`
 
-### 2) PUT ke storage
+### 2) PUT to storage
 
-Kalau presign berhasil, cek request upload ke R2:
+If presign successful, check request upload to R2:
 
-- status harus sukses
-- `content-type` harus cocok dengan yang dipresign
-- file size tidak boleh melebihi limit
+- status must sukses
+- `content-type` must cocok with that dipresign
+- file size not may melebihi limit
 
 ### 3) Commit / persist
 
-Untuk comment media, cek `POST /api/uploads/commit`.
+For comment media, check `POST /api/uploads/commit`.
 
-Untuk cover/pages studio, cek endpoint studio yang menyimpan key/url ke DB.
+For cover/pages studio, check endpoint studio that menyimpan key/url to DB.
 
-Kalau langkah ini gagal, object mungkin sudah ada di R2 tetapi DB belum menunjuk ke object tersebut.
+If langkah this failed, object mungkin already there is in R2 tetapi DB not yet point to to object tersebut.
 
-## Error yang paling sering muncul
+## Error that most sering appear
 
 ### `401 Unauthorized`
 
 Biasanya berarti:
 
-- user belum login
-- session cookie tidak ikut terkirim
-- origin auth tidak konsisten
+- user not yet login
+- session cookie not ikut terkirim
+- origin auth not consistent
 
 Cek:
 
 - `NEXTAUTH_URL`
-- apakah request dikirim dari origin yang benar
-- apakah session user masih aktif
+- apakah request dikirim from origin that benar
+- apakah session user still active
 
 ### `403 Forbidden`
 
-Biasanya berarti user bukan owner work/chapter dan bukan admin.
+Biasanya berarti user not owner work/chapter and not admin.
 
 Cek:
 
-- apakah work/chapter yang diedit memang milik user itu
+- apakah work/chapter that diedit memang milik user that
 - apakah admin email / role sesuai ekspektasi
-- apakah request mengirim `workId` atau `chapterId` yang benar
+- apakah request mengirim `workId` or `chapterId` that benar
 
 ### `400 Unsupported file type`
 
-Penyebab umum:
+Penyebab general:
 
-- MIME type tidak termasuk whitelist
-- file extension dan `contentType` tidak selaras
-- GIF diupload ke scope image biasa, atau sebaliknya
+- MIME type not terenter whitelist
+- file extension and `contentType` not selaras
+- GIF diupload to scope image biasa, or sebaliknya
 
 ### `400 File too large`
 
 Penyebabnya file melebihi limit scope.
 
-Cek ukuran file mentah sebelum upload.
+Cek ukuran file mentah before upload.
 
 ### `404 Object not found in storage`
 
-Ini sering muncul pada comment media commit. Biasanya karena:
+Ini sering appear pada comment media commit. Biasanya because:
 
-- upload PUT gagal tetapi langkah commit tetap dijalankan
-- key yang dikirim saat commit tidak sama dengan key hasil presign
-- upload belum selesai, tapi commit sudah dipanggil
+- upload PUT failed tetapi langkah commit still dijalankan
+- key that dikirim saat commit not sama with key hasil presign
+- upload not yet complete, tapi commit already dipanggil
 
-### Upload sukses tapi asset tidak tampil
+### Upload sukses tapi asset not tampil
 
-Biasanya masalahnya salah satu dari ini:
+Biasanya masalahnya salah satu from this:
 
 - `R2_PUBLIC_BASE_URL` salah
-- object tidak dapat diakses secara publik lewat URL yang dibentuk
-- custom domain / CDN R2 belum benar
-- key tersimpan, tapi URL publik yang dibentuk tidak cocok dengan konfigurasi bucket/domain
+- object not dapat diakses secara public through URL that dibentuk
+- custom domain / CDN R2 not yet benar
+- key tersimpan, tapi URL public that dibentuk not cocok with konfigurasi bucket/domain
 
-## Checklist env untuk upload
+## Checklist env for upload
 
-Minimal periksa ini:
+Minimal periksa this:
 
 ```env
 R2_ENDPOINT=            # atau R2_ACCOUNT_ID
@@ -135,43 +135,43 @@ R2_BUCKET=              # atau R2_BUCKET_NAME
 R2_PUBLIC_BASE_URL=
 ```
 
-Kalau salah satu hilang, gejalanya bisa berbeda-beda: presign gagal, upload berhasil tapi asset tidak tampil, atau commit tidak sinkron.
+If salah satu hilang, gejalanya can berbeda-beda: presign failed, upload successful tapi asset not tampil, or commit not sinkron.
 
-## Memakai request id untuk debug server
+## Memakai request id for debug server
 
-Stage 8 menambahkan `x-request-id` di semua response API. Jadi saat upload gagal:
+Stage 8 menambahkan `x-request-id` in all response API. Jadi saat upload failed:
 
-1. ambil `x-request-id` dari response gagal
-2. cari log server dengan request id itu
-3. cocokkan path, status, dan userId bila ada
+1. ambil `x-request-id` from response failed
+2. cari log server with request id that
+3. cocokkan path, status, and userId if there is
 
-Ini sangat membantu untuk membedakan error ownership, env, atau error storage.
+Ini sangat membantu for membedakan error ownership, env, or error storage.
 
-## Pola masalah yang sering mengecoh
+## Pola masalah that sering mengecoh
 
-### Presign berhasil, tapi DB tidak berubah
+### Presign successful, tapi DB not berubah
 
-Artinya upload ke storage belum otomatis berarti data aplikasi sudah terhubung. Masih ada langkah persist/commit yang harus sukses.
+Artinya upload to storage not yet otomatis berarti data aplikasi already terhubung. Masih there is langkah persist/commit that must sukses.
 
-### Comment media terasa duplikat atau tidak upload ulang
+### Comment media terasa duplikat or not upload again
 
-Itu bisa normal karena scope comment media memakai **SHA-256 dedupe**. Kalau file identik sudah pernah ada, presign bisa mengembalikan `exists: true` dan client tidak perlu upload ulang.
+Itu can normal because scope comment media memakai **SHA-256 dedupe**. If file identik already pernah there is, presign can mengembalikan `exists: true` and client not perlu upload again.
 
-### Lokal berhasil, production gagal
+### Lokal successful, production failed
 
 Biasanya penyebabnya:
 
-- env R2 production tidak lengkap
-- `R2_PUBLIC_BASE_URL` production tidak cocok
-- user di production tidak lolos ownership check
-- origin auth / session di production tidak stabil
+- env R2 production not lengkap
+- `R2_PUBLIC_BASE_URL` production not cocok
+- user in production not lolos ownership check
+- origin auth / session in production not stabil
 
-## Langkah eskalasi yang paling aman
+## Langkah eskalasi that safest
 
-Kalau belum ketemu juga:
+If not yet ketemu juga:
 
 1. ulangi flow sambil membuka Network tab
 2. catat status tiap langkah: presign, PUT, commit/persist
 3. catat `x-request-id`
-4. cek env upload yang aktif
-5. jalankan smoke/regression pada flow terkait setelah perbaikan
+4. check env upload that active
+5. jalankan smoke/regression pada flow terkait after perbaikan

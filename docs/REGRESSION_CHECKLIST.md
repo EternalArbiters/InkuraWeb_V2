@@ -1,10 +1,10 @@
 # Regression Checklist (Manual) – Inkura
 
-Checklist ini dipakai setiap kali kita refactor/rapihin repo supaya **fitur tidak hilang**.
+Checklist this used setiap kali kita refactor/rapihin repo so that **features not hilang**.
 
 Prinsip:
-- Jangan hanya mengandalkan build sukses.
-- Fokus ke *critical user journeys* (Auth → Browse → Read → Interact → Studio → Admin).
+- Do not only mengandalkan build sukses.
+- Fokus to *critical user journeys* (Auth → Browse → Read → Interact → Studio → Admin).
 
 ---
 
@@ -12,7 +12,7 @@ Prinsip:
 
 ### A. Setup & DB
 
-1. Pastikan ENV sudah terisi (`apps/web/.env.local`).
+1. Pastikan ENV already tercontent (`apps/web/.env.local`).
 2. Init DB (akan reset + seed):
 
 ```bash
@@ -27,7 +27,7 @@ npm run dev
 
 Akses: `http://localhost:3000`
 
-### B. Akun yang dipakai
+### B. Akun used
 
 Minimal siapkan 2 akun:
 
@@ -36,72 +36,72 @@ Minimal siapkan 2 akun:
 - Password: `admin123`
 
 2) **User biasa**
-- Register lewat UI (email + password).
+- Register through UI (email + password).
 
-> Catatan: role ADMIN di-enforce berdasarkan email. Akun lain tidak akan jadi admin walau `role` di DB diubah manual.
+> Note: role ADMIN in-enforce berdasarkan email. Akun lain not akan become admin walau `role` in DB diubah manual.
 
 ---
 
-## 1) Automated gate (wajib)
+## 1) Automated gate (required)
 
-Dari root:
+From the repo root:
 
 ```bash
 npm run verify
 ```
 
-Opsional (butuh DB konek):
+Optional (butuh DB konek):
 
 ```bash
 npm run sanity:db
 ```
 
-PASS jika: tidak ada error pada lint/typecheck/build.
+PASS if: not there is error pada lint/typecheck/build.
 
 ---
 
 ## 2) Auth & Account
 
-Dengan **user biasa**:
+With **user biasa**:
 
-1. Register (email/password) → harus sukses.
-2. Login → harus masuk ke `/home`.
+1. Register (email/password) → must sukses.
+2. Login → must enter to `/home`.
 3. Logout → session hilang.
-4. Login ulang.
+4. Login again.
 
-Forgot password (opsional):
+Forgot password (optional):
 - Request reset.
 - Jika `SHOW_RESET_TOKEN=1`, endpoint forgot-password menampilkan token/reset URL (dev).
-- Confirm reset → password berubah → bisa login pakai password baru.
+- Confirm reset → password berubah → can login use password new.
 
-PASS jika: tidak ada redirect loop (khususnya di route protected: `/home`, `/library`, `/studio`).
+PASS if: not there is redirect loop (khususnya in route protected: `/home`, `/library`, `/studio`).
 
 ---
 
 ## 3) Browse & Search (works listing)
 
-Dengan **user biasa** (belum adultConfirmed):
+With **user biasa** (not yet adultConfirmed):
 
-1. Buka `/home` → list tampil (tidak blank/500).
+1. Buka `/home` → list tampil (not blank/500).
 2. Buka `/search`:
    - Filter genre/tags tampil.
    - Tri-state include/exclude bekerja.
-   - Konten `isMature` tidak muncul.
-   - Filter warning NSFW tidak bisa dipakai (atau tidak muncul).
+   - Konten `isMature` not appear.
+   - Filter warning NSFW not can used (or not appear).
 
 Aktifkan `adultConfirmed`:
-3. Buka `/settings/account` (atau halaman settings yang relevan).
+3. Buka `/settings/account` (or page settings that are relevant).
 4. Toggle `18+` (adultConfirmed) ON.
-5. Kembali ke `/search`:
-   - Work mature bisa muncul.
-   - Warning tag filter bisa dipakai.
+5. Back to `/search`:
+   - Work mature can appear.
+   - Warning tag filter can used.
 
 Aktifkan `deviantLoveConfirmed`:
-6. Toggle deviant love ON (biasanya hanya muncul setelah adultConfirmed).
-7. Kembali ke `/search`:
-   - Filter deviant love muncul.
+6. Toggle deviant love ON (biasanya only appear after adultConfirmed).
+7. Back to `/search`:
+   - Filter deviant love appear.
 
-PASS jika: filter tidak menyebabkan 500 dan gating konsisten.
+PASS if: filter not menyebabkan 500 and gating consistent.
 
 ---
 
@@ -112,75 +112,75 @@ PASS jika: filter tidak menyebabkan 500 dan gating konsisten.
 2. Data work tampil (title, cover, info, genres/tags).
 
 ### B. Reader
-1. Masuk baca chapter: `/w/[slug]/read/[chapterId]`.
+1. Enter baca chapter: `/w/[slug]/read/[chapterId]`.
 2. Prev/Next chapter jalan.
-3. Kalau chapter/work punya warning tags: gate tampil dan bisa di-ack.
+3. If chapter/work punya warning tags: gate tampil and can in-ack.
 
-PASS jika: reader tidak blank dan assets (cover/pages) termuat.
+PASS if: reader not blank and assets (cover/pages) termuat.
 
 ---
 
 ## 5) Interaksi (like/bookmark/rating/review)
 
-Dengan user biasa:
+With user biasa:
 
 1. Like work → counter berubah.
-2. Bookmark work → masuk ke `/library`.
+2. Bookmark work → enter to `/library`.
 3. Beri rating (mis. 4/5) → average/count ter-update.
-4. Tulis review (jika UI ada) → muncul dan bisa di-vote.
+4. Write review (if UI there is) → appear and can in-vote.
 
-PASS jika: tidak ada double-submit yang bikin error dan state konsisten setelah refresh.
+PASS if: not there is double-submit that bikin error and state consistent after refresh.
 
 ---
 
 ## 6) Comments (thread, mention, pin, attachment)
 
-Dengan user biasa:
+With user biasa:
 
-1. Buat komentar di work.
-2. Reply komentar (nested).
+1. Buat comments in work.
+2. Reply comments (nested).
 3. Like/dislike comment.
-4. Mention `@username` (kalau fitur aktif) → harus resolve/notify.
+4. Mention `@username` (if features active) → must resolve/notify.
 
 Attachment (butuh R2):
-5. Upload image/gif untuk comment (maks 3).
-6. Pastikan attachment muncul setelah refresh.
+5. Upload image/gif for comment (maks 3).
+6. Pastikan attachment appear after refresh.
 
-PASS jika: comment tree tidak rusak, sorting tidak error, dan attachment valid.
+PASS if: comment tree not rusak, sorting not error, and attachment valid.
 
 ---
 
 ## 7) Reading progress
 
-Dengan user biasa:
+With user biasa:
 
-1. Baca chapter sampai beberapa scroll.
-2. Refresh atau keluar masuk.
-3. Cek `/library` atau indikator progress → harus tersimpan.
+1. Baca chapter sampai several scroll.
+2. Refresh or exit enter.
+3. Cek `/library` or indikator progress → must tersimpan.
 
-PASS jika: progress tetap ada setelah reload.
+PASS if: progress still there is after reload.
 
 ---
 
 ## 8) Studio (creator flow)
 
-Dengan user biasa:
+With user biasa:
 
 1. Buka `/studio`.
 2. Create Work:
-   - Isi title, type (NOVEL/COMIC), metadata.
+   - Content title, type (NOVEL/COMIC), metadata.
    - Upload cover.
 3. Edit Work:
    - Update metadata.
-   - Replace cover (kalau ada) → cover lama idealnya terhapus best-effort.
+   - Replace cover (if there is) → cover old idealnya terhapus best-effort.
 
 4. Create Chapter:
-   - NOVEL: isi text.
+   - NOVEL: content text.
    - COMIC: upload pages.
 
 5. Publish work/chapter.
 
-PASS jika: work/chapter tampil untuk user di browse & reader setelah publish.
+PASS if: work/chapter tampil for user in browse & reader after publish.
 
 ---
 
@@ -189,24 +189,24 @@ PASS jika: work/chapter tampil untuk user di browse & reader setelah publish.
 Skenario minimal:
 
 1. User A follow/like/bookmark work.
-2. Creator publish chapter baru.
-3. User A harus dapat notification.
+2. Creator publish chapter new.
+3. User A must dapat notification.
 
-Komentar:
-4. Comment di work → owner work dapat notif.
+Comments:
+4. Comment in work → owner work dapat notif.
 5. Reply comment → parent commenter dapat notif.
 
-PASS jika: unread count berubah dan list notif tidak error.
+PASS if: unread count berubah and list notif not error.
 
 ---
 
 ## 10) Admin (taxonomy + moderation)
 
-Dengan **admin seed**:
+With **admin seed**:
 
 ### A. Admin pages protected
-1. Akses `/admin` dan halaman admin lain.
-2. Pastikan user biasa **tidak** bisa masuk (redirect/forbidden).
+1. Akses `/admin` and page admin lain.
+2. Pastikan user biasa **not** can enter (redirect/forbidden).
 
 ### B. Taxonomy manager
 1. Buka:
@@ -215,20 +215,20 @@ Dengan **admin seed**:
    - `/admin/taxonomy/warnings`
    - `/admin/taxonomy/deviant-love`
 2. Add / Edit / Deactivate / Reactivate.
-3. Reorder dan Save order.
+3. Reorder and Save order.
 4. Cek `/search` sebagai user biasa: perubahan taxonomy ter-propagate.
 
 ### C. Reports
 1. User biasa report comment.
-2. Admin buka queue report → report muncul.
+2. Admin buka queue report → report appear.
 
-PASS jika: admin actions tidak 500 dan perubahan kebaca user.
+PASS if: admin actions not 500 and perubahan kebaca user.
 
 ---
 
 ## Catatan troubleshooting cepat
 
-- Build/lint fail setelah refactor: jalankan `npm run verify` dan perbaiki sebelum lanjut.
-- Upload gagal: pastikan ENV R2 benar dan `R2_PUBLIC_BASE_URL` bisa diakses.
-- Tidak bisa masuk admin: pastikan login memakai email admin yang di-enforce.
+- Build/lint fail after refactor: jalankan `npm run verify` and perbaiki before continue.
+- Upload failed: make sure ENV R2 benar and `R2_PUBLIC_BASE_URL` can diakses.
+- Tidak can enter admin: make sure login memakai email admin that in-enforce.
 

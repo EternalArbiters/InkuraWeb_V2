@@ -1,6 +1,6 @@
 # Perf refactor stage 06 — creator/admin surface and final page fan-out cleanup
 
-Tahap 6 menutup sisa self-fetch server page di surface creator/admin yang masih tersisa setelah tahap 5:
+Tahap 6 menutup sisa self-fetch server page in surface creator/admin that still tersisa after stage 5:
 
 - studio work detail `/studio/works/[workId]`
 - new chapter `/studio/works/[workId]/chapters/new`
@@ -8,83 +8,83 @@ Tahap 6 menutup sisa self-fetch server page di surface creator/admin yang masih 
 - comic pages manager `/studio/works/[workId]/chapters/[chapterId]/pages`
 - admin reports `/admin/reports`
 
-## Masalah sebelum tahap 6
+## Masalah before stage 6
 
-Sisa hotspot `apiJson()` memang sudah tinggal sedikit, tetapi semuanya ada di area yang relatif berat:
+Sisa hotspot `apiJson()` memang already tinggal sedikit, tetapi allnya there is in area that relatif berat:
 
-- studio work detail membaca work + chapters milik creator
-- chapter edit/pages membaca chapter + work + warnings
-- admin reports membaca report + comment + work/chapter target
+- studio work detail reading work + chapters milik creator
+- chapter edit/pages reading chapter + work + warnings
+- admin reports reading report + comment + work/chapter target
 
-Sebelum tahap ini, alurnya masih:
+Senot yet stage this, flownya still:
 
 `server page -> fetch /api/... -> route handler -> service/db`
 
-Artinya surface creator/admin tetap menghasilkan invocation tambahan walaupun semua data aslinya sudah tersedia di service server-only.
+Artinya surface creator/admin still menghasilkan invocation additional even though all data aslinya already tersedia in service server-only.
 
-## Perubahan utama
+## Perubahan main
 
-### 1. Studio pages pakai service langsung
+### 1. Studio pages use service directly
 
-Server page berikut berhenti self-fetch ke API internal:
+Server page berikut berhenti self-fetch to API internal:
 
 - `app/studio/works/[workId]/page.tsx`
 - `app/studio/works/[workId]/chapters/new/page.tsx`
 - `app/studio/works/[workId]/chapters/[chapterId]/edit/page.tsx`
 - `app/studio/works/[workId]/chapters/[chapterId]/pages/page.tsx`
 
-Service yang dipakai ulang:
+Service used again:
 
 - `server/services/studio/workById.ts`
 - `server/services/studio/chapters.ts`
 - `server/services/taxonomy/publicTaxonomy.ts`
 
-Behavior redirect lama tetap dijaga:
+Behavior redirect old still dijaga:
 
-- studio work / new chapter tetap fallback ke `/studio`
-- chapter edit/pages tetap membedakan `401 -> signin`, `403 -> back ke work`, `404 -> notFound`
+- studio work / new chapter still fallback to `/studio`
+- chapter edit/pages still membedakan `401 -> signin`, `403 -> back to work`, `404 -> notFound`
 
-### 2. Admin reports dipindah ke reusable service
+### 2. Admin reports dipindah to reusable service
 
 Ditambahkan:
 
 - `apps/web/server/services/admin/reports.ts`
 
-Service ini memusatkan query report terbuka, lookup comment target, dan hydrasi target work/chapter. Dipakai ulang oleh:
+Service this memusatkan query report terbuka, lookup comment target, and hydrasi target work/chapter. Diuse again oleh:
 
 - `app/admin/reports/page.tsx`
 - `server/services/api/admin/reports/route.ts`
 
-Jadi page admin tidak lagi memutar request lewat `/api/admin/reports` hanya untuk membaca data yang sama.
+Jadi page admin not lagi routing request through `/api/admin/reports` only to read data same.
 
-## Kenapa ini aman
+## Kenapa this safe
 
-- tidak ada fitur yang dihapus
-- API route tetap dipertahankan untuk client-side calls dan kompatibilitas
-- yang berubah hanya jalur data server page: langsung ke service, bukan lewat HTTP internal
-- redirect behavior lama dipertahankan agar UX tetap konsisten
+- not there is features that dihapus
+- API route is still kept for client-side calls and kompatibilitas
+- changed only jflow data server page: directly to service, not through HTTP internal
+- redirect behavior old kept so that UX still consistent
 
-## Dampak yang ditargetkan
+## Dampak that ditargetkan
 
-Tahap 6 menyelesaikan sisa fan-out server page yang tersisa dari tahap 5.
+Tahap 6 menyelesaikan sisa fan-out server page remaining from stage 5.
 
-Perubahan statis yang paling penting:
+Perubahan statis that most penting:
 
 - server-page import `apiJson()`: `5 -> 0`
-- call `apiJson()` di `app/**` yang tersisa dari page/component server: `8 -> 0` untuk page code yang nyata
+- call `apiJson()` in `app/**` remaining from page/component server: `8 -> 0` for page code that nyata
 
 Catatan baseline scanner:
 
-- output scanner masih bisa menampilkan `apiJson calls inside app/: 1`
-- itu berasal dari file helper `server/http/apiJson.ts`, bukan dari page app yang masih self-fetch
-- pengecekan langsung `rg` pada `apps/web/app/**` sekarang menunjukkan `0` pemanggilan `apiJson()`
+- output scanner still can menampilkan `apiJson calls inside app/: 1`
+- that berasal from file helper `server/http/apiJson.ts`, not from page app that still self-fetch
+- pengecekan directly `rg` pada `apps/web/app/**` now point tokan `0` pemanggilan `apiJson()`
 
-## File baru
+## File new
 
 - `apps/web/server/services/admin/reports.ts`
 - `docs/perf-refactor-stage-06-creator-admin.md`
 
-## File yang diubah
+## File that diubah
 
 - `apps/web/app/studio/works/[workId]/page.tsx`
 - `apps/web/app/studio/works/[workId]/chapters/new/page.tsx`
@@ -95,9 +95,9 @@ Catatan baseline scanner:
 
 ## Catatan verifikasi
 
-Verifikasi minimum yang berhasil dijalankan di environment kerja ini:
+Minimum verification that was successfully run in this working environment:
 
 - `node apps/web/scripts/refactor-stage0-baseline.js`
 - `tsc --noEmit -p apps/web/tsconfig.json`
-  - masih gagal karena environment ini tidak menyediakan type definition `next-auth`
-  - kegagalannya tidak menunjukkan error baru spesifik dari edit tahap 6
+  - still failed because environment this not menyediakan type definition `next-auth`
+  - kefailedannya not point tokan error new spesifik from edit stage 6

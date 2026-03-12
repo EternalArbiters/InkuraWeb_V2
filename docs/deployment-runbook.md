@@ -1,33 +1,33 @@
 # Deployment runbook
 
-Dokumen ini memandu deploy repo Inkura cleaned ke kombinasi **Vercel + Neon Postgres + Cloudflare R2**.
+This document memandu deploy repo Inkura cleaned to kombinasi **Vercel + Neon Postgres + Cloudflare R2**.
 
 ## Target deploy
 
 - App runtime: Vercel
 - Database: Neon Postgres
 - Asset storage: Cloudflare R2
-- Email reset password: Resend (opsional)
+- Email reset password: Resend (optional)
 
-## Pilihan root directory di Vercel
+## Pilihan root directory in Vercel
 
-Repo ini mendukung dua model:
+This repo mendukung dua model:
 
 ### Opsi A — project root = repo root
 
 - Root Directory Vercel: kosong / repo root
-- Script build yang dipakai: root `vercel-build`
+- Script build used: root `vercel-build`
 
 ### Opsi B — project root = `apps/web`
 
 - Root Directory Vercel: `apps/web`
-- Script build yang dipakai: `apps/web` `vercel-build`
+- Script build used: `apps/web` `vercel-build`
 
-Untuk repo cleaned ini, yang paling mudah biasanya **repo root**, karena command workspace di root sudah disediakan.
+For repo cleaned this, that most mudah biasanya **repo root**, because command workspace in root already disediakan.
 
-## Env yang wajib di Vercel
+## Env that required in Vercel
 
-Minimal wajib ada:
+Minimal must include:
 
 ```env
 DATABASE_URL=
@@ -36,7 +36,7 @@ NEXTAUTH_SECRET=
 NEXTAUTH_URL=
 ```
 
-Env yang sangat disarankan untuk fitur upload:
+Env that sangat disarankan for features upload:
 
 ```env
 R2_ENDPOINT=            # atau R2_ACCOUNT_ID
@@ -46,7 +46,7 @@ R2_BUCKET=              # atau R2_BUCKET_NAME
 R2_PUBLIC_BASE_URL=
 ```
 
-Env opsional:
+Env optional:
 
 ```env
 RESEND_API_KEY=
@@ -60,60 +60,60 @@ INKURA_LOG_REQUESTS=
 INKURA_SERVICE_NAME=inkura-web
 ```
 
-## Build pipeline yang dijalankan
+## Build pipeline that dijalankan
 
-Script `vercel-build` akan melakukan ini:
+Script `vercel-build` akan melakukan this:
 
 1. `deploy:check-env`
 2. `prisma generate`
-3. `prisma migrate deploy` bila environment memenuhi syarat
+3. `prisma migrate deploy` if environment memenuhi syarat
 4. `next build`
 
 ### Kapan migration dijalankan
 
-- `production` → selalu menjalankan `prisma migrate deploy`
+- `production` → sethen menjalankan `prisma migrate deploy`
 - `development` → menjalankan `prisma migrate deploy`
-- `preview` → **default tidak migrate**
+- `preview` → **default not migrate**
 - `preview` + `INKURA_MIGRATE_PREVIEW=1` → migrate dijalankan
 
-Kenapa preview default tidak migrate:
+Kenapa preview default not migrate:
 
-- untuk mencegah preview deployment tanpa sengaja memigrasikan DB production atau shared DB
+- to prevent preview deployment without intentionally memigrasikan DB production or shared DB
 
-## Konfigurasi Neon yang benar
+## Konfigurasi Neon that benar
 
-Gunakan pemisahan ini:
+Gunakan pemisahan this:
 
-- `DATABASE_URL` → koneksi pooled untuk runtime
-- `DIRECT_URL` → koneksi direct untuk migrate
+- `DATABASE_URL` → connection pooled for runtime
+- `DIRECT_URL` → connection direct for migrate
 
-Kalau `DIRECT_URL` salah, build bisa lolos env check tetapi gagal saat `prisma migrate deploy`.
+If `DIRECT_URL` is wrong, the build can pass env checks but fail during `prisma migrate deploy`.
 
-## Checklist sebelum deploy
+## Checklist before deploy
 
-1. `npm run verify` lolos lokal
-2. env production sudah lengkap
-3. migration yang dibutuhkan sudah ada di repo
-4. `R2_PUBLIC_BASE_URL` sudah menunjuk domain publik yang benar
-5. kalau memakai preview auto-migrate, pastikan preview DB terpisah dari production
+1. `npm run verify` lolos local
+2. env production already lengkap
+3. migration that dibutuhkan already there is in repo
+4. `R2_PUBLIC_BASE_URL` already point to domain public that benar
+5. if memakai preview auto-migrate, make sure preview DB terpisah from production
 
-## Checklist sesudah deploy
+## Checklist sealready deploy
 
 Lakukan smoke check minimal:
 
-- buka halaman publik seperti `/home` atau `/browse`
-- login dengan user yang valid
+- buka page public seperti `/home` or `/browse`
+- login with user that valid
 - buka `/studio`
-- buka satu halaman work dan reader
-- coba presign upload cover atau comic page
-- cek endpoint auth/session berjalan stabil
-- cek error response memiliki header `x-request-id`
+- buka satu page work and reader
+- coba presign upload cover or comic page
+- check endpoint auth/session berjalan stabil
+- check error response memiliki header `x-request-id`
 
-Lalu lanjutkan dengan checklist manual yang lebih lengkap di `REGRESSION_CHECKLIST.md`.
+Lalu continuekan with checklist manual that more lengkap in `REGRESSION_CHECKLIST.md`.
 
-## Failure modes yang paling umum
+## Failure modes that most general
 
-### Build gagal karena missing required env vars
+### Build failed because required env vars are missing
 
 Periksa:
 
@@ -122,26 +122,26 @@ Periksa:
 - `NEXTAUTH_SECRET`
 - `NEXTAUTH_URL`
 
-### Build gagal saat `prisma migrate deploy`
+### Build fails during `prisma migrate deploy`
 
-Biasanya penyebabnya salah satu dari ini:
+Biasanya penyebabnya salah satu from this:
 
-- `DIRECT_URL` menunjuk pooled URL, bukan direct URL
-- permission DB tidak cukup untuk migrate
-- preview deployment memakai DB yang tidak semestinya
+- `DIRECT_URL` point to pooled URL, not a direct URL
+- permission DB not cukup for migrate
+- preview deployment memakai DB that not semestinya
 
-### Upload jalan di lokal tapi gagal di production
+### Upload jalan in local tapi fails in production
 
 Periksa:
 
-- semua env R2 ada
+- all env R2 there is
 - `R2_PUBLIC_BASE_URL` benar
-- bucket/object policy atau custom domain publik sudah benar
-- user login dan punya ownership work/chapter yang sesuai
+- bucket/object policy or custom domain public already benar
+- user login and punya ownership work/chapter that sesuai
 
 ## Dokumen terkait
 
 - `env-vars.md`
 - `database-reset-and-seeding.md`
 - `debug-upload-issues.md`
-- `../apps/web/docs/V15_DEPLOYMENT_NOTES.md` untuk catatan historis yang masih relevan
+- `../apps/web/docs/V15_DEPLOYMENT_NOTES.md` for catatan historis that still relevant

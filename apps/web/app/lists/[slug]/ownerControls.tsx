@@ -28,7 +28,7 @@ export default function ListOwnerControls({
     setError(null);
     const t = title.trim();
     if (!t) {
-      setError("Title tidak boleh kosong.");
+      setError("Title cannot be empty.");
       return;
     }
 
@@ -41,7 +41,7 @@ export default function ListOwnerControls({
         });
         const data = await res.json().catch(() => null);
         if (!res.ok) {
-          setError(data?.error || "Gagal menyimpan.");
+          setError(data?.error || "Failed to save.");
           return;
         }
         const nextList = data?.list || { title: t, description: description.trim(), isPublic };
@@ -64,7 +64,7 @@ export default function ListOwnerControls({
         const res = await fetch(`/api/lists/${listId}`, { method: "DELETE" });
         const data = await res.json().catch(() => null);
         if (!res.ok) {
-          alert(data?.error || "Gagal menghapus.");
+          alert(data?.error || "Failed to delete.");
           return;
         }
         router.push("/lists");

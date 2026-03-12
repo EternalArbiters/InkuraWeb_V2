@@ -1,37 +1,37 @@
 # Inkura V15 – Sanity Checklist (Regression Guard)
 
 
-> Catatan (repo cleaned): checklist regresi yang jadi **sumber utama** sekarang ada di `../../docs/REGRESSION_CHECKLIST.md`.
-> Dokumen ini tetap disimpan sebagai catatan historis khusus V15.
+> Catatan (repo cleaned): checklist regresi that become **sumber main** now there is in `../../docs/REGRESSION_CHECKLIST.md`.
+> This document still dcontentmpan sebagai catatan historis khusus V15.
 
-Tujuan: memastikan **fitur user tidak rusak** saat kita menambahkan **Admin Taxonomy Panel**.
+Tujuan: memastikan **features user not rusak** saat kita menambahkan **Admin Taxonomy Panel**.
 
-> Prinsip: V15 itu *additive*. Halaman user & public API yang sudah ada **tidak boleh hilang / berubah kontrak**.
+> Prinsip: V15 that *additive*. Haoldn user & public API already there is **not may hilang / berubah kontrak**.
 
 ---
 
 ## A. Quick Commands (Automated Guards)
 
-Dari root repo:
+From root repo:
 
 ```bash
 npm run verify
 ```
 
-Atau dari `apps/web`:
+Atau from `apps/web`:
 
 ```bash
 npm run verify
 ```
 
-Isi `verify` pada snapshot final ini:
+Content `verify` pada snapshot final this:
 - `prisma validate`
 - `prisma generate`
 - `tsc --noEmit`
 - `vitest run`
 - `next build`
 
-DB schema check (opsional, but recommended):
+DB schema check (optional, but recommended):
 
 ```bash
 npm run sanity:db
@@ -39,38 +39,38 @@ npm run sanity:db
 
 ---
 
-## B. Manual Sanity – User Flow (Wajib)
+## B. Manual Sanity – User Flow (Required)
 
-Login **user biasa** (bukan admin):
+Login **user biasa** (not admin):
 
 1. **Home**
    - Buka `/home`
-   - Trending / list tampil (tidak blank/500)
+   - Trending / list tampil (not blank/500)
 
 2. **Search + Advanced Filter**
    - Buka `/search`
-   - Genre picker muncul
+   - Genre picker appear
    - Toggle tri-state bekerja (include/exclude)
-   - Jika `adultConfirmed` OFF: warning NSFW tidak muncul
-   - Jika `deviantLoveConfirmed` OFF: deviant love filter tidak muncul
+   - Jika `adultConfirmed` OFF: warning NSFW not appear
+   - Jika `deviantLoveConfirmed` OFF: deviant love filter not appear
 
 3. **Work Detail + Reader**
    - Buka salah satu `/w/[slug]`
-   - Masuk read chapter `/w/[slug]/read/[chapterId]`
+   - Enter read chapter `/w/[slug]/read/[chapterId]`
    - Prev/next jalan
-   - ContentWarningsGate muncul sesuai kondisi (kalau ada)
+   - ContentWarningsGate appear sesuai kondcontent (if there is)
 
 4. **Studio**
    - Buka `/studio`
    - Create work `/studio/new`
-   - Edit work & tambah chapter tetap bisa
+   - Edit work & tambah chapter still can
 
 5. **Settings**
    - Buka `/settings/account`
-   - Toggle adult/deviant love tetap jalan
-   - Block list (genre/warning/deviant) tetap tampil
+   - Toggle adult/deviant love still jalan
+   - Block list (genre/warning/deviant) still tampil
 
-**PASS jika:** tidak ada halaman user yang 404 / redirect loop / blank / 500.
+**PASS if:** not there is page user that 404 / redirect loop / blank / 500.
 
 ---
 
@@ -81,28 +81,28 @@ Login **admin**:
 1. **Admin Taxonomy Pages**
    - Buka `/admin/taxonomy/genres`
    - Bisa Add / Edit / Deactivate / Reactivate
-   - Reorder: ubah urutan → klik **Save order**
+   - Reorder: change urutan → klik **Save order**
 
-2. **Propagation ke User UI**
+2. **Propagation to User UI**
    - Setelah admin change (mis. deactivate genre), refresh `/search`
-   - Genre tersebut **hilang dari list** user
+   - Genre tersebut **hilang from list** user
 
 3. **Audit Log (DB level)**
-   - Jalankan `npm run sanity:db` (harus naik `adminAuditLogs` setelah aksi admin)
+   - Jalankan `npm run sanity:db` (must naik `adminAuditLogs` after aksi admin)
 
-**PASS jika:** admin CRUD jalan dan perubahan kebaca di user UI.
+**PASS if:** admin CRUD jalan and perubahan kebaca in user UI.
 
 ---
 
-## D. Common Failure Modes (Cepat cek)
+## D. Common Failure Modes (Cepat check)
 
 - **Seed error `Unknown argument isSystem`**
-  - Jalankan `npx prisma generate` lalu `npm run db:seed`.
-  - Di V15 script `db:seed` sudah otomatis generate.
+  - Jalankan `npx prisma generate` then `npm run db:seed`.
+  - Di V15 script `db:seed` already otomatis generate.
 
-- **Taxonomy berubah balik setelah admin nonaktifkan**
-  - Pastikan logic `ensure catalog` tidak men-`reactivate` record yang sudah ada.
+- **Taxonomy berubah balik after admin deactivate**
+  - Pastikan logic `ensure catalog` not men-`reactivate` record already there is.
 
-- **Cache tidak ke-refresh**
-  - Pastikan admin mutation memanggil `revalidateTag('taxonomy')`.
-  - Pastikan public endpoints mengambil dari cached getter bertag `taxonomy`.
+- **Cache not to-refresh**
+  - Pastikan admin mutation calls `revalidateTag('taxonomy')`.
+  - Pastikan public endpoints mengambil from cached getter bertag `taxonomy`.

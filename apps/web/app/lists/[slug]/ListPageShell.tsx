@@ -100,10 +100,10 @@ export default function ListPageShell({
 
       {empty ? (
         <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-8">
-          <div className="text-lg font-extrabold">List kosong</div>
+          <div className="text-lg font-extrabold">Empty list</div>
           {isOwner ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Tambahkan work dari halaman work (pakai tombol “Add to List”) atau cari work lewat Search.
+              Add works from the work page (using the “Add to List” button) or search for works via Search.
             </p>
           ) : (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">There is no work to show yet.</p>

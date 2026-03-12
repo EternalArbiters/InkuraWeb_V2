@@ -334,7 +334,7 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
             <div className="mt-2 text-2xl font-black tracking-tight md:text-3xl">
               {formatDate(data.range.start)} — {formatDate(data.range.end)}
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Pilih preset cepat atau custom range untuk membaca pola traffic dan engagement.</p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Choose a quick preset or a custom range to read traffic and engagement patterns.</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -400,17 +400,17 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
         <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-200">Included accounts</div>
           <div className="mt-3 text-3xl font-black tracking-tight">{compact(Number(data.dataQuality.includedAccounts || 0))}</div>
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Akun non-admin yang ikut dihitung di range aktif.</div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Non-admin accounts counted in the active range.</div>
         </div>
         <div className="rounded-3xl border border-rose-200 bg-rose-50/70 p-5 dark:border-rose-900/40 dark:bg-rose-950/20">
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-200">Excluded admin accounts</div>
           <div className="mt-3 text-3xl font-black tracking-tight">{compact(Number(data.dataQuality.excludedAdminAccounts || 0))}</div>
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Aktivitas admin tidak masuk aggregate analytics.</div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Admin activity is excluded from the analytics aggregate.</div>
         </div>
         <div className="rounded-3xl border border-blue-200 bg-blue-50/70 p-5 dark:border-blue-900/40 dark:bg-blue-950/20">
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700 dark:text-blue-200">Audit view</div>
           <div className="mt-3 text-lg font-black tracking-tight">See detail</div>
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Buka detail untuk melihat akun yang ikut dihitung dan akun admin yang dikecualikan.</div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Open details to see which accounts are counted and which admin accounts are excluded.</div>
         </div>
       </section>
 
@@ -440,17 +440,17 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
           <TrendChart data={data.overviewSeries} />
         </ChartCard>
 
-        <ChartCard title="Engagement mix" subtitle="Performa total interaksi utama dalam range aktif.">
+        <ChartCard title="Engagement mix" subtitle="Overall performance of the primary interactions in the active range.">
           <TotalsBars totals={headline.totals} />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.85fr]">
-        <ChartCard title="Top works" subtitle="Konten paling ramai berdasarkan total view di range aktif.">
+        <ChartCard title="Top works" subtitle="The busiest content based on total views in the active range.">
           <TopWorksTable items={topWorks} />
         </ChartCard>
 
-        <ChartCard title="Top genres" subtitle="Genre yang paling banyak menarik pembaca.">
+        <ChartCard title="Top genres" subtitle="Genres attracting the most readers.">
           <SimpleRankList
             items={topGenres.map((item) => ({
               label: item.genre.name,
@@ -464,7 +464,7 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <ChartCard title="Top creators" subtitle="Creator dengan jangkauan dan engagement paling tinggi.">
+        <ChartCard title="Top creators" subtitle="Creators with the highest reach and engagement.">
           <SimpleRankList
             items={topCreators.map((item) => ({
               label: item.creator.name || item.creator.username || "Unknown creator",
@@ -476,7 +476,7 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
           />
         </ChartCard>
 
-        <ChartCard title="Search insights" subtitle="Kueri yang paling sering dipakai dan seberapa efektif hasilnya.">
+        <ChartCard title="Search insights" subtitle="The most frequently used queries and how effective their results are.">
           <SimpleRankList
             items={topSearches.map((item) => ({
               label: item.query,
@@ -489,7 +489,7 @@ export default function AdminAnalyticsDashboard({ data }: Props) {
         </ChartCard>
       </div>
 
-      <ChartCard title="Audience profile" subtitle="Breakdown user berdasarkan gender dan age band untuk range aktif.">
+      <ChartCard title="Audience profile" subtitle="User breakdown by gender and age band for the active range.">
         <DemographicSection data={demographics} />
       </ChartCard>
     </div>

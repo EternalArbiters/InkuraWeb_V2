@@ -1,55 +1,55 @@
 # Perf Refactor Stage 10 - Client Fetch Optimizations (Tahap E)
 
-Tahap E memotong fetch client yang terlalu agresif tanpa mengubah fitur utama.
+Tahap E memotong fetch client that terthen agresif without mengubah features main.
 
 ## Yang diubah
 
 ### 1. Cache/dedupe client ringan
 - Tambah `apps/web/lib/clientResourceCache.ts`.
 - Fungsinya:
-  - seed initial data dari server-rendered props
-  - dedupe request GET yang identik di client
-  - short TTL cache untuk menghindari mount refetch berulang
-  - local cache mutation setelah mutation berhasil
+  - seed initial data from server-rendered props
+  - dedupe request GET that identik in client
+  - short TTL cache to avoid mount refetch berulang
+  - local cache mutation after mutation successful
 
 ### 2. Comments
-- `useComments` sekarang memakai cache key berdasarkan scope/target/sort.
-- initial comments disimpan sebagai seed cache.
-- refresh manual bisa `force: true` jika perlu.
-- `CommentSection` tidak lagi memanggil `router.refresh()` untuk submit/reply/edit/delete/hide/pin.
-- Refresh penuh diganti dengan local patch atau fetch komentar terarah.
+- `useComments` now memakai cache key berdasarkan scope/target/sort.
+- initial comments dcontentmpan sebagai seed cache.
+- refresh manual can `force: true` if perlu.
+- `CommentSection` not lagi calls `router.refresh()` for submit/reply/edit/delete/hide/pin.
+- Refresh penuh diganti with local patch or fetch comments terarah.
 
 ### 3. Reviews
-- `useReviews` sekarang memakai cache per `workId + sort`.
-- initial helpful reviews di-seed ke cache.
-- submit/edit review tidak lagi selalu refetch list + refresh page.
-- state list review dan summary rating diperbarui langsung dari response mutation.
-- helpful toggle tetap lokal, lalu list di-sort ulang saat perlu.
-- API patch review sekarang mengembalikan `ratingAvg` dan `ratingCount` agar UI tidak perlu refresh penuh.
+- `useReviews` now memakai cache per `workId + sort`.
+- initial helpful reviews in-seed to cache.
+- submit/edit review not lagi sethen refetch list + refresh page.
+- state list review and summary rating dipernewi directly from response mutation.
+- helpful toggle still local, then list in-sort again saat perlu.
+- API patch review now mengembalikan `ratingAvg` and `ratingCount` so that UI not perlu refresh penuh.
 
 ### 4. Add-to-list
-- `AddToListButton` sekarang memakai cache viewer reading lists.
-- membuka dialog/list picker tidak selalu fetch ulang.
-- setelah add item berhasil, count list di-update lokal.
+- `AddToListButton` now memakai cache viewer reading lists.
+- membuka dialog/list picker not sethen fetch again.
+- after add item successful, count list in-update local.
 
 ### 5. Studio series manager
-- `StudioSeriesManagerClient` tidak lagi GET refresh penuh setelah setiap mutation.
-- create/rename/add/remove/move/reorder sekarang patch state lokal langsung.
-- snapshot terbaru juga di-seed ke client cache.
+- `StudioSeriesManagerClient` not lagi GET refresh penuh after setiap mutation.
+- create/rename/add/remove/move/reorder now patch state local directly.
+- snapshot ternew juga in-seed to client cache.
 
 ### 6. Reading list owner removal
-- `listWorksGrid` tidak lagi `router.refresh()` setelah remove item.
-- item dihapus langsung dari local state grid.
+- `listWorksGrid` not lagi `router.refresh()` after remove item.
+- item dihapus directly from local state grid.
 
 ### 7. Studio works lite helper
-- `useMyWorksLite` sekarang memakai short-lived cache agar mount berulang tidak selalu hit API.
+- `useMyWorksLite` now memakai short-lived cache so that mount berulang not sethen hit API.
 
-## Dampak yang diharapkan
-- mount refetch turun di area interaktif yang sering dipakai
-- lebih sedikit `router.refresh()` penuh setelah mutation ringan
-- UX terasa lebih responsif karena UI dipatch lokal lebih dulu
-- request client identik tidak menembak API berulang dalam jangka sangat dekat
+## Dampak that diharapkan
+- mount refetch turun in area interactive that sering used
+- more sedikit `router.refresh()` penuh after mutation ringan
+- UX terasa more responsif because UI dipatch local more first
+- request client identik not menembak API berulang dalam jangka sangat dekat
 
 ## Catatan
-- Tahap ini belum mengganti semua client fetch di repo.
-- Fokusnya hanya area yang paling jelas agresif dan aman dioptimalkan tanpa mengubah perilaku inti aplikasi.
+- This stage not yet mengganti all client fetch in repo.
+- Fokusnya only area that most clear agresif and safe dioptimalkan without mengubah perilaku inti aplikasi.

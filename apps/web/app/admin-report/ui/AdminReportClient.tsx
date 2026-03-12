@@ -50,8 +50,8 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
   async function submit() {
     setErr(null);
     setOkMsg(null);
-    if (!title.trim()) return setErr("Title wajib diisi.");
-    if (!message.trim()) return setErr("Message wajib diisi.");
+    if (!title.trim()) return setErr("Title is required.");
+    if (!message.trim()) return setErr("Message is required.");
 
     setLoading(true);
     try {
@@ -66,7 +66,7 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed");
-      setOkMsg("Terkirim!");
+      setOkMsg("Sent!");
       setTitle("");
       setMessage("");
       setPageUrl("");
@@ -90,14 +90,14 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
 
       {!isAdmin ? (
         <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
-          <div className="text-sm font-semibold">Kirim report ke admin</div>
+          <div className="text-sm font-semibold">Send a report to the admin</div>
           <div className="grid gap-1">
             <label className="text-sm font-semibold">Title</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm"
-              placeholder="Contoh: Bug login, chapter gak bisa dibuka, dll"
+              placeholder="Example: Login bug, chapter cannot be opened, etc."
             />
           </div>
           <div className="grid gap-1">
@@ -106,11 +106,11 @@ export default function AdminReportClient({ initialIsAdmin }: { initialIsAdmin: 
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-sm min-h-[120px]"
-              placeholder="Jelasin masalahnya + langkah buat reproduce."
+              placeholder="Explain the issue and the steps to reproduce it."
             />
           </div>
           <div className="grid gap-1">
-            <label className="text-sm font-semibold">Link (opsional)</label>
+            <label className="text-sm font-semibold">Link (optional)</label>
             <input
               value={pageUrl}
               onChange={(e) => setPageUrl(e.target.value)}

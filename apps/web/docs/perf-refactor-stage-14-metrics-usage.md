@@ -1,6 +1,6 @@
 # Stage 14 — observability and metrics usage
 
-Dokumen ini menjelaskan cara membaca metrik yang sudah ditanam pada Tahap F dan Paket 3/4.
+This document explain cara reading metrik already ditanam pada Tahap F and Paket 3/4.
 
 ## Event penting
 
@@ -15,37 +15,37 @@ Dokumen ini menjelaskan cara membaca metrik yang sudah ditanam pada Tahap F dan 
 
 ### Client
 - `client.metric`
-- unread polling metric dari `NavCountBadge`
-- upload metric dari client uploader
+- unread polling metric from `NavCountBadge`
+- upload metric from client uploader
 
-## Env yang relevan
+## Env that are relevant
 
 - `INKURA_SLOW_ROUTE_MS`
 - `INKURA_SLOW_PAGE_RENDER_MS`
 - `INKURA_SLOW_QUERY_MS`
 - `INKURA_CLIENT_WARN_MS`
-- `INKURA_LOG_QUERIES=1` untuk melihat seluruh query Prisma
-- `INKURA_PROFILE_HOTSPOTS=1` untuk melihat semua hotspot probe, bukan hanya yang slow
+- `INKURA_LOG_QUERIES=1` to see seluruh query Prisma
+- `INKURA_PROFILE_HOTSPOTS=1` to see all hotspot probe, not only that slow
 
-## Cara membaca cepat
+## Cara reading cepat
 
-### Kalau route terasa lambat
+### If route terasa lambat
 1. Cari `api.slow_route`
-2. Cocokkan timestamp dengan `page.slow_render` atau `db.profile_probe`
-3. Lihat apakah akar masalahnya render, query, atau polling
+2. Cocokkan timestamp with `page.slow_render` or `db.profile_probe`
+3. Lihat apakah akar masalahnya render, query, or polling
 
-### Kalau search/home/library terasa berat
+### If search/home/library terasa berat
 1. Cari `db.profile_probe`
-2. Periksa probe mana yang dominan
-3. Cocokkan dengan `db.slow_query`
-4. Jalankan `EXPLAIN ANALYZE` untuk kandidat teratas
+2. Periksa probe mana that dominan
+3. Cocokkan with `db.slow_query`
+4. Jalankan `EXPLAIN ANALYZE` for kandidat teratas
 
-### Kalau upload terasa berat
-1. Lihat `client.metric` untuk upload
+### If upload terasa berat
+1. Lihat `client.metric` for upload
 2. Bandingkan `beforeBytes`, `afterBytes`, `uploadMs`, `durationMs`
-3. Setelah tahap kompres aktif, pantau rasio pengurangan ukuran per scope
+3. Setelah stage kompres active, pantau rasio pengurangan ukuran per scope
 
-### Kalau unread badge terasa noisy
+### If unread badge terasa noisy
 1. Lihat metrik polling unread
-2. Periksa `durationMs` dan `intervalSincePreviousPollMs`
-3. Pastikan polling tidak terlalu rapat pada halaman dengan traffic tinggi
+2. Periksa `durationMs` and `intervalSincePreviousPollMs`
+3. Pastikan polling not terthen rapat pada page with traffic tinggi

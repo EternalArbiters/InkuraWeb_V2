@@ -5,19 +5,19 @@ export default function FilterPage() {
   return (
     <PageScaffold
       title=" Filter"
-      description="Filter sekarang ada di Search (MVP). Halaman ini disiapkan untuk filter advanced nanti."
+      description="Filters currently live in Search (MVP). This page is reserved for advanced filters later."
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Untuk sekarang kamu bisa filter type + sort + keyword di halaman Search.
-          Ke depan bisa ditambah: genre, region, tag, status, min rating, dll.
+          For now, you can filter by type, sort, and keyword on the Search page.
+          Later, this can be expanded with genre, region, tag, status, minimum rating, and more.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/search"
             className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110"
           >
-            Lanjut ke Search
+            Continue to Search
           </Link>
           <Link
             href="/all"

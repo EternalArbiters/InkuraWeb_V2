@@ -1,19 +1,19 @@
 # Database reset & seeding
 
-Dokumen ini menjelaskan cara menangani database lokal untuk repo Inkura cleaned.
+This document explain cara menangani database local for repo Inkura cleaned.
 
 ## Prinsip paling penting
 
-Perintah berikut **hanya aman untuk lokal / disposable DB**:
+Perintah berikut **only safe for local / disposable DB**:
 
 ```bash
 npm run db:init
 npm --workspace apps/web run db:reset
 ```
 
-Keduanya bersifat destruktif terhadap data pada database yang sedang ditunjuk oleh env.
+Keduanya bersifat destruktif terhadap data pada database that seandg ditunjuk oleh env.
 
-## Alur paling aman untuk lokal dari nol
+## Alur safest for local from scratch
 
 ### 1) Siapkan env
 
@@ -21,7 +21,7 @@ Keduanya bersifat destruktif terhadap data pada database yang sedang ditunjuk ol
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Pastikan `DATABASE_URL` dan `DIRECT_URL` menunjuk database lokal/dev yang memang boleh direset.
+Pastikan `DATABASE_URL` and `DIRECT_URL` point to database local/dev that memang may be reset.
 
 ### 2) Reset + seed
 
@@ -29,7 +29,7 @@ Pastikan `DATABASE_URL` dan `DIRECT_URL` menunjuk database lokal/dev yang memang
 npm run db:init
 ```
 
-Di `apps/web`, script ini setara dengan:
+Di `apps/web`, script this equivalent to:
 
 ```bash
 npm run db:generate
@@ -43,23 +43,23 @@ npm run db:seed
 npm run sanity:db
 ```
 
-Sanity check akan memastikan Prisma bisa connect dan schema penting tersedia.
+Sanity check will ensure Prisma can connect and schema penting tersedia.
 
-## Arti script database yang tersedia
+## Arti script database that tersedia
 
-Dari root repo, script utama yang relevan adalah:
+From root repo, script main that are relevant adalah:
 
 ### `npm run db:init`
 
 - generate Prisma Client
-- reset schema lokal
+- reset schema local
 - seed data awal
 
-Cocok dipakai ketika baru clone repo atau ingin mengulang dari nol.
+Suitable used ketika just cloned the repo or want to start over from scratch.
 
 ### `npm --workspace apps/web run db:reset`
 
-Implementasi saat ini:
+Implementasi currently:
 
 ```bash
 prisma db push --force-reset
@@ -67,37 +67,37 @@ prisma db push --force-reset
 
 Artinya:
 
-- schema akan di-push sesuai `schema.prisma`
-- database akan direset total
-- ini bukan perintah untuk production
+- schema akan in-push sesuai `schema.prisma`
+- the database will be reset completely
+- this is not a production command
 
 ### `npm --workspace apps/web run db:seed`
 
 - generate Prisma Client
 - menjalankan `prisma/seed.ts`
 
-Seed saat ini membuat data dasar seperti:
+Seed currently creates base data such as:
 
 - admin default
 - taxonomy sistem
-- sample works/chapters/data awal yang diperlukan seed
+- sample works/chapters/initial data required by the seed
 
 ### `npm run sanity:db`
 
-Dipakai untuk memverifikasi koneksi DB dan keberadaan bagian schema penting setelah reset/migration.
+Diuse to verify connection DB and the presence of important schema sections after reset/migration.
 
-## Kredensial seed lokal
+## Kredensial seed local
 
 Seed default membuat akun admin berikut:
 
 - Email: `noelephgoddess.game@gmail.com`
 - Password: `admin123`
 
-Role admin di repo ini dikaitkan dengan email tersebut. Untuk environment publik, sebaiknya data ini disesuaikan lewat proses seed/ops yang lebih aman.
+Role admin in repo this dikaitkan with email tersebut. For public environments, should data this adjusted through proses seed/ops that safer.
 
-## Perintah Prisma lain yang relevan
+## Perintah Prisma lain that are relevant
 
-Dari `apps/web`:
+From `apps/web`:
 
 ```bash
 npm run prisma:validate
@@ -107,39 +107,39 @@ npm run db:push
 npm run db:migrate:deploy
 ```
 
-Kapan dipakai:
+Kapan used:
 
 - `prisma:validate` → memastikan schema valid
 - `prisma:generate` → regenerate Prisma Client
-- `prisma:migrate` → membuat/menjalankan migration di lokal saat kamu memang sedang mengubah schema
-- `db:push` → push schema ke DB tanpa migration file, cocok untuk eksperimen lokal tertentu
-- `db:migrate:deploy` → menjalankan migration yang sudah ada, ini yang relevan untuk deploy/production
+- `prisma:migrate` → membuat/menjalankan migration in local saat kamu memang seandg mengubah schema
+- `db:push` → push schema to DB without migration file, cocok for specific local experiments
+- `db:migrate:deploy` → menjalankan migration already there is, this that are relevant for deploy/production
 
-## Kapan memakai migration deploy, bukan reset
+## Kapan memakai migration deploy, not reset
 
-Untuk shared environment, staging, atau production:
+For shared environments, staging, or production:
 
-- **jangan** pakai `db:init`
-- **jangan** pakai `db:reset`
-- pakai `db:migrate:deploy` melalui pipeline deploy
+- **do not** use `db:init`
+- **do not** use `db:reset`
+- use `db:migrate:deploy` metheni pipeline deploy
 
-Di repo ini, Vercel `vercel-build` sudah menangani `prisma migrate deploy` sesuai environment rules.
+In this repo, Vercel `vercel-build` already menangani `prisma migrate deploy` sesuai environment rules.
 
 ## Taxonomy helpers
 
-Repo juga punya helper yang kadang berguna saat kerja dengan taxonomy:
+Repo juga punya helper that sometimes useful saat work with taxonomy:
 
 ```bash
 npm run db:taxonomy-alpha
 npm --workspace apps/web run db:cleanup-taxonomy
 ```
 
-Gunakan hanya bila konteks perubahannya memang terkait taxonomy.
+Gunakan only when the change context memang terkait taxonomy.
 
-## Recovery checklist kalau DB terasa aneh
+## Recovery checklist if DB feels odd
 
 - jalankan `npm run sanity:db`
-- pastikan `DATABASE_URL` dan `DIRECT_URL` tidak tertukar
-- bila lokal boleh dihapus, jalankan ulang `npm run db:init`
-- kalau masalah muncul setelah ubah schema, regenerate client dengan `npm --workspace apps/web run prisma:generate`
-- untuk shared env, jangan improvisasi reset; cek migration yang sudah ter-apply
+- make sure `DATABASE_URL` and `DIRECT_URL` are not swapped
+- if local may dihapus, jalankan again `npm run db:init`
+- if the problem appears after change schema, regenerate client with `npm --workspace apps/web run prisma:generate`
+- for shared environments, do not improvise a reset; check which migrations have already been applied

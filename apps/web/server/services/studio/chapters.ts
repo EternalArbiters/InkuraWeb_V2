@@ -156,7 +156,7 @@ export async function createStudioChapter(req: Request) {
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return { status: 409, body: { error: "Chapter order sudah dipakai di work ini." } };
+      return { status: 409, body: { error: "That chapter order is already used in this work." } };
     }
     throw error;
   }
@@ -339,7 +339,7 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return { status: 409, body: { error: "Chapter order sudah dipakai di work ini." } };
+      return { status: 409, body: { error: "That chapter order is already used in this work." } };
     }
     throw error;
   }

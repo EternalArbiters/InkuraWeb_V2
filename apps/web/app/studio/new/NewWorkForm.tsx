@@ -105,7 +105,7 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       setCoverPrepared(prepared);
     } catch {
       setCoverPrepared(null);
-      setErr("Gagal memproses cover.");
+      setErr("Failed to process the cover.");
     } finally {
       setCoverPreparing(false);
     }
@@ -127,16 +127,16 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
     e.preventDefault();
     setErr(null);
 
-    if (!title.trim()) return setErr("Title wajib diisi.");
-    if (!coverPrepared) return setErr("Cover wajib diupload.");
+    if (!title.trim()) return setErr("Title is required.");
+    if (!coverPrepared) return setErr("A cover upload is required.");
 
     if (needsSource) {
-      if (!originalAuthorCredit.trim()) return setErr("Original author credit wajib diisi.");
-      if (!sourceUrl.trim()) return setErr("Source URL wajib diisi.");
+      if (!originalAuthorCredit.trim()) return setErr("Original author credit is required.");
+      if (!sourceUrl.trim()) return setErr("Source URL is required.");
     }
 
     if (publishType === "REUPLOAD") {
-      if (!originalTranslatorCredit.trim()) return setErr("Original translator credit wajib diisi untuk Reupload.");
+      if (!originalTranslatorCredit.trim()) return setErr("Original translator credit is required for Reupload.");
     }
 
     setLoading(true);
