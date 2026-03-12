@@ -38,6 +38,6 @@ export default function WorkPublishTypeCard({
           </div>
         </div>
       ) : null}
-    </div>
+    </div> 
   );
 }
