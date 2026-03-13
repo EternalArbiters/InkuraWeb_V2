@@ -51,7 +51,7 @@ export default function ReviewCard({
             ) : null}
           </div>
           {review.title ? (
-            <div className="mt-1 text-sm font-semibold">{review.title}</div>
+            <div data-ui-language-ignore="true" className="mt-1 text-sm font-semibold">{review.title}</div>
           ) : null}
           <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
             {new Date(review.createdAt).toLocaleString()}

@@ -65,6 +65,31 @@ describe("UI language catalog", () => {
     ).toBe("Jika akun ditemukan, instruksi reset kata sandi telah dibuat.");
   });
 
+
+  it("canonicalizes equivalent punctuation and apostrophes during lookup", () => {
+    const sourceCatalog = parseUILanguageCatalog(
+      "EN",
+      `==========\nNavigation\n==========\n\nDon't have an account?\nLoading...`
+    );
+    const translatedCatalog = parseUILanguageCatalog(
+      "ID",
+      `==========\nNavigation\n==========\n\nDon't have an account? = Belum punya akun?\nLoading... = Memuat...`,
+      sourceCatalog
+    );
+
+    expect(
+      lookupUILanguageText(translatedCatalog, "Don’t have an account?", {
+        section: "Navigation",
+      })
+    ).toBe("Belum punya akun?");
+
+    expect(
+      lookupUILanguageText(translatedCatalog, "Loading…", {
+        fallbackCatalog: sourceCatalog,
+      })
+    ).toBe("Memuat...");
+  });
+
   it("falls back to EN when a translated line is missing", () => {
     const sourceCatalog = parseUILanguageCatalog("EN", sourceText);
     const translatedCatalog = parseUILanguageCatalog(

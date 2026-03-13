@@ -40,8 +40,8 @@ export default function ProfileReviewCard({ review }: { review: ProfileReviewCar
         </div>
         <div className="shrink-0 text-xs text-gray-500 dark:text-gray-400">{formatDate(review.updatedAt || review.createdAt)}</div>
       </div>
-      {review.title ? <div className="mt-2 text-sm font-semibold">{review.title}</div> : null}
-      <div className="mt-2 text-sm text-gray-700 dark:text-gray-200 line-clamp-3 whitespace-pre-wrap">{review.body}</div>
+      {review.title ? <div data-ui-language-ignore="true" className="mt-2 text-sm font-semibold">{review.title}</div> : null}
+      <div data-ui-language-ignore="true" className="mt-2 text-sm text-gray-700 dark:text-gray-200 line-clamp-3 whitespace-pre-wrap">{review.body}</div>
     </div>
   );
 }

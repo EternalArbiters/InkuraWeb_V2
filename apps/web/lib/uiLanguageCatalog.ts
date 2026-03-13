@@ -25,6 +25,18 @@ export type UILanguageLookupOptions = {
   fallbackCatalog?: UILanguageCatalog | null;
 };
 
+export function canonicalizeUILanguageText(input: string) {
+  return String(input || "")
+    .normalize("NFKC")
+    .replace(/^\uFEFF/, "")
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035`]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function normalizeLine(line: string) {
   return line.replace(/^\uFEFF/, "").trim();
 }
@@ -99,17 +111,18 @@ function buildSectionLookup(sections: UILanguageSection[], language: InkuraLangu
   for (const section of sections) {
     const perSection = (sectionLookup[section.name] ||= {});
     for (const entry of section.entries) {
-      const existing = perSection[entry.source];
+      const sourceKey = canonicalizeUILanguageText(entry.source);
+      const existing = perSection[sourceKey];
       if (existing && existing !== entry.target) {
         throw new Error(
           `[UIlanguage:${language}] Duplicate source text with different translations in section "${section.name}" on line ${entry.line}: ${entry.source}`
         );
       }
-      perSection[entry.source] = entry.target;
+      perSection[sourceKey] = entry.target;
 
-      const values = globalCandidates.get(entry.source) ?? new Set<string>();
+      const values = globalCandidates.get(sourceKey) ?? new Set<string>();
       values.add(entry.target);
-      globalCandidates.set(entry.source, values);
+      globalCandidates.set(sourceKey, values);
     }
   }
 
@@ -130,8 +143,9 @@ function validateTranslatedCatalog(catalog: UILanguageCatalog, sourceCatalog: UI
   for (const section of catalog.sections) {
     const matchingSourceSection = sourceSections[section.name] ?? null;
     for (const entry of section.entries) {
-      const existsInSameSection = !!matchingSourceSection?.[entry.source];
-      const existsAnywhere = !!sourceGlobal[entry.source];
+      const sourceKey = canonicalizeUILanguageText(entry.source);
+      const existsInSameSection = !!matchingSourceSection?.[sourceKey];
+      const existsAnywhere = !!sourceGlobal[sourceKey];
       if (!existsInSameSection && !existsAnywhere) {
         throw new Error(
           `[UIlanguage:${catalog.language}] Source text not found in EN on line ${entry.line}: ${entry.source}`
@@ -172,7 +186,7 @@ export function lookupUILanguageText(
   sourceText: string,
   options: UILanguageLookupOptions = {}
 ) {
-  const normalizedSource = sourceText.trim();
+  const normalizedSource = canonicalizeUILanguageText(sourceText);
   if (!normalizedSource) return sourceText;
 
   const sectionName = options.section?.trim();
@@ -188,5 +202,5 @@ export function lookupUILanguageText(
   const fallbackGlobal = options.fallbackCatalog?.globalLookup[normalizedSource];
   if (fallbackGlobal) return fallbackGlobal;
 
-  return normalizedSource;
+  return sourceText.trim();
 }

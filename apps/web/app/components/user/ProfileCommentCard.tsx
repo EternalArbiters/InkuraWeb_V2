@@ -33,7 +33,7 @@ export default function ProfileCommentCard({ comment }: { comment: ViewerComment
         </div>
         <div className="shrink-0 text-xs text-gray-500 dark:text-gray-400">{formatDate(comment.editedAt || comment.createdAt)}</div>
       </div>
-      <div className="mt-2 text-sm text-gray-700 dark:text-gray-200 line-clamp-3 whitespace-pre-wrap">{comment.body}</div>
+      <div data-ui-language-ignore="true" className="mt-2 text-sm text-gray-700 dark:text-gray-200 line-clamp-3 whitespace-pre-wrap">{comment.body}</div>
     </div>
   );
 }

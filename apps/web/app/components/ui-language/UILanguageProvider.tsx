@@ -10,6 +10,7 @@ import {
   type InkuraLanguageCode,
 } from "@/lib/inkuraLanguage";
 import {
+  canonicalizeUILanguageText,
   lookupUILanguageText,
   type UILanguageCatalog,
   type UILanguageLookupOptions,
@@ -47,20 +48,44 @@ const AUTO_TRANSLATE_IGNORE_SELECTOR = [
   ".ql-editor",
 ].join(",");
 
+const PARTIAL_TRANSLATION_SELECTOR = [
+  "button",
+  "a",
+  "label",
+  "option",
+  "summary",
+  "th",
+  "td",
+  "li",
+  "[role='button']",
+  "[role='link']",
+  "[role='menuitem']",
+  "[role='tab']",
+  "[role='option']",
+  "[role='switch']",
+  "[data-ui-language-partial='true']",
+].join(",");
+
+type PartialCandidate = {
+  candidate: string;
+  source: string;
+};
+
 function getCatalogOrFallback(catalogs: UILanguageCatalogMap, languageInput: unknown) {
   const language = resolveInkuraLanguage(languageInput);
   return catalogs[language] ?? catalogs[DEFAULT_GUEST_INKURA_LANGUAGE];
 }
 
-function buildSourceSet(catalog: UILanguageCatalog) {
-  const values = new Set<string>();
+function buildSourceMap(catalog: UILanguageCatalog) {
+  const map = new Map<string, string>();
   for (const section of catalog.sections) {
     for (const entry of section.entries) {
-      const source = entry.source.trim();
-      if (source) values.add(source);
+      const key = canonicalizeUILanguageText(entry.source);
+      if (!key || map.has(key)) continue;
+      map.set(key, entry.source);
     }
   }
-  return values;
+  return map;
 }
 
 function buildReverseLookup(catalogs: UILanguageCatalogMap) {
@@ -70,16 +95,16 @@ function buildReverseLookup(catalogs: UILanguageCatalogMap) {
   for (const catalog of Object.values(catalogs)) {
     for (const section of catalog.sections) {
       for (const entry of section.entries) {
-        const target = entry.target.trim();
+        const targetKey = canonicalizeUILanguageText(entry.target);
         const source = entry.source.trim();
-        if (!target || !source || target === source) continue;
+        if (!targetKey || !source || targetKey === canonicalizeUILanguageText(source)) continue;
 
-        if (lookup.has(target) && lookup.get(target) !== source) {
-          duplicates.add(target);
+        if (lookup.has(targetKey) && lookup.get(targetKey) !== source) {
+          duplicates.add(targetKey);
           continue;
         }
 
-        lookup.set(target, source);
+        lookup.set(targetKey, source);
       }
     }
   }
@@ -91,15 +116,76 @@ function buildReverseLookup(catalogs: UILanguageCatalogMap) {
   return lookup;
 }
 
+function phraseVariants(text: string) {
+  const variants = new Set<string>();
+  const base = text.trim();
+  if (!base) return variants;
+  variants.add(base);
+  variants.add(base.replace(/'/g, "’"));
+  variants.add(base.replace(/\.\.\./g, "…"));
+  variants.add(base.replace(/'/g, "’").replace(/\.\.\./g, "…"));
+  return variants;
+}
+
+function buildPartialCandidates(catalogs: UILanguageCatalogMap, sourceCatalog: UILanguageCatalog) {
+  const phraseToSource = new Map<string, string>();
+  const duplicates = new Set<string>();
+
+  const register = (candidate: string, source: string) => {
+    const trimmedCandidate = candidate.trim();
+    const trimmedSource = source.trim();
+    if (!trimmedCandidate || !trimmedSource) return;
+    if (trimmedCandidate.length < 3) return;
+    if (!/[A-Za-z]/.test(trimmedCandidate)) return;
+
+    for (const variant of phraseVariants(trimmedCandidate)) {
+      if (phraseToSource.has(variant) && phraseToSource.get(variant) !== trimmedSource) {
+        duplicates.add(variant);
+        continue;
+      }
+      phraseToSource.set(variant, trimmedSource);
+    }
+  };
+
+  for (const section of sourceCatalog.sections) {
+    for (const entry of section.entries) {
+      register(entry.source, entry.source);
+    }
+  }
+
+  for (const catalog of Object.values(catalogs)) {
+    for (const section of catalog.sections) {
+      for (const entry of section.entries) {
+        if (entry.target.trim() !== entry.source.trim()) {
+          register(entry.target, entry.source);
+        }
+      }
+    }
+  }
+
+  for (const duplicate of duplicates) {
+    phraseToSource.delete(duplicate);
+  }
+
+  return Array.from(phraseToSource.entries())
+    .map(([candidate, source]) => ({ candidate, source }))
+    .sort((left, right) => right.candidate.length - left.candidate.length);
+}
+
 function shouldIgnoreElement(element: Element | null) {
   if (!element) return true;
   return !!element.closest(AUTO_TRANSLATE_IGNORE_SELECTOR);
 }
 
+function canPartiallyTranslate(element: Element | null) {
+  if (!element || shouldIgnoreElement(element)) return false;
+  return !!element.closest(PARTIAL_TRANSLATION_SELECTOR);
+}
+
 function translateDocumentTitle(
   catalog: UILanguageCatalog,
   sourceCatalog: UILanguageCatalog,
-  sourceSet: Set<string>,
+  sourceMap: Map<string, string>,
   reverseLookup: Map<string, string>,
   sourceRef: { current: string | null }
 ) {
@@ -112,17 +198,31 @@ function translateDocumentTitle(
     source ? lookupUILanguageText(catalog, source, { fallbackCatalog: sourceCatalog }) : null;
 
   if (!source || (current !== source && current !== translatedFromStored)) {
-    if (sourceSet.has(current)) {
-      source = current;
-    } else {
-      source = reverseLookup.get(current) ?? null;
-    }
-
+    const canonicalCurrent = canonicalizeUILanguageText(current);
+    source = sourceMap.get(canonicalCurrent) ?? reverseLookup.get(canonicalCurrent) ?? null;
     sourceRef.current = source;
   }
 
   if (!source) return;
   document.title = lookupUILanguageText(catalog, source, { fallbackCatalog: sourceCatalog });
+}
+
+function replaceKnownPhrases(
+  rawValue: string,
+  activeCatalog: UILanguageCatalog,
+  sourceCatalog: UILanguageCatalog,
+  partialCandidates: PartialCandidate[]
+) {
+  let nextValue = rawValue;
+
+  for (const entry of partialCandidates) {
+    if (!nextValue.includes(entry.candidate)) continue;
+    const translated = lookupUILanguageText(activeCatalog, entry.source, { fallbackCatalog: sourceCatalog });
+    if (!translated || translated === entry.candidate) continue;
+    nextValue = nextValue.split(entry.candidate).join(translated);
+  }
+
+  return nextValue;
 }
 
 export default function UILanguageProvider({
@@ -180,15 +280,15 @@ export default function UILanguageProvider({
     if (typeof document === "undefined" || !document.body) return;
 
     const activeCatalog = value.catalog;
-    const sourceSet = buildSourceSet(sourceCatalog);
+    const sourceMap = buildSourceMap(sourceCatalog);
     const reverseLookup = buildReverseLookup(catalogs);
+    const partialCandidates = buildPartialCandidates(catalogs, sourceCatalog);
     let animationFrame = 0;
 
     const resolveSourceText = (rawValue: string) => {
-      const trimmed = rawValue.trim();
-      if (!trimmed) return null;
-      if (sourceSet.has(trimmed)) return trimmed;
-      return reverseLookup.get(trimmed) ?? null;
+      const canonical = canonicalizeUILanguageText(rawValue);
+      if (!canonical) return null;
+      return sourceMap.get(canonical) ?? reverseLookup.get(canonical) ?? null;
     };
 
     const translateFromSource = (sourceText: string) =>
@@ -210,22 +310,33 @@ export default function UILanguageProvider({
           sourceText = resolveSourceText(trimmed);
           if (!sourceText) {
             textNodeSourceRef.current.delete(node);
-            return;
+          } else {
+            textNodeSourceRef.current.set(node, sourceText);
           }
-          textNodeSourceRef.current.set(node, sourceText);
         }
       }
 
       if (!sourceText) {
         sourceText = resolveSourceText(trimmed);
-        if (!sourceText) return;
-        textNodeSourceRef.current.set(node, sourceText);
+        if (sourceText) {
+          textNodeSourceRef.current.set(node, sourceText);
+        }
       }
 
-      const translated = translateFromSource(sourceText);
-      const nextValue = `${match?.[1] ?? ""}${translated}${match?.[3] ?? ""}`;
-      if (node.nodeValue !== nextValue) {
-        node.nodeValue = nextValue;
+      if (sourceText) {
+        const translated = translateFromSource(sourceText);
+        const nextValue = `${match?.[1] ?? ""}${translated}${match?.[3] ?? ""}`;
+        if (node.nodeValue !== nextValue) {
+          node.nodeValue = nextValue;
+        }
+        return;
+      }
+
+      const allowSoftPartial = trimmed.length <= 60;
+      if (!canPartiallyTranslate(parentElement) && !allowSoftPartial) return;
+      const replaced = replaceKnownPhrases(rawValue, activeCatalog, sourceCatalog, partialCandidates);
+      if (replaced !== rawValue) {
+        node.nodeValue = replaced;
       }
     };
 
@@ -249,21 +360,31 @@ export default function UILanguageProvider({
             sourceText = resolveSourceText(currentValue);
             if (!sourceText) {
               storedAttributes.delete(attributeName);
-              continue;
+            } else {
+              storedAttributes.set(attributeName, sourceText);
             }
-            storedAttributes.set(attributeName, sourceText);
           }
         }
 
         if (!sourceText) {
           sourceText = resolveSourceText(currentValue);
-          if (!sourceText) continue;
-          storedAttributes.set(attributeName, sourceText);
+          if (sourceText) {
+            storedAttributes.set(attributeName, sourceText);
+          }
         }
 
-        const translated = translateFromSource(sourceText);
-        if (currentValue !== translated) {
-          element.setAttribute(attributeName, translated);
+        if (sourceText) {
+          const translated = translateFromSource(sourceText);
+          if (currentValue !== translated) {
+            element.setAttribute(attributeName, translated);
+          }
+          continue;
+        }
+
+        if (!canPartiallyTranslate(element)) continue;
+        const replaced = replaceKnownPhrases(currentValue, activeCatalog, sourceCatalog, partialCandidates);
+        if (replaced !== currentValue) {
+          element.setAttribute(attributeName, replaced);
         }
       }
     };
@@ -290,7 +411,7 @@ export default function UILanguageProvider({
 
     const runTranslation = () => {
       animationFrame = 0;
-      translateDocumentTitle(activeCatalog, sourceCatalog, sourceSet, reverseLookup, titleSourceRef);
+      translateDocumentTitle(activeCatalog, sourceCatalog, sourceMap, reverseLookup, titleSourceRef);
       translateRoot(document.body);
     };
 
@@ -319,7 +440,7 @@ export default function UILanguageProvider({
         window.cancelAnimationFrame(animationFrame);
       }
     };
-  }, [sourceCatalog, value.catalog]);
+  }, [catalogs, sourceCatalog, value.catalog]);
 
   return <UILanguageContext.Provider value={value}>{children}</UILanguageContext.Provider>;
 }

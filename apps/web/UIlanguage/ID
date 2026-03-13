@@ -1787,3 +1787,265 @@ Apply = Terapkan
 Comics = Komik
 Novels = Novel
 Advanced search = Pencarian lanjutan
+
+==========
+Final Sweep Shared UI
+==========
+
+Public = Publik
+Private = Privat
+Hidden = Tersembunyi
+Lock = Kunci
+Locked = Terkunci
+Edit = Edit
+Remove = Hapus
+Delete = Hapus
+Create = Buat
+Close = Tutup
+Refresh = Segarkan
+Sort = Urutkan
+Send = Kirim
+Submit = Kirim
+Cancel = Batal
+Previous = Sebelumnya
+Next = Berikutnya
+Menu = Menu
+Follow = Ikuti
+Following = Mengikuti
+Bookmark = Bookmark
+Bookmarked = Sudah di-bookmark
+Favorite = Favorit
+Favorited = Sudah difavoritkan
+Helpful = Membantu
+Top = Teratas
+Bottom = Terbawah
+Newest = Terbaru
+Oldest = Terlama
+Spoiler = Spoiler
+You = Kamu
+edited = diedit
+Info = Info
+Type = Tipe
+Status = Status
+Origin = Asal
+Language = Bahasa
+Company = Perusahaan
+Source = Sumber
+Note = Catatan
+Chapters = Chapter
+Favorites = Favorit
+Rating = Rating
+Updated = Diperbarui
+Comments = Komentar
+Reviews = Ulasan
+Write a review = Tulis ulasan
+Edit your review = Edit ulasanmu
+Sort reviews = Urutkan ulasan
+Reply = Balas
+Dislike = Tidak suka
+Like = Suka
+Unlike = Batal suka
+Liked = Disukai
+Pin = Sematkan
+Unpin = Lepas sematan
+Hide = Sembunyikan
+Unhide = Tampilkan
+Hide reply = Sembunyikan balasan
+See reply = Lihat balasan
+Admin = Admin
+Searches = Pencarian
+Bookmarks = Bookmark
+Sent to = Dikirim ke
+Arc = Arc
+Subtitle = Subjudul
+Chapter = Chapter
+Page = Halaman
+Link = Tautan
+Open collection = Buka koleksi
+View public page for = Lihat halaman publik untuk
+Rate = Beri rating
+Tap to reveal = Ketuk untuk menampilkan
+Tap to hide = Ketuk untuk menyembunyikan
+No optimization needed = Tidak perlu optimasi
+Preparing optimization for = Menyiapkan optimasi untuk
+Uploading page = Mengunggah halaman
+after = setelah
+Open Manage Pages = Buka Kelola Halaman
+Processing import... = Memproses impor...
+Preparing pages... = Menyiapkan halaman...
+Upload error = Error upload
+Failed to process the cover. = Gagal memproses cover.
+Failed to process the file. = Gagal memproses file.
+Failed to send comment = Gagal mengirim komentar
+Failed to fetch = Gagal mengambil
+Remove tag = Hapus tag
+View public page = Lihat halaman publik
+Create Chapter = Buat Chapter
+Delete chapter = Hapus chapter
+Delete failed = Gagal menghapus
+Request failed = Permintaan gagal
+Zoom = Perbesar
+0 B = 0 B
+
+==========
+Final Sweep Auth & Profile
+==========
+
+Registration failed = Pendaftaran gagal
+Login Art = Seni Login
+Welcome Back! = Selamat datang kembali!
+Join Inkura = Gabung Inkura
+Log in to access amazing content. = Masuk untuk mengakses konten keren.
+Create your account to start your journey. = Buat akunmu untuk memulai perjalananmu.
+Email or Username = Email atau Nama Pengguna
+Log In = Masuk
+Log in = Masuk
+Sign up = Daftar
+Don’t have an account? = Belum punya akun?
+Open = Buka
+Untitled = Tanpa Judul
+Untitled work = Karya tanpa judul
+Reply = Balas
+Like = Suka
+Profile = Profil
+Reason: = Alasan:
+Reported profile: = Profil yang dilaporkan:
+more = lagi
+
+==========
+Final Sweep Landing & Discovery
+==========
+
+Read Comics and Light Novels = Baca Komik dan Light Novel
+Access original works from creators across the globe and enjoy exciting stories every day. = Akses karya orisinal dari kreator di seluruh dunia dan nikmati cerita seru setiap hari.
+Watch Animation & Drama = Tonton Animasi & Drama
+Stream your favorite anime and dramas legally in the highest quality. = Streaming anime dan drama favoritmu secara legal dengan kualitas terbaik.
+Fanart & Artwork Upload = Upload Fanart & Artwork
+Share your visual works such as illustrations, zines, and comics to the community. = Bagikan karya visualmu seperti ilustrasi, zine, dan komik ke komunitas.
+Donate to Creator = Donasi ke Kreator
+Support your favorite creators and translators through the donation & premium system. = Dukung kreator dan penerjemah favoritmu melalui sistem donasi & premium.
+Event & Premium = Event & Premium
+Join community competitions and events, and get exclusive premium access. = Ikuti kompetisi dan event komunitas, serta dapatkan akses premium eksklusif.
+Active Community = Komunitas Aktif
+Have fun discussions, create a group, or chat with other creators & fans! = Nikmati diskusi seru, buat grup, atau chat dengan kreator & penggemar lainnya!
+Legally Licensed and Protected = Berlisensi Resmi dan Terlindungi
+Support for Global Creators = Dukungan untuk Kreator Global
+Open and Active Community = Komunitas Terbuka dan Aktif
+Inclusive of All Creative Formats = Inklusif untuk Semua Format Kreatif
+Community-Powered Translations = Terjemahan Bertenaga Komunitas
+Fans can contribute translations to help works reach more people around the world. = Penggemar bisa ikut berkontribusi menerjemahkan agar karya menjangkau lebih banyak orang di seluruh dunia.
+Alt Text and Description Support = Dukungan Alt Text dan Deskripsi
+Visual works are enhanced with captions and image descriptions for better accessibility. = Karya visual dilengkapi caption dan deskripsi gambar untuk aksesibilitas yang lebih baik.
+AI-Safe Creative Space = Ruang Kreatif Aman dari AI
+Your creations won't be used to train AI models. Your work stays protected and respected. = Kreasimu tidak akan digunakan untuk melatih model AI. Karyamu tetap terlindungi dan dihargai.
+AI-Enhanced, Not AI-Replaced = Ditingkatkan AI, Bukan Digantikan AI
+Enjoy comics from talented local and international creators, with a wide range of genres and unique stories. = Nikmati komik dari kreator lokal dan internasional berbakat, dengan beragam genre dan cerita unik.
+Novels & Light Novels = Novel & Light Novel
+Light yet immersive reads. Explore fantasy realms, heartwarming romance, and thrilling adventures. = Bacaan ringan namun imersif. Jelajahi dunia fantasi, romansa yang menghangatkan hati, dan petualangan menegangkan.
+Fanart & Illustrations = Fanart & Ilustrasi
+View and share colorful visual artworks from the creative International community. = Lihat dan bagikan karya visual penuh warna dari komunitas kreatif internasional.
+Zines & Creative Works = Zine & Karya Kreatif
+Discover zines, short stories, and expressive creative content made with passion! = Temukan zine, cerita pendek, dan konten kreatif ekspresif yang dibuat dengan penuh semangat!
+Anime & Donghua = Anime & Donghua
+Asian Dramas = Drama Asia
+Watch Korean, Japanese, and other Asian dramas to brighten your days with heartfelt stories. = Tonton drama Korea, Jepang, dan Asia lainnya untuk mewarnai harimu dengan cerita yang menyentuh hati.
+Create your free Inkura account as a reader or creator to get started. = Buat akun Inkura gratis sebagai pembaca atau kreator untuk memulai.
+Explore & Enjoy = Jelajahi & Nikmati
+Browse original comics, novels, and art from global creators. No AI-generated content. = Jelajahi komik, novel, dan karya seni orisinal dari kreator global. Tanpa konten buatan AI.
+Upload Your Work = Unggah Karyamu
+Share your creative work include comics, zines, novels, and more. Stay in control of your rights. = Bagikan karya kreatifmu termasuk komik, zine, novel, dan lainnya. Tetap pegang kendali atas hakmu.
+Community Translations = Terjemahan Komunitas
+Fans can contribute translations so your work can reach a wider audience. You can manage it all. = Penggemar bisa berkontribusi menerjemahkan agar karyamu menjangkau audiens yang lebih luas. Kamu bisa mengelola semuanya.
+AI Translate (Optional) = Terjemahan AI (Opsional)
+Automatic translations (for novels) powered by safe, non-training AI using only public data. Private works are not used for AI learning. = Terjemahan otomatis (untuk novel) didukung AI aman yang tidak dilatih ulang dan hanya memakai data publik. Karya privat tidak dipakai untuk pembelajaran AI.
+Safe & Secure = Aman & Terjaga
+Your work is protected. We don’t allow AI scraping or training. AI is only used to enhance user experience, not to replace creators. = Karyamu terlindungi. Kami tidak mengizinkan scraping atau pelatihan AI. AI hanya dipakai untuk meningkatkan pengalaman pengguna, bukan menggantikan kreator.
+Support Creators = Dukung Kreator
+Donate directly to support your favorite creators and help them grow. = Berdonasi langsung untuk mendukung kreator favoritmu dan membantu mereka berkembang.
+Join the Community = Gabung Komunitas
+Connect with other fans and creators, join discussions, events, and creative groups. = Terhubung dengan penggemar dan kreator lain, ikuti diskusi, event, dan grup kreatif.
+Maskot Inkura = Maskot Inkura
+Logo Inkura = Logo Inkura
+
+==========
+Final Sweep Admin & Studio
+==========
+
+Create / edit / deactivate (soft delete) and manage order. = Buat / edit / nonaktifkan (soft delete) dan kelola urutan.
+Admin analytics = Analitik admin
+Admin Reports = Laporan Admin
+Send a report to the admin = Kirim laporan ke admin
+Included accounts and excluded admin activity = Akun yang disertakan dan aktivitas admin yang dikecualikan
+Included events = Event yang disertakan
+Included accounts = Akun yang disertakan
+Excluded admin events = Event admin yang dikecualikan
+Excluded admin accounts = Akun admin yang dikecualikan
+Admin account = Akun admin
+Admin message = Pesan admin
+Notify = Notifikasi
+Reports = Laporan
+Warnings = Peringatan
+Dismissed = Ditutup
+Resolved = Diselesaikan
+Send = Kirim
+Create a new series = Buat seri baru
+Series title = Judul seri
+Move up = Naikkan
+Move down = Turunkan
+Set Draft = Set Draft
+Status: Published = Status: Dipublikasikan
+Status: Draft = Status: Draft
+Original (Author) = Orisinal (Penulis)
+Translation (Translator) = Terjemahan (Penerjemah)
+Reupload (Reuploader) = Unggah Ulang (Pengunggah Ulang)
+Deviant Love Tags = Tag Deviant Love
+Content is required for NOVEL = Konten wajib diisi untuk NOVEL
+Creating chapter... = Membuat chapter...
+Chapter created but id is missing = Chapter berhasil dibuat tetapi id tidak ada
+Saving page list... = Menyimpan daftar halaman...
+Failed to save the pages. The chapter was created; please re-upload them in Manage Pages. = Gagal menyimpan halaman. Chapter berhasil dibuat; silakan unggah ulang di Kelola Halaman.
+Prolog / Bonus / Chapter 0 = Prolog / Bonus / Chapter 0
+NSFW (Chapter) = NSFW (Chapter)
+Fill in the Chapter Label if auto mode is turned off. = Isi Label Chapter jika mode otomatis dimatikan.
+Prolog, Bonus, Chapter 0... = Prolog, Bonus, Chapter 0...
+Optional title / subtitle = Judul / subjudul opsional
+Manage Pages = Kelola Halaman
+Message from the author/uploader for this chapter... = Pesan dari penulis/pengunggah untuk chapter ini...
+Title is required. = Judul wajib diisi.
+A cover upload is required. = Cover wajib diunggah.
+Original author credit is required. = Kredit penulis asli wajib diisi.
+Source URL is required. = URL sumber wajib diisi.
+Original translator credit is required for Reupload. = Kredit penerjemah asli wajib diisi untuk Unggah Ulang.
+
+==========
+Final Sweep Dynamic Prefixes
+==========
+
+Helpful = Membantu
+Like = Suka
+Unlike = Batal suka
+Liked = Disukai
+Open = Buka
+Chapter = Chapter
+Page = Halaman
+Link = Tautan
+Sent to = Dikirim ke
+Aggregate rebuilt for = Agregat dibangun ulang untuk
+day(s). = hari
+
+==========
+Final Sweep Extra Runtime Phrases
+==========
+
+Select valid image files for comic pages. = Pilih file gambar yang valid untuk halaman komik.
+images added to the page queue. = gambar ditambahkan ke antrean halaman.
+images ready to upload. = gambar siap diunggah.
+PDF pages were converted to images successfully. = halaman PDF berhasil diubah menjadi gambar.
+images were extracted from the ZIP successfully. = gambar berhasil diekstrak dari ZIP.
+edited thumbnail not saved = thumbnail yang diedit belum disimpan
+unread = belum dibaca
+Forum: = Forum:
+Event: = Event:
+Creator: = Kreator:
+Content: = Konten:
+No optimization needed = Tidak perlu optimasi

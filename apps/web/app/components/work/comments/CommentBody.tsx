@@ -81,7 +81,7 @@ export default function CommentBody({ body, className }: { body: string; classNa
   const [open, setOpen] = useState<Record<number, boolean>>({});
 
   return (
-    <div className={className || ""} style={{ whiteSpace: "pre-wrap" }}>
+    <div data-ui-language-ignore="true" className={className || ""} style={{ whiteSpace: "pre-wrap" }}>
       {tokens.map((t, idx) => {
         if (t.type === "text") {
           return <span key={idx}>{renderTextWithLinks(t.value, `t-${idx}`)}</span>;

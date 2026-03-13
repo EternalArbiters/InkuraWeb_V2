@@ -1788,3 +1788,265 @@ Apply
 Comics
 Novels
 Advanced search
+
+==========
+Final Sweep Shared UI
+==========
+
+Public
+Private
+Hidden
+Lock
+Locked
+Edit
+Remove
+Delete
+Create
+Close
+Refresh
+Sort
+Send
+Submit
+Cancel
+Previous
+Next
+Menu
+Follow
+Following
+Bookmark
+Bookmarked
+Favorite
+Favorited
+Helpful
+Top
+Bottom
+Newest
+Oldest
+Spoiler
+You
+edited
+Info
+Type
+Status
+Origin
+Language
+Company
+Source
+Note
+Chapters
+Favorites
+Rating
+Updated
+Comments
+Reviews
+Write a review
+Edit your review
+Sort reviews
+Reply
+Dislike
+Like
+Unlike
+Liked
+Pin
+Unpin
+Hide
+Unhide
+Hide reply
+See reply
+Admin
+Searches
+Bookmarks
+Sent to
+Arc
+Subtitle
+Chapter
+Page
+Link
+Open collection
+View public page for
+Rate
+Tap to reveal
+Tap to hide
+No optimization needed
+Preparing optimization for
+Uploading page
+after
+Open Manage Pages
+Processing import...
+Preparing pages...
+Upload error
+Failed to process the cover.
+Failed to process the file.
+Failed to send comment
+Failed to fetch
+Remove tag
+View public page
+Create Chapter
+Delete chapter
+Delete failed
+Request failed
+Zoom
+0 B
+
+==========
+Final Sweep Auth & Profile
+==========
+
+Registration failed
+Login Art
+Welcome Back!
+Join Inkura
+Log in to access amazing content.
+Create your account to start your journey.
+Email or Username
+Log In
+Log in
+Sign up
+Don’t have an account?
+Open
+Untitled
+Untitled work
+Reply
+Like
+Profile
+Reason:
+Reported profile:
+more
+
+==========
+Final Sweep Landing & Discovery
+==========
+
+Read Comics and Light Novels
+Access original works from creators across the globe and enjoy exciting stories every day.
+Watch Animation & Drama
+Stream your favorite anime and dramas legally in the highest quality.
+Fanart & Artwork Upload
+Share your visual works such as illustrations, zines, and comics to the community.
+Donate to Creator
+Support your favorite creators and translators through the donation & premium system.
+Event & Premium
+Join community competitions and events, and get exclusive premium access.
+Active Community
+Have fun discussions, create a group, or chat with other creators & fans!
+Legally Licensed and Protected
+Support for Global Creators
+Open and Active Community
+Inclusive of All Creative Formats
+Community-Powered Translations
+Fans can contribute translations to help works reach more people around the world.
+Alt Text and Description Support
+Visual works are enhanced with captions and image descriptions for better accessibility.
+AI-Safe Creative Space
+Your creations won't be used to train AI models. Your work stays protected and respected.
+AI-Enhanced, Not AI-Replaced
+Enjoy comics from talented local and international creators, with a wide range of genres and unique stories.
+Novels & Light Novels
+Light yet immersive reads. Explore fantasy realms, heartwarming romance, and thrilling adventures.
+Fanart & Illustrations
+View and share colorful visual artworks from the creative International community.
+Zines & Creative Works
+Discover zines, short stories, and expressive creative content made with passion!
+Anime & Donghua
+Asian Dramas
+Watch Korean, Japanese, and other Asian dramas to brighten your days with heartfelt stories.
+Create your free Inkura account as a reader or creator to get started.
+Explore & Enjoy
+Browse original comics, novels, and art from global creators. No AI-generated content.
+Upload Your Work
+Share your creative work include comics, zines, novels, and more. Stay in control of your rights.
+Community Translations
+Fans can contribute translations so your work can reach a wider audience. You can manage it all.
+AI Translate (Optional)
+Automatic translations (for novels) powered by safe, non-training AI using only public data. Private works are not used for AI learning.
+Safe & Secure
+Your work is protected. We don’t allow AI scraping or training. AI is only used to enhance user experience, not to replace creators.
+Support Creators
+Donate directly to support your favorite creators and help them grow.
+Join the Community
+Connect with other fans and creators, join discussions, events, and creative groups.
+Maskot Inkura
+Logo Inkura
+
+==========
+Final Sweep Admin & Studio
+==========
+
+Create / edit / deactivate (soft delete) and manage order.
+Admin analytics
+Admin Reports
+Send a report to the admin
+Included accounts and excluded admin activity
+Included events
+Included accounts
+Excluded admin events
+Excluded admin accounts
+Admin account
+Admin message
+Notify
+Reports
+Warnings
+Dismissed
+Resolved
+Send
+Create a new series
+Series title
+Move up
+Move down
+Set Draft
+Status: Published
+Status: Draft
+Original (Author)
+Translation (Translator)
+Reupload (Reuploader)
+Deviant Love Tags
+Content is required for NOVEL
+Creating chapter...
+Chapter created but id is missing
+Saving page list...
+Failed to save the pages. The chapter was created; please re-upload them in Manage Pages.
+Prolog / Bonus / Chapter 0
+NSFW (Chapter)
+Fill in the Chapter Label if auto mode is turned off.
+Prolog, Bonus, Chapter 0...
+Optional title / subtitle
+Manage Pages
+Message from the author/uploader for this chapter...
+Title is required.
+A cover upload is required.
+Original author credit is required.
+Source URL is required.
+Original translator credit is required for Reupload.
+
+==========
+Final Sweep Dynamic Prefixes
+==========
+
+Helpful
+Like
+Unlike
+Liked
+Open
+Chapter
+Page
+Link
+Sent to
+Aggregate rebuilt for
+day(s).
+
+==========
+Final Sweep Extra Runtime Phrases
+==========
+
+Select valid image files for comic pages.
+images added to the page queue.
+images ready to upload.
+PDF pages were converted to images successfully.
+images were extracted from the ZIP successfully.
+edited thumbnail not saved
+unread
+Forum:
+Event:
+Creator:
+Content:
+No optimization needed
