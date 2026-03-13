@@ -46,6 +46,25 @@ describe("UI language catalog", () => {
     expect(lookupUILanguageText(translatedCatalog, "See all", { section: "Page Home" })).toBe("Lihat semua");
   });
 
+
+  it("parses translated entries when the source text contains an equals sign", () => {
+    const sourceCatalog = parseUILanguageCatalog(
+      "EN",
+      `==========\nPage Forgot Password\n==========\n\nIf the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.)`
+    );
+    const translatedCatalog = parseUILanguageCatalog(
+      "ID",
+      `==========\nPage Forgot Password\n==========\n\nIf the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.) = Jika akun ditemukan, instruksi reset kata sandi telah dibuat.`,
+      sourceCatalog
+    );
+
+    expect(
+      lookupUILanguageText(translatedCatalog, "If the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.)", {
+        section: "Page Forgot Password",
+      })
+    ).toBe("Jika akun ditemukan, instruksi reset kata sandi telah dibuat.");
+  });
+
   it("falls back to EN when a translated line is missing", () => {
     const sourceCatalog = parseUILanguageCatalog("EN", sourceText);
     const translatedCatalog = parseUILanguageCatalog(

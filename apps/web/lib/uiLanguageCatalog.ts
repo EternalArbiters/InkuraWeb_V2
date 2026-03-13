@@ -73,13 +73,14 @@ function parseEntryLine(language: InkuraLanguageCode, raw: string, line: number)
     return { source: raw, target: raw, line };
   }
 
-  const separatorIndex = raw.indexOf("=");
+  const separator = " = ";
+  const separatorIndex = raw.indexOf(separator);
   if (separatorIndex < 0) {
     return { source: raw, target: raw, line };
   }
 
   const source = raw.slice(0, separatorIndex).trim();
-  const translated = raw.slice(separatorIndex + 1).trim();
+  const translated = raw.slice(separatorIndex + separator.length).trim();
   if (!source) {
     throw new Error(`[UIlanguage:${language}] Missing source text on line ${line}.`);
   }
