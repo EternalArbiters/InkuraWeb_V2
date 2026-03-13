@@ -1,14 +1,17 @@
+"use client";
+
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import PublicUserLink from "@/app/components/user/PublicUserLink";
 
 type Person = { username?: string | null; name?: string | null; image?: string | null };
 
-function displayName(p: Person) {
+function rawDisplayName(p: Person) {
   return (p.name && p.name.trim()) || (p.username && p.username.trim()) || "Unknown";
 }
 
 function avatarFallback(p: Person) {
-  const t = displayName(p).trim();
+  const t = rawDisplayName(p).trim();
   return t ? t[0].toUpperCase() : "U";
 }
 
@@ -25,16 +28,20 @@ export default function CreatorNoteCard({
   note?: string | null;
   compact?: boolean;
 }) {
-  const uName = displayName(uploader);
-  const tName = translator ? displayName(translator) : null;
+  const t = useUILanguageText();
+  const uName = uploader.name?.trim() || uploader.username?.trim() || t("Unknown");
+  const tName = translator ? translator.name?.trim() || translator.username?.trim() || t("Unknown") : null;
 
   const roleLabel =
-    publishType === "TRANSLATION" ? "Uploaded by" : publishType === "REUPLOAD" ? "Re-uploaded by" : "Uploaded by";
+    publishType === "TRANSLATION"
+      ? t("Uploaded by")
+      : publishType === "REUPLOAD"
+        ? t("Re-uploaded by")
+        : t("Uploaded by");
 
   return (
     <section className={compact ? "rounded-2xl border border-white/10 bg-black/20 p-4" : "rounded-2xl border border-white/10 bg-black/20 p-4"}>
       <div className="flex items-center gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         {uploader.image ? (
           <img src={uploader.image} alt={uName} className="h-11 w-11 rounded-full object-cover" />
         ) : (
@@ -54,7 +61,7 @@ export default function CreatorNoteCard({
 
           {tName ? (
             <div className="mt-0.5 text-xs text-white/60">
-              Translator:{" "}
+              {t("Translator")}:{" "}
               <PublicUserLink user={translator} className="text-white/80 hover:text-purple-200">
                 {tName}
               </PublicUserLink>
@@ -63,9 +70,7 @@ export default function CreatorNoteCard({
         </div>
       </div>
 
-      {note && note.trim() ? (
-        <div className="mt-3 whitespace-pre-wrap text-sm text-white/85">{note}</div>
-      ) : null}
+      {note && note.trim() ? <div className="mt-3 whitespace-pre-wrap text-sm text-white/85">{note}</div> : null}
     </section>
   );
 }

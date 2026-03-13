@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 import type { Item, Kind } from "./types";
 import { useDebouncedValue } from "./useDebouncedValue";
@@ -8,6 +9,7 @@ import TaxonomyEditorDialog from "./TaxonomyEditorDialog";
 import TaxonomyTable from "./TaxonomyTable";
 
 export default function TaxonomyManagerInner({ kind, title }: { kind: Kind; title: string }) {
+  const t = useUILanguageText("Page Admin Taxonomy");
   const [q, setQ] = React.useState("");
   const qDebounced = useDebouncedValue(q, 250);
   const [includeInactive, setIncludeInactive] = React.useState(false);
@@ -111,26 +113,26 @@ export default function TaxonomyManagerInner({ kind, title }: { kind: Kind; titl
         body: JSON.stringify({ isActive: next }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed");
+      if (!res.ok) throw new Error(data?.error || t("Failed"));
       await fetchList();
     } catch (e: any) {
-      setErr(String(e?.message || e || "Failed"));
+      setErr(String(e?.message || e || t("Failed")));
     } finally {
       setSaving(false);
     }
   }
 
   async function deactivate(item: Item) {
-    if (!confirm(`Deactivate "${item.name}"? (soft delete)`)) return;
+    if (!confirm(t('Deactivate "{name}"? (soft delete)').replace("{name}", item.name))) return;
     setSaving(true);
     setErr(null);
     try {
       const res = await fetch(`${base}/${item.id}`, { method: "DELETE" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed");
+      if (!res.ok) throw new Error(data?.error || t("Failed"));
       await fetchList();
     } catch (e: any) {
-      setErr(String(e?.message || e || "Failed"));
+      setErr(String(e?.message || e || t("Failed")));
     } finally {
       setSaving(false);
     }
@@ -160,10 +162,10 @@ export default function TaxonomyManagerInner({ kind, title }: { kind: Kind; titl
         body: JSON.stringify({ ids }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to reorder");
+      if (!res.ok) throw new Error(data?.error || t("Failed to reorder"));
       await fetchList();
     } catch (e: any) {
-      setErr(String(e?.message || e || "Failed to reorder"));
+      setErr(String(e?.message || e || t("Failed to reorder")));
     } finally {
       setSaving(false);
     }

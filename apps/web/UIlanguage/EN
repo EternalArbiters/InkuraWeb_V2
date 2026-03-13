@@ -1523,3 +1523,268 @@ Sweep app/components/user/ProfileLinksSheet.tsx
 ==========
 
 Links
+
+==========
+Option A Shared Profile & Comments
+==========
+
+Unknown
+Share Profile
+Shared
+Copied
+Copy failed
+Copy profile URL
+Profile actions
+Unblock
+Block
+Why do you want to report @{username}?
+Profile report: @{username}
+Report
+Failed to submit report
+Comments
+Delete this comment? (Replies will also be deleted)
+Failed to send reply
+Failed to edit comment
+Failed to delete comment
+Failed to update comment
+Comment hidden
+Comment shown again
+Failed to pin comment
+Comment pinned
+Comment unpinned
+Report reason is required.
+Report sent. Thank you!
+Paste link URL (https://...)
+Failed to send comment
+Failed to load comments
+Hide work info
+Show work info
+Hide info
+Show info
+Edit your review
+Write a review
+Edit review
+Sort by oldest
+Sort by newest
+Up by
+Original author
+Original translator
+Hidden (wrap selection with || ||)
+Collection preview
+Untitled work
+Uploaded by
+Re-uploaded by
+Links
+Copied!
+Share
+Profile report submitted.
+
+==========
+Option A Studio Sweep
+==========
+
+Delete failed
+Delete chapter
+Delete "{title}"? This will remove the chapter and its related data. This cannot be undone.
+Delete this work? This will remove the work, chapters, and related data. This cannot be undone.
+Delete this work? This will remove the work, chapters, and related data. This can't be undone.
+Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones.
+Commit failed
+Title is required.
+A cover upload is required.
+Failed to process cover.
+Original author credit is required.
+Source URL is required.
+Original translator credit is required for Reupload.
+Failed to update status
+Set Draft
+Publish
+Status: Published
+Status: Draft
+Updating...
+Content is required for NOVEL
+Creating chapter...
+Saving page list...
+Failed to save the pages. The chapter was created; please re-upload them in Manage Pages.
+Open Manage Pages
+Preparing pages...
+Create Chapter
+Fill in the Chapter Label if auto mode is turned off.
+Optional title / subtitle
+Message from the author/uploader for this chapter...
+Working...
+Preparing...
+Image inserted into the chapter content.
+Failed to upload image.
+Enter link URL
+Write the chapter content...
+Type a tag then press Enter (or choose a suggestion) ...
+Example: Original author name / studio / etc.
+Example: Translator name / group
+Example: Kakao, Naver, Shueisha, etc.
+Example: reupload reason, additional info, etc.
+· preparing optimization...
+cover preview
+chapter thumb
+No optimization needed
+Avatar uploaded
+Save changes
+Delete this list?
+Failed to delete.
+Failed to save.
+Saved!
+Delete list
+Manage list
+Description
+Public (shareable)
+List title cannot be empty.
+Network error.
+Create item
+Edit item
+e.g. manhwa
+Create / edit / deactivate (soft delete) and arrange order.
+Clear search to sort
+Sort A→Z
+Sort Z→A
+Sort by count (high→low)
+Sort by count (low→high)
+Reordering is disabled while search is active (clear search to reorder).
+Order changed (not saved yet).
+Deactivate "{name}"? (soft delete)
+Failed to sort
+Failed to load
+Search name/slug…
+Move up
+Move down
+
+==========
+Option A Admin & Reporting
+==========
+
+An unknown error occurred.
+Incorrect email or password. Please try again.
+Access denied. You do not have permission.
+Authentication configuration is invalid.
+Verification failed or the link has expired.
+Inbox reports from users.
+Send a report/issue to the admin. (Not for illegal requests, okay? 😅)
+Message is required.
+Sent!
+Example: Login bug, chapter cannot be opened, etc.
+Explain the issue + steps to reproduce.
+Inbox reports
+My reports
+Refreshing...
+Sending...
+Sending…
+Rebuilding...
+Rebuild aggregates
+Admin message
+Send notification
+Hidden comment
+Guest / anonymous
+Unknown user
+No email
+Users active in the last 7 days
+Users active in the last 30 days
+Overall performance of the main interactions in the active range.
+The busiest content based on total views in the active range.
+Genres that attract the most readers.
+Creators with the highest reach and engagement.
+Queries used most often and how effective the results are.
+User breakdown by gender and age band for the active range.
+All events that are actually used by analytics after admin activity is filtered out.
+Non-admin user accounts that had events in this range.
+Anonymous visitors without an account who still count as public traffic.
+Admin events intentionally excluded from main analytics.
+Inbox reports from users.
+
+==========
+Option A Upload Helpers & Editors
+==========
+
+Manual one by one
+Upload all images
+Upload chapter ZIP
+Upload chapter PDF
+Select valid images for comic pages.
+Reading ZIP file...
+Converting PDF into image pages...
+Failed to process file.
+Processing ZIP...
+Choose ZIP file
+Processing PDF...
+Choose PDF file
+Looking for tag suggestions...
+Edit item
+Page Browse Catalog
+Page Studio
+Page Profile
+Page Comments
+Page Lists
+Page Admin Taxonomy
+
+==========
+Option A Misc Pages & Placeholders
+==========
+
+Enter your new password. Reset links are only valid for a limited time.
+Success! Redirecting...
+If the link is invalid or expired, request a new one via “Forgot password”.
+Coming soon.
+Failed to reach Elyanna:
+Search author accounts by username or profile name.
+Search translator accounts by username or profile name.
+Search all public accounts by username or profile name.
+example: "Indonesian Romance"
+Forum thread (placeholder) so /forum/* links do not 404.
+Event page (placeholder) so /events/* links do not 404.
+Creator profile (placeholder) so /creator/* links do not 404.
+Work detail (placeholder) so /content/* links do not 404.
+Inkura Mascot
+Footer Illustration
+Inkura Logo
+Sorry, an error occurred while loading this page.
+
+Online
+Sign-in failed
+An error occurred while loading the Admin page. Try again or return to the admin dashboard.
+
+==========
+Option A Second Wave Sweep
+==========
+
+Community Function Not Added Yet.
+Open the Demo Forum
+Open the Demo Event
+Select a genre
+Open Search
+No genres yet. Add them via seed / studio.
+Explore All
+Japan
+Korea
+China
+Thailand
+Vietnam
+US
+Global
+Search Translator
+Processing import...
+Creating...
+View public page
+View public page for {title}
+Title is required.
+Message is required.
+Example: Login bug, chapter cannot be opened, etc.
+Explain the issue + steps to reproduce.
+Title is required.
+• Mature
+
+Newest
+Original
+Translation
+Reupload
+Apply
+Comics
+Novels
+Advanced search

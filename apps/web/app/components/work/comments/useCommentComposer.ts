@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { ensureCommentMedia } from "@/lib/commentMediaClient";
 import type { TargetType } from "./types";
 import { isProbablyUrl, normalizeUrl } from "./textUtils";
@@ -28,6 +29,7 @@ export function useCommentComposer({
   onError,
   onSubmitted,
 }: UseCommentComposerOptions) {
+  const t = useUILanguageText("Page Comments");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [text, setText] = useState("");
@@ -77,7 +79,7 @@ export function useCommentComposer({
   };
 
   const insertLink = () => {
-    const urlRaw = window.prompt("Paste link URL (https://...)")?.trim();
+    const urlRaw = window.prompt(t("Paste link URL (https://...)"))?.trim();
     if (!urlRaw) return;
     const url = isProbablyUrl(urlRaw) ? normalizeUrl(urlRaw) : urlRaw;
 
@@ -133,7 +135,7 @@ export function useCommentComposer({
         }
         const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
-          onError?.(data?.error || "Failed to send comment");
+          onError?.(data?.error || "Gagal kirim comment");
           return;
         }
 
@@ -141,7 +143,7 @@ export function useCommentComposer({
         setFiles([]);
         await onSubmitted?.();
       } catch (e: any) {
-        const msg = e?.message || "Failed to send comment";
+        const msg = e?.message || "Gagal kirim comment";
         if (String(msg).toLowerCase().includes("unauthorized")) {
           onUnauthorized?.();
           return;

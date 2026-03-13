@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { Pencil, Trash2 } from "lucide-react";
 import PublishToggle from "./works/[workId]/PublishToggle";
 
@@ -17,6 +18,7 @@ type WorkLite = {
 };
 
 export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) {
+  const t = useUILanguageText("Page Studio");
   const [items, setItems] = React.useState<WorkLite[]>(works);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
   }, [works]);
 
   const del = async (workId: string) => {
-    const ok = confirm("Delete this work? This will remove the work, chapters, and related data. This can't be undone.");
+    const ok = confirm(t("Delete this work? This will remove the work, chapters, and related data. This cannot be undone."));
     if (!ok) return;
 
     setError(null);
@@ -34,10 +36,10 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
     try {
       const res = await fetch(`/api/studio/works/${workId}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({} as any));
-      if (!res.ok) throw new Error(data?.error || "Delete failed");
+      if (!res.ok) throw new Error(data?.error || t("Delete failed"));
       setItems((prev) => prev.filter((item) => item.id !== workId));
     } catch (e: any) {
-      setError(e?.message || "Delete failed");
+      setError(e?.message || t("Delete failed"));
     } finally {
       setDeletingId(null);
     }

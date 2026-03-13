@@ -1,3 +1,7 @@
+"use client";
+
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 export default function LockLabel({
   text,
   className = "",
@@ -5,10 +9,11 @@ export default function LockLabel({
   text: string;
   className?: string;
 }) {
+  const t = useUILanguageText();
   return (
     <span className={`inline-flex items-center gap-2 ${className}`.trim()}>
       <LockIcon />
-      <span>{text}</span>
+      <span>{t(text)}</span>
     </span>
   );
 }

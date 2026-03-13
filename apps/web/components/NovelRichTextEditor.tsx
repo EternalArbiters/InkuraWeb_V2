@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { Bold, Italic, Underline, Strikethrough, Heading2, Heading3, List, ListOrdered, Quote, Link2, Undo2, Redo2, Eraser, ImagePlus, Minus } from "lucide-react";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFile } from "@/lib/uploadOptimization";
@@ -49,6 +50,7 @@ function ToolbarRow({ children }: { children: React.ReactNode }) {
 }
 
 export default function NovelRichTextEditor({ value, onChange, placeholder = "Write the chapter content...", workId, chapterId }: Props) {
+  const t = useUILanguageText("Page Studio");
   const editorRef = React.useRef<HTMLDivElement | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const selectionRef = React.useRef<Range | null>(null);
@@ -145,10 +147,10 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
     async (files: File[]) => {
       if (!files.length) return;
       setUploadingImage(true);
-      setHelperText(`Uploading ${files.length} images...`);
+      setHelperText(`Mengupload ${files.length} gambar...`);
       try {
         for (const [index, file] of files.entries()) {
-          setHelperText(`Uploading image ${index + 1}/${files.length}...`);
+          setHelperText(`Mengupload gambar ${index + 1}/${files.length}...`);
           const prepared = await prepareUploadFile({ scope: "pages", file });
           const upload = await presignAndUpload({
             scope: "pages",
@@ -160,9 +162,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
           });
           insertHtmlAtCaret(`<figure><img src="${upload.url}" alt="${file.name.replace(/\"/g, "")}"></figure><p><br></p>`);
         }
-        setHelperText("The image was inserted into the chapter content.");
+        setHelperText(t("Image inserted into the chapter content."));
       } catch (error) {
-        setHelperText(error instanceof Error ? error.message : "Failed to upload image.");
+        setHelperText(error instanceof Error ? error.message : t("Failed to upload image."));
       } finally {
         setUploadingImage(false);
         window.setTimeout(() => setHelperText(null), 2200);
@@ -225,7 +227,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         <ToolbarButton
           title="Link"
           onPress={() => {
-            const url = window.prompt("Enter the link URL");
+            const url = window.prompt(t("Enter link URL"));
             if (!url) return;
             runCommand("createLink", url);
           }}

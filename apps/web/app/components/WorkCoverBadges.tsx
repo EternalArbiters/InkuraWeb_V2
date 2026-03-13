@@ -1,14 +1,7 @@
-import OriginFlag from "./OriginFlag";
+"use client";
 
-/**
- * WorkCoverBadges
- * Reusable cover overlay badges used across Home cards, grids, search results, and work pages.
- * Required labels (per spec):
- * - origin flag (small in corner)
- * - NOVEL/COMIC
- * - ORIGINAL/TRANSLATION/REUPLOAD
- * - 18+ only if mature
- */
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+import OriginFlag from "./OriginFlag";
 
 export type WorkBadgeInput = {
   type?: string | null;
@@ -41,12 +34,8 @@ function typeBadgeClass(type?: string | null) {
 function originFlagEmoji(input: WorkBadgeInput) {
   const type = normalize(input.type);
   const comicType = normalize(input.comicType);
-  const lang = String(input.language || "")
-    .trim()
-    .toLowerCase()
-    .split("-")[0];
+  const lang = String(input.language || "").trim().toLowerCase().split("-")[0];
 
-  // Comics: prefer comicType (MANGA/MANHWA/MANHUA)
   if (type === "COMIC") {
     if (comicType === "MANGA") return "🇯🇵";
     if (comicType === "MANHWA") return "🇰🇷";
@@ -55,34 +44,20 @@ function originFlagEmoji(input: WorkBadgeInput) {
     if (comicType === "OTHER") return "🏳️";
   }
 
-  // Novels (and fallback): map language to flag
   const map: Record<string, string> = {
-    ja: "🇯🇵",
-    jp: "🇯🇵",
-    ko: "🇰🇷",
-    kr: "🇰🇷",
-    zh: "🇨🇳",
-    cn: "🇨🇳",
-    id: "🇮🇩",
-    en: "🇺🇸",
-    fr: "🇫🇷",
-    de: "🇩🇪",
-    es: "🇪🇸",
-    it: "🇮🇹",
-    ru: "🇷🇺",
-    pt: "🇵🇹",
-    tr: "🇹🇷",
-    vi: "🇻🇳",
-    th: "🇹🇭",
-    hi: "🇮🇳",
-    ar: "🇸🇦",
-    ms: "🇲🇾",
+    ja: "🇯🇵", jp: "🇯🇵",
+    ko: "🇰🇷", kr: "🇰🇷",
+    zh: "🇨🇳", cn: "🇨🇳",
+    id: "🇮🇩", en: "🇺🇸",
+    fr: "🇫🇷", de: "🇩🇪", es: "🇪🇸", it: "🇮🇹", ru: "🇷🇺", pt: "🇵🇹",
+    tr: "🇹🇷", vi: "🇻🇳", th: "🇹🇭", hi: "🇮🇳", ar: "🇸🇦", ms: "🇲🇾",
   };
 
   return map[lang] || null;
 }
 
 export default function WorkCoverBadges({ work }: { work: WorkBadgeInput }) {
+  const t = useUILanguageText();
   const type = normalize(work.type) || "WORK";
   const publishLabel = publishTypeLabel(work.publishType);
   const flag = originFlagEmoji(work);
@@ -92,25 +67,32 @@ export default function WorkCoverBadges({ work }: { work: WorkBadgeInput }) {
   return (
     <>
       {flag ? (
-        <div
-          className="absolute top-2 right-2 z-10 text-[12px] leading-none px-2 py-1 rounded-full bg-black/40 text-white backdrop-blur"
-          title="Origin"
-          aria-label="Origin"
-        >
-          <OriginFlag emoji={flag} />
+        <div className="absolute top-2 right-2 z-10 text-[12px] leading-none px-2 py-1 rounded-full bg-black/40 text-white backdrop-blur">
+          <OriginFlag emoji={flag} title="Origin" />
         </div>
       ) : null}
 
       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        <span className={`inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(type)}`}>{type}</span>
+        <span className={`inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full ${typeBadgeClass(work.type)}`}>
+          {t(type)}
+        </span>
+
         {publishLabel ? (
-          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/55 text-white backdrop-blur">{publishLabel}</span>
+          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/55 text-white backdrop-blur">
+            {t(publishLabel)}
+          </span>
         ) : null}
+
         {work.isMature ? (
-          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/75 text-white backdrop-blur">18+</span>
+          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-black/75 text-white backdrop-blur">
+            18+
+          </span>
         ) : null}
+
         {isUp ? (
-          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-emerald-600/90 text-white font-extrabold">UP</span>
+          <span className="inline-flex items-center justify-center text-[10px] px-2 py-1 rounded-full bg-emerald-600/90 text-white font-extrabold">
+            UP
+          </span>
         ) : null}
       </div>
     </>

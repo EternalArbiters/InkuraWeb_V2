@@ -63,22 +63,24 @@ function buildSourceSet(catalog: UILanguageCatalog) {
   return values;
 }
 
-function buildReverseLookup(catalog: UILanguageCatalog) {
+function buildReverseLookup(catalogs: UILanguageCatalogMap) {
   const lookup = new Map<string, string>();
   const duplicates = new Set<string>();
 
-  for (const section of catalog.sections) {
-    for (const entry of section.entries) {
-      const target = entry.target.trim();
-      const source = entry.source.trim();
-      if (!target || !source || target === source) continue;
+  for (const catalog of Object.values(catalogs)) {
+    for (const section of catalog.sections) {
+      for (const entry of section.entries) {
+        const target = entry.target.trim();
+        const source = entry.source.trim();
+        if (!target || !source || target === source) continue;
 
-      if (lookup.has(target) && lookup.get(target) !== source) {
-        duplicates.add(target);
-        continue;
+        if (lookup.has(target) && lookup.get(target) !== source) {
+          duplicates.add(target);
+          continue;
+        }
+
+        lookup.set(target, source);
       }
-
-      lookup.set(target, source);
     }
   }
 
@@ -179,7 +181,7 @@ export default function UILanguageProvider({
 
     const activeCatalog = value.catalog;
     const sourceSet = buildSourceSet(sourceCatalog);
-    const reverseLookup = buildReverseLookup(activeCatalog);
+    const reverseLookup = buildReverseLookup(catalogs);
     let animationFrame = 0;
 
     const resolveSourceText = (rawValue: string) => {

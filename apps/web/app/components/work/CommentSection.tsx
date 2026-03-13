@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { RefreshCw } from "lucide-react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 import CommentComposer from "./comments/CommentComposer";
 import CommentThread from "./comments/CommentThread";
@@ -50,6 +51,7 @@ export default function CommentSection({
   initialCanModerate?: boolean;
 }) {
   const router = useRouter();
+  const t = useUILanguageText("Page Comments");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -179,14 +181,14 @@ export default function CommentSection({
         }
         const data = await res.json().catch(() => ({} as any));
         if (!res.ok) {
-          setError(data?.error || "Failed to send reply");
+          setError(data?.error || t("Failed to send reply"));
           return;
         }
         setReplyTo(null);
         setReplyText("");
         await refreshComments({ force: true });
       } catch {
-        setError("Failed to send reply");
+        setError(t("Failed to send reply"));
       }
     });
   };
@@ -277,7 +279,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Failed to edit comment");
+        setError(data?.error || t("Failed to edit comment"));
         return;
       }
       const updated = data?.comment;
@@ -294,7 +296,7 @@ export default function CommentSection({
   };
 
   const deleteComment = (commentId: string) => {
-    const ok = window.confirm("Delete this comment? (Replies will also be deleted)");
+    const ok = window.confirm(t("Delete this comment? (Replies will also be deleted)"));
     if (!ok) return;
     startTransition(async () => {
       const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
@@ -304,7 +306,7 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Failed to delete comment");
+        setError(data?.error || t("Failed to delete comment"));
         return;
       }
       setComments((prev) => removeFromTree(prev, commentId));
@@ -326,10 +328,10 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Failed to update comment");
+        setError(data?.error || t("Failed to update comment"));
         return;
       }
-      setInfo(hide ? "Comment hidden" : "Comment shown again");
+      setInfo(hide ? t("Comment hidden") : t("Comment shown again"));
       await refreshComments({ force: true });
     });
   };
@@ -349,10 +351,10 @@ export default function CommentSection({
       }
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        setError(data?.error || "Failed to pin comment");
+        setError(data?.error || t("Failed to pin comment"));
         return;
       }
-      setInfo(pin ? "Comment pinned" : "Comment unpinned");
+      setInfo(pin ? t("Comment pinned") : t("Comment unpinned"));
       await refreshComments({ force: true });
     });
   };
@@ -381,7 +383,7 @@ export default function CommentSection({
         setError(data?.error || "Failed to send report");
         return;
       }
-      setInfo("Report sent. Thank you!");
+      setInfo(t("Report sent. Thank you!"));
       setReportFor(null);
       setReportReason("");
     });

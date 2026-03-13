@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { Share2 } from "lucide-react";
 
 type Props = {
@@ -31,13 +32,15 @@ export default function ProfileShareButton({
   className = "",
   iconOnlyOnMobile = false,
 }: Props) {
-  const [label, setLabel] = React.useState("Share Profile");
+  const t = useUILanguageText("Page Profile");
+  const baseLabel = t("Share Profile");
+  const [label, setLabel] = React.useState(baseLabel);
 
   React.useEffect(() => {
-    if (label === "Share Profile") return;
-    const timer = window.setTimeout(() => setLabel("Share Profile"), 1800);
+    if (label === baseLabel) return;
+    const timer = window.setTimeout(() => setLabel(baseLabel), 1800);
     return () => window.clearTimeout(timer);
-  }, [label]);
+  }, [baseLabel, label]);
 
   return (
     <button
@@ -50,15 +53,15 @@ export default function ProfileShareButton({
         try {
           if (typeof nav.share === "function") {
             await nav.share({ title, url });
-            setLabel("Shared");
+            setLabel(t("Shared"));
             return;
           }
           const copied = await copyText(url);
-          setLabel(copied ? "Copied" : "Copy failed");
-          if (!copied) window.prompt("Copy profile URL", url);
+          setLabel(copied ? t("Copied") : t("Copy failed"));
+          if (!copied) window.prompt(t("Copy profile URL"), url);
         } catch {
           const copied = await copyText(url);
-          setLabel(copied ? "Copied" : "Copy failed");
+          setLabel(copied ? t("Copied") : t("Copy failed"));
         }
       }}
       className={className}

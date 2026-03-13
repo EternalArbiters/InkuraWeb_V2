@@ -857,7 +857,7 @@ Sweep app/lists/new/newListForm.tsx
 Description (optional) = Deskripsi (opsional)
 Failed to create list. = Gagal membuat list.
 Network error. = Kesalahan jaringan.
-Title is required. = Judul wajib diisi.
+Title is required. = Title wajib diisi.
 short description... = deskripsi singkat...
 — works inside the list still follow the viewer's 18+/Deviant Love gate = — work di dalam list tetap mengikuti gate 18+/Deviant Love milik viewer
 
@@ -1133,7 +1133,7 @@ Delete failed = Gagal menghapus
 Sweep app/studio/works/[workId]/PublishToggle.tsx
 ==========
 
-Failed to update status = Gagal memperbarui status
+Failed to update status = Gagal update status
 
 
 ==========
@@ -1149,7 +1149,7 @@ Chapter cover = Cover chapter
 Chapter label = Label chapter
 Comic pages = Halaman komik
 Comic pages are managed on the "Manage Pages" page. = Halaman komik dikelola di halaman "Kelola Halaman".
-Content is required for NOVEL = Konten wajib diisi untuk NOVEL
+Content is required for NOVEL = Content wajib diisi untuk NOVEL
 Fill in the Chapter Label if auto mode is turned off. = Isi Label Chapter jika mode otomatis dimatikan.
 Message from the author/uploader for this chapter... = Pesan dari penulis/pengunggah untuk chapter ini...
 NSFW (Chapter) = NSFW (Chapter)
@@ -1209,7 +1209,7 @@ Sweep app/studio/works/[workId]/chapters/new/ChapterCreateForm.tsx
 Auto chapter label = Label chapter otomatis
 Chapter created but id is missing = Chapter berhasil dibuat tetapi id tidak ada
 Comic Pages = Halaman Komik
-Content is required for NOVEL = Konten wajib diisi untuk NOVEL
+Content is required for NOVEL = Content wajib diisi untuk NOVEL
 Display Label = Label Tampilan
 Failed to save the pages. The chapter was created; please re-upload them in Manage Pages. = Gagal menyimpan halaman. Chapter sudah dibuat; silakan unggah ulang di Kelola Halaman.
 NSFW (Chapter) = NSFW (Chapter)
@@ -1396,7 +1396,7 @@ Sweep components/TagMultiInput.tsx
 ==========
 
 Looking for tag suggestions... = Mencari saran tag...
-Type a tag then press Enter (or choose a suggestion) ... = Ketik tag lalu tekan Enter (atau pilih saran) ...
+Type a tag then press Enter (or choose a suggestion) ... = Ketik tag lalu Enter (atau pilih saran) ...
 
 
 ==========
@@ -1523,3 +1523,267 @@ Sweep app/components/user/ProfileLinksSheet.tsx
 ==========
 
 Links = Tautan
+
+==========
+Option A Shared Profile & Comments
+==========
+
+Unknown = Tidak diketahui
+Share Profile = Bagikan Profil
+Shared = Dibagikan
+Copied = Disalin
+Copy failed = Gagal menyalin
+Copy profile URL = Salin URL profil
+Profile actions = Aksi profil
+Unblock = Buka blokir
+Block = Blokir
+Why do you want to report @{username}? = Kenapa kamu ingin melaporkan @{username}?
+Profile report: @{username} = Laporan profil: @{username}
+Report = Laporkan
+Failed to submit report = Gagal mengirim laporan
+Comments = Komentar
+Delete this comment? (Replies will also be deleted) = Hapus komentar ini? (Balasan juga akan dihapus)
+Failed to send reply = Gagal mengirim balasan
+Failed to edit comment = Gagal mengedit komentar
+Failed to delete comment = Gagal menghapus komentar
+Failed to update comment = Gagal memperbarui komentar
+Comment hidden = Komentar disembunyikan
+Comment shown again = Komentar ditampilkan lagi
+Failed to pin comment = Gagal menyematkan komentar
+Comment pinned = Komentar disematkan
+Comment unpinned = Komentar batal disematkan
+Report reason is required. = Alasan laporan wajib diisi.
+Report sent. Thank you! = Laporan terkirim. Terima kasih!
+Paste link URL (https://...) = Tempel URL tautan (https://...)
+Failed to send comment = Gagal mengirim komentar
+Failed to load comments = Gagal memuat komentar
+Hide work info = Sembunyikan info karya
+Show work info = Tampilkan info karya
+Hide info = Sembunyikan info
+Show info = Tampilkan info
+Edit your review = Edit ulasanmu
+Write a review = Tulis ulasan
+Edit review = Edit ulasan
+Sort by oldest = Urutkan dari terlama
+Sort by newest = Urutkan dari terbaru
+Up by = Diunggah oleh
+Original author = Author asli
+Original translator = Penerjemah asli
+Hidden (wrap selection with || ||) = Tersembunyi (bungkus pilihan dengan || ||)
+Collection preview = Pratinjau koleksi
+Untitled work = Karya tanpa judul
+Uploaded by = Diunggah oleh
+Re-uploaded by = Diunggah ulang oleh
+Links = Tautan
+Copied! = Disalin!
+Share = Bagikan
+Profile report submitted. = Laporan profil terkirim.
+
+==========
+Option A Studio Sweep
+==========
+
+Delete failed = Gagal menghapus
+Delete chapter = Hapus chapter
+Delete "{title}"? This will remove the chapter and its related data. This cannot be undone. = Hapus "{title}"? Ini akan menghapus chapter dan data terkaitnya. Ini tidak bisa dibatalkan.
+Delete this work? This will remove the work, chapters, and related data. This cannot be undone. = Hapus karya ini? Ini akan menghapus karya, chapter, dan data terkait. Ini tidak bisa dibatalkan.
+Delete this work? This will remove the work, chapters, and related data. This can't be undone. = Hapus karya ini? Ini akan menghapus karya, chapter, dan data terkait. Ini tidak bisa dibatalkan.
+Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones. = Ganti semua halaman yang ada? Ini akan menghapus halaman saat ini (dan file R2-nya) sebelum menyimpan yang baru.
+Commit failed = Gagal menyimpan perubahan
+Title is required. = Title wajib diisi.
+A cover upload is required. = Cover wajib diupload.
+Failed to process cover. = Gagal memproses cover.
+Original author credit is required. = Original author credit wajib diisi.
+Source URL is required. = Source URL wajib diisi.
+Original translator credit is required for Reupload. = Original translator credit wajib diisi untuk Reupload.
+Failed to update status = Gagal update status
+Set Draft = Setel Draft
+Publish = Publikasikan
+Status: Published = Status: Dipublikasikan
+Status: Draft = Status: Draft
+Updating... = Memperbarui...
+Content is required for NOVEL = Content wajib diisi untuk NOVEL
+Creating chapter... = Membuat chapter...
+Saving page list... = Menyimpan daftar halaman...
+Failed to save the pages. The chapter was created; please re-upload them in Manage Pages. = Gagal menyimpan halaman. Chapter sudah dibuat; coba upload ulang di Manage Pages.
+Open Manage Pages = Buka Manage Pages
+Preparing pages... = Menyiapkan halaman...
+Create Chapter = Buat Chapter
+Fill in the Chapter Label if auto mode is turned off. = Isi Chapter Label kalau mode auto dimatikan.
+Optional title / subtitle = Judul / subtitle opsional
+Message from the author/uploader for this chapter... = Pesan dari author/uploader untuk chapter ini...
+Working... = Bekerja...
+Preparing... = Menyiapkan...
+Image inserted into the chapter content. = Gambar dimasukkan ke isi chapter.
+Failed to upload image. = Gagal mengunggah gambar.
+Enter link URL = Masukkan URL tautan
+Write the chapter content... = Tulis isi chapter...
+Type a tag then press Enter (or choose a suggestion) ... = Ketik tag lalu Enter (atau pilih saran) ...
+Example: Original author name / studio / etc. = Contoh: Nama author asli / studio / dll
+Example: Translator name / group = Contoh: Nama translator / group
+Example: Kakao, Naver, Shueisha, etc. = Contoh: Kakao, Naver, Shueisha, dll
+Example: reupload reason, additional info, etc. = Contoh: alasan reupload, info tambahan, dsb
+· preparing optimization... = · menyiapkan optimasi...
+cover preview = pratinjau cover
+chapter thumb = thumbnail chapter
+No optimization needed = Tidak perlu optimasi
+Avatar uploaded = Avatar berhasil diunggah
+Save changes = Simpan perubahan
+Delete this list? = Hapus list ini?
+Failed to delete. = Gagal menghapus.
+Failed to save. = Gagal menyimpan.
+Saved! = Tersimpan!
+Delete list = Hapus list
+Manage list = Kelola list
+Description = Deskripsi
+Public (shareable) = Publik (bisa dibagikan)
+List title cannot be empty. = Judul list tidak boleh kosong.
+Network error. = Kesalahan jaringan.
+Create item = Buat item
+Edit item = Edit item
+e.g. manhwa = mis. manhwa
+Create / edit / deactivate (soft delete) and arrange order. = Create / edit / nonaktifkan (soft delete) dan atur urutan.
+Clear search to sort = Kosongkan pencarian untuk mengurutkan
+Sort A→Z = Urutkan A→Z
+Sort Z→A = Urutkan Z→A
+Sort by count (high→low) = Urutkan berdasarkan jumlah (tinggi→rendah)
+Sort by count (low→high) = Urutkan berdasarkan jumlah (rendah→tinggi)
+Reordering is disabled while search is active (clear search to reorder). = Reorder dimatikan saat search aktif (clear search untuk reorder).
+Order changed (not saved yet). = Urutan berubah (belum disimpan).
+Deactivate "{name}"? (soft delete) = Nonaktifkan "{name}"? (soft delete)
+Failed to sort = Gagal mengurutkan
+Failed to load = Gagal memuat
+Search name/slug… = Cari nama/slug…
+Move up = Naikkan
+Move down = Turunkan
+
+==========
+Option A Admin & Reporting
+==========
+
+An unknown error occurred. = Terjadi kesalahan yang tidak diketahui.
+Incorrect email or password. Please try again. = Email atau password salah. Silakan coba lagi.
+Access denied. You do not have permission. = Akses ditolak. Anda tidak memiliki izin.
+Authentication configuration is invalid. = Konfigurasi otentikasi bermasalah.
+Verification failed or the link has expired. = Verifikasi gagal atau link sudah kadaluarsa.
+Inbox reports from users. = Kotak masuk laporan dari pengguna.
+Send a report/issue to the admin. (Not for illegal requests, okay? 😅) = Kirim laporan/masalah ke admin. (Bukan untuk permintaan ilegal, ya? 😅)
+Message is required. = Message wajib diisi.
+Sent! = Terkirim!
+Example: Login bug, chapter cannot be opened, etc. = Contoh: Bug login, chapter gak bisa dibuka, dll
+Explain the issue + steps to reproduce. = Jelasin masalahnya + langkah buat reproduce.
+Inbox reports = Kotak masuk laporan
+My reports = Laporanku
+Refreshing... = Memuat ulang...
+Sending... = Mengirim...
+Sending… = Mengirim…
+Rebuilding... = Membangun ulang...
+Rebuild aggregates = Bangun ulang agregat
+Admin message = Pesan admin
+Send notification = Kirim notifikasi
+Hidden comment = Komentar tersembunyi
+Guest / anonymous = Tamu / anonim
+Unknown user = Pengguna tidak diketahui
+No email = Tidak ada email
+Users active in the last 7 days = Pengguna aktif dalam 7 hari terakhir
+Users active in the last 30 days = Pengguna aktif dalam 30 hari terakhir
+Overall performance of the main interactions in the active range. = Performa total interaksi utama dalam range aktif.
+The busiest content based on total views in the active range. = Konten paling ramai berdasarkan total view di range aktif.
+Genres that attract the most readers. = Genre yang paling banyak menarik pembaca.
+Creators with the highest reach and engagement. = Creator dengan jangkauan dan engagement paling tinggi.
+Queries used most often and how effective the results are. = Kueri yang paling sering dipakai dan seberapa efektif hasilnya.
+User breakdown by gender and age band for the active range. = Breakdown user berdasarkan gender dan age band untuk range aktif.
+All events that are actually used by analytics after admin activity is filtered out. = Semua event yang benar-benar dipakai analytics setelah admin difilter keluar.
+Non-admin user accounts that had events in this range. = Akun user non-admin yang punya event di range ini.
+Anonymous visitors without an account who still count as public traffic. = Visitor anonim tanpa akun yang tetap masuk sebagai traffic publik.
+Admin events intentionally excluded from main analytics. = Event admin yang sengaja dikeluarkan dari analytics utama.
+Inbox reports from users. = Kotak masuk laporan dari pengguna.
+
+==========
+Option A Upload Helpers & Editors
+==========
+
+Manual one by one = Manual satu per satu
+Upload all images = Upload semua image
+Upload chapter ZIP = Upload ZIP chapter
+Upload chapter PDF = Upload PDF chapter
+Select valid images for comic pages. = Pilih image yang valid untuk halaman comic.
+Reading ZIP file... = Membaca file ZIP...
+Converting PDF into image pages... = Mengurai PDF menjadi halaman image...
+Failed to process file. = Gagal memproses file.
+Processing ZIP... = Memproses ZIP...
+Choose ZIP file = Pilih file ZIP
+Processing PDF... = Memproses PDF...
+Choose PDF file = Pilih file PDF
+Looking for tag suggestions... = Mencari saran tag...
+Edit item = Edit item
+Page Browse Catalog = Page Browse Catalog
+Page Studio = Page Studio
+Page Profile = Page Profile
+Page Comments = Page Comments
+Page Lists = Page Lists
+Page Admin Taxonomy = Page Admin Taxonomy
+
+==========
+Option A Misc Pages & Placeholders
+==========
+
+Enter your new password. Reset links are only valid for a limited time. = Masukkan kata sandi barumu. Tautan reset hanya berlaku untuk waktu terbatas.
+Success! Redirecting... = Berhasil! Mengarahkan...
+If the link is invalid or expired, request a new one via “Forgot password”. = Jika tautan tidak valid atau kedaluwarsa, minta yang baru lewat “Lupa kata sandi”.
+Coming soon. = Segera hadir.
+Failed to reach Elyanna: = Gagal menghubungi Elyanna:
+Search author accounts by username or profile name. = Search account author berdasarkan username atau nama profil.
+Search translator accounts by username or profile name. = Search account translator berdasarkan username atau nama profil.
+Search all public accounts by username or profile name. = Search semua akun publik berdasarkan username atau nama profil.
+example: "Indonesian Romance" = contoh: "Romansa Indonesia"
+Forum thread (placeholder) so /forum/* links do not 404. = Thread forum (placeholder) supaya link /forum/* tidak 404.
+Event page (placeholder) so /events/* links do not 404. = Halaman event (placeholder) supaya link /events/* tidak 404.
+Creator profile (placeholder) so /creator/* links do not 404. = Profil creator (placeholder) supaya link /creator/* tidak 404.
+Work detail (placeholder) so /content/* links do not 404. = Detail karya (placeholder) supaya semua link /content/* tidak 404.
+Inkura Mascot = Maskot Inkura
+Footer Illustration = Ilustrasi Footer
+Inkura Logo = Logo Inkura
+Sorry, an error occurred while loading this page. = Maaf, terjadi kesalahan saat memuat halaman ini.
+
+Online = Online
+Sign-in failed = Gagal Masuk
+An error occurred while loading the Admin page. Try again or return to the admin dashboard. = Terjadi kesalahan saat memuat halaman Admin. Coba lagi atau kembali ke dashboard admin.
+
+==========
+Option A Second Wave Sweep
+==========
+
+Community Function Not Added Yet. = Fungsi Community Belum Ditambahkan.
+Open the Demo Forum = Buka Forum Demo
+Open the Demo Event = Buka Event Demo
+Select a genre = Pilih genre
+Open Search = Buka Search
+No genres yet. Add them via seed / studio. = Belum ada genre. Tambahkan lewat seed / studio.
+Explore All = Jelajahi Semua
+Japan = Jepang
+Korea = Korea
+China = Tiongkok
+Thailand = Thailand
+Vietnam = Vietnam
+US = AS
+Global = Global
+Search Translator = Cari Translator
+Processing import... = Processing import...
+Creating... = Creating...
+View public page = Lihat halaman publik
+View public page for {title} = Lihat halaman publik untuk {title}
+Title is required. = Title wajib diisi.
+Message is required. = Message wajib diisi.
+Example: Login bug, chapter cannot be opened, etc. = Contoh: Bug login, chapter gak bisa dibuka, dll
+Explain the issue + steps to reproduce. = Jelasin masalahnya + langkah buat reproduce.
+Title is required. = Title wajib diisi.
+• Mature = • Mature
+Newest = Terbaru
+Original = Original
+Translation = Terjemahan
+Reupload = Reupload
+Apply = Terapkan
+Comics = Komik
+Novels = Novel
+Advanced search = Pencarian lanjutan

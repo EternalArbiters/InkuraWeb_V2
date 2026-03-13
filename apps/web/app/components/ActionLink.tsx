@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Props = {
   href: string;
@@ -8,11 +11,10 @@ type Props = {
   prefetch?: boolean;
 };
 
-/**
- * Minimal inline action link: text + sharp triangle on the right.
- * Triangle color: black on light mode, white on dark mode.
- */
 export default function ActionLink({ href, children, className, prefetch = false }: Props) {
+  const t = useUILanguageText();
+  const translatedChildren = typeof children === "string" ? t(children) : children;
+
   return (
     <Link
       href={href}
@@ -22,7 +24,7 @@ export default function ActionLink({ href, children, className, prefetch = false
         className
       )}
     >
-      <span>{children}</span>
+      <span>{translatedChildren}</span>
       <svg
         aria-hidden
         viewBox="0 0 10 10"

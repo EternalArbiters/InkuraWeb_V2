@@ -1,5 +1,9 @@
+"use client";
+
 // Renders country flags as images so desktop (Windows) also shows flags consistently.
 // Uses Twemoji CDN for stability.
+
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 export default function OriginFlag({
   emoji,
@@ -10,6 +14,8 @@ export default function OriginFlag({
   className?: string;
   title?: string;
 }) {
+  const t = useUILanguageText();
+  const translatedTitle = t(title);
   const codepoints = Array.from(emoji).map((ch) => ch.codePointAt(0) || 0);
   const isFlag =
     codepoints.length === 2 &&
@@ -17,7 +23,7 @@ export default function OriginFlag({
 
   if (!isFlag) {
     return (
-      <span className={className} title={title} aria-label={title}>
+      <span className={className} title={translatedTitle} aria-label={translatedTitle}>
         {emoji}
       </span>
     );
@@ -26,12 +32,11 @@ export default function OriginFlag({
   const hex = codepoints.map((cp) => cp.toString(16)).join("-");
   const src = `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/${hex}.png`;
 
-  // eslint-disable-next-line @next/next/no-img-element
   return (
     <img
       src={src}
       alt={emoji}
-      title={title}
+      title={translatedTitle}
       className={`inline-block h-[14px] w-[14px] ${className}`.trim()}
       loading="lazy"
     />

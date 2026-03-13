@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type UserLite = {
   username?: string | null;
@@ -6,7 +9,7 @@ type UserLite = {
   image?: string | null;
 };
 
-function displayName(user?: UserLite | null) {
+function rawDisplayName(user?: UserLite | null) {
   return user?.name?.trim() || user?.username?.trim() || "Unknown";
 }
 
@@ -30,7 +33,8 @@ export default function UploaderIdentityLink({
   avatarClassName?: string;
   textClassName?: string;
 }) {
-  const label = displayName(user);
+  const t = useUILanguageText();
+  const label = user?.name?.trim() || user?.username?.trim() || t("Unknown");
   const href = user?.username ? `/u/${user.username}` : null;
   const content = (
     <>
@@ -39,11 +43,10 @@ export default function UploaderIdentityLink({
         aria-hidden="true"
       >
         {user?.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={user.image} alt={label} className="h-full w-full object-cover" loading="lazy" />
         ) : (
           <span className="flex h-full w-full items-center justify-center text-[10px] font-semibold text-gray-700 dark:text-gray-200">
-            {initials(label)}
+            {initials(rawDisplayName(user))}
           </span>
         )}
       </span>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaPaperPlane } from "react-icons/fa";
 import Image from "next/image";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Message = {
   from: "elya" | "user";
@@ -12,11 +13,12 @@ type Message = {
 };
 
 export default function ChatElyaPage() {
+  const t = useUILanguageText("Page Chat");
   const [messages, setMessages] = useState<Message[]>([
     {
       from: "elya",
       role: "elya",
-      text: "Hi~ I'm here to listen to you ",
+      text: t("Hi~ I'm here to listen to you"),
     },
   ]);
   const [input, setInput] = useState("");
@@ -52,7 +54,7 @@ export default function ChatElyaPage() {
       const elyaMessage: Message = {
         from: "elya",
         role: "elya",
-        text: data.reply || "Elya can't reply right now (⁠╥⁠﹏⁠╥⁠)",
+        text: data.reply || t("Elya can't reply right now (⁠╥⁠﹏⁠╥⁠)"),
       };
 
       setMessages((prev) => [...prev, elyaMessage]);
@@ -63,7 +65,7 @@ export default function ChatElyaPage() {
         {
           from: "elya",
           role: "elya",
-          text: "Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠)",
+          text: t("Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠)"),
         },
       ]);
     } finally {
@@ -80,8 +82,8 @@ export default function ChatElyaPage() {
     >
       {/* Header */}
       <header className="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md flex items-center justify-between fixed top-0 left-0 right-0 z-30">
-        <h1 className="text-lg font-bold">Chat Elya~</h1>
-        <span className="text-xs bg-white/20 px-2 py-1 rounded-full">Online</span>
+        <h1 className="text-lg font-bold">{t("Chat Elya~")}</h1>
+        <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{t("Online")}</span>
       </header>
 
       {/* Chat Area */}
@@ -151,7 +153,7 @@ export default function ChatElyaPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Write something to Elya..."
+            placeholder={t("Write something to Elya...")}
             className="flex-1 px-4 py-2 rounded-full text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none text-black dark:text-white"
           />
           <button

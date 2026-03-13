@@ -3,6 +3,7 @@
 import * as React from "react";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFiles, summarizePreparedUploadFiles, type PreparedUploadFile, type PreparedUploadSummary } from "@/lib/uploadOptimization";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Page = { id: string; imageUrl: string; order: number };
 
@@ -29,6 +30,7 @@ export function useComicPagesManager({
   initialPages: Page[];
   initialThumbnailImage: string | null;
 }) {
+  const t = useUILanguageText("Page Studio");
   const [files, setFiles] = React.useState<File[]>([]);
   const [preparedFiles, setPreparedFiles] = React.useState<PreparedUploadFile[]>([]);
   const [preparingFiles, setPreparingFiles] = React.useState(false);
@@ -86,7 +88,7 @@ export function useComicPagesManager({
     try {
       if (replaceExisting && pages.length > 0) {
         const ok = confirm(
-          "Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones."
+          t("Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones.")
         );
         if (!ok) {
           setLoading(false);
@@ -120,7 +122,7 @@ export function useComicPagesManager({
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Commit failed");
+      if (!res.ok) throw new Error(json?.error || t("Commit failed"));
 
       const nextPages: Page[] = uploaded.map((item, index) => ({
         id: String(json?.pages?.[index]?.id || `temp:${Date.now()}:${index}`),

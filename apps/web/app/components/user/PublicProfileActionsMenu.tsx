@@ -3,6 +3,7 @@
 import * as React from "react";
 import { MoreVertical } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Props = {
   userId: string;
@@ -34,6 +35,7 @@ export default function PublicProfileActionsMenu({
   requiresAuth = false,
 }: Props) {
   const router = useRouter();
+  const t = useUILanguageText("Page Profile");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const menuRef = React.useRef<HTMLDivElement | null>(null);
@@ -66,7 +68,7 @@ export default function PublicProfileActionsMenu({
     <div ref={menuRef} className="relative">
       <button
         type="button"
-        aria-label="Profile actions"
+        aria-label={t("Profile actions")}
         onClick={() => setOpen((value) => !value)}
         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white/70 text-gray-700 shadow-sm backdrop-blur transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900/70 dark:text-gray-100 dark:hover:bg-gray-800 sm:h-11 sm:w-11"
       >
@@ -99,7 +101,7 @@ export default function PublicProfileActionsMenu({
             }}
             className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-300 dark:hover:bg-red-950/30"
           >
-            <span>{blocked ? "Unblock" : "Block"}</span>
+            <span>{blocked ? t("Unblock") : t("Block")}</span>
             <span className="text-xs text-current/70">{pending === "block" ? "..." : ""}</span>
           </button>
 
@@ -108,7 +110,7 @@ export default function PublicProfileActionsMenu({
             disabled={pending !== null}
             onClick={async () => {
               if (requiresAuth) return ensureAuth();
-              const reason = window.prompt(`Why do you want to report @${username}?`);
+              const reason = window.prompt(t('Why do you want to report @{username}?').replace("{username}", username));
               if (!reason || !reason.trim()) return;
               setPending("report");
               try {
@@ -116,13 +118,13 @@ export default function PublicProfileActionsMenu({
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                    title: `Profile report: @${username}`,
+                    title: t('Profile report: @{username}').replace("{username}", username),
                     message: `Reported profile: ${displayName} (@${username})\nReason: ${reason.trim()}`,
                     pageUrl: `/u/${username}`,
                   }),
                 });
                 if (res.status === 401) return ensureAuth();
-                if (!res.ok) throw new Error("Failed to submit report");
+                if (!res.ok) throw new Error(t("Failed to submit report"));
                 setOpen(false);
               } catch (error) {
                 console.error("[profile-menu:report]", error);
@@ -132,7 +134,7 @@ export default function PublicProfileActionsMenu({
             }}
             className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-300 dark:hover:bg-red-950/30"
           >
-            <span>Report</span>
+            <span>{t("Report")}</span>
             <span className="text-xs text-current/70">{pending === "report" ? "..." : ""}</span>
           </button>
 
@@ -140,12 +142,12 @@ export default function PublicProfileActionsMenu({
             type="button"
             onClick={async () => {
               const copied = await copyText(profileUrl);
-              if (!copied) window.prompt("Copy profile URL", profileUrl);
+              if (!copied) window.prompt(t("Copy profile URL"), profileUrl);
               setOpen(false);
             }}
             className="block w-full px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-900"
           >
-            Copy URL Profile
+            {t("Copy profile URL")}
           </button>
 
           <button
@@ -157,7 +159,7 @@ export default function PublicProfileActionsMenu({
                   await nav.share({ title: `${displayName} · Inkura`, url: profileUrl });
                 } else {
                   const copied = await copyText(profileUrl);
-                  if (!copied) window.prompt("Copy profile URL", profileUrl);
+                  if (!copied) window.prompt(t("Copy profile URL"), profileUrl);
                 }
               } catch {
                 // ignore canceled share
