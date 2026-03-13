@@ -1,0 +1,1525 @@
+==========
+Navigation
+==========
+
+All
+Novel
+Comic
+Film
+Advanced Search
+Library
+History
+Collection
+Notifications
+Upload
+Community
+Account
+Admin Report
+Content Reports
+Taxonomy
+Analytics
+Genres
+Regions
+Translated
+Categories
+Theme
+Toggle Theme
+Logout
+Sign In
+Profile
+Settings
+Donate For Inkura
+Search anything on
+Search
+Search title...
+Search tags...
+Search authors...
+Search translator...
+Search users...
+Title
+Tags
+Authors
+Translator
+Users
+User
+Guest
+Chat Elya~
+
+==========
+Shared Components
+==========
+
+Back
+
+==========
+Shared Errors
+==========
+
+Failed to save
+Failed
+Loading...
+An error occurred. Please try again.
+Error
+Token is missing.
+Password must be at least 6 characters.
+Failed to reset password
+Login failed.
+Incorrect email/username or password.
+Password confirmation does not match.
+Sign-up failed.
+
+==========
+Shared Dialogs
+==========
+
+18+ Warning
+By checking this box, you acknowledge that you are responsible for the content you choose to read. The developers are not responsible for what you access. This is your final warning.
+No, I do not want to continue.
+Yes, I understand.
+Deviant Love Warning
+By checking this box, you confirm that you are not under any pressure and that you accept responsibility for what you choose to view. This content may be extreme.
+
+==========
+Shared Forms
+==========
+
+January
+February
+March
+April
+May
+June
+July
+August
+September
+October
+November
+December
+Male
+Female
+Prefer not to say
+Birth month
+Birth year
+Gender
+Select month
+Select year
+Save
+Saving…
+Saved
+Saving...
+
+==========
+Page Settings Account
+==========
+
+Account Settings
+Preferred languages
+Inkura Language
+Choose which language Inkura should use for the website UI.
+Mature / 18+
+I'm 18+ (Unlock it)
+Deviant Love
+Unlock it
+
+==========
+Page Onboarding
+==========
+
+Welcome to Inkura
+Finish setting up your account
+We need your UI language choice before you continue. Demographic details stay here too so analytics and recommendations can understand your audience better.
+What language do you want to use on this website?
+Inkura UI language
+You can change your Inkura UI language later from your account settings.
+Continue to Inkura
+
+==========
+Page Sign In
+==========
+
+Sign in to Inkura
+Use your email or username.
+Email or username
+Password
+Processing...
+Continue with Google
+Forgot password?
+Don't have an account?
+Sign Up
+
+==========
+Page Sign Up
+==========
+
+Sign up for Inkura
+Display name (optional)
+Username
+Email
+Password (min 6)
+Confirm password
+Already have an account?
+
+==========
+Page Forgot Password
+==========
+
+Forgot password
+Enter your email or username.
+Create reset token
+If the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.)
+Reset token (debug)
+Continue to password reset
+
+==========
+Page Reset Password
+==========
+
+Reset password
+Enter a new password.
+New password
+Password updated successfully. Redirecting to sign in...
+Reset
+
+==========
+Shared Error View
+==========
+
+Try again
+Go to Home
+If this keeps happening, try refreshing the page or signing in again. If needed, report it to the admin.
+Error ID:
+
+==========
+Shared Floating Actions
+==========
+
+Scroll to top
+Chat Elya
+Liked
+Like chapter
+Load more
+
+==========
+Page Error States
+==========
+
+An Error Occurred
+Something went wrong on the application side. You can try again.
+A fatal application error occurred. You can try again.
+Browse error
+An error occurred while loading the list of works. Please try again.
+Reader error
+An error occurred while loading the chapter. Try again or return to the work page.
+Search error
+An error occurred while loading the search results. Please try again.
+Studio error
+An error occurred while loading Studio. Try again or return to the works list.
+Failed to load work
+An error occurred while loading the work page. Please try again.
+
+==========
+Page Home
+==========
+
+Home
+Trending Comics
+Trending Novels
+New Originals
+Latest Translations
+Recently Updated
+See all
+No items.
+
+==========
+Page Contact
+==========
+
+Contact
+Placeholder contact page.
+Coming soon. For now, you can go back to the feed.
+Return to All
+
+==========
+Page Donate
+==========
+
+Thank you for supporting Inkura's development. Scan the QR code below to donate.
+Donate QR
+
+==========
+Page Newsletter
+==========
+
+Newsletter
+Placeholder. A subscribe form will be added later.
+Coming soon. For now, go back to the feed.
+
+==========
+Page Filters
+==========
+
+Filter
+Filters currently live in Search (MVP). This page is reserved for advanced filters later.
+For now, you can filter by type, sort, and keyword on the Search page. Later, this can be expanded with genre, region, tag, status, minimum rating, and more.
+Continue to Search
+
+==========
+Page Terms
+==========
+
+Terms & Conditions
+Terms
+Placeholder terms & conditions.
+This will later be filled with upload rules (copyright), community guidelines, and moderation policies.
+
+==========
+Page Privacy
+==========
+
+Privacy Policy
+Privacy
+Placeholder privacy policy.
+This will later be filled with a complete privacy policy (collected data, cookies, analytics, and user rights).
+
+==========
+Page Upload
+==========
+
+Uploads have moved to Creator Studio (Work → Chapter → text/pages).
+Creator Studio
+Create a Work (NOVEL/COMIC), create a Chapter, then upload: text for novels or images for comics.
+Open Studio
+Create New Work
+Reader
+The reader supports NOVEL (text) and COMIC (vertical pages).
+Explore
+
+==========
+Page Film
+==========
+
+Sorry, the movie feature hasn't been added at this time. You'll be notified once it's added.
+
+==========
+Page Work Detail
+==========
+
+18+ Mature Content
+This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings.
+This work is marked 18+. To read it, you need to unlock it and opt in under Settings.
+Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love.
+NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content".
+
+==========
+Page Reader
+==========
+
+This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings.
+This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings.
+Open Settings (unlock 18+ + Deviant Love)
+Open Settings (unlock + opt in to 18+)
+Back to work
+No pages yet
+This chapter has no pages yet. (Creators can upload them via Studio.)
+No text yet
+This chapter has no text yet.
+
+==========
+Page Reader Comments
+==========
+
+This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings.
+This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings.
+Back to reader
+Go to work page
+Comments
+
+==========
+Sweep app/admin-report/ui/AdminReportClient.tsx
+==========
+
+Example: Login bug, chapter cannot be opened, etc.
+Explain the issue and the steps to reproduce it.
+Latest 100
+Link (optional)
+No reports yet.
+Send a report to the admin
+
+
+==========
+Sweep app/admin/analytics/AdminAnalyticsActions.tsx
+==========
+
+Failed to rebuild analytics
+
+
+==========
+Sweep app/admin/analytics/AdminAnalyticsDashboard.tsx
+==========
+
+Admin activity is excluded from the analytics aggregate.
+Audience profile
+Audit view
+Avg daily active
+Bookmark conversion
+By age band
+By gender
+Chapter reads
+Chapter views
+Choose a quick preset or a custom range to read traffic and engagement patterns.
+Comment conversion
+Creators with the highest reach and engagement.
+Engagement mix
+Excluded admin accounts
+Genres attracting the most readers.
+Included accounts
+New users
+No username
+Non-admin accounts counted in the active range.
+Open details to see which accounts are counted and which admin accounts are excluded.
+Overall performance of the primary interactions in the active range.
+Page views
+Range active
+Search insights
+Search zero-result rate
+See detail
+The busiest content based on total views in the active range.
+The most frequently used queries and how effective their results are.
+Top creators
+Top genres
+Top rows
+Top works
+Traffic trend
+Unique visitors and active users per day.
+Unknown creator
+User breakdown by gender and age band for the active range.
+Work reads
+Work views
+
+
+==========
+Sweep app/admin/analytics/details/page.tsx
+==========
+
+Admin account
+Admin accounts detected but not used in the primary aggregate.
+Excluded admin accounts
+Excluded admin events
+First seen
+Guest sessions
+Included accounts
+Included accounts and excluded admin activity
+Included events
+Last seen
+Latest sample events used by analytics after admin activity is filtered out.
+No non-admin accounts have been recorded in this range yet.
+Recent included events
+There are no events to display for this range yet.
+There is no admin activity that needs to be excluded in this range yet.
+This account is included in the primary analytics dataset.
+
+
+==========
+Sweep app/admin/analytics/page.tsx
+==========
+
+Audience, content, and growth in one place
+
+
+==========
+Sweep app/admin/error.tsx
+==========
+
+Admin page error
+
+
+==========
+Sweep app/admin/notify/AdminNotifyClient.tsx
+==========
+
+Link (optional)
+Message is required
+Target user is required (ex: @username)
+To (@username or email)
+Write your message to the user…
+
+
+==========
+Sweep app/admin/notify/page.tsx
+==========
+
+Notify user
+Send a direct notification to a specific user.
+
+
+==========
+Sweep app/admin/reports/AdminReportsClient.tsx
+==========
+
+All reports have been handled.
+Comment not found (maybe deleted).
+In: (unknown target)
+No open reports
+
+
+==========
+Sweep app/admin/reports/page.tsx
+==========
+
+Admin Reports
+
+
+==========
+Sweep app/admin/taxonomy/deviant-love/page.tsx
+==========
+
+Deviant Love Tags
+
+
+==========
+Sweep app/admin/taxonomy/layout.tsx
+==========
+
+Admin • Taxonomy
+Manage genres, tags, warnings, and Deviant Love directly from the web UI.
+
+
+==========
+Sweep app/admin/taxonomy/warnings/page.tsx
+==========
+
+Warning Tags
+
+
+==========
+Sweep app/all/page.tsx
+==========
+
+Advanced search
+All Works
+Any publish type
+Author (username / name)
+Best rated
+Most liked
+Translator (username / name)
+
+
+==========
+Sweep app/app-download/page.tsx
+==========
+
+App Download
+Placeholder. Play Store / App Store links will be added later.
+
+
+==========
+Sweep app/auth/error/page.tsx
+==========
+
+Sign-in Failed
+
+
+==========
+Sweep app/browse/_components/BrowseListPage.tsx
+==========
+
+Advanced search
+
+
+==========
+Sweep app/chat/page.tsx
+==========
+
+Elya can't reply right now (⁠╥⁠﹏⁠╥⁠)
+Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠)
+Elya is typing...
+Hi~ I'm here to listen to you
+Send message
+Write something to Elya...
+
+
+==========
+Sweep app/comic/page.tsx
+==========
+
+Advanced search
+Any publish type
+Author (username / name)
+Best rated
+Most liked
+Translator (username / name)
+
+
+==========
+Sweep app/components/ThumbCropper.tsx
+==========
+
+Pick image
+
+
+==========
+Sweep app/components/WorksGrid.tsx
+==========
+
+No works
+There is no data to display yet.
+
+
+==========
+Sweep app/components/landing/LandingFooter.tsx
+==========
+
+Follow Us
+
+
+==========
+Sweep app/components/landing/ScrollToTopButton.tsx
+==========
+
+Scroll to Top
+
+
+==========
+Sweep app/components/library/ReadingProgressCard.tsx
+==========
+
+Continue reading
+No cover
+
+
+==========
+Sweep app/components/reader/DesktopReaderDock.tsx
+==========
+
+All chapters
+
+
+==========
+Sweep app/components/reader/ProtectedNovelContent.tsx
+==========
+
+Long-swipe left/right to turn the page
+Novel reader content
+
+
+==========
+Sweep app/components/ui-language/UILanguageProvider.tsx
+==========
+
+useUILanguage must be used inside <UILanguageProvider>.
+
+
+==========
+Sweep app/components/ui/FloatingNotice.tsx
+==========
+
+Dismiss notification
+
+
+==========
+Sweep app/components/user/FollowToggleButton.tsx
+==========
+
+Failed to update follow status
+
+
+==========
+Sweep app/components/user/ProfileShareButton.tsx
+==========
+
+Inkura profile
+
+
+==========
+Sweep app/components/user/PublicProfileActionsMenu.tsx
+==========
+
+Failed to submit report
+Failed to update block status
+Profile actions
+
+
+==========
+Sweep app/components/work/AddToListButton.tsx
+==========
+
+Add to List
+Add to list
+Create list
+
+
+==========
+Sweep app/components/work/CommentSection.tsx
+==========
+
+A report reason is required
+Comment cannot be empty
+Comment hidden
+Comment shown again
+Comment pinned
+Comment unpinned
+Failed to delete comment
+Failed to dislike comment
+Failed to edit comment
+Failed to like comment
+Failed to pin comment
+Failed to send reply
+Failed to send report
+Failed to update comment
+No comments yet.
+Report sent. Thank you!
+
+
+==========
+Sweep app/components/work/InteractiveWorkCard.tsx
+==========
+
+No cover
+Translation language
+
+
+==========
+Sweep app/components/work/LikeButton.tsx
+==========
+
+Like work
+
+
+==========
+Sweep app/components/work/ReviewSection.tsx
+==========
+
+Loading reviews…
+No reviews yet. Be the first!
+Sort reviews
+
+
+==========
+Sweep app/components/work/SeriesArcsPanel.tsx
+==========
+
+More in this series
+
+
+==========
+Sweep app/components/work/WorkChaptersWebtoon.tsx
+==========
+
+No chapters yet.
+No image
+
+
+==========
+Sweep app/components/work/WorkRowCard.tsx
+==========
+
+No cover
+
+
+==========
+Sweep app/components/work/comments/CommentBody.tsx
+==========
+
+Tap to hide
+Tap to reveal
+
+
+==========
+Sweep app/components/work/comments/CommentCard.tsx
+==========
+
+Cancel edit
+Cancel reply
+Example: spam, hate speech, harassment...
+Report reason
+Save edit
+Send reply
+Write a reply...
+
+
+==========
+Sweep app/components/work/comments/CommentComposer.tsx
+==========
+
+Attach image/GIF
+Insert link
+Write a comment...
+
+
+==========
+Sweep app/components/work/reviews/ReviewCard.tsx
+==========
+
+· edited
+
+
+==========
+Sweep app/components/work/reviews/ReviewModal.tsx
+==========
+
+Short summary
+Write your thoughts…
+
+
+==========
+Sweep app/content/[slug]/page.tsx
+==========
+
+Work detail placeholder so all /content/* links do not 404.
+
+
+==========
+Sweep app/creator/[slug]/page.tsx
+==========
+
+Creator profile placeholder so /creator/* links do not 404.
+
+
+==========
+Sweep app/events/[slug]/page.tsx
+==========
+
+Event page placeholder so /events/* links do not 404.
+
+
+==========
+Sweep app/forum/[slug]/page.tsx
+==========
+
+Forum thread placeholder so /forum/* links do not 404.
+
+
+==========
+Sweep app/genre/page.tsx
+==========
+
+No genres yet. Add them via seed / studio.
+Select a genre
+
+
+==========
+Sweep app/layout.tsx
+==========
+
+An International Platform For Original Works Made Without AI
+
+
+==========
+Sweep app/library/bookmarks/page.tsx
+==========
+
+All works you have bookmarked.
+
+
+==========
+Sweep app/library/page.tsx
+==========
+
+Continue Reading
+No bookmarks yet.
+No lists yet.
+No reading history yet.
+Your Collections
+
+
+==========
+Sweep app/lists/[slug]/ListPageShell.tsx
+==========
+
+Empty list
+There is no work to show yet.
+
+
+==========
+Sweep app/lists/[slug]/listWorksGrid.tsx
+==========
+
+No works
+Remove from list
+The works in this list cannot be shown to the current viewer.
+
+
+==========
+Sweep app/lists/[slug]/ownerControls.tsx
+==========
+
+Failed to save.
+Manage list
+Network error.
+Public (shareable)
+Title cannot be empty.
+
+
+==========
+Sweep app/lists/new/newListForm.tsx
+==========
+
+Description (optional)
+Failed to create list.
+Network error.
+Title is required.
+short description...
+— works inside the list still follow the viewer's 18+/Deviant Love gate
+
+
+==========
+Sweep app/lists/new/page.tsx
+==========
+
+New Collection
+
+
+==========
+Sweep app/lists/page.tsx
+==========
+
+No items yet
+No list yet.
+
+
+==========
+Sweep app/notifications/NotificationsClient.tsx
+==========
+
+No notification yet
+
+
+==========
+Sweep app/novel/page.tsx
+==========
+
+Advanced search
+Any publish type
+Author (username / name)
+Best rated
+Most liked
+Translator (username / name)
+
+
+==========
+Sweep app/profile/comments/page.tsx
+==========
+
+All Comments
+Sort comments
+
+
+==========
+Sweep app/profile/page.tsx
+==========
+
+All comments
+All reviews
+Published Works
+Recent Comments
+Recent Reviews
+
+
+==========
+Sweep app/profile/reviews/page.tsx
+==========
+
+All Reviews
+Sort reviews
+
+
+==========
+Sweep app/reset-password/page.tsx
+==========
+
+Failed to reset password.
+Minimum 6 characters
+Repeat password
+Reset Password
+Token is missing from the URL.
+
+
+==========
+Sweep app/search/_components/ActiveFiltersBar.tsx
+==========
+
+Active filters:
+
+
+==========
+Sweep app/search/_components/SearchForm.tsx
+==========
+
+AND (all included)
+Advanced Filters
+Any genre
+Best rated
+Deviant include mode:
+Enable it in Settings → Account.
+Genre include mode:
+Hide (default)
+Most liked
+NSFW include mode:
+OR (any included)
+Search for NSFW tag...
+Search for deviant love tag...
+Search for genre...
+Search for title, description....
+Status / Publish / Chapters
+username / name
+
+
+==========
+Sweep app/search/_components/WorksGrid.tsx
+==========
+
+No results
+Try another keyword or change the filters.
+
+
+==========
+Sweep app/search/page.tsx
+==========
+
+Advance Search
+
+
+==========
+Sweep app/search/users/page.tsx
+==========
+
+Search username / name
+
+
+==========
+Sweep app/settings/history/page.tsx
+==========
+
+No history yet.
+Reading History
+
+
+==========
+Sweep app/settings/profile/ProfileForm.tsx
+==========
+
+Upload failed
+
+
+==========
+Sweep app/settings/profile/components/AvatarPickerCard.tsx
+==========
+
+Signed in as
+
+
+==========
+Sweep app/settings/profile/components/ProfileFieldsCard.tsx
+==========
+
+3–24 chars. Use letters, numbers, dash, underscore.
+Display name
+Maximum 200 characters.
+Maximum 5 links. Give each one a short title so it displays neatly like a link sheet.
+Profile links
+Tell readers a little about yourself
+Your display name
+
+
+==========
+Sweep app/settings/profile/page.tsx
+==========
+
+Edit Profile
+
+
+==========
+Sweep app/studio/StudioWorksGridClient.tsx
+==========
+
+Delete failed
+No cover
+Open / Edit
+View public page
+
+
+==========
+Sweep app/studio/new/NewWorkForm.tsx
+==========
+
+Arc order
+Example: The Eruption Saga
+Series (optional)
+Series title
+
+
+==========
+Sweep app/studio/new/components/DeviantLoveCard.tsx
+==========
+
+18+ / Mature
+Deviant Love Tags
+
+
+==========
+Sweep app/studio/new/components/PublishTypeCard.tsx
+==========
+
+1 week
+Company / Publisher (optional)
+Copyright warning
+Example: Kakao, Naver, Shueisha, etc.
+Example: Original author name / studio / etc.
+Example: Translator name / group
+Example: reupload reason, additional info, etc.
+Link source / raw / original posting
+Notes (optional)
+Original (Author)
+Original author credit (required)
+Original translator credit (required)
+Publish type
+Reupload (Reuploader)
+Source URL (required)
+Translation (Translator)
+
+
+==========
+Sweep app/studio/new/components/WorkBasicsCard.tsx
+==========
+
+Comic type
+Max. 25 tags.
+Max. 5 subtitles.
+Short synopsis...
+Subtitles (optional)
+Tags (comma)
+Work Title
+action, romance, comedy
+
+
+==========
+Sweep app/studio/new/page.tsx
+==========
+
+Create new work
+
+
+==========
+Sweep app/studio/series/StudioSeriesManagerClient.tsx
+==========
+
+Add a work into the selected series.
+Create a new series
+Drag to reorder, or use move buttons.
+Manage series
+Move down
+Move up
+Request failed
+Series title
+Unassigned works
+
+
+==========
+Sweep app/studio/series/page.tsx
+==========
+
+Manage series
+
+
+==========
+Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
+==========
+
+Delete chapter
+Delete failed
+
+
+==========
+Sweep app/studio/works/[workId]/PublishToggle.tsx
+==========
+
+Failed to update status
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/ChapterEditForm.tsx
+==========
+
+18+ / Mature (Chapter)
+Author message (optional)
+Chapter Label
+Chapter Number
+Chapter Order
+Chapter cover
+Chapter label
+Comic pages
+Comic pages are managed on the "Manage Pages" page.
+Content is required for NOVEL
+Fill in the Chapter Label if auto mode is turned off.
+Message from the author/uploader for this chapter...
+NSFW (Chapter)
+Prolog, Bonus, Chapter 0...
+Upload error
+Upload failed
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/page.tsx
+==========
+
+Edit Chapter
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx
+==========
+
+Upload error
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/ChapterCoverCard.tsx
+==========
+
+Chapter cover
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.tsx
+==========
+
+Move page down
+Move page up
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/UploadPagesCard.tsx
+==========
+
+Upload pages
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/page.tsx
+==========
+
+Manage Pages
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/new/ChapterCreateForm.tsx
+==========
+
+18+ / Mature (Chapter)
+Auto chapter label
+Chapter created but id is missing
+Comic Pages
+Content is required for NOVEL
+Display Label
+Failed to save the pages. The chapter was created; please re-upload them in Manage Pages.
+NSFW (Chapter)
+Prolog / Bonus / Chapter 0
+Sort Number
+Upload error
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/new/page.tsx
+==========
+
+New Chapter
+
+
+==========
+Sweep app/studio/works/[workId]/edit/WorkEditForm.tsx
+==========
+
+Failed to process cover
+Original author credit is required
+Original translator credit is required for Reupload
+Source URL is required
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/CreditsSourceFields.tsx
+==========
+
+Credit & source
+Example: Kakao, Naver, Shueisha, etc.
+Example: Translator name / group
+Original author credit (required)
+Original translator credit (required)
+Publisher (optional)
+Source URL (required)
+Uploader note (optional)
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
+==========
+
+Arc order
+Example: The Eruption Saga
+Series title
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkBasicsFields.tsx
+==========
+
+Comic type
+Max. 5 subtitles.
+Subtitles (optional)
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkCoverCard.tsx
+==========
+
+Optimizing cover...
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkPublishTypeCard.tsx
+==========
+
+1 week
+Copyright warning
+Publish type
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
+==========
+
+18+ / Mature
+Deviant Love Tags
+
+
+==========
+Sweep app/studio/works/[workId]/edit/page.tsx
+==========
+
+Edit work
+
+
+==========
+Sweep app/studio/works/[workId]/page.tsx
+==========
+
+Edit chapter
+Manage pages
+No chapters yet.
+
+
+==========
+Sweep app/u/[username]/page.tsx
+==========
+
+Published Works
+Recent Reviews
+
+
+==========
+Sweep app/w/[slug]/chapters/page.tsx
+==========
+
+All Chapters
+
+
+==========
+Sweep app/w/[slug]/series/page.tsx
+==========
+
+More in this series
+
+
+==========
+Sweep components/ComicPageFilesPicker.tsx
+==========
+
+Ideal for chapters that already exist as PDF files.
+Make sure the files inside the ZIP are comic page images.
+Manual one by one
+Move page down
+Move page up
+Page queue
+Remove page
+Supported formats: JPG, PNG, WEBP, GIF, BMP, AVIF
+Upload all images
+Upload chapter PDF
+Upload chapter ZIP
+
+
+==========
+Sweep components/ContentWarningsGate.tsx
+==========
+
+Content Warning
+
+
+==========
+Sweep components/GenreTriStatePicker.tsx
+==========
+
+Loading…
+Search for genre...
+
+
+==========
+Sweep components/MultiSelectPicker.tsx
+==========
+
+Search...
+
+
+==========
+Sweep components/NovelRichTextEditor.tsx
+==========
+
+Bullet list
+Clear formatting
+Heading 2
+Heading 3
+Horizontal line
+Numbered list
+Upload image
+Write the chapter content...
+
+
+==========
+Sweep components/SearchPresets.tsx
+==========
+
+No presets yet.
+Preset name...
+Saved Presets
+
+
+==========
+Sweep components/TagMultiInput.tsx
+==========
+
+Looking for tag suggestions...
+Type a tag then press Enter (or choose a suggestion) ...
+
+
+==========
+Sweep components/admin/taxonomyManager/TaxonomyEditorDialog.tsx
+==========
+
+Leave blank to auto-generate from the name.
+e.g. Manhwa
+
+
+==========
+Sweep components/admin/taxonomyManager/TaxonomyManagerInner.tsx
+==========
+
+Failed to load
+Failed to reorder
+Failed to sort
+
+
+==========
+Sweep components/admin/taxonomyManager/TaxonomyTable.tsx
+==========
+
+Move down
+Move up
+Search name/slug…
+
+==========
+Sweep app/components/work/comments/useCommentComposer.ts
+==========
+
+Failed to send comment
+Paste link URL (https://...)
+
+
+==========
+Sweep app/components/work/comments/useComments.ts
+==========
+
+Failed to load comments
+
+
+==========
+Sweep app/components/work/reviews/useReviews.ts
+==========
+
+Failed to delete review
+Failed to load reviews
+Failed to save review
+Rating must be 1..5
+Review text is required
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/useComicPagesManager.ts
+==========
+
+Commit failed
+Delete this page?
+Move failed
+Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones.
+
+
+==========
+Sweep lib/comicPageImports.ts
+==========
+
+Canvas 2D context is unavailable
+Failed to create the rendered image
+JSZip failed to load in the browser
+The PDF did not produce any image pages
+The ZIP does not contain supported image files
+Window is unavailable
+
+
+==========
+Sweep lib/comicTypeCatalog.ts
+==========
+
+Unknown / Any
+
+
+==========
+Sweep lib/commentMediaClient.ts
+==========
+
+Failed to commit media
+Failed to presign comment media
+
+
+==========
+Sweep lib/languageCatalog.ts
+==========
+
+Other / Unknown
+
+
+==========
+Sweep lib/r2UploadClient.ts
+==========
+
+Failed to presign upload
+
+
+==========
+Sweep lib/time.ts
+==========
+
+12 minutes ago
+2 months ago
+3 hours ago
+9 days ago
+Updated 12 minutes ago
+Updated 2026-02-09
+Updated 3 hours ago
+Updated 9 days ago
+Updated just now
+just now
+
+
+
+==========
+Sweep app/components/user/ProfileLinksSheet.tsx
+==========
+
+Links

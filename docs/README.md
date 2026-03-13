@@ -1,12 +1,12 @@
 # Docs index
 
-Folder `docs/` adalah pusat dokumentasi work for repo cleaned this. If new mulai, baca document in bawah with urutan this.
+Folder `docs/` is pusat dokumentasi work for repo cleaned this. If new mulai, baca document in bawah with order this.
 
 ## Start here
 
 0. `perf-refactor-stage-00-baseline.md`
    - guardrails and baseline refactor performa new
-   - titik awal for stage 1+ without mengubah features
+   - point initial for stage 1+ without changing features
 
 0b. `perf-refactor-stage-01-fanout.md`
    - hasil refactor stage 1
@@ -30,7 +30,7 @@ Folder `docs/` adalah pusat dokumentasi work for repo cleaned this. If new mulai
 
 0g. `perf-refactor-stage-06-creator-admin.md`
    - hasil refactor stage 6
-   - penutupan sisa self-fetch in surface creator/admin and admin reports
+   - closing the remaining self-fetch in surface creator/admin and admin reports
 
 0h. `perf-refactor-stage-07-hydration-preload.md`
    - hasil refactor stage 7
@@ -42,10 +42,10 @@ Folder `docs/` adalah pusat dokumentasi work for repo cleaned this. If new mulai
    - command main and arsitektur singkat
 
 2. `REGRESSION_CHECKLIST.md`
-   - checklist manual to ensure features not hilang after refactor
+   - checklist manual to ensure features not lost after refactor
 
 3. `stage-10-documentation-runbook.md`
-   - penutup stage 10
+   - closing stage 10
    - panduan onboarding and definition of done dokumentasi final
 
 ## Operasional harian
@@ -60,15 +60,15 @@ Folder `docs/` adalah pusat dokumentasi work for repo cleaned this. If new mulai
 
 6. `database-reset-and-seeding.md`
    - reset database local
-   - seed, sanity check, and catatan migrasi
+   - seed, sanity check, and note migrasi
 
 7. `debug-upload-issues.md`
-   - cara melacak masalah presign upload, R2, commit, ownership, and public URL
+   - cara melacak issue presign upload, R2, commit, ownership, and public URL
 
 ## Riwayat perapian stage 0–9
 
 8. `00-stage0-safety-net.md`
-   - safety net awal, verify, and baseline work
+   - safety net initial, verify, and baseline work
 
 9. `01-repo-structure.md`
    - structure repo and penegasan npm workspace
@@ -86,7 +86,7 @@ Folder `docs/` adalah pusat dokumentasi work for repo cleaned this. If new mulai
     - service layer and penipisan route handler
 
 14. `stage-06-ui-split.md`
-    - pemecahan file UI besar menjadi modul kecil
+    - splitting large UI files into small modules
 
 15. `stage-07-data-access.md`
     - selectors, pagination, and index hygiene
@@ -97,13 +97,13 @@ Folder `docs/` adalah pusat dokumentasi work for repo cleaned this. If new mulai
 17. `stage-09-test-automation.md`
     - unit tests and smoke E2E
 
-## Dokumen legacy that still berguna
+## Legacy documents that are still useful
 
 - `../DEPLOYMENT.md`
   - shortcut deploy singkat
 - `../apps/web/docs/V15_DEPLOYMENT_NOTES.md`
-  - catatan deploy historis that still relevant for Vercel/Neon
+  - note deploy historical that still relevant for Vercel/Neon
 - `../apps/web/docs/V15_SANITY_CHECKLIST.md`
-  - checklist historis khusus patch V15
+  - checklist historical khusus patch V15
 
 - Stage 8: `docs/perf-refactor-stage-08-final-hardening.md`

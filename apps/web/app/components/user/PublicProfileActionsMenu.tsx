@@ -99,7 +99,7 @@ export default function PublicProfileActionsMenu({
             }}
             className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-300 dark:hover:bg-red-950/30"
           >
-            <span>{blocked ? "Buka blokir" : "Blokir"}</span>
+            <span>{blocked ? "Unblock" : "Block"}</span>
             <span className="text-xs text-current/70">{pending === "block" ? "..." : ""}</span>
           </button>
 

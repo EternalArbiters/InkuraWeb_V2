@@ -11,7 +11,7 @@ This repo uses **npm** and **npm workspaces**.
 
 > Note: file konfigurasi pnpm (`pnpm-workspace.yaml`) **has already been removed** so that not there is mixed signals.
 
-### Command that biasa used
+### Command that regular used
 
 From the repo root:
 
@@ -36,11 +36,11 @@ In this repo only there is **1 aplikasi runtime**:
 
 - `apps/web/` — Next.js app (App Router)
   - `app/` — routes UI + API (`app/api/*`)
-  - `server/` — modul server-only (Prisma, R2, notifications, dll)
+  - `server/` — modul server-only (Prisma, R2, notifications, etc)
   - `prisma/` — schema, migrations, seed
   - `components/` — komponen UI reusable (shadcn-like)
   - `hooks/` — custom React hooks
-  - `lib/` — helpers general (avoid server-only in sini)
+  - `lib/` — helpers general (avoid server-only in here)
 
 Repo-level:
 
@@ -59,11 +59,11 @@ How to use it locally:
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-> Do not commit `.env.local` or file env that bercontent secrets.
+> Do not commit `.env.local` or file env that contained secrets.
 
 ## Boundary principles (server vs client)
 
-- Apa pun that menyentuh DB / credentials / storage must tinggal in `apps/web/server/*` or `apps/web/app/api/*`.
+- Apa pun that touch DB / credentials / storage must stay in `apps/web/server/*` or `apps/web/app/api/*`.
 - Modul server-only should memasang marker `server-only` to prevent kebawa to client.
 
 Full boundary rules are documented in `03-server-client-boundary.md`.

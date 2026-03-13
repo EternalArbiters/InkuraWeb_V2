@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Props = {
   title?: string;
@@ -20,8 +21,10 @@ export default function ErrorView({
   error,
   reset,
 }: Props) {
+  const t = useUILanguageText("Shared Error View");
+  const tShared = useUILanguageText("Shared Components");
+
   useEffect(() => {
-    // In dev, keep the error visible in the console.
     if (error) console.error(error);
   }, [error]);
 
@@ -36,7 +39,7 @@ export default function ErrorView({
 
         {error?.digest && (
           <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-            <span className="font-semibold">Error ID:</span> {error.digest}
+            <span className="font-semibold">{t("Error ID:")}</span> {error.digest}
           </div>
         )}
 
@@ -52,7 +55,7 @@ export default function ErrorView({
               onClick={() => reset()}
               className="px-4 py-2 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
             >
-              Try again
+              {t("Try again")}
             </button>
           ) : null}
 
@@ -61,7 +64,7 @@ export default function ErrorView({
               href={backHref}
               className="px-4 py-2 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105"
             >
-              Back
+              {tShared("Back")}
             </Link>
           ) : null}
 
@@ -69,12 +72,12 @@ export default function ErrorView({
             href={homeHref}
             className="px-4 py-2 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105"
           >
-            Go to Home
+            {t("Go to Home")}
           </Link>
         </div>
 
         <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-          If this keeps happening, try refreshing the page or signing in again. If needed, report it to the admin.
+          {t("If this keeps happening, try refreshing the page or signing in again. If needed, report it to the admin.")}
         </p>
       </div>
     </main>

@@ -1,12 +1,12 @@
 # Inkura V15 – Sanity Checklist (Regression Guard)
 
 
-> Catatan (repo cleaned): checklist regresi that become **sumber main** now there is in `../../docs/REGRESSION_CHECKLIST.md`.
-> This document still dcontentmpan sebagai catatan historis khusus V15.
+> Note (cleaned repo): the regression checklist that is now the **primary source** is in `../../docs/REGRESSION_CHECKLIST.md`.
+> This document still dcontentmpan as note historical khusus V15.
 
-Tujuan: memastikan **features user not rusak** saat kita menambahkan **Admin Taxonomy Panel**.
+Goal: ensuring **features user not rusak** when we adding **Admin Taxonomy Panel**.
 
-> Prinsip: V15 that *additive*. Haoldn user & public API already there is **not may hilang / berubah kontrak**.
+> Prinsip: V15 that *additive*. Haoldn user & public API already there is **not may lost / berubah kontrak**.
 
 ---
 
@@ -18,13 +18,13 @@ From root repo:
 npm run verify
 ```
 
-Atau from `apps/web`:
+Or from `apps/web`:
 
 ```bash
 npm run verify
 ```
 
-Content `verify` pada snapshot final this:
+Content `verify` on snapshot final this:
 - `prisma validate`
 - `prisma generate`
 - `tsc --noEmit`
@@ -41,7 +41,7 @@ npm run sanity:db
 
 ## B. Manual Sanity – User Flow (Required)
 
-Login **user biasa** (not admin):
+Login **regular user** (not admin):
 
 1. **Home**
    - Buka `/home`
@@ -51,8 +51,8 @@ Login **user biasa** (not admin):
    - Buka `/search`
    - Genre picker appear
    - Toggle tri-state bekerja (include/exclude)
-   - Jika `adultConfirmed` OFF: warning NSFW not appear
-   - Jika `deviantLoveConfirmed` OFF: deviant love filter not appear
+   - If `adultConfirmed` OFF: warning NSFW not appear
+   - If `deviantLoveConfirmed` OFF: deviant love filter not appear
 
 3. **Work Detail + Reader**
    - Buka salah satu `/w/[slug]`
@@ -74,21 +74,21 @@ Login **user biasa** (not admin):
 
 ---
 
-## C. Manual Sanity – Admin Flow (Baru)
+## C. Manual Sanity – Admin Flow (New)
 
 Login **admin**:
 
 1. **Admin Taxonomy Pages**
    - Buka `/admin/taxonomy/genres`
-   - Bisa Add / Edit / Deactivate / Reactivate
-   - Reorder: change urutan → klik **Save order**
+   - Can Add / Edit / Deactivate / Reactivate
+   - Reorder: change order → klik **Save order**
 
 2. **Propagation to User UI**
    - Setelah admin change (mis. deactivate genre), refresh `/search`
-   - Genre tersebut **hilang from list** user
+   - Genre that **lost from list** user
 
 3. **Audit Log (DB level)**
-   - Jalankan `npm run sanity:db` (must naik `adminAuditLogs` after aksi admin)
+   - Jalankan `npm run sanity:db` (must increased `adminAuditLogs` after aksi admin)
 
 **PASS if:** admin CRUD jalan and perubahan kebaca in user UI.
 
@@ -98,11 +98,11 @@ Login **admin**:
 
 - **Seed error `Unknown argument isSystem`**
   - Jalankan `npx prisma generate` then `npm run db:seed`.
-  - Di V15 script `db:seed` already otomatis generate.
+  - Di V15 script `db:seed` already automatic generate.
 
 - **Taxonomy berubah balik after admin deactivate**
   - Pastikan logic `ensure catalog` not men-`reactivate` record already there is.
 
 - **Cache not to-refresh**
   - Pastikan admin mutation calls `revalidateTag('taxonomy')`.
-  - Pastikan public endpoints mengambil from cached getter bertag `taxonomy`.
+  - Pastikan public endpoints fetches from cached getter bertag `taxonomy`.

@@ -112,7 +112,7 @@ async function main() {
   const pickDeviant = (name: string) => deviantLoveTags.find((d) => d.slug === slugify(name))!;
 
   // Sample NOVEL work
-  const novelTitle = "Benara: Dosa Besar InSys Lab";
+  const novelTitle = "Benara: Great Sin of InSys Lab";
   const novelSlug = `${slugify(novelTitle)}-${admin.id.slice(-6)}`;
 
   const novel = await prisma.work.upsert({

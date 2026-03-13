@@ -444,7 +444,7 @@ export default function CommentCard(props: CommentCardProps) {
 
       {reportFor === c.id ? (
         <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
-          <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">Alasan report</div>
+          <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">Report reason</div>
           <input
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}

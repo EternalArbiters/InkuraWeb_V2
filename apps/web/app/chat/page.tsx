@@ -63,7 +63,7 @@ export default function ChatElyaPage() {
         {
           from: "elya",
           role: "elya",
-          text: "Elya sedang kesulitan menjawab... (⁠╥⁠﹏⁠╥⁠)",
+          text: "Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠)",
         },
       ]);
     } finally {
@@ -119,7 +119,7 @@ export default function ChatElyaPage() {
                   }
                 `}
               >
-                {isFromAdmin && <span className="text-xs opacity-70">Sayang:</span>}
+                {isFromAdmin && <span className="text-xs opacity-70">Darling:</span>}
                 <div>{msg.text}</div>
               </div>
             </motion.div>
@@ -139,7 +139,7 @@ export default function ChatElyaPage() {
               height={24}
               className="rounded-full border border-white/30"
             />
-            <span>Elya sedang mengetik...</span>
+            <span>Elya is typing...</span>
           </motion.div>
         )}
       </div>
@@ -157,7 +157,7 @@ export default function ChatElyaPage() {
           <button
             onClick={handleSend}
             className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-110 transition shadow"
-            aria-label="Kirim pesan"
+            aria-label="Send message"
           >
             <FaPaperPlane size={14} />
           </button>

@@ -4,12 +4,13 @@ import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
 import {
-  hasCompleteDemographics,
+  hasCompletedProfileOnboarding,
   normalizeBirthMonth,
   normalizeBirthYear,
   normalizeGender,
 } from "@/server/services/profile/demographics";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
+import { normalizeInkuraLanguage } from "@/lib/inkuraLanguage";
 
 export const runtime = "nodejs";
 
@@ -21,9 +22,10 @@ export const POST = apiRoute(async (req: Request) => {
   const gender = normalizeGender(body.gender);
   const birthMonth = normalizeBirthMonth(body.birthMonth);
   const birthYear = normalizeBirthYear(body.birthYear);
+  const inkuraLanguage = normalizeInkuraLanguage(body.inkuraLanguage);
 
-  if (!gender || !birthMonth || !birthYear) {
-    return json({ error: "Gender, birth month, and birth year are required" }, { status: 400 });
+  if (!gender || !birthMonth || !birthYear || !inkuraLanguage) {
+    return json({ error: "Gender, birth month, birth year, and Inkura language are required" }, { status: 400 });
   }
 
   const current = await prisma.user.findUnique({
@@ -33,13 +35,15 @@ export const POST = apiRoute(async (req: Request) => {
       gender: true,
       birthMonth: true,
       birthYear: true,
+      inkuraLanguage: true,
     },
   });
 
-  const completedBefore = hasCompleteDemographics({
+  const completedBefore = hasCompletedProfileOnboarding({
     gender: current?.gender ?? null,
     birthMonth: current?.birthMonth ?? null,
     birthYear: current?.birthYear ?? null,
+    inkuraLanguage: current?.inkuraLanguage ?? null,
   });
 
   const updated = await prisma.user.update({
@@ -48,6 +52,7 @@ export const POST = apiRoute(async (req: Request) => {
       gender,
       birthMonth,
       birthYear,
+      inkuraLanguage,
       demographicsUpdatedAt: new Date(),
       analyticsOnboardingCompletedAt: current?.analyticsOnboardingCompletedAt ?? new Date(),
     },
@@ -57,6 +62,7 @@ export const POST = apiRoute(async (req: Request) => {
       birthMonth: true,
       birthYear: true,
       analyticsOnboardingCompletedAt: true,
+      inkuraLanguage: true,
     },
   });
 

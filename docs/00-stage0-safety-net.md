@@ -1,16 +1,16 @@
-# Tahap 0 – Safety Net (before refactor besar)
+# Stage 0 – Safety Net (before refactor large)
 
-> Lihat index document: `README.md`
+> See the document index: `README.md`
 
-- Setiap perubahan required through *gate* otomatis (`verify`) + checklist manual regresi.
+- Every change is required to go through the automatic *gate* (`verify`) plus the manual regression checklist.
 
-> Repo ZIP this already mencakup Tahap 0: `apps/web/.env.example`, update `verify`, and document checklist.
+> Repo ZIP this already mencakup Stage 0: `apps/web/.env.example`, update `verify`, and document checklist.
 
 ---
 
 ## 1) Kunci baseline (Git)
 
-If kamu use Git, lakukan this **before** mulai refactor:
+If you use Git, lakukan this **before** mulai refactor:
 
 ```bash
 git checkout -b cleaned-stage0
@@ -19,7 +19,7 @@ git checkout -b cleaned-stage0
 git tag inkura-cleaned-stage0
 ```
 
-Tujuannya: kapan pun there is bug besar, kamu can balik to baseline with cepat.
+Tujuannya: when pun there is bug large, you can balik to baseline with cepat.
 
 ---
 
@@ -52,15 +52,15 @@ Minimum contents:
 
 ---
 
-## 3) Gate otomatis
+## 3) Gate automatic
 
-Jalankan this setiap before/ sealready perubahan besar:
+Jalankan this each before/ sealready major changes:
 
 ```bash
 npm run verify
 ```
 
-`verify` pada snapshot final this akan menjalankan:
+`verify` on snapshot final this will menjalankan:
 - Prisma schema validation + generate client
 - Typecheck (tsc)
 - Unit tests (Vitest)
@@ -80,7 +80,7 @@ npm run sanity:db
 
 ---
 
-## 4) Checklist regresi manual (required before merge)
+## 4) Checklist regression manual (required before merge)
 
-Lihat: `REGRESSION_CHECKLIST.md`
+See: `REGRESSION_CHECKLIST.md`
 

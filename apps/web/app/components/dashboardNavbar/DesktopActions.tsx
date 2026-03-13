@@ -14,6 +14,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import IconButton from "../IconButton";
 import NavCountBadge from "../NavCountBadge";
 import { CATEGORY_PATHS } from "./constants";
@@ -50,30 +51,31 @@ export default function DesktopActions({
   toggleDarkMode: () => void;
   handleLogout: () => void;
 }) {
+  const t = useUILanguageText("Navigation");
+
   return (
     <div className="flex items-center gap-0 pl-6 h-10">
-      <IconButton icon={<Upload size={22} />} label="Upload" href="/studio" />
+      <IconButton icon={<Upload size={22} />} label={t("Upload")} href="/studio" />
       <div className="relative">
-        <IconButton
-          icon={<ListOrdered size={22} />}
-          label="Category"
-          onClick={() => toggleDropdown("category")}
-        />
+        <IconButton icon={<ListOrdered size={22} />} label={t("Categories")} onClick={() => toggleDropdown("category")} />
         {dropdown === "category" && (
           <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg">
-            {CATEGORY_PATHS.map((path) => (
-              <Link
-                key={path}
-                href={`/${path}`}
-                className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
-              >
-                {path[0].toUpperCase() + path.slice(1)}
-              </Link>
-            ))}
+            {CATEGORY_PATHS.map((path) => {
+              const label = `${path[0].toUpperCase()}${path.slice(1)}`;
+              return (
+                <Link
+                  key={path}
+                  href={`/${path}`}
+                  className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
+                >
+                  {t(label)}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
-      <IconButton icon={<Users size={22} />} label="Community" href="/community" />
+      <IconButton icon={<Users size={22} />} label={t("Community")} href="/community" />
       <div className="relative">
         <IconButton
           icon={
@@ -82,19 +84,15 @@ export default function DesktopActions({
               <NavCountBadge endpoint="/api/notifications/unread-count" enabled={isAuthed} />
             </div>
           }
-          label="Notifications"
+          label={t("Notifications")}
           href="/notifications"
         />
       </div>
-      <IconButton icon={<Bookmark size={22} />} label="Library" href="/library" />
-      <IconButton icon={<Layers size={22} />} label="Lists" href="/lists" />
-      <IconButton icon={<History size={22} />} label="History" href="/settings/history" />
+      <IconButton icon={<Bookmark size={22} />} label={t("Library")} href="/library" />
+      <IconButton icon={<Layers size={22} />} label={t("Collection")} href="/lists" />
+      <IconButton icon={<History size={22} />} label={t("History")} href="/settings/history" />
       <div className="relative">
-        <IconButton
-          icon={<Settings size={22} />}
-          label="Settings"
-          onClick={() => toggleDropdown("settings")}
-        />
+        <IconButton icon={<Settings size={22} />} label={t("Settings")} onClick={() => toggleDropdown("settings")} />
         {dropdown === "settings" && (
           <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg w-48">
             {isAuthed ? (
@@ -103,14 +101,14 @@ export default function DesktopActions({
                 prefetch={false}
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Profile
+                {t("Profile")}
               </Link>
             ) : null}
             <Link
               href="/settings/account"
               className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
             >
-              Account
+              {t("Account")}
             </Link>
             {isAuthed ? (
               <Link
@@ -118,12 +116,8 @@ export default function DesktopActions({
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
                 <span className="inline-flex items-center gap-2">
-                  Admin Report
-                  <NavCountBadge
-                    endpoint="/api/admin-report/unread-count"
-                    variant="inline"
-                    enabled={isAuthed}
-                  />
+                  {t("Admin Report")}
+                  <NavCountBadge endpoint="/api/admin-report/unread-count" variant="inline" enabled={isAuthed} />
                 </span>
               </Link>
             ) : null}
@@ -132,7 +126,7 @@ export default function DesktopActions({
                 href="/admin/reports"
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Content Reports
+                {t("Content Reports")}
               </Link>
             ) : null}
             {userRole === "ADMIN" ? (
@@ -140,7 +134,7 @@ export default function DesktopActions({
                 href="/admin/taxonomy"
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Taxonomy
+                {t("Taxonomy")}
               </Link>
             ) : null}
             {userRole === "ADMIN" ? (
@@ -148,12 +142,13 @@ export default function DesktopActions({
                 href="/admin/analytics"
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Analytics
+                {t("Analytics")}
               </Link>
             ) : null}
             <div className="px-4 py-2">
               <button
                 onClick={toggleDarkMode}
+                aria-label={t("Toggle Theme")}
                 className={`w-14 h-8 rounded-full flex items-center px-1 shadow-inner ${
                   isDarkMode
                     ? "bg-gradient-to-r from-blue-600 to-purple-600 justify-end"
@@ -161,11 +156,7 @@ export default function DesktopActions({
                 }`}
               >
                 <div className="w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
-                  {isDarkMode ? (
-                    <Moon size={14} className="text-indigo-700" />
-                  ) : (
-                    <Sun size={14} className="text-yellow-600" />
-                  )}
+                  {isDarkMode ? <Moon size={14} className="text-indigo-700" /> : <Sun size={14} className="text-yellow-600" />}
                 </div>
               </button>
             </div>
@@ -175,7 +166,7 @@ export default function DesktopActions({
                 prefetch={false}
                 className="block w-full text-center px-3 py-2 rounded-full text-sm font-semibold bg-red-600 text-white shadow-md hover:bg-red-700 transition"
               >
-                Donate For Inkura
+                {t("Donate For Inkura")}
               </Link>
             </div>
             {isAuthed ? (
@@ -183,21 +174,20 @@ export default function DesktopActions({
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
               >
-                <LogOut size={16} /> Logout
+                <LogOut size={16} /> {t("Logout")}
               </button>
             ) : (
               <Link
                 href="/auth/signin"
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >
-                Sign In
+                {t("Sign In")}
               </Link>
             )}
           </div>
         )}
       </div>
 
-      {/* Profile Info (Desktop Only) */}
       {isAuthed ? (
         <Link
           href="/profile"
@@ -208,10 +198,9 @@ export default function DesktopActions({
             {compactDisplayName(displayName)}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={userImage}
-              alt="pp"
+              alt={t("Profile")}
               className="absolute inset-0 w-full h-full object-cover"
               style={{
                 objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
@@ -227,12 +216,7 @@ export default function DesktopActions({
             {compactDisplayName(displayName)}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={userImage}
-              alt="pp"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+            <img src={userImage} alt={t("User")} className="absolute inset-0 w-full h-full object-cover" />
           </div>
         </div>
       )}

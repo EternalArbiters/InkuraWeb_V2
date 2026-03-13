@@ -1,13 +1,13 @@
 # Stage 8 — Observability & Error Hygiene
 
-Tujuan: ketika bug appear, kita can **debug cepat** without mengubah features.
+Goal: when bug appear, we can **debug cepat** without changing features.
 
-Stage this fokus pada 2 thing:
+Stage this focuses on on 2 thing:
 
 1) **Server logging** that more terstructure (minimal: request id + route + status + userId if there is).
 2) **UI error boundary** that consistent in route penting.
 
-> Note: this not “features new”. Tidak there is perubahan flow user. Ini rapihin instrumentation.
+> Note: this is not a “new feature.” There is no user flow change. This only tidies up the instrumentation.
 
 ---
 
@@ -19,8 +19,8 @@ Stage this fokus pada 2 thing:
 
 ### Implementasi
 - `apiRoute()` (`apps/web/server/http/route.ts`) now:
-  - membuat/menentukan **requestId** (ambil from header `x-request-id` / `x-vercel-id` / `cf-ray`, or generate new)
-  - menambahkan header **`x-request-id`** pada **all response** (best-effort)
+  - make/menentukan **requestId** (ambil from header `x-request-id` / `x-vercel-id` / `cf-ray`, or generate new)
+  - adding header **`x-request-id`** on **all response** (best-effort)
   - melakukan **JSON logging** for:
     - response status **>= 500** (`api.response_error`)
     - unhandled exception (`api.unhandled_error`)
@@ -47,9 +47,9 @@ Example (disederhanakan):
 ```
 
 ### Env vars
-Tambahan optional (lihat `apps/web/.env.example`):
+Tambahan optional (see `apps/web/.env.example`):
 - `INKURA_LOG_LEVEL=info` (debug/info/warn/error)
-- `INKURA_LOG_REQUESTS=1` (log setiap request API)
+- `INKURA_LOG_REQUESTS=1` (log each request API)
 - `INKURA_SERVICE_NAME=...`
 
 ---
@@ -71,13 +71,13 @@ Tambahan optional (lihat `apps/web/.env.example`):
 ### Shared UI
 - `apps/web/app/components/errors/ErrorView.tsx`
 
-Semua error boundary menggunakan UI same (card + CTA "Try again" + link back/home), sehingga:
+All error boundary using UI same (card + CTA "Try again" + link back/home), sehingga:
 - UX consistent
-- more mudah maintenance
+- more easy maintenance
 
 ---
 
 ## Definition of Done
-- Semua API response menyertakan `x-request-id`.
+- All API response menyertakan `x-request-id`.
 - Unhandled server errors menghasilkan log JSON that consistent (requestId + route + status + userId if there is).
 - Error boundary tersedia for route penting and tampil consistent.

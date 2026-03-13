@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
+import { normalizeInkuraLanguage, type InkuraLanguageCode } from "@/lib/inkuraLanguage";
 import { parseJsonStringArray } from "@/lib/prefs";
 
 export type ViewerBasic = {
@@ -10,6 +11,7 @@ export type ViewerBasic = {
   role: string;
   adultConfirmed: boolean;
   deviantLoveConfirmed: boolean;
+  inkuraLanguage: InkuraLanguageCode | null;
 };
 
 export type ViewerWithPrefs = ViewerBasic & {
@@ -36,6 +38,7 @@ const getViewerUser = cache(async () => {
       adultConfirmed: true,
       deviantLoveConfirmed: true,
       preferredLanguagesJson: true,
+      inkuraLanguage: true,
       blockedGenres: { select: { id: true } },
       blockedWarnings: { select: { id: true } },
       blockedDeviantLove: { select: { id: true } },
@@ -52,6 +55,7 @@ export const getViewerBasic = cache(async (): Promise<ViewerBasic | null> => {
     role: user.role,
     adultConfirmed: !!user.adultConfirmed,
     deviantLoveConfirmed: !!user.deviantLoveConfirmed,
+    inkuraLanguage: normalizeInkuraLanguage(user.inkuraLanguage),
   };
 });
 
@@ -64,6 +68,7 @@ export const getViewerWithPrefs = cache(async (): Promise<ViewerWithPrefs | null
     role: user.role,
     adultConfirmed: !!user.adultConfirmed,
     deviantLoveConfirmed: !!user.deviantLoveConfirmed,
+    inkuraLanguage: normalizeInkuraLanguage(user.inkuraLanguage),
     preferredLanguages: parseJsonStringArray(user.preferredLanguagesJson).map((s) => String(s).toLowerCase()),
     blockedGenreIds: user.blockedGenres.map((g) => g.id),
     blockedWarningIds: user.blockedWarnings.map((w) => w.id),

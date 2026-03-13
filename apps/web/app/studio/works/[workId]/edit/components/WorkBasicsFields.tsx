@@ -54,7 +54,7 @@ export default function WorkBasicsFields({
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold">Subtitles (optional)</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maks. 5 subtitle.</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Max. 5 subtitles.</div>
           </div>
           <button
             type="button"

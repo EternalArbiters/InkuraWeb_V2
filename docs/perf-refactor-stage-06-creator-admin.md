@@ -1,6 +1,6 @@
 # Perf refactor stage 06 — creator/admin surface and final page fan-out cleanup
 
-Tahap 6 menutup sisa self-fetch server page in surface creator/admin that still tersisa after stage 5:
+Stage 6 closes the remaining self-fetch server pages in creator/admin surfaces that were still left after stage 5:
 
 - studio work detail `/studio/works/[workId]`
 - new chapter `/studio/works/[workId]/chapters/new`
@@ -10,7 +10,7 @@ Tahap 6 menutup sisa self-fetch server page in surface creator/admin that still 
 
 ## Masalah before stage 6
 
-Sisa hotspot `apiJson()` memang already tinggal sedikit, tetapi allnya there is in area that relatif berat:
+The remaining `apiJson()` hotspots are already few, but all of them are in relatively heavy areas:
 
 - studio work detail reading work + chapters milik creator
 - chapter edit/pages reading chapter + work + warnings
@@ -26,7 +26,7 @@ Artinya surface creator/admin still menghasilkan invocation additional even thou
 
 ### 1. Studio pages use service directly
 
-Server page berikut berhenti self-fetch to API internal:
+Server page following berhenti self-fetch to API internal:
 
 - `app/studio/works/[workId]/page.tsx`
 - `app/studio/works/[workId]/chapters/new/page.tsx`
@@ -39,14 +39,14 @@ Service used again:
 - `server/services/studio/chapters.ts`
 - `server/services/taxonomy/publicTaxonomy.ts`
 
-Behavior redirect old still dijaga:
+Behavior redirect old still preserved:
 
 - studio work / new chapter still fallback to `/studio`
 - chapter edit/pages still membedakan `401 -> signin`, `403 -> back to work`, `404 -> notFound`
 
-### 2. Admin reports dipindah to reusable service
+### 2. Admin reports moved to reusable service
 
-Ditambahkan:
+Added:
 
 - `apps/web/server/services/admin/reports.ts`
 
@@ -60,31 +60,31 @@ Jadi page admin not lagi routing request through `/api/admin/reports` only to re
 ## Kenapa this safe
 
 - not there is features that dihapus
-- API route is still kept for client-side calls and kompatibilitas
+- API route is still kept for client-side calls and compatibility
 - changed only jflow data server page: directly to service, not through HTTP internal
 - redirect behavior old kept so that UX still consistent
 
 ## Dampak that ditargetkan
 
-Tahap 6 menyelesaikan sisa fan-out server page remaining from stage 5.
+Stage 6 completes remaining fan-out server page remaining from stage 5.
 
 Perubahan statis that most penting:
 
 - server-page import `apiJson()`: `5 -> 0`
 - call `apiJson()` in `app/**` remaining from page/component server: `8 -> 0` for page code that nyata
 
-Catatan baseline scanner:
+Baseline scanner notes:
 
 - output scanner still can menampilkan `apiJson calls inside app/: 1`
 - that berasal from file helper `server/http/apiJson.ts`, not from page app that still self-fetch
-- pengecekan directly `rg` pada `apps/web/app/**` now point tokan `0` pemanggilan `apiJson()`
+- pengecekan directly `rg` on `apps/web/app/**` now point tokan `0` pemanggilan `apiJson()`
 
 ## File new
 
 - `apps/web/server/services/admin/reports.ts`
 - `docs/perf-refactor-stage-06-creator-admin.md`
 
-## File that diubah
+## File that changed
 
 - `apps/web/app/studio/works/[workId]/page.tsx`
 - `apps/web/app/studio/works/[workId]/chapters/new/page.tsx`
@@ -93,7 +93,7 @@ Catatan baseline scanner:
 - `apps/web/app/admin/reports/page.tsx`
 - `apps/web/server/services/api/admin/reports/route.ts`
 
-## Catatan verifikasi
+## Verification notes
 
 Minimum verification that was successfully run in this working environment:
 

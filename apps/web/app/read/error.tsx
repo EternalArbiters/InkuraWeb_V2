@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import ErrorView from "@/app/components/errors/ErrorView";
 
 type Props = {
@@ -7,11 +8,13 @@ type Props = {
   reset: () => void;
 };
 
-export default function ReaderError({ error, reset }: Props) {
+export default function StageEightError({ error, reset }: Props) {
+  const t = useUILanguageText("Page Error States");
+
   return (
     <ErrorView
-      title="Reader mengalami kendala"
-      message="An error occurred while loading the chapter. Try again or return to the work page."
+      title={t("Reader error")}
+      message={t("An error occurred while loading the chapter. Try again or return to the work page.")}
       error={error}
       reset={reset}
       homeHref="/browse"

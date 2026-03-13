@@ -2,16 +2,16 @@
 
 This document explain cara menangani database local for repo Inkura cleaned.
 
-## Prinsip paling penting
+## Prinsip most penting
 
-Perintah berikut **only safe for local / disposable DB**:
+Perintah following **only safe for local / disposable DB**:
 
 ```bash
 npm run db:init
 npm --workspace apps/web run db:reset
 ```
 
-Keduanya bersifat destruktif terhadap data pada database that seandg ditunjuk oleh env.
+Keduanya bersifat destruktif terhadap data on database that seandg ditunjuk oleh env.
 
 ## Alur safest for local from scratch
 
@@ -47,15 +47,15 @@ Sanity check will ensure Prisma can connect and schema penting tersedia.
 
 ## Arti script database that tersedia
 
-From root repo, script main that are relevant adalah:
+From root repo, script main that are relevant is:
 
 ### `npm run db:init`
 
 - generate Prisma Client
 - reset schema local
-- seed data awal
+- seed data initial
 
-Suitable used ketika just cloned the repo or want to start over from scratch.
+Suitable used when just cloned the repo or want to start over from scratch.
 
 ### `npm --workspace apps/web run db:reset`
 
@@ -67,7 +67,7 @@ prisma db push --force-reset
 
 Artinya:
 
-- schema akan in-push sesuai `schema.prisma`
+- schema will in-push sesuai `schema.prisma`
 - the database will be reset completely
 - this is not a production command
 
@@ -88,12 +88,12 @@ Diuse to verify connection DB and the presence of important schema sections afte
 
 ## Kredensial seed local
 
-Seed default membuat akun admin berikut:
+Seed default make akun admin following:
 
 - Email: `noelephgoddess.game@gmail.com`
 - Password: `admin123`
 
-Role admin in repo this dikaitkan with email tersebut. For public environments, should data this adjusted through proses seed/ops that safer.
+Role admin in repo this dikaitkan with email that. For public environments, should data this adjusted through proses seed/ops that safer.
 
 ## Perintah Prisma lain that are relevant
 
@@ -107,15 +107,15 @@ npm run db:push
 npm run db:migrate:deploy
 ```
 
-Kapan used:
+When to use it:
 
-- `prisma:validate` → memastikan schema valid
+- `prisma:validate` → ensuring schema valid
 - `prisma:generate` → regenerate Prisma Client
-- `prisma:migrate` → membuat/menjalankan migration in local saat kamu memang seandg mengubah schema
-- `db:push` → push schema to DB without migration file, cocok for specific local experiments
+- `prisma:migrate` → make/menjalankan migration in local when you memang seandg mengubah schema
+- `db:push` → push schema to DB without migration file, match for specific local experiments
 - `db:migrate:deploy` → menjalankan migration already there is, this that are relevant for deploy/production
 
-## Kapan memakai migration deploy, not reset
+## When to use migration deploy instead of reset
 
 For shared environments, staging, or production:
 
@@ -127,14 +127,14 @@ In this repo, Vercel `vercel-build` already menangani `prisma migrate deploy` se
 
 ## Taxonomy helpers
 
-Repo juga punya helper that sometimes useful saat work with taxonomy:
+Repo juga punya helper that sometimes useful when work with taxonomy:
 
 ```bash
 npm run db:taxonomy-alpha
 npm --workspace apps/web run db:cleanup-taxonomy
 ```
 
-Gunakan only when the change context memang terkait taxonomy.
+Gunakan only when the change context memang related taxonomy.
 
 ## Recovery checklist if DB feels odd
 

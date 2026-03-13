@@ -68,7 +68,7 @@ export default function NewListForm() {
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/30"
-          placeholder="keterangan singkat..."
+          placeholder="short description..."
         />
       </div>
 

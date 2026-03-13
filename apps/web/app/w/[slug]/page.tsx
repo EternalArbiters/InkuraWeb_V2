@@ -21,6 +21,7 @@ import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import { parseWorkSubtitles } from "@/lib/workSubtitles";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -65,13 +66,26 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
     if (gated) {
       const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
+      const [
+        matureLabel,
+        workDeviantMessage,
+        workMatureMessage,
+        deviantLockedMessage,
+        nsfwLockedMessage,
+      ] = await Promise.all([
+        getActiveUILanguageText("18+ Mature Content", { section: "Page Work Detail" }),
+        getActiveUILanguageText("This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings.", { section: "Page Work Detail" }),
+        getActiveUILanguageText("This work is marked 18+. To read it, you need to unlock it and opt in under Settings.", { section: "Page Work Detail" }),
+        getActiveUILanguageText("Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love.", { section: "Page Work Detail" }),
+        getActiveUILanguageText('NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content".', { section: "Page Work Detail" }),
+      ]);
       return (
         <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
           <div className="max-w-4xl mx-auto px-4 py-10">
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
               <div className="p-6">
                 <div className="inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-xs text-white">
-                  {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
+                  {isDeviant ? <LockLabel text="Deviant Love" /> : matureLabel}
                 </div>
                 <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl">{work.title}</h1>
                 {subtitles.length ? (
@@ -83,8 +97,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 ) : null}
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   {isDeviant
-                    ? "This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings."
-                    : "This work is marked 18+. To read it, you need to unlock it and opt in under Settings."}
+                    ? workDeviantMessage
+                    : workMatureMessage}
                 </p>
 
                 {work.coverImage ? (
@@ -95,8 +109,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 {viewer && (isDeviant ? !canViewDeviantLove : !canViewMature) ? (
                   <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
                     {isDeviant
-                      ? "Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love."
-                      : 'NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content".'}
+                      ? deviantLockedMessage
+                      : nsfwLockedMessage}
                   </div>
                 ) : null}
               </div>

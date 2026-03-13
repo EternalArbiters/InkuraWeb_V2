@@ -41,7 +41,7 @@ export default function ProfileLinksSheet({
       <DialogContent className="!top-auto !bottom-0 !translate-y-0 max-w-2xl rounded-t-[28px] rounded-b-none border-gray-200 bg-white px-0 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-0 shadow-2xl dark:border-gray-800 dark:bg-gray-950">
         <div className="mx-auto mt-3 h-1.5 w-14 rounded-full bg-gray-300 dark:bg-gray-700" />
         <DialogHeader className="px-5 pt-4 text-left">
-          <DialogTitle className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">Tautan</DialogTitle>
+          <DialogTitle className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">Links</DialogTitle>
         </DialogHeader>
 
         <div className="mt-4 max-h-[70vh] overflow-y-auto px-3 pb-2">

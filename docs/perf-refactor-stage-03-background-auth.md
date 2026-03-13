@@ -1,19 +1,19 @@
-# Perf Refactor — Tahap 3 Background Requests & Auth Surface
+# Perf Refactor — Stage 3 Background Requests & Auth Surface
 
-Tahap 3 focuses on two things that most terasa in billing/runtime after stage 2:
+Stage 3 focuses on two things that most terasa in billing/runtime after stage 2:
 
-1. **reducing request background that terus menembak server**
-2. **memindahkan proteksi route user biasa from edge middleware to server page that memang butuh auth**
+1. **reducing request background that continuously menembak server**
+2. **moving proteksi route regular user from edge middleware to server page that memang butuh auth**
 
 This stage dibangun directly in atas ZIP hasil stage 2.
 
 ## Sasaran stage this
 
-Masalah that still tersisa after stage 2:
+Masalah that still remaining after stage 2:
 
-- unread badge navbar still polling terus from client
-- guest user still can ikut memicu unread-count request from navbar
-- middleware still berpotensi menjadi permukaan auth that terthen lebar dibanding kebutuhan sebenarnya
+- unread badge navbar still polling continuously from client
+- guest user still can also trigger unread-count request from navbar
+- middleware still berpotensi become permukaan auth that terthen lebar dibanding kebutuhan actually
 - several page auth-heavy still self-fetch to API internal walau datanya can diambil directly from service server
 
 ## Perubahan that enter in stage 3
@@ -26,22 +26,22 @@ File:
 
 Perubahan:
 
-- matcher now tinggal `"/admin/:path*"`
-- proteksi `/home`, `/library`, `/notifications`, `/settings`, and `/studio` dipindah to server page that memang merender route tersebut
+- matcher now stay `"/admin/:path*"`
+- proteksi `/home`, `/library`, `/notifications`, `/settings`, and `/studio` moved to server page that memang merender route that
 
 Dampak:
 
-- edge request for area user biasa turun signifikan
+- edge request for area regular user reduced signifikan
 - admin still punya short-circuit edge guard + server-side guard
-- features auth not hilang, only boundary-nya dipindah to tempat that more hemat
+- features auth not lost, only boundary-nya moved to tempat that more hemat
 
-### 2. Page user biasa now guard auth sendiri in server
+### 2. Page regular user now guard auth sendiri in server
 
 File new:
 
 - `apps/web/server/auth/pageAuth.ts`
 
-File that memakai helper this:
+File that uses helper this:
 
 - `apps/web/app/home/page.tsx`
 - `apps/web/app/library/page.tsx`
@@ -55,7 +55,7 @@ Dampak:
 
 - redirect login still there is
 - callback path still eksplcontentt in page
-- route user biasa not perlu lagi sethen methroughi edge middleware only to ensure session
+- route regular user not need lagi sethen methroughi edge middleware only to ensure session
 
 ### 3. Navbar badge not lagi hammer server tiap 30 detik
 
@@ -71,21 +71,21 @@ File:
 Perubahan:
 
 - polling badge now **vcontentbility-aware** and **focus-aware**
-- polling period dinaikkan menjadi **90 detik** saat tab vcontentble
-- tab hidden not terus polling
-- guest user not lagi memicu unread-count request for badge auth-only
-- mark-read notif and submit admin report now memicu **event-driven refresh** badge, become UI still responsif without polling agresif
-- implementasi polling diubah from `setInterval()` to `setTimeout()` terjadwal so that more mudah dihentikan saat tab hidden
+- polling period dinaikkan become **90 detik** when tab vcontentble
+- tab hidden not continuously polling
+- guest user not lagi trigger unread-count request for badge auth-only
+- mark-read notif and submit admin report now trigger **event-driven refresh** badge, become UI still responsif without polling agresif
+- implementasi polling changed from `setInterval()` to `setTimeout()` terjadwal so that more easy dihentikan when tab hidden
 
 Dampak:
 
-- background request noise turun
+- background request noise reduced
 - desktop navbar still point tokan unread count
 - perubahan count after aksi user still terlihat cepat
 
 ### 4. Beberapa page auth-heavy berhenti self-fetch to API internal
 
-Page current mengambil data directly from service server:
+Page current fetches data directly from service server:
 
 - `apps/web/app/library/page.tsx`
 - `apps/web/app/notifications/page.tsx`
@@ -106,45 +106,45 @@ API route still kept, tapi now route and page berbagi logic same.
 
 ## Dampak baseline statis
 
-Setelah stage 3, hasil scan `npm run refactor:stage0` menjadi:
+Setelah stage 3, hasil scan `npm run refactor:stage0` become:
 
-- `force-dynamic` exports: **37** _(not yet disentuh in stage this)_
+- `force-dynamic` exports: **37** _(not yet touched in stage this)_
 - server-page import `apiJson()`: **20 → 14**
 - total call `apiJson()` in `app/**`: **24 → 17**
-- `fetch cache:no-store`: **7** _(not yet disentuh in stage this)_
+- `fetch cache:no-store`: **7** _(not yet touched in stage this)_
 - `Cache-Control no-store`: **0** _(still)_
 - `setInterval()`: **3 → 2**
 
 Tambahan perubahan non-baseline that penting:
 
-- `middleware` matcher turun from banyak prefix user route menjadi only **`/admin/:path*`**
+- `middleware` matcher reduced from many prefix user route become only **`/admin/:path*`**
 
 ## Intentionally not touched yet
 
-Tahap 3 not yet menyentuh:
+Stage 3 not yet touch:
 
-- work detail / reader page that still memakai `apiJson()`
+- work detail / reader page that still uses `apiJson()`
 - studio chapter detail/edit/page manager that still self-fetch
 - dedupe session / viewer lookup lintas service
 - optimasi query Prisma that more dalam
 
-Itu memang ditahan for stage 4 so that rcontentko regresi still kecil.
+Itu memang held for stage 4 so that rcontentko regression still small.
 
 ## Verifikasi minimum
 
 - `npm run refactor:stage0`
-- check manual unread badge saat:
+- check manual unread badge when:
   - login vs guest
   - tab vcontentble vs hidden
   - mark notification read
   - kirim admin report
 - `docs/REGRESSION_CHECKLIST.md`
 
-Catatan container work saat stage this dibuat:
+Container work notes when this stage was created:
 
 - the static scan ran successfully
-- verifikasi penuh `npm run verify` still not yet can dikonfirmasi bersih because dependency not yet terpasang in environment container this
+- A full `npm run verify` still could not be confirmed as clean because dependencies were not yet available in this container environment.
 
 ## Baseline for stage 4
 
-Tahap 4 must dimulai from ZIP hasil stage 3 this, not from snapshot stage 2.
+Stage 4 must dimulai from ZIP hasil stage 3 this, not from snapshot stage 2.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import ErrorView from "@/app/components/errors/ErrorView";
 
 type Props = {
@@ -7,11 +8,13 @@ type Props = {
   reset: () => void;
 };
 
-export default function BrowseError({ error, reset }: Props) {
+export default function StageEightError({ error, reset }: Props) {
+  const t = useUILanguageText("Page Error States");
+
   return (
     <ErrorView
-      title="Browse bermasalah"
-      message="An error occurred while loading the list of works. Please try again."
+      title={t("Browse error")}
+      message={t("An error occurred while loading the list of works. Please try again.")}
       error={error}
       reset={reset}
       homeHref="/browse"

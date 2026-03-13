@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 function ResetInner() {
   const router = useRouter();
   const params = useSearchParams();
+  const t = useUILanguageText("Page Reset Password");
+  const tErrors = useUILanguageText("Shared Errors");
 
   const token = useMemo(() => params?.get("token") || "", [params]);
 
@@ -19,8 +22,8 @@ function ResetInner() {
     e.preventDefault();
     setError(null);
 
-    if (!token) return setError("Token is missing.");
-    if (password.length < 6) return setError("Password must be at least 6 characters.");
+    if (!token) return setError(tErrors("Token is missing."));
+    if (password.length < 6) return setError(tErrors("Password must be at least 6 characters."));
 
     setLoading(true);
     try {
@@ -31,12 +34,12 @@ function ResetInner() {
       });
 
       const json = await res.json().catch(() => ({} as any));
-      if (!res.ok) throw new Error(json?.error || "Failed to reset password");
+      if (!res.ok) throw new Error(json?.error || tErrors("Failed to reset password"));
 
       setOk(true);
       setTimeout(() => router.push("/auth/signin"), 800);
     } catch (e: any) {
-      setError(e?.message || "Error");
+      setError(e?.message || tErrors("Error"));
     } finally {
       setLoading(false);
     }
@@ -45,8 +48,8 @@ function ResetInner() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
       <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl shadow-2xl p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reset password</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Enter a new password.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Reset password")}</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t("Enter a new password.")}</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
           <input
@@ -54,7 +57,7 @@ function ResetInner() {
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="New password"
+            placeholder={t("New password")}
             autoComplete="new-password"
           />
 
@@ -66,7 +69,7 @@ function ResetInner() {
 
           {ok && (
             <div className="text-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-xl px-3 py-2">
-              Password updated successfully. Redirecting to sign in...
+              {t("Password updated successfully. Redirecting to sign in...")}
             </div>
           )}
 
@@ -74,13 +77,13 @@ function ResetInner() {
             disabled={loading}
             className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
           >
-            {loading ? "Processing..." : "Reset"}
+            {loading ? t("Processing...", { section: "Page Sign In" }) : t("Reset")}
           </button>
         </form>
 
         <div className="mt-4 text-sm text-gray-700 dark:text-gray-200">
           <Link href="/auth/forgot" className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
-            Back
+            {t("Back", { section: "Shared Components" })}
           </Link>
         </div>
       </div>
@@ -89,11 +92,13 @@ function ResetInner() {
 }
 
 export default function ResetPasswordPage() {
+  const tErrors = useUILanguageText("Shared Errors");
+
   return (
     <Suspense
       fallback={
         <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
-          <div className="text-sm text-gray-600 dark:text-gray-300">Loading...</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">{tErrors("Loading...")}</div>
         </main>
       }
     >

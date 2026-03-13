@@ -1,11 +1,11 @@
 # `apps/web/server/*`
 
-Folder this bercontent **server-only modules**.
+Folder this contained **server-only modules**.
 
 Aturan:
 
 - Do not import modules here from client components (`"use client"`).
-- Tambahkan `import "server-only";` in setiap file server-only.
+- Tambahkan `import "server-only";` in each file server-only.
 - For helper that use browser APIs, letakkan in `lib/*` or `hooks/*` and beri marker `import "client-only";`.
 
 Subfolder main:

@@ -58,7 +58,7 @@ export default function ListOwnerControls({
   };
 
   const del = async () => {
-    if (!confirm("Hapus list ini?")) return;
+    if (!confirm("Delete this list?")) return;
     startTransition(async () => {
       try {
         const res = await fetch(`/api/lists/${listId}`, { method: "DELETE" });

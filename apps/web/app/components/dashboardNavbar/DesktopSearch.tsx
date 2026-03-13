@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { SEARCH_TYPES } from "./constants";
 
 export default function DesktopSearch({
@@ -16,6 +17,8 @@ export default function DesktopSearch({
   setSearchQuery: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 }) {
+  const t = useUILanguageText("Navigation");
+
   return (
     <form onSubmit={onSubmit} className="flex items-center w-[420px]">
       <div className="flex flex-1 border border-blue-500 bg-white dark:bg-gray-800 rounded-full overflow-hidden shadow-md">
@@ -26,21 +29,18 @@ export default function DesktopSearch({
         >
           {SEARCH_TYPES.map((opt) => (
             <option key={opt} value={opt}>
-              {opt[0].toUpperCase() + opt.slice(1)}
+              {t(opt[0].toUpperCase() + opt.slice(1))}
             </option>
           ))}
         </select>
         <input
           type="text"
-          placeholder={`Search ${searchType}...`}
+          placeholder={t(`Search ${searchType}...`)}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1 px-4 bg-transparent text-gray-800 dark:text-white focus:outline-none"
         />
-        <button
-          type="submit"
-          className="px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-        >
+        <button type="submit" className="px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white" aria-label={t("Search")}>
           <Search size={18} strokeWidth={2.5} />
         </button>
       </div>

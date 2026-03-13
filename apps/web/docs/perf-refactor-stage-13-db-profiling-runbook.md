@@ -1,12 +1,12 @@
 # Stage 13 — DB profiling runbook
 
-The goal of this stage is menutup gap Tahap D with workflow profiling that can diulang, not menebak-nebak index.
+The goal of this stage is menutup gap Stage D with workflow profiling that can diulang, not menebak-nebak index.
 
 ## Sumber sinyal used
 
 - `db.slow_query` from Prisma query logging
 - `db.profile_probe` from hotspot service probes
-- `api.slow_route` and `page.slow_render` for mencari route/page that mendorong query mathing
+- `api.slow_route` and `page.slow_render` to find routes/pages that drive matching queries
 
 ## Probe current tersedia
 
@@ -29,27 +29,27 @@ Set `INKURA_PROFILE_HOTSPOTS=1` if ingin see probe that not slow juga, for sesi 
 
 ## Prosedur profiling
 
-1. Nyalakan traffic nyata or ulangi flow that most sering used.
+1. Nyalakan traffic nyata or ulangi flow that most often used.
 2. Kumpulkan `db.profile_probe` seold 10–30 menit.
 3. Kelompokkan berdasarkan `probe` and fingerprint/filter meta.
 4. Ambil kandidat teratas berdasarkan:
    - frekuensi
    - durasi p95/p99
    - dampak user-facing (`api.slow_route`, `page.slow_render`)
-5. Cocokkan probe with `db.slow_query` that appear pada rentang waktu same.
+5. Cocokkan probe with `db.slow_query` that appear on rentang waktu same.
 6. Ambil query mentah/fingerprint, then jalankan `EXPLAIN ANALYZE` in DB.
 7. Dokumentasikan hasil before menambah index or memecah query.
 
 ## Template pencatatan hasil
 
-For setiap kandidat, catat:
+For each kandidat, catat:
 
 - probe
 - file/service asal
 - fingerprint filter/sort
 - p95/p99 durasi
 - query preview / SQL fingerprint
-- jumlah row that diproses
+- jumlah row that processed
 - apakah index currently keuse
 - keputusan: keep / add index / trim select / split query / cache
 
@@ -62,9 +62,9 @@ For setiap kandidat, catat:
 3. `library.viewer`
 4. `studioWorks.list`
 
-## Defincontent complete Tahap D berikutnya
+## Defincontent complete Stage D next
 
-Tahap D dianggap benar-benar tuntas after there is minimal:
+Stage D considered benar-benar tuntas after there is minimal:
 
 - 3 fingerprint query `listPublishedWorks` with `EXPLAIN ANALYZE`
 - 1 fingerprint for notifications
@@ -74,4 +74,4 @@ Tahap D dianggap benar-benar tuntas after there is minimal:
 
 ## Artefak pencatatan
 
-Gunakan `docs/perf-refactor-stage-16-production-query-evidence-template.md` for setiap query/fingerprint that enter shortlist.
+Gunakan `docs/perf-refactor-stage-16-production-query-evidence-template.md` for each query/fingerprint that enter shortlist.

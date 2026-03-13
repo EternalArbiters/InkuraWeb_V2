@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import ErrorView from "@/app/components/errors/ErrorView";
 
 type Props = {
@@ -8,12 +9,14 @@ type Props = {
 };
 
 export default function GlobalError({ error, reset }: Props) {
+  const t = useUILanguageText("Page Error States");
+
   return (
     <html lang="en">
       <body className="antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <ErrorView
-          title="An Error Occurred"
-          message="A fatal application error occurred. You can try again."
+          title={t("An Error Occurred")}
+          message={t("A fatal application error occurred. You can try again.")}
           error={error}
           reset={reset}
           homeHref="/home"

@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 
 export default function CustomCursor() {
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false); // Tambahkan state
+  const [isMobile, setIsMobile] = useState(false); // Add state
   const cursorRef = useRef<HTMLDivElement>(null);
 
   // Deteksi perangkat mobile (pointer: coarse)

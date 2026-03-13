@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Search } from "lucide-react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { SEARCH_TYPES } from "./constants";
 
 export default function SearchOverlay({
@@ -21,6 +22,8 @@ export default function SearchOverlay({
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
 }) {
+  const t = useUILanguageText("Navigation");
+
   return (
     <AnimatePresence>
       {open && (
@@ -40,7 +43,7 @@ export default function SearchOverlay({
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-white">
-              Search anything on{" "}
+              {t("Search anything on")}{" "}
               <span className="text-pink-500 font-bold">Inkura</span>
             </h2>
             <form
@@ -55,7 +58,7 @@ export default function SearchOverlay({
                 >
                   {SEARCH_TYPES.map((opt) => (
                     <option key={opt} value={opt}>
-                      {opt[0].toUpperCase() + opt.slice(1)}
+                      {t(opt[0].toUpperCase() + opt.slice(1))}
                     </option>
                   ))}
                 </select>
@@ -72,15 +75,15 @@ export default function SearchOverlay({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Search ${searchType}...`}
+                placeholder={t(`Search ${searchType}...`)}
                 className="min-w-0 flex-1 bg-transparent px-4 py-2 pr-20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white"
               />
 
               <button
                 type="submit"
                 className="absolute right-0 inset-y-0 w-16 rounded-r-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110 flex items-center justify-center"
-                aria-label="Search"
-                title="Search"
+                aria-label={t("Search")}
+                title={t("Search")}
               >
                 <Search size={16} />
               </button>

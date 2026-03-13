@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Props = {
   children: React.ReactNode;
@@ -15,8 +16,9 @@ export default function LoadMoreList({
   className,
   initialCount = 30,
   step = 30,
-  buttonLabel = "Load more",
+  buttonLabel,
 }: Props) {
+  const t = useUILanguageText("Shared Floating Actions");
   const items = React.Children.toArray(children);
   const [visibleCount, setVisibleCount] = React.useState(initialCount);
 
@@ -33,7 +35,7 @@ export default function LoadMoreList({
             onClick={() => setVisibleCount((current) => Math.min(current + step, items.length))}
             className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900"
           >
-            {buttonLabel}
+            {buttonLabel || t("Load more")}
           </button>
         </div>
       ) : null}

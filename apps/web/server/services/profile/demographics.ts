@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { UserGender } from "@prisma/client";
+import { normalizeInkuraLanguage } from "@/lib/inkuraLanguage";
 
 const ALLOWED_GENDERS = new Set<UserGender | string>(["MALE", "FEMALE", "PREFER_NOT_TO_SAY"]);
 
@@ -39,4 +40,13 @@ export function hasCompleteDemographics(input: {
   birthYear?: number | null;
 }) {
   return !!input.gender && !!input.birthMonth && !!input.birthYear;
+}
+
+export function hasCompletedProfileOnboarding(input: {
+  gender?: string | null;
+  birthMonth?: number | null;
+  birthYear?: number | null;
+  inkuraLanguage?: string | null;
+}) {
+  return hasCompleteDemographics(input) && !!normalizeInkuraLanguage(input.inkuraLanguage);
 }

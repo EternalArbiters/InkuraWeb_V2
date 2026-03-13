@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import DashboardNavbar from "./DashboardNavbar";
 import FloatingActions from "./FloatingActions";
 import { maybeSendSessionSeen, sendAnalyticsEvent } from "@/lib/analyticsClient";
+import { useUILanguage } from "./ui-language/UILanguageProvider";
 
 function shouldShowNavbar(pathname: string) {
   return pathname !== "/" && !pathname.startsWith("/auth");
@@ -24,6 +25,11 @@ export default function LayoutClientWrapper({
   const router = useRouter();
   const { status, data: session } = useSession();
   const showNavbar = shouldShowNavbar(pathname);
+  const { language } = useUILanguage();
+
+  useEffect(() => {
+    document.documentElement.dataset.inkuraLanguage = language;
+  }, [language]);
 
   useEffect(() => {
     const dark = localStorage.getItem("theme");

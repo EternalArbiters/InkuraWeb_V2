@@ -1,9 +1,9 @@
 # Perf refactor stage 07 — hydration preload and dynamic cleanup
 
-Stage 7 focuses on two things that still tersisa after stage 6:
+Stage 7 focuses on two things that still remaining after stage 6:
 
 1. Reduce request additional after hydration for page detail work and reader.
-2. Remove `force-dynamic` that redunand pada page wrapper that not membutuhkannya secara eksplcontentt.
+2. Remove `force-dynamic` that redunand on page wrapper that not membutuhkannya secara eksplcontentt.
 
 The principles that remain unchanged:
 - do not remove features
@@ -19,7 +19,7 @@ Before stage 7, `ReviewSection` always fetched to:
 
 after hydration, even though page work is already rendered on the server.
 
-Sekarang server page `/w/[slug]` load review awal directly through service server:
+Now the `/w/[slug]` server page loads the initial review directly through the server service:
 - `server/services/reviews/listWorkReviews.ts`
 
 Lalu initial result is passed to:
@@ -47,13 +47,13 @@ The client hook can now receive initial seed data:
 
 Dampak:
 - work detail no longer needs to trigger a request comment agregat on mount
-- reader mobile/desktop no longer needs to trigger a request comment preview terpisah on mount
+- reader mobile/desktop no longer needs to trigger a request comment preview separate on mount
 - the full chapter comments page can also render with initial server data
 - aksi reply/edit/like/dislike still uses the same API endpoint
 
 ### 3. Reuse logic review API to service server
 
-GET route review now memakai service same with server page:
+GET route review now uses service same with server page:
 - `server/services/reviews/listWorkReviews.ts`
 - `server/services/api/works/[workId]/reviews/route.ts`
 
@@ -95,15 +95,15 @@ Note:
 
 Stage 7 not especially menurunkan jumlah query DB total; what is reduced is:
 - additional browser requests after hydration
-- function invocation additional for fetch review/comment awal
+- function invocation additional for fetch review/comment initial
 - initial UI latency before reviews/comments appear
 
-## Catatan verifikasi
+## Verification notes
 
 What can be verified in this working environment:
 - scanner baseline statis berjalan
-- hotspot `force-dynamic` turun
-- page detail/reader already membawa seed data awal to komponen client
+- hotspot `force-dynamic` reduced
+- page detail/reader already membawa seed data initial to komponen client
 
 What still cannot be fully claimed in this environment:
 - `npm run verify` end-to-end

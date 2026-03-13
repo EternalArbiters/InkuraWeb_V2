@@ -1,13 +1,17 @@
 "use client";
 
 import * as React from "react";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+import { normalizeInkuraLanguage, type InkuraLanguageCode } from "@/lib/inkuraLanguage";
 
 import AdultConfirmCard from "./components/preferences/AdultConfirmCard";
 import ConfirmAdultDialog from "./components/preferences/ConfirmAdultDialog";
 import ConfirmDeviantLoveDialog from "./components/preferences/ConfirmDeviantLoveDialog";
 import DeviantLoveCard from "./components/preferences/DeviantLoveCard";
+import InkuraLanguageCard from "./components/preferences/InkuraLanguageCard";
 import PreferenceAlerts from "./components/preferences/PreferenceAlerts";
 import PreferredLanguagesCard from "./components/preferences/PreferredLanguagesCard";
 
@@ -20,6 +24,7 @@ type TaxonomyOption = {
 type Prefs = {
   adultConfirmed: boolean;
   deviantLoveConfirmed: boolean;
+  inkuraLanguage: InkuraLanguageCode | null;
   preferredLanguages: string[];
   blockedGenreIds?: string[];
   blockedWarningIds?: string[];
@@ -34,8 +39,15 @@ type PreferencesFormProps = {
 };
 
 export default function PreferencesForm({ initial }: PreferencesFormProps) {
+  const { update } = useSession();
+  const t = useUILanguageText("Page Settings Account");
+  const tForms = useUILanguageText("Shared Forms");
+  const tErrors = useUILanguageText("Shared Errors");
   const [adultConfirmed, setAdultConfirmed] = React.useState(!!initial.adultConfirmed);
   const [deviantLoveConfirmed, setDeviantLoveConfirmed] = React.useState(!!initial.deviantLoveConfirmed);
+  const [inkuraLanguage, setInkuraLanguage] = React.useState<InkuraLanguageCode | null>(
+    normalizeInkuraLanguage(initial.inkuraLanguage)
+  );
   const [preferredLanguages, setPreferredLanguages] = React.useState<string[]>(initial.preferredLanguages || []);
 
   const [confirmAdultOpen, setConfirmAdultOpen] = React.useState(false);
@@ -57,13 +69,14 @@ export default function PreferencesForm({ initial }: PreferencesFormProps) {
       const res = await fetch("/api/me/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adultConfirmed, deviantLoveConfirmed, preferredLanguages }),
+        body: JSON.stringify({ adultConfirmed, deviantLoveConfirmed, inkuraLanguage, preferredLanguages }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to save");
-      setMsg("Saved");
+      if (!res.ok) throw new Error(data?.error || tErrors("Failed to save"));
+      await update();
+      setMsg(tForms("Saved"));
     } catch (e: any) {
-      setErr(String(e?.message || e || "Failed"));
+      setErr(String(e?.message || e || tErrors("Failed")));
     } finally {
       setSaving(false);
     }
@@ -79,7 +92,6 @@ export default function PreferencesForm({ initial }: PreferencesFormProps) {
           if (checked && !adultConfirmed) {
             setConfirmAdultOpen(true);
           } else {
-            // If user unchecks 18+, also disable Deviant Love.
             if (!checked) setDeviantLoveConfirmed(false);
             setAdultConfirmed(checked);
           }
@@ -100,9 +112,11 @@ export default function PreferencesForm({ initial }: PreferencesFormProps) {
 
       <PreferredLanguagesCard preferredLanguages={preferredLanguages} onToggle={toggleLang} />
 
+      <InkuraLanguageCard inkuraLanguage={inkuraLanguage} onChange={setInkuraLanguage} />
+
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? "Saving…" : "Save"}
+          {saving ? tForms("Saving…") : tForms("Save")}
         </Button>
       </div>
 

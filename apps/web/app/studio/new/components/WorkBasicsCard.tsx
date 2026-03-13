@@ -61,7 +61,7 @@ export default function WorkBasicsCard({
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold">Subtitles (optional)</div>
-            <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">Maks. 5 subtitle.</div>
+            <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">Max. 5 subtitles.</div>
           </div>
           <button
             type="button"
@@ -200,7 +200,7 @@ export default function WorkBasicsCard({
           className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
           placeholder="action, romance, comedy"
         />
-        <div className="text-[11px] text-gray-600 dark:text-gray-300">Maks 25 tags.</div>
+        <div className="text-[11px] text-gray-600 dark:text-gray-300">Max. 25 tags.</div>
       </div>
     </div>
   );

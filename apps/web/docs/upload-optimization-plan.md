@@ -1,19 +1,19 @@
 # Upload Optimization Plan (PR 1 Foundation)
 
-Tujuan PR 1:
+Goal of PR 1:
 - menyiapkan **kontrak optimasi upload image** per scope,
-- menambahkan **util optimizer terpusat**,
+- adding **util optimizer terpusat**,
 - menjaga perilaku upload currently still safe (**not yet mengubah flow produksi**),
-- memberi landasan for PR berikutnya without menghilangkan features.
+- memberi landasan for PR next without removing features.
 
-## Scope that must tertutup in akhir roadmap
+## Scope that must tertutup in final roadmap
 
 - `avatar`
 - `covers`
 - `comment_images`
 - `pages`
 
-Scope that **not** dipaksa optimasi pada fase awal:
+Scope that **not** dipaksa optimasi on fase initial:
 - `comment_gifs`
 - `files`
 
@@ -23,7 +23,7 @@ Scope that **not** dipaksa optimasi pada fase awal:
 - Max upload bytes: **2 MB**
 - Output target: **WebP**
 - Resize target: max **640 × 640**
-- Aspect target: **1:1 visual intent**, tetapi **without hard crop** in stage optimasi
+- Aspect target: **1:1 visual intent**, but **without hard crop** in stage optimasi
 - Quality target: **0.82**
 - Metadata: **strip**
 - Note: focus / zoom still dikendalikan UI profile already there is
@@ -40,7 +40,7 @@ Scope that **not** dipaksa optimasi pada fase awal:
 ### Comment Image
 - Max upload bytes: **2 MB**
 - Output target: **WebP**
-- Resize target: max **1280 px** pada scontent terpanjang
+- Resize target: max **1280 px** on scontent terpanjang
 - Quality target: **0.80**
 - Metadata: **strip**
 - Note: hash dedupe laternya must dihitung from **blob hasil optimasi final**
@@ -59,21 +59,21 @@ Scope that **not** dipaksa optimasi pada fase awal:
 
 ## Prinsip keputusan optimasi
 
-1. **Do not upscale file kecil**.
+1. **Do not upscale file small**.
 2. **Normalize orientation** and buang metadata through re-encode canvas.
-3. **Skip recompress** if file already modern, kecil, and not perlu resize.
-4. **Preserve alpha** with output alpha-safe (`image/webp`) if perlu.
-5. **Do not sentuh animated GIF** pada fase awal.
+3. **Skip recompress** if file already modern, small, and not need resize.
+4. **Preserve alpha** with output alpha-safe (`image/webp`) if need.
+5. **Do not sentuh animated GIF** on fase initial.
 6. **PR 1 not mengubah caller**; only menyiapkan pondasi so that PR continuean can mengalihkan flow upload secara bertahap.
 
 ## Dampak PR 1
 
-PR this safe for diterapkan first because:
+PR this safe for applied first because:
 - not yet memaksa flow upload new,
 - not yet mengubah kontrak API caller active,
 - not yet medeactivate fallback server that there is.
 
-Tahap berikutnya akan mengactivekan optimizer pada:
+Stage next will mengactivekan optimizer on:
 1. avatar,
 2. comment images,
 3. comic pages,

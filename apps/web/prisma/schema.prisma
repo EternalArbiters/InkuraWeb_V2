@@ -35,6 +35,7 @@ model User {
   // Deviant Love (separate gate, locked by default)
   deviantLoveConfirmed   Boolean @default(false)
   preferredLanguagesJson String  @default("[]")
+  inkuraLanguage         InkuraLanguage?
 
   // Content
   works      Work[]
@@ -105,6 +106,11 @@ enum UserGender {
   MALE
   FEMALE
   PREFER_NOT_TO_SAY
+}
+
+enum InkuraLanguage {
+  EN
+  ID
 }
 
 enum AnalyticsDeviceType {

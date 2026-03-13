@@ -1,0 +1,1525 @@
+==========
+Navigation
+==========
+
+All = Semua
+Novel = Novel
+Comic = Komik
+Film = Film
+Advanced Search = Pencarian Lanjutan
+Library = Perpustakaan
+History = Riwayat
+Collection = Koleksi
+Notifications = Notifikasi
+Upload = Unggah
+Community = Komunitas
+Account = Akun
+Admin Report = Laporan Admin
+Content Reports = Laporan Konten
+Taxonomy = Taksonomi
+Analytics = Analitik
+Genres = Genre
+Regions = Wilayah
+Translated = Terjemahan
+Categories = Kategori
+Theme = Tema
+Toggle Theme = Ganti Tema
+Logout = Keluar
+Sign In = Masuk
+Profile = Profil
+Settings = Pengaturan
+Donate For Inkura = Donasi untuk Inkura
+Search anything on = Cari apa saja di
+Search = Cari
+Search title... = Cari judul...
+Search tags... = Cari tag...
+Search authors... = Cari penulis...
+Search translator... = Cari penerjemah...
+Search users... = Cari pengguna...
+Title = Judul
+Tags = Tag
+Authors = Penulis
+Translator = Penerjemah
+Users = Pengguna
+User = Pengguna
+Guest = Tamu
+Chat Elya~ = Chat Elya~
+
+==========
+Shared Components
+==========
+
+Back = Kembali
+
+==========
+Shared Errors
+==========
+
+Failed to save = Gagal menyimpan
+Failed = Gagal
+Loading... = Memuat...
+An error occurred. Please try again. = Terjadi kesalahan. Silakan coba lagi.
+Error = Kesalahan
+Token is missing. = Token tidak ada.
+Password must be at least 6 characters. = Kata sandi harus minimal 6 karakter.
+Failed to reset password = Gagal mengatur ulang kata sandi
+Login failed. = Gagal masuk.
+Incorrect email/username or password. = Email/nama pengguna atau kata sandi salah.
+Password confirmation does not match. = Konfirmasi kata sandi tidak cocok.
+Sign-up failed. = Pendaftaran gagal.
+
+==========
+Shared Dialogs
+==========
+
+18+ Warning = Peringatan 18+
+By checking this box, you acknowledge that you are responsible for the content you choose to read. The developers are not responsible for what you access. This is your final warning. = Dengan mencentang kotak ini, kamu mengakui bahwa kamu bertanggung jawab atas konten yang kamu pilih untuk dibaca. Pengembang tidak bertanggung jawab atas apa yang kamu akses. Ini adalah peringatan terakhirmu.
+No, I do not want to continue. = Tidak, saya tidak ingin melanjutkan.
+Yes, I understand. = Ya, saya mengerti.
+Deviant Love Warning = Peringatan Deviant Love
+By checking this box, you confirm that you are not under any pressure and that you accept responsibility for what you choose to view. This content may be extreme. = Dengan mencentang kotak ini, kamu menegaskan bahwa kamu tidak berada di bawah tekanan apa pun dan menerima tanggung jawab atas apa yang kamu pilih untuk lihat. Konten ini mungkin ekstrem.
+
+==========
+Shared Forms
+==========
+
+January = Januari
+February = Februari
+March = Maret
+April = April
+May = Mei
+June = Juni
+July = Juli
+August = Agustus
+September = September
+October = Oktober
+November = November
+December = Desember
+Male = Laki-laki
+Female = Perempuan
+Prefer not to say = Memilih untuk tidak mengatakan
+Birth month = Bulan lahir
+Birth year = Tahun lahir
+Gender = Jenis kelamin
+Select month = Pilih bulan
+Select year = Pilih tahun
+Save = Simpan
+Saving… = Menyimpan…
+Saved = Tersimpan
+Saving... = Menyimpan...
+
+==========
+Page Settings Account
+==========
+
+Account Settings = Pengaturan Akun
+Preferred languages = Bahasa pilihan
+Inkura Language = Bahasa Inkura
+Choose which language Inkura should use for the website UI. = Pilih bahasa yang harus digunakan Inkura untuk UI website.
+Mature / 18+ = Dewasa / 18+
+I'm 18+ (Unlock it) = Saya 18+ (Buka aksesnya)
+Deviant Love = Deviant Love
+Unlock it = Buka aksesnya
+
+==========
+Page Onboarding
+==========
+
+Welcome to Inkura = Selamat datang di Inkura
+Finish setting up your account = Selesaikan pengaturan akunmu
+We need your UI language choice before you continue. Demographic details stay here too so analytics and recommendations can understand your audience better. = Kami memerlukan pilihan bahasa UI-mu sebelum kamu melanjutkan. Detail demografis juga tetap ada di sini agar analitik dan rekomendasi bisa memahami audiensmu dengan lebih baik.
+What language do you want to use on this website? = Bahasa apa yang ingin kamu gunakan di website ini?
+Inkura UI language = Bahasa UI Inkura
+You can change your Inkura UI language later from your account settings. = Kamu bisa mengubah bahasa UI Inkura nanti dari pengaturan akunmu.
+Continue to Inkura = Lanjut ke Inkura
+
+==========
+Page Sign In
+==========
+
+Sign in to Inkura = Masuk ke Inkura
+Use your email or username. = Gunakan email atau nama pengguna kamu.
+Email or username = Email atau nama pengguna
+Password = Kata sandi
+Processing... = Memproses...
+Continue with Google = Lanjutkan dengan Google
+Forgot password? = Lupa kata sandi?
+Don't have an account? = Belum punya akun?
+Sign Up = Daftar
+
+==========
+Page Sign Up
+==========
+
+Sign up for Inkura = Daftar ke Inkura
+Display name (optional) = Nama tampilan (opsional)
+Username = Nama pengguna
+Email = Email
+Password (min 6) = Kata sandi (min 6)
+Confirm password = Konfirmasi kata sandi
+Already have an account? = Sudah punya akun?
+
+==========
+Page Forgot Password
+==========
+
+Forgot password = Lupa kata sandi
+Enter your email or username. = Masukkan email atau nama pengguna kamu.
+Create reset token = Buat token reset
+If the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.) = Jika akun ditemukan, instruksi reset kata sandi telah dibuat. (Untuk production, sambungkan pengiriman email. Jika kamu perlu token ditampilkan, set SHOW_RESET_TOKEN=1.)
+Reset token (debug) = Token reset (debug)
+Continue to password reset = Lanjut ke reset kata sandi
+
+==========
+Page Reset Password
+==========
+
+Reset password = Atur ulang kata sandi
+Enter a new password. = Masukkan kata sandi baru.
+New password = Kata sandi baru
+Password updated successfully. Redirecting to sign in... = Kata sandi berhasil diperbarui. Mengarahkan ke halaman masuk...
+Reset = Atur ulang
+
+==========
+Shared Error View
+==========
+
+Try again = Coba lagi
+Go to Home = Pergi ke Beranda
+If this keeps happening, try refreshing the page or signing in again. If needed, report it to the admin. = Jika ini terus terjadi, coba muat ulang halaman atau masuk lagi. Jika perlu, laporkan ke admin.
+Error ID: = ID Error:
+
+==========
+Shared Floating Actions
+==========
+
+Scroll to top = Gulir ke atas
+Chat Elya = Chat Elya
+Liked = Disukai
+Like chapter = Sukai chapter
+Load more = Muat lebih banyak
+
+==========
+Page Error States
+==========
+
+An Error Occurred = Terjadi Kesalahan
+Something went wrong on the application side. You can try again. = Terjadi masalah di sisi aplikasi. Kamu bisa mencoba lagi.
+A fatal application error occurred. You can try again. = Terjadi kesalahan aplikasi yang fatal. Kamu bisa mencoba lagi.
+Browse error = Kesalahan Browse
+An error occurred while loading the list of works. Please try again. = Terjadi kesalahan saat memuat daftar karya. Silakan coba lagi.
+Reader error = Kesalahan Reader
+An error occurred while loading the chapter. Try again or return to the work page. = Terjadi kesalahan saat memuat chapter. Coba lagi atau kembali ke halaman karya.
+Search error = Kesalahan Pencarian
+An error occurred while loading the search results. Please try again. = Terjadi kesalahan saat memuat hasil pencarian. Silakan coba lagi.
+Studio error = Kesalahan Studio
+An error occurred while loading Studio. Try again or return to the works list. = Terjadi kesalahan saat memuat Studio. Coba lagi atau kembali ke daftar karya.
+Failed to load work = Gagal memuat karya
+An error occurred while loading the work page. Please try again. = Terjadi kesalahan saat memuat halaman karya. Silakan coba lagi.
+
+==========
+Page Home
+==========
+
+Home = Beranda
+Trending Comics = Komik Ngetren
+Trending Novels = Novel Ngetren
+New Originals = Karya Orisinal Baru
+Latest Translations = Terjemahan Terbaru
+Recently Updated = Baru Diperbarui
+See all = Lihat semua
+No items. = Belum ada isi.
+
+==========
+Page Contact
+==========
+
+Contact = Kontak
+Placeholder contact page. = Halaman kontak placeholder.
+Coming soon. For now, you can go back to the feed. = Segera hadir. Untuk sekarang, kamu bisa kembali ke feed.
+Return to All = Kembali ke Semua
+
+==========
+Page Donate
+==========
+
+Thank you for supporting Inkura's development. Scan the QR code below to donate. = Terima kasih telah mendukung pengembangan Inkura. Pindai kode QR di bawah untuk berdonasi.
+Donate QR = QR Donasi
+
+==========
+Page Newsletter
+==========
+
+Newsletter = Newsletter
+Placeholder. A subscribe form will be added later. = Placeholder. Form langganan akan ditambahkan nanti.
+Coming soon. For now, go back to the feed. = Segera hadir. Untuk sekarang, kembali ke feed.
+
+==========
+Page Filters
+==========
+
+Filter = Filter
+Filters currently live in Search (MVP). This page is reserved for advanced filters later. = Filter saat ini ada di Search (MVP). Halaman ini disiapkan untuk filter lanjutan nanti.
+For now, you can filter by type, sort, and keyword on the Search page. Later, this can be expanded with genre, region, tag, status, minimum rating, and more. = Untuk sekarang, kamu bisa memfilter berdasarkan tipe, urutan, dan kata kunci di halaman Search. Nanti ini bisa diperluas dengan genre, wilayah, tag, status, rating minimum, dan lainnya.
+Continue to Search = Lanjut ke Search
+
+==========
+Page Terms
+==========
+
+Terms & Conditions = Syarat & Ketentuan
+Terms = Syarat
+Placeholder terms & conditions. = Placeholder syarat & ketentuan.
+This will later be filled with upload rules (copyright), community guidelines, and moderation policies. = Nanti ini akan diisi dengan aturan unggah (hak cipta), pedoman komunitas, dan kebijakan moderasi.
+
+==========
+Page Privacy
+==========
+
+Privacy Policy = Kebijakan Privasi
+Privacy = Privasi
+Placeholder privacy policy. = Placeholder kebijakan privasi.
+This will later be filled with a complete privacy policy (collected data, cookies, analytics, and user rights). = Nanti ini akan diisi dengan kebijakan privasi lengkap (data yang dikumpulkan, cookie, analitik, dan hak pengguna).
+
+==========
+Page Upload
+==========
+
+Uploads have moved to Creator Studio (Work → Chapter → text/pages). = Upload telah dipindahkan ke Creator Studio (Work → Chapter → teks/halaman).
+Creator Studio = Creator Studio
+Create a Work (NOVEL/COMIC), create a Chapter, then upload: text for novels or images for comics. = Buat Work (NOVEL/COMIC), buat Chapter, lalu unggah: teks untuk novel atau gambar untuk komik.
+Open Studio = Buka Studio
+Create New Work = Buat Work Baru
+Reader = Reader
+The reader supports NOVEL (text) and COMIC (vertical pages). = Reader mendukung NOVEL (teks) dan COMIC (halaman vertikal).
+Explore = Jelajahi
+
+==========
+Page Film
+==========
+
+Sorry, the movie feature hasn't been added at this time. You'll be notified once it's added. = Maaf, fitur film belum ditambahkan saat ini. Kamu akan diberi tahu saat sudah tersedia.
+
+==========
+Page Work Detail
+==========
+
+18+ Mature Content = Konten Dewasa 18+
+This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Deviant Love. Untuk membacanya, kamu perlu membuka 18+ dan Deviant Love di Settings.
+This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
+Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Deviant Love masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Deviant Love.
+NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content". = NSFW masih terkunci. Pastikan kamu sudah mencentang "I am 18+" dan mengaktifkan "Include mature content".
+
+==========
+Page Reader
+==========
+
+This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Deviant Love. Untuk membacanya, kamu perlu membuka 18+ dan Deviant Love di Settings.
+This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
+Open Settings (unlock 18+ + Deviant Love) = Buka Settings (buka 18+ + Deviant Love)
+Open Settings (unlock + opt in to 18+) = Buka Settings (buka + ikut serta 18+)
+Back to work = Kembali ke karya
+No pages yet = Belum ada halaman
+This chapter has no pages yet. (Creators can upload them via Studio.) = Chapter ini belum punya halaman. (Creator bisa mengunggahnya lewat Studio.)
+No text yet = Belum ada teks
+This chapter has no text yet. = Chapter ini belum punya teks.
+
+==========
+Page Reader Comments
+==========
+
+This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Deviant Love. Untuk membaca dan berkomentar, kamu perlu membuka 18+ dan Deviant Love di Settings.
+This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membaca dan berkomentar, kamu perlu membukanya dan ikut serta di Settings.
+Back to reader = Kembali ke reader
+Go to work page = Pergi ke halaman karya
+Comments = Komentar
+
+==========
+Sweep app/admin-report/ui/AdminReportClient.tsx
+==========
+
+Example: Login bug, chapter cannot be opened, etc. = Contoh: bug login, chapter tidak bisa dibuka, dll.
+Explain the issue and the steps to reproduce it. = Jelaskan masalahnya dan langkah untuk mereproduksinya.
+Latest 100 = 100 terbaru
+Link (optional) = Tautan (opsional)
+No reports yet. = Belum ada laporan.
+Send a report to the admin = Kirim laporan ke admin
+
+
+==========
+Sweep app/admin/analytics/AdminAnalyticsActions.tsx
+==========
+
+Failed to rebuild analytics = Gagal membangun ulang analitik
+
+
+==========
+Sweep app/admin/analytics/AdminAnalyticsDashboard.tsx
+==========
+
+Admin activity is excluded from the analytics aggregate. = Aktivitas admin dikecualikan dari agregat analitik.
+Audience profile = Profil audiens
+Audit view = Tampilan audit
+Avg daily active = Rata-rata aktif harian
+Bookmark conversion = Konversi bookmark
+By age band = Berdasarkan rentang usia
+By gender = Berdasarkan gender
+Chapter reads = Pembacaan chapter
+Chapter views = Tampilan chapter
+Choose a quick preset or a custom range to read traffic and engagement patterns. = Pilih preset cepat atau rentang kustom untuk membaca pola trafik dan engagement.
+Comment conversion = Konversi komentar
+Creators with the highest reach and engagement. = Creator dengan jangkauan dan engagement tertinggi.
+Engagement mix = Komposisi engagement
+Excluded admin accounts = Akun admin yang dikecualikan
+Genres attracting the most readers. = Genre yang menarik pembaca terbanyak.
+Included accounts = Akun yang disertakan
+New users = Pengguna baru
+No username = Tanpa username
+Non-admin accounts counted in the active range. = Akun non-admin yang dihitung dalam rentang aktif.
+Open details to see which accounts are counted and which admin accounts are excluded. = Buka detail untuk melihat akun mana yang dihitung dan akun admin mana yang dikecualikan.
+Overall performance of the primary interactions in the active range. = Performa keseluruhan dari interaksi utama dalam rentang aktif.
+Page views = Tampilan halaman
+Range active = Aktif dalam rentang
+Search insights = Insight pencarian
+Search zero-result rate = Rasio pencarian tanpa hasil
+See detail = Lihat detail
+The busiest content based on total views in the active range. = Konten tersibuk berdasarkan total tampilan dalam rentang aktif.
+The most frequently used queries and how effective their results are. = Kueri yang paling sering digunakan dan seberapa efektif hasilnya.
+Top creators = Creator teratas
+Top genres = Genre teratas
+Top rows = Baris teratas
+Top works = Work teratas
+Traffic trend = Tren trafik
+Unique visitors and active users per day. = Pengunjung unik dan pengguna aktif per hari.
+Unknown creator = Creator tidak diketahui
+User breakdown by gender and age band for the active range. = Rincian pengguna berdasarkan gender dan rentang usia untuk rentang aktif.
+Work reads = Pembacaan work
+Work views = Tampilan work
+
+
+==========
+Sweep app/admin/analytics/details/page.tsx
+==========
+
+Admin account = Akun admin
+Admin accounts detected but not used in the primary aggregate. = Akun admin terdeteksi tetapi tidak digunakan dalam agregat utama.
+Excluded admin accounts = Akun admin yang dikecualikan
+Excluded admin events = Event admin yang dikecualikan
+First seen = Pertama terlihat
+Guest sessions = Sesi tamu
+Included accounts = Akun yang disertakan
+Included accounts and excluded admin activity = Akun yang disertakan dan aktivitas admin yang dikecualikan
+Included events = Event yang disertakan
+Last seen = Terakhir terlihat
+Latest sample events used by analytics after admin activity is filtered out. = Contoh event terbaru yang digunakan analitik setelah aktivitas admin difilter.
+No non-admin accounts have been recorded in this range yet. = Belum ada akun non-admin yang tercatat dalam rentang ini.
+Recent included events = Event yang disertakan terbaru
+There are no events to display for this range yet. = Belum ada event untuk ditampilkan pada rentang ini.
+There is no admin activity that needs to be excluded in this range yet. = Belum ada aktivitas admin yang perlu dikecualikan dalam rentang ini.
+This account is included in the primary analytics dataset. = Akun ini disertakan dalam dataset analitik utama.
+
+
+==========
+Sweep app/admin/analytics/page.tsx
+==========
+
+Audience, content, and growth in one place = Audiens, konten, dan pertumbuhan di satu tempat
+
+
+==========
+Sweep app/admin/error.tsx
+==========
+
+Admin page error = Kesalahan halaman admin
+
+
+==========
+Sweep app/admin/notify/AdminNotifyClient.tsx
+==========
+
+Link (optional) = Tautan (opsional)
+Message is required = Pesan wajib diisi
+Target user is required (ex: @username) = Target pengguna wajib diisi (contoh: @username)
+To (@username or email) = Kepada (@username atau email)
+Write your message to the user… = Tulis pesanmu untuk pengguna…
+
+
+==========
+Sweep app/admin/notify/page.tsx
+==========
+
+Notify user = Notifikasi user
+Send a direct notification to a specific user. = Kirim notifikasi langsung ke pengguna tertentu.
+
+
+==========
+Sweep app/admin/reports/AdminReportsClient.tsx
+==========
+
+All reports have been handled. = Semua laporan sudah ditangani.
+Comment not found (maybe deleted). = Komentar tidak ditemukan (mungkin sudah dihapus).
+In: (unknown target) = Di: (target tidak diketahui)
+No open reports = Tidak ada laporan terbuka
+
+
+==========
+Sweep app/admin/reports/page.tsx
+==========
+
+Admin Reports = Laporan Admin
+
+
+==========
+Sweep app/admin/taxonomy/deviant-love/page.tsx
+==========
+
+Deviant Love Tags = Tag Deviant Love
+
+
+==========
+Sweep app/admin/taxonomy/layout.tsx
+==========
+
+Admin • Taxonomy = Admin • Taksonomi
+Manage genres, tags, warnings, and Deviant Love directly from the web UI. = Kelola genre, tag, warning, dan Deviant Love langsung dari web UI.
+
+
+==========
+Sweep app/admin/taxonomy/warnings/page.tsx
+==========
+
+Warning Tags = Tag Peringatan
+
+
+==========
+Sweep app/all/page.tsx
+==========
+
+Advanced search = Pencarian lanjutan
+All Works = Semua Work
+Any publish type = Jenis publikasi apa saja
+Author (username / name) = Penulis (username / nama)
+Best rated = Rating terbaik
+Most liked = Paling disukai
+Translator (username / name) = Penerjemah (username / nama)
+
+
+==========
+Sweep app/app-download/page.tsx
+==========
+
+App Download = Unduh Aplikasi
+Placeholder. Play Store / App Store links will be added later. = Placeholder. Tautan Play Store / App Store akan ditambahkan nanti.
+
+
+==========
+Sweep app/auth/error/page.tsx
+==========
+
+Sign-in Failed = Gagal masuk
+
+
+==========
+Sweep app/browse/_components/BrowseListPage.tsx
+==========
+
+Advanced search = Pencarian lanjutan
+
+
+==========
+Sweep app/chat/page.tsx
+==========
+
+Elya can't reply right now (⁠╥⁠﹏⁠╥⁠) = Elya belum bisa membalas sekarang (⁠╥⁠﹏⁠╥⁠)
+Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠) = Elya sedang kesulitan membalas... (⁠╥⁠﹏⁠╥⁠)
+Elya is typing... = Elya sedang mengetik...
+Hi~ I'm here to listen to you = Hai~ Aku di sini untuk mendengarkanmu
+Send message = Kirim pesan
+Write something to Elya... = Tulis sesuatu untuk Elya...
+
+
+==========
+Sweep app/comic/page.tsx
+==========
+
+Advanced search = Pencarian lanjutan
+Any publish type = Jenis publikasi apa saja
+Author (username / name) = Penulis (username / nama)
+Best rated = Rating terbaik
+Most liked = Paling disukai
+Translator (username / name) = Penerjemah (username / nama)
+
+
+==========
+Sweep app/components/ThumbCropper.tsx
+==========
+
+Pick image = Pick gambar
+
+
+==========
+Sweep app/components/WorksGrid.tsx
+==========
+
+No works = Tidak ada work
+There is no data to display yet. = Belum ada data untuk ditampilkan.
+
+
+==========
+Sweep app/components/landing/LandingFooter.tsx
+==========
+
+Follow Us = Ikuti Kami
+
+
+==========
+Sweep app/components/landing/ScrollToTopButton.tsx
+==========
+
+Scroll to Top = Gulir ke Atas
+
+
+==========
+Sweep app/components/library/ReadingProgressCard.tsx
+==========
+
+Continue reading = Lanjut membaca
+No cover = Tidak ada cover
+
+
+==========
+Sweep app/components/reader/DesktopReaderDock.tsx
+==========
+
+All chapters = Semua chapter
+
+
+==========
+Sweep app/components/reader/ProtectedNovelContent.tsx
+==========
+
+Long-swipe left/right to turn the page = Geser panjang kiri/kanan untuk membalik halaman
+Novel reader content = Konten reader novel
+
+
+==========
+Sweep app/components/ui-language/UILanguageProvider.tsx
+==========
+
+useUILanguage must be used inside <UILanguageProvider>. = useUILanguage harus digunakan di dalam <UILanguageProvider>.
+
+
+==========
+Sweep app/components/ui/FloatingNotice.tsx
+==========
+
+Dismiss notification = Tutup notifikasi
+
+
+==========
+Sweep app/components/user/FollowToggleButton.tsx
+==========
+
+Failed to update follow status = Gagal memperbarui status follow
+
+
+==========
+Sweep app/components/user/ProfileShareButton.tsx
+==========
+
+Inkura profile = Profil Inkura
+
+
+==========
+Sweep app/components/user/PublicProfileActionsMenu.tsx
+==========
+
+Failed to submit report = Gagal mengirim laporan
+Failed to update block status = Gagal memperbarui status blokir
+Profile actions = Aksi profil
+
+
+==========
+Sweep app/components/work/AddToListButton.tsx
+==========
+
+Add to List = Tambahkan ke List
+Add to list = Tambahkan ke list
+Create list = Buat list
+
+
+==========
+Sweep app/components/work/CommentSection.tsx
+==========
+
+A report reason is required = Alasan laporan wajib diisi
+Comment cannot be empty = Komentar tidak boleh kosong
+Comment hidden = Komentar disembunyikan
+Comment shown again = Komentar ditampilkan lagi
+Comment pinned = Komentar dipin
+Comment unpinned = Pin komentar dilepas
+Failed to delete comment = Gagal menghapus komentar
+Failed to dislike comment = Gagal menghapus suka komentar
+Failed to edit comment = Gagal mengedit komentar
+Failed to like comment = Gagal menyukai komentar
+Failed to pin comment = Gagal mem-pin komentar
+Failed to send reply = Gagal mengirim balasan
+Failed to send report = Gagal mengirim laporan
+Failed to update comment = Gagal memperbarui komentar
+No comments yet. = Belum ada komentar.
+Report sent. Thank you! = Laporan terkirim. Terima kasih!
+
+
+==========
+Sweep app/components/work/InteractiveWorkCard.tsx
+==========
+
+No cover = Tidak ada cover
+Translation language = Bahasa terjemahan
+
+
+==========
+Sweep app/components/work/LikeButton.tsx
+==========
+
+Like work = Sukai work
+
+
+==========
+Sweep app/components/work/ReviewSection.tsx
+==========
+
+Loading reviews… = Memuat ulasan…
+No reviews yet. Be the first! = Belum ada ulasan. Jadilah yang pertama!
+Sort reviews = Urutkan ulasan
+
+
+==========
+Sweep app/components/work/SeriesArcsPanel.tsx
+==========
+
+More in this series = Lainnya di series ini
+
+
+==========
+Sweep app/components/work/WorkChaptersWebtoon.tsx
+==========
+
+No chapters yet. = Belum ada chapter.
+No image = Tidak ada gambar
+
+
+==========
+Sweep app/components/work/WorkRowCard.tsx
+==========
+
+No cover = Tidak ada cover
+
+
+==========
+Sweep app/components/work/comments/CommentBody.tsx
+==========
+
+Tap to hide = Ketuk untuk menyembunyikan
+Tap to reveal = Ketuk untuk menampilkan
+
+
+==========
+Sweep app/components/work/comments/CommentCard.tsx
+==========
+
+Cancel edit = Batalkan edit
+Cancel reply = Batalkan balasan
+Example: spam, hate speech, harassment... = Contoh: spam, ujaran kebencian, pelecehan...
+Report reason = Alasan laporan
+Save edit = Simpan edit
+Send reply = Kirim balasan
+Write a reply... = Tulis balasan...
+
+
+==========
+Sweep app/components/work/comments/CommentComposer.tsx
+==========
+
+Attach image/GIF = Lampirkan gambar/GIF
+Insert link = Sisipkan tautan
+Write a comment... = Tulis komentar...
+
+
+==========
+Sweep app/components/work/reviews/ReviewCard.tsx
+==========
+
+· edited = · diedit
+
+
+==========
+Sweep app/components/work/reviews/ReviewModal.tsx
+==========
+
+Short summary = Ringkasan singkat
+Write your thoughts… = Tulis pendapatmu…
+
+
+==========
+Sweep app/content/[slug]/page.tsx
+==========
+
+Work detail placeholder so all /content/* links do not 404. = Placeholder detail work agar semua link /content/* tidak menghasilkan 404.
+
+
+==========
+Sweep app/creator/[slug]/page.tsx
+==========
+
+Creator profile placeholder so /creator/* links do not 404. = Placeholder profil creator agar /creator/* tidak menghasilkan 404.
+
+
+==========
+Sweep app/events/[slug]/page.tsx
+==========
+
+Event page placeholder so /events/* links do not 404. = Placeholder halaman event agar /events/* tidak menghasilkan 404.
+
+
+==========
+Sweep app/forum/[slug]/page.tsx
+==========
+
+Forum thread placeholder so /forum/* links do not 404. = Placeholder thread forum agar /forum/* tidak menghasilkan 404.
+
+
+==========
+Sweep app/genre/page.tsx
+==========
+
+No genres yet. Add them via seed / studio. = Tidak ada genre yet. add them via seed / studio.
+Select a genre = Pilih genre
+
+
+==========
+Sweep app/layout.tsx
+==========
+
+An International Platform For Original Works Made Without AI = Platform Internasional untuk Karya Orisinal yang Dibuat Tanpa AI
+
+
+==========
+Sweep app/library/bookmarks/page.tsx
+==========
+
+All works you have bookmarked. = Semua work yang sudah kamu bookmark.
+
+
+==========
+Sweep app/library/page.tsx
+==========
+
+Continue Reading = Lanjut Membaca
+No bookmarks yet. = Belum ada bookmark.
+No lists yet. = Belum ada list.
+No reading history yet. = Belum ada riwayat baca.
+Your Collections = Koleksimu
+
+
+==========
+Sweep app/lists/[slug]/ListPageShell.tsx
+==========
+
+Empty list = List kosong
+There is no work to show yet. = Belum ada work untuk ditampilkan.
+
+
+==========
+Sweep app/lists/[slug]/listWorksGrid.tsx
+==========
+
+No works = Tidak ada work
+Remove from list = Hapus dari list
+The works in this list cannot be shown to the current viewer. = Work dalam list ini tidak dapat ditampilkan kepada viewer saat ini.
+
+
+==========
+Sweep app/lists/[slug]/ownerControls.tsx
+==========
+
+Failed to save. = Gagal menyimpan.
+Manage list = Kelola list
+Network error. = Kesalahan jaringan.
+Public (shareable) = Publik (bisa dibagikan)
+Title cannot be empty. = Judul tidak boleh kosong.
+
+
+==========
+Sweep app/lists/new/newListForm.tsx
+==========
+
+Description (optional) = Deskripsi (opsional)
+Failed to create list. = Gagal membuat list.
+Network error. = Kesalahan jaringan.
+Title is required. = Judul wajib diisi.
+short description... = deskripsi singkat...
+— works inside the list still follow the viewer's 18+/Deviant Love gate = — work di dalam list tetap mengikuti gate 18+/Deviant Love milik viewer
+
+
+==========
+Sweep app/lists/new/page.tsx
+==========
+
+New Collection = Baru koleksi
+
+
+==========
+Sweep app/lists/page.tsx
+==========
+
+No items yet = Tidak ada items yet
+No list yet. = Belum ada list.
+
+
+==========
+Sweep app/notifications/NotificationsClient.tsx
+==========
+
+No notification yet = Tidak ada notifikasi yet
+
+
+==========
+Sweep app/novel/page.tsx
+==========
+
+Advanced search = Pencarian lanjutan
+Any publish type = Jenis publikasi apa saja
+Author (username / name) = Penulis (username / nama)
+Best rated = Rating terbaik
+Most liked = Paling disukai
+Translator (username / name) = Penerjemah (username / nama)
+
+
+==========
+Sweep app/profile/comments/page.tsx
+==========
+
+All Comments = Semua Komentar
+Sort comments = Urutkan komentar
+
+
+==========
+Sweep app/profile/page.tsx
+==========
+
+All comments = Semua komentar
+All reviews = Semua ulasan
+Published Works = Published Work
+Recent Comments = Komentar Terbaru
+Recent Reviews = Ulasan Terbaru
+
+
+==========
+Sweep app/profile/reviews/page.tsx
+==========
+
+All Reviews = Semua Ulasan
+Sort reviews = Urutkan ulasan
+
+
+==========
+Sweep app/reset-password/page.tsx
+==========
+
+Failed to reset password. = Gagal mengatur ulang kata sandi.
+Minimum 6 characters = Minimal 6 karakter
+Repeat password = Ulangi kata sandi
+Reset Password = Atur Ulang Kata Sandi
+Token is missing from the URL. = Token tidak ada di URL.
+
+
+==========
+Sweep app/search/_components/ActiveFiltersBar.tsx
+==========
+
+Active filters: = Filter aktif:
+
+
+==========
+Sweep app/search/_components/SearchForm.tsx
+==========
+
+AND (all included) = AND (semua disertakan)
+Advanced Filters = Filter Lanjutan
+Any genre = Genre apa saja
+Best rated = Rating terbaik
+Deviant include mode: = Mode penyertaan deviant:
+Enable it in Settings → Account. = Aktifkan di Settings → Account.
+Genre include mode: = Mode penyertaan genre:
+Hide (default) = Sembunyikan (default)
+Most liked = Paling disukai
+NSFW include mode: = Mode penyertaan NSFW:
+OR (any included) = OR (salah satu disertakan)
+Search for NSFW tag... = Cari tag NSFW...
+Search for deviant love tag... = Cari tag deviant love...
+Search for genre... = Cari genre...
+Search for title, description.... = Cari judul, deskripsi....
+Status / Publish / Chapters = Status / Publikasi / Chapter
+username / name = username / nama
+
+
+==========
+Sweep app/search/_components/WorksGrid.tsx
+==========
+
+No results = Tidak ada results
+Try another keyword or change the filters. = Coba kata kunci lain atau ubah filternya.
+
+
+==========
+Sweep app/search/page.tsx
+==========
+
+Advance Search = Pencarian Lanjutan
+
+
+==========
+Sweep app/search/users/page.tsx
+==========
+
+Search username / name = Cari username / nama
+
+
+==========
+Sweep app/settings/history/page.tsx
+==========
+
+No history yet. = Belum ada riwayat.
+Reading History = Membaca Riwayat
+
+
+==========
+Sweep app/settings/profile/ProfileForm.tsx
+==========
+
+Upload failed = Unggah gagal
+
+
+==========
+Sweep app/settings/profile/components/AvatarPickerCard.tsx
+==========
+
+Signed in as = Masuk sebagai
+
+
+==========
+Sweep app/settings/profile/components/ProfileFieldsCard.tsx
+==========
+
+3–24 chars. Use letters, numbers, dash, underscore. = 3–24 karakter. Gunakan huruf, angka, tanda hubung, dan garis bawah.
+Display name = Nama tampilan
+Maximum 200 characters. = Maksimal 200 karakter.
+Maximum 5 links. Give each one a short title so it displays neatly like a link sheet. = Maksimal 5 tautan. Beri masing-masing judul singkat agar tampil rapi seperti lembar tautan.
+Profile links = Tautan profil
+Tell readers a little about yourself = Ceritakan sedikit tentang dirimu kepada pembaca
+Your display name = Nama tampilanmu
+
+
+==========
+Sweep app/settings/profile/page.tsx
+==========
+
+Edit Profile = Edit Profil
+
+
+==========
+Sweep app/studio/StudioWorksGridClient.tsx
+==========
+
+Delete failed = Gagal menghapus
+No cover = Tidak ada cover
+Open / Edit = Buka / Edit
+View public page = Lihat halaman publik
+
+
+==========
+Sweep app/studio/new/NewWorkForm.tsx
+==========
+
+Arc order = Urutan arc
+Example: The Eruption Saga = Contoh: The Eruption Saga
+Series (optional) = Series (opsional)
+Series title = Judul series
+
+
+==========
+Sweep app/studio/new/components/DeviantLoveCard.tsx
+==========
+
+18+ / Mature = 18+ / Dewasa
+Deviant Love Tags = Tag Deviant Love
+
+
+==========
+Sweep app/studio/new/components/PublishTypeCard.tsx
+==========
+
+1 week = 1 minggu
+Company / Publisher (optional) = Perusahaan / Penerbit (opsional)
+Copyright warning = Peringatan hak cipta
+Example: Kakao, Naver, Shueisha, etc. = Contoh: Kakao, Naver, Shueisha, dll.
+Example: Original author name / studio / etc. = Contoh: nama penulis asli / studio / dll.
+Example: Translator name / group = Contoh: nama penerjemah / grup
+Example: reupload reason, additional info, etc. = Contoh: alasan reupload, info tambahan, dll.
+Link source / raw / original posting = Tautkan sumber / raw / posting asli
+Notes (optional) = Catatan (opsional)
+Original (Author) = Original (Penulis)
+Original author credit (required) = Kredit penulis asli (wajib)
+Original translator credit (required) = Kredit penerjemah asli (wajib)
+Publish type = Jenis publikasi
+Reupload (Reuploader) = Reupload (Pengunggah Ulang)
+Source URL (required) = URL sumber (wajib)
+Translation (Translator) = Terjemahan (Penerjemah)
+
+
+==========
+Sweep app/studio/new/components/WorkBasicsCard.tsx
+==========
+
+Comic type = Jenis komik
+Max. 25 tags. = Max. 25 tag.
+Max. 5 subtitles. = Maks. 5 subtitle.
+Short synopsis... = Sinopsis singkat...
+Subtitles (optional) = Subtitle (opsional)
+Tags (comma) = Tag (koma)
+Work Title = Judul Work
+action, romance, comedy = aksi, romansa, komedi
+
+
+==========
+Sweep app/studio/new/page.tsx
+==========
+
+Create new work = Buat work baru
+
+
+==========
+Sweep app/studio/series/StudioSeriesManagerClient.tsx
+==========
+
+Add a work into the selected series. = Tambahkan work ke series yang dipilih.
+Create a new series = Buat series baru
+Drag to reorder, or use move buttons. = Seret untuk mengurutkan ulang, atau gunakan tombol pindah.
+Manage series = Kelola series
+Move down = Turunkan
+Move up = Naikkan
+Request failed = Permintaan gagal
+Series title = Judul series
+Unassigned works = Work yang belum ditetapkan
+
+
+==========
+Sweep app/studio/series/page.tsx
+==========
+
+Manage series = Kelola series
+
+
+==========
+Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
+==========
+
+Delete chapter = Hapus chapter
+Delete failed = Gagal menghapus
+
+
+==========
+Sweep app/studio/works/[workId]/PublishToggle.tsx
+==========
+
+Failed to update status = Gagal memperbarui status
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/ChapterEditForm.tsx
+==========
+
+18+ / Mature (Chapter) = 18+ / Dewasa (Chapter)
+Author message (optional) = Pesan penulis (opsional)
+Chapter Label = Label Chapter
+Chapter Number = Nomor Chapter
+Chapter Order = Urutan Chapter
+Chapter cover = Cover chapter
+Chapter label = Label chapter
+Comic pages = Halaman komik
+Comic pages are managed on the "Manage Pages" page. = Halaman komik dikelola di halaman "Kelola Halaman".
+Content is required for NOVEL = Konten wajib diisi untuk NOVEL
+Fill in the Chapter Label if auto mode is turned off. = Isi Label Chapter jika mode otomatis dimatikan.
+Message from the author/uploader for this chapter... = Pesan dari penulis/pengunggah untuk chapter ini...
+NSFW (Chapter) = NSFW (Chapter)
+Prolog, Bonus, Chapter 0... = Prolog, Bonus, Chapter 0...
+Upload error = Kesalahan unggah
+Upload failed = Unggah gagal
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/page.tsx
+==========
+
+Edit Chapter = Edit Chapter
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx
+==========
+
+Upload error = Kesalahan unggah
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/ChapterCoverCard.tsx
+==========
+
+Chapter cover = Cover chapter
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.tsx
+==========
+
+Move page down = Turunkan halaman
+Move page up = Naikkan halaman
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/UploadPagesCard.tsx
+==========
+
+Upload pages = Unggah halaman
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/page.tsx
+==========
+
+Manage Pages = Kelola Halaman
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/new/ChapterCreateForm.tsx
+==========
+
+18+ / Mature (Chapter) = 18+ / Dewasa (Chapter)
+Auto chapter label = Label chapter otomatis
+Chapter created but id is missing = Chapter berhasil dibuat tetapi id tidak ada
+Comic Pages = Halaman Komik
+Content is required for NOVEL = Konten wajib diisi untuk NOVEL
+Display Label = Label Tampilan
+Failed to save the pages. The chapter was created; please re-upload them in Manage Pages. = Gagal menyimpan halaman. Chapter sudah dibuat; silakan unggah ulang di Kelola Halaman.
+NSFW (Chapter) = NSFW (Chapter)
+Prolog / Bonus / Chapter 0 = Prolog / Bonus / Chapter 0
+Sort Number = Nomor Urut
+Upload error = Kesalahan unggah
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/new/page.tsx
+==========
+
+New Chapter = Baru Chapter
+
+
+==========
+Sweep app/studio/works/[workId]/edit/WorkEditForm.tsx
+==========
+
+Failed to process cover = Gagal memproses cover
+Original author credit is required = Kredit penulis asli wajib diisi
+Original translator credit is required for Reupload = Kredit penerjemah asli wajib diisi untuk Reupload
+Source URL is required = URL sumber wajib diisi
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/CreditsSourceFields.tsx
+==========
+
+Credit & source = Kredit & sumber
+Example: Kakao, Naver, Shueisha, etc. = Contoh: Kakao, Naver, Shueisha, dll.
+Example: Translator name / group = Contoh: nama penerjemah / grup
+Original author credit (required) = Kredit penulis asli (wajib)
+Original translator credit (required) = Kredit penerjemah asli (wajib)
+Publisher (optional) = Penerbit (opsional)
+Source URL (required) = URL sumber (wajib)
+Uploader note (optional) = Catatan pengunggah (opsional)
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
+==========
+
+Arc order = Urutan arc
+Example: The Eruption Saga = Contoh: The Eruption Saga
+Series title = Judul series
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkBasicsFields.tsx
+==========
+
+Comic type = Jenis komik
+Max. 5 subtitles. = Maks. 5 subtitle.
+Subtitles (optional) = Subtitle (opsional)
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkCoverCard.tsx
+==========
+
+Optimizing cover... = Mengoptimalkan cover...
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkPublishTypeCard.tsx
+==========
+
+1 week = 1 minggu
+Copyright warning = Peringatan hak cipta
+Publish type = Jenis publikasi
+
+
+==========
+Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
+==========
+
+18+ / Mature = 18+ / Dewasa
+Deviant Love Tags = Tag Deviant Love
+
+
+==========
+Sweep app/studio/works/[workId]/edit/page.tsx
+==========
+
+Edit work = Edit work
+
+
+==========
+Sweep app/studio/works/[workId]/page.tsx
+==========
+
+Edit chapter = Edit chapter
+Manage pages = Kelola halaman
+No chapters yet. = Belum ada chapter.
+
+
+==========
+Sweep app/u/[username]/page.tsx
+==========
+
+Published Works = Published Work
+Recent Reviews = Ulasan Terbaru
+
+
+==========
+Sweep app/w/[slug]/chapters/page.tsx
+==========
+
+All Chapters = Semua Chapter
+
+
+==========
+Sweep app/w/[slug]/series/page.tsx
+==========
+
+More in this series = Lainnya di series ini
+
+
+==========
+Sweep components/ComicPageFilesPicker.tsx
+==========
+
+Ideal for chapters that already exist as PDF files. = Ideal untuk chapter yang sudah ada sebagai file PDF.
+Make sure the files inside the ZIP are comic page images. = Make sure the files inside the ZIP are comic halaman gambar.
+Manual one by one = Manual satu per satu
+Move page down = Turunkan halaman
+Move page up = Naikkan halaman
+Page queue = Antrean halaman
+Remove page = Hapus halaman
+Supported formats: JPG, PNG, WEBP, GIF, BMP, AVIF = Format yang didukung: JPG, PNG, WEBP, GIF, BMP, AVIF
+Upload all images = Unggah semua gambar
+Upload chapter PDF = Unggah PDF chapter
+Upload chapter ZIP = Unggah ZIP chapter
+
+
+==========
+Sweep components/ContentWarningsGate.tsx
+==========
+
+Content Warning = Peringatan Konten
+
+
+==========
+Sweep components/GenreTriStatePicker.tsx
+==========
+
+Loading… = Memuat…
+Search for genre... = Cari genre...
+
+
+==========
+Sweep components/MultiSelectPicker.tsx
+==========
+
+Search... = Cari...
+
+
+==========
+Sweep components/NovelRichTextEditor.tsx
+==========
+
+Bullet list = Daftar poin
+Clear formatting = Hapus format
+Heading 2 = Heading 2
+Heading 3 = Heading 3
+Horizontal line = Garis horizontal
+Numbered list = Daftar bernomor
+Upload image = Unggah gambar
+Write the chapter content... = Tulis konten chapter...
+
+
+==========
+Sweep components/SearchPresets.tsx
+==========
+
+No presets yet. = Belum ada preset.
+Preset name... = Nama preset...
+Saved Presets = Preset Tersimpan
+
+
+==========
+Sweep components/TagMultiInput.tsx
+==========
+
+Looking for tag suggestions... = Mencari saran tag...
+Type a tag then press Enter (or choose a suggestion) ... = Ketik tag lalu tekan Enter (atau pilih saran) ...
+
+
+==========
+Sweep components/admin/taxonomyManager/TaxonomyEditorDialog.tsx
+==========
+
+Leave blank to auto-generate from the name. = Biarkan kosong untuk membuat otomatis dari nama.
+e.g. Manhwa = mis. Manhwa
+
+
+==========
+Sweep components/admin/taxonomyManager/TaxonomyManagerInner.tsx
+==========
+
+Failed to load = Gagal memuat
+Failed to reorder = Gagal mengurutkan ulang
+Failed to sort = Gagal menyortir
+
+
+==========
+Sweep components/admin/taxonomyManager/TaxonomyTable.tsx
+==========
+
+Move down = Turunkan
+Move up = Naikkan
+Search name/slug… = Cari nama/slug…
+
+==========
+Sweep app/components/work/comments/useCommentComposer.ts
+==========
+
+Failed to send comment = Gagal mengirim komentar
+Paste link URL (https://...) = Tempel URL tautan (https://...)
+
+
+==========
+Sweep app/components/work/comments/useComments.ts
+==========
+
+Failed to load comments = Gagal memuat komentar
+
+
+==========
+Sweep app/components/work/reviews/useReviews.ts
+==========
+
+Failed to delete review = Gagal menghapus ulasan
+Failed to load reviews = Gagal memuat ulasan
+Failed to save review = Gagal menyimpan ulasan
+Rating must be 1..5 = Rating harus 1..5
+Review text is required = Teks ulasan wajib diisi
+
+
+==========
+Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/useComicPagesManager.ts
+==========
+
+Commit failed = Commit gagal
+Delete this page? = Hapus halaman ini?
+Move failed = Gagal memindahkan
+Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones. = Ganti semua halaman yang ada? Ini akan menghapus halaman saat ini (beserta file R2-nya) sebelum menyimpan yang baru.
+
+
+==========
+Sweep lib/comicPageImports.ts
+==========
+
+Canvas 2D context is unavailable = Context Canvas 2D tidak tersedia
+Failed to create the rendered image = Gagal membuat gambar hasil render
+JSZip failed to load in the browser = JSZip gagal dimuat di browser
+The PDF did not produce any image pages = PDF tidak menghasilkan halaman gambar
+The ZIP does not contain supported image files = ZIP tidak berisi file gambar yang didukung
+Window is unavailable = Window tidak tersedia
+
+
+==========
+Sweep lib/comicTypeCatalog.ts
+==========
+
+Unknown / Any = Tidak diketahui / Apa saja
+
+
+==========
+Sweep lib/commentMediaClient.ts
+==========
+
+Failed to commit media = Gagal commit media
+Failed to presign comment media = Gagal presign media komentar
+
+
+==========
+Sweep lib/languageCatalog.ts
+==========
+
+Other / Unknown = Lainnya / Tidak diketahui
+
+
+==========
+Sweep lib/r2UploadClient.ts
+==========
+
+Failed to presign upload = Gagal presign upload
+
+
+==========
+Sweep lib/time.ts
+==========
+
+12 minutes ago = 12 menit yang lalu
+2 months ago = 2 bulan yang lalu
+3 hours ago = 3 jam yang lalu
+9 days ago = 9 hari yang lalu
+Updated 12 minutes ago = Diperbarui 12 menit yang lalu
+Updated 2026-02-09 = Diperbarui 2026-02-09
+Updated 3 hours ago = Diperbarui 3 jam yang lalu
+Updated 9 days ago = Diperbarui 9 hari yang lalu
+Updated just now = Diperbarui baru saja
+just now = baru saja
+
+
+
+==========
+Sweep app/components/user/ProfileLinksSheet.tsx
+==========
+
+Links = Tautan

@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 
 type Props = {
@@ -8,10 +9,12 @@ type Props = {
 };
 
 export default function PreferredLanguagesCard({ preferredLanguages, onToggle }: Props) {
+  const t = useUILanguageText("Page Settings Account");
+
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
       <div>
-        <div className="text-sm font-semibold">Preferred languages</div>
+        <div className="text-sm font-semibold">{t("Preferred languages")}</div>
       </div>
 
       <div className="flex flex-wrap gap-2">

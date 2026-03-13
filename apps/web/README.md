@@ -1,6 +1,6 @@
 # Inkura Web (`apps/web`)
 
-Ini adalah satu-satunya app runtime active in repo cleaned stage 10.
+Ini is satu-satunya app runtime active in repo cleaned stage 10.
 
 Content main folder this:
 

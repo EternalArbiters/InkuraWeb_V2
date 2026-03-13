@@ -329,7 +329,7 @@ export default function CommentSection({
         setError(data?.error || "Failed to update comment");
         return;
       }
-      setInfo(hide ? "Comment disembunyikan" : "Comment ditampilkan lagi");
+      setInfo(hide ? "Comment hidden" : "Comment shown again");
       await refreshComments({ force: true });
     });
   };
@@ -381,7 +381,7 @@ export default function CommentSection({
         setError(data?.error || "Failed to send report");
         return;
       }
-      setInfo("Report terkirim. Terima kasih!");
+      setInfo("Report sent. Thank you!");
       setReportFor(null);
       setReportReason("");
     });

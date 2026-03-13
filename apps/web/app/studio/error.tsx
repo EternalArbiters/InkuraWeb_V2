@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import ErrorView from "@/app/components/errors/ErrorView";
 
 type Props = {
@@ -7,11 +8,13 @@ type Props = {
   reset: () => void;
 };
 
-export default function StudioError({ error, reset }: Props) {
+export default function StageEightError({ error, reset }: Props) {
+  const t = useUILanguageText("Page Error States");
+
   return (
     <ErrorView
-      title="Studio mengalami kendala"
-      message="An error occurred while loading Studio. Try again or return to the works list."
+      title={t("Studio error")}
+      message={t("An error occurred while loading Studio. Try again or return to the works list.")}
       error={error}
       reset={reset}
       homeHref="/studio"

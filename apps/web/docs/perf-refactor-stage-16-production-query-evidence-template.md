@@ -1,6 +1,6 @@
 # Stage 16 — production query evidence template
 
-Gunakan template this saat menutup Tahap D with data production nyata.
+Gunakan template this when menutup Stage D with data production nyata.
 
 ## Header
 
@@ -10,11 +10,11 @@ Gunakan template this saat menutup Tahap D with data production nyata.
 - probe:
 - owner:
 
-## Sinyal awal
+## Sinyal initial
 
 - `db.profile_probe`:
 - `db.slow_query`:
-- `api.slow_route` / `page.slow_render` terkait:
+- `api.slow_route` / `page.slow_render` related:
 - traffic / frekuensi:
 
 ## Fingerprint query
@@ -34,7 +34,7 @@ Gunakan template this saat menutup Tahap D with data production nyata.
 - rows scanned:
 - rows returned:
 - index used:
-- join/filter paling mathing:
+- join/filter most mathing:
 
 ## Putusan
 

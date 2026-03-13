@@ -16,12 +16,14 @@ import ProgressBar from "./dashboardNavbar/ProgressBar";
 import { useThemeToggle } from "./dashboardNavbar/useThemeToggle";
 import { useMobileHeaderVisibility } from "./dashboardNavbar/useMobileHeaderVisibility";
 import { useNavigationProgress } from "./dashboardNavbar/useNavigationProgress";
+import { useUILanguageText } from "./ui-language/UILanguageProvider";
 
 export default function DashboardNavbar() {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const isAuthed = !!session?.user?.id;
+  const t = useUILanguageText("Navigation");
 
   const { isDarkMode, toggleDarkMode } = useThemeToggle();
 
@@ -36,7 +38,7 @@ export default function DashboardNavbar() {
   const displayName =
     session?.user?.name ||
     session?.user?.email?.split("@")[0] ||
-    (isAuthed ? "User" : "Guest");
+    (isAuthed ? t("User") : t("Guest"));
 
   const userImage = session?.user?.image || "/images/default-avatar.png";
   const avatarFocusX = Number.isFinite(Number((session?.user as any)?.avatarFocusX))
@@ -58,9 +60,7 @@ export default function DashboardNavbar() {
       e.preventDefault();
       if (searchQuery.trim()) {
         startNavigation();
-        router.push(
-          `/search?type=${searchType}&q=${encodeURIComponent(searchQuery.trim())}`
-        );
+        router.push(`/search?type=${searchType}&q=${encodeURIComponent(searchQuery.trim())}`);
       }
     },
     [router, searchType, searchQuery, startNavigation]
@@ -78,26 +78,19 @@ export default function DashboardNavbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between space-x-4">
-          {/* Left (Logo + Menu button) */}
           <div className="flex items-center justify-between w-full md:w-auto">
             <Link href="/home" className="flex items-center gap-2">
               <Image src="/logo-inkura.png" alt="Inkura" width={36} height={36} />
-              <span className="text-2xl font-bold text-gray-800 dark:text-white">
-                INKURA
-              </span>
+              <span className="text-2xl font-bold text-gray-800 dark:text-white">INKURA</span>
             </Link>
             <div className="flex items-center gap-2 md:hidden ml-2">
-              <IconButton
-                icon={<Search size={22} />}
-                onClick={() => setDropdown("search")}
-              />
-              <button onClick={() => setIsMenuOpen((prev) => !prev)}>
+              <IconButton icon={<Search size={22} />} label={t("Search")} onClick={() => setDropdown("search")} />
+              <button onClick={() => setIsMenuOpen((prev) => !prev)} aria-label={t("Settings")}>
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1 mx-auto">
             <DesktopNavLinks />
 
@@ -126,12 +119,18 @@ export default function DashboardNavbar() {
           </div>
         </div>
 
-        <ProgressBar
-          isMenuOpen={isMenuOpen}
-          isNavigating={isNavigating}
-          navProgress={navProgress}
-        />
+        <ProgressBar isMenuOpen={isMenuOpen} isNavigating={isNavigating} navProgress={navProgress} />
       </header>
+
+      <SearchOverlay
+        open={dropdown === "search"}
+        searchType={searchType}
+        setSearchType={setSearchType}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleSearch}
+        onClose={() => setDropdown("")}
+      />
 
       <MobileNav
         isOpen={isMenuOpen}
@@ -146,16 +145,6 @@ export default function DashboardNavbar() {
         isDarkMode={isDarkMode}
         isAuthed={isAuthed}
         isAdmin={session?.user?.role === "ADMIN"}
-      />
-
-      <SearchOverlay
-        open={dropdown === "search"}
-        onClose={() => setDropdown("")}
-        searchType={searchType}
-        setSearchType={setSearchType}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSubmit={handleSearch}
       />
     </>
   );

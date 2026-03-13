@@ -8,6 +8,8 @@ import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
 import { trackAuthAnalyticsEvent } from "@/server/analytics/track";
+import { normalizeInkuraLanguage } from "@/lib/inkuraLanguage";
+import { hasCompletedProfileOnboarding } from "@/server/services/profile/demographics";
 
 function slugUsername(input: string) {
   return (input || "")
@@ -52,6 +54,10 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
       avatarFocusY: true,
       avatarZoom: true,
       analyticsOnboardingCompletedAt: true,
+      inkuraLanguage: true,
+      gender: true,
+      birthMonth: true,
+      birthYear: true,
     },
   });
 
@@ -74,6 +80,10 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
         avatarFocusY: true,
         avatarZoom: true,
         analyticsOnboardingCompletedAt: true,
+        inkuraLanguage: true,
+        gender: true,
+        birthMonth: true,
+        birthYear: true,
       },
     });
     await ensureUsername(created.id, emailLower, name);
@@ -98,6 +108,10 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
     avatarFocusY: existing.avatarFocusY ?? null,
     avatarZoom: existing.avatarZoom ?? null,
     analyticsOnboardingCompletedAt: existing.analyticsOnboardingCompletedAt ?? null,
+    inkuraLanguage: existing.inkuraLanguage ?? null,
+    gender: existing.gender ?? null,
+    birthMonth: existing.birthMonth ?? null,
+    birthYear: existing.birthYear ?? null,
   };
 }
 
@@ -133,6 +147,10 @@ export const authOptions: NextAuthOptions = {
             avatarFocusY: true,
             avatarZoom: true,
             analyticsOnboardingCompletedAt: true,
+            inkuraLanguage: true,
+            gender: true,
+            birthMonth: true,
+            birthYear: true,
           },
         });
 
@@ -157,6 +175,10 @@ export const authOptions: NextAuthOptions = {
           avatarFocusY: user.avatarFocusY ?? null,
           avatarZoom: user.avatarZoom ?? null,
           analyticsOnboardingCompletedAt: user.analyticsOnboardingCompletedAt?.toISOString?.() ?? null,
+          inkuraLanguage: normalizeInkuraLanguage(user.inkuraLanguage),
+          gender: user.gender ?? null,
+          birthMonth: user.birthMonth ?? null,
+          birthYear: user.birthYear ?? null,
         } as any;
       },
     }),
@@ -211,6 +233,10 @@ export const authOptions: NextAuthOptions = {
             avatarFocusY: true,
             avatarZoom: true,
             analyticsOnboardingCompletedAt: true,
+            inkuraLanguage: true,
+            gender: true,
+            birthMonth: true,
+            birthYear: true,
           },
         });
         if (dbUser) {
@@ -222,7 +248,13 @@ export const authOptions: NextAuthOptions = {
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
           (token as any).avatarZoom = dbUser.avatarZoom ?? null;
           (token as any).analyticsOnboardingCompletedAt = dbUser.analyticsOnboardingCompletedAt?.toISOString?.() ?? null;
-          (token as any).profileOnboardingComplete = !!dbUser.analyticsOnboardingCompletedAt;
+          (token as any).inkuraLanguage = normalizeInkuraLanguage(dbUser.inkuraLanguage);
+          (token as any).profileOnboardingComplete = hasCompletedProfileOnboarding({
+            gender: dbUser.gender ?? null,
+            birthMonth: dbUser.birthMonth ?? null,
+            birthYear: dbUser.birthYear ?? null,
+            inkuraLanguage: dbUser.inkuraLanguage ?? null,
+          });
         }
         return token;
       }
@@ -237,7 +269,13 @@ export const authOptions: NextAuthOptions = {
         (token as any).avatarFocusY = (user as any).avatarFocusY ?? null;
         (token as any).avatarZoom = (user as any).avatarZoom ?? null;
         (token as any).analyticsOnboardingCompletedAt = (user as any).analyticsOnboardingCompletedAt ?? null;
-        (token as any).profileOnboardingComplete = !!(user as any).analyticsOnboardingCompletedAt;
+        (token as any).inkuraLanguage = normalizeInkuraLanguage((user as any).inkuraLanguage);
+        (token as any).profileOnboardingComplete = hasCompletedProfileOnboarding({
+          gender: (user as any).gender ?? null,
+          birthMonth: (user as any).birthMonth ?? null,
+          birthYear: (user as any).birthYear ?? null,
+          inkuraLanguage: (user as any).inkuraLanguage ?? null,
+        });
         return token;
       }
 
@@ -258,7 +296,13 @@ export const authOptions: NextAuthOptions = {
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
           (token as any).avatarZoom = dbUser.avatarZoom ?? null;
           (token as any).analyticsOnboardingCompletedAt = dbUser.analyticsOnboardingCompletedAt?.toISOString?.() ?? null;
-          (token as any).profileOnboardingComplete = !!dbUser.analyticsOnboardingCompletedAt;
+          (token as any).inkuraLanguage = normalizeInkuraLanguage(dbUser.inkuraLanguage);
+          (token as any).profileOnboardingComplete = hasCompletedProfileOnboarding({
+            gender: dbUser.gender ?? null,
+            birthMonth: dbUser.birthMonth ?? null,
+            birthYear: dbUser.birthYear ?? null,
+            inkuraLanguage: dbUser.inkuraLanguage ?? null,
+          });
         }
         return token;
       }
@@ -275,6 +319,10 @@ export const authOptions: NextAuthOptions = {
             avatarFocusY: true,
             avatarZoom: true,
             analyticsOnboardingCompletedAt: true,
+            inkuraLanguage: true,
+            gender: true,
+            birthMonth: true,
+            birthYear: true,
           },
         });
         if (dbUser) {
@@ -286,7 +334,13 @@ export const authOptions: NextAuthOptions = {
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
           (token as any).avatarZoom = dbUser.avatarZoom ?? null;
           (token as any).analyticsOnboardingCompletedAt = dbUser.analyticsOnboardingCompletedAt?.toISOString?.() ?? null;
-          (token as any).profileOnboardingComplete = !!dbUser.analyticsOnboardingCompletedAt;
+          (token as any).inkuraLanguage = normalizeInkuraLanguage(dbUser.inkuraLanguage);
+          (token as any).profileOnboardingComplete = hasCompletedProfileOnboarding({
+            gender: dbUser.gender ?? null,
+            birthMonth: dbUser.birthMonth ?? null,
+            birthYear: dbUser.birthYear ?? null,
+            inkuraLanguage: dbUser.inkuraLanguage ?? null,
+          });
         }
       }
 
@@ -295,11 +349,21 @@ export const authOptions: NextAuthOptions = {
           where: { id: String(token.id) },
           select: {
             analyticsOnboardingCompletedAt: true,
+            inkuraLanguage: true,
+            gender: true,
+            birthMonth: true,
+            birthYear: true,
           },
         });
         if (dbUser) {
           (token as any).analyticsOnboardingCompletedAt = dbUser.analyticsOnboardingCompletedAt?.toISOString?.() ?? null;
-          (token as any).profileOnboardingComplete = !!dbUser.analyticsOnboardingCompletedAt;
+          (token as any).inkuraLanguage = normalizeInkuraLanguage(dbUser.inkuraLanguage);
+          (token as any).profileOnboardingComplete = hasCompletedProfileOnboarding({
+            gender: dbUser.gender ?? null,
+            birthMonth: dbUser.birthMonth ?? null,
+            birthYear: dbUser.birthYear ?? null,
+            inkuraLanguage: dbUser.inkuraLanguage ?? null,
+          });
         }
       }
 
@@ -320,6 +384,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).avatarFocusY = (token as any).avatarFocusY ?? null;
         (session.user as any).avatarZoom = (token as any).avatarZoom ?? null;
         (session.user as any).analyticsOnboardingCompletedAt = ((token as any).analyticsOnboardingCompletedAt as string | null) ?? null;
+        (session.user as any).inkuraLanguage = normalizeInkuraLanguage((token as any).inkuraLanguage);
         (session.user as any).profileOnboardingComplete = !!(token as any).profileOnboardingComplete;
       }
       return session;

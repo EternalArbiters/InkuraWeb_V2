@@ -21,6 +21,7 @@ const viewerProfileSelect = {
   birthMonth: true,
   birthYear: true,
   analyticsOnboardingCompletedAt: true,
+  inkuraLanguage: true,
   createdAt: true,
 } as const;
 

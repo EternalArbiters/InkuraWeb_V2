@@ -15,7 +15,7 @@ This repo mendukung dua model:
 
 ### Opsi A — project root = repo root
 
-- Root Directory Vercel: kosong / repo root
+- Root Directory Vercel: empty / repo root
 - Script build used: root `vercel-build`
 
 ### Opsi B — project root = `apps/web`
@@ -23,7 +23,7 @@ This repo mendukung dua model:
 - Root Directory Vercel: `apps/web`
 - Script build used: `apps/web` `vercel-build`
 
-For repo cleaned this, that most mudah biasanya **repo root**, because command workspace in root already disediakan.
+For repo cleaned this, that most easy biasanya **repo root**, because command workspace in root already disediakan.
 
 ## Env that required in Vercel
 
@@ -39,10 +39,10 @@ NEXTAUTH_URL=
 Env that sangat disarankan for features upload:
 
 ```env
-R2_ENDPOINT=            # atau R2_ACCOUNT_ID
+R2_ENDPOINT=            # or R2_ACCOUNT_ID
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
-R2_BUCKET=              # atau R2_BUCKET_NAME
+R2_BUCKET=              # or R2_BUCKET_NAME
 R2_PUBLIC_BASE_URL=
 ```
 
@@ -60,21 +60,21 @@ INKURA_LOG_REQUESTS=
 INKURA_SERVICE_NAME=inkura-web
 ```
 
-## Build pipeline that dijalankan
+## Build pipeline that run
 
-Script `vercel-build` akan melakukan this:
+Script `vercel-build` will melakukan this:
 
 1. `deploy:check-env`
 2. `prisma generate`
 3. `prisma migrate deploy` if environment memenuhi syarat
 4. `next build`
 
-### Kapan migration dijalankan
+### When migrations run
 
 - `production` → sethen menjalankan `prisma migrate deploy`
 - `development` → menjalankan `prisma migrate deploy`
 - `preview` → **default not migrate**
-- `preview` + `INKURA_MIGRATE_PREVIEW=1` → migrate dijalankan
+- `preview` + `INKURA_MIGRATE_PREVIEW=1` → migrate run
 
 Kenapa preview default not migrate:
 
@@ -91,11 +91,11 @@ If `DIRECT_URL` is wrong, the build can pass env checks but fail during `prisma 
 
 ## Checklist before deploy
 
-1. `npm run verify` lolos local
-2. env production already lengkap
-3. migration that dibutuhkan already there is in repo
+1. `npm run verify` pass local
+2. env production already complete
+3. migration that needed already there is in repo
 4. `R2_PUBLIC_BASE_URL` already point to domain public that benar
-5. if memakai preview auto-migrate, make sure preview DB terpisah from production
+5. if uses preview auto-migrate, make sure preview DB separate from production
 
 ## Checklist sealready deploy
 
@@ -106,10 +106,10 @@ Lakukan smoke check minimal:
 - buka `/studio`
 - buka satu page work and reader
 - coba presign upload cover or comic page
-- check endpoint auth/session berjalan stabil
+- check endpoint auth/session berjalan stable
 - check error response memiliki header `x-request-id`
 
-Lalu continuekan with checklist manual that more lengkap in `REGRESSION_CHECKLIST.md`.
+Lalu continuekan with checklist manual that more complete in `REGRESSION_CHECKLIST.md`.
 
 ## Failure modes that most general
 
@@ -127,8 +127,8 @@ Periksa:
 Biasanya penyebabnya salah satu from this:
 
 - `DIRECT_URL` point to pooled URL, not a direct URL
-- permission DB not cukup for migrate
-- preview deployment memakai DB that not semestinya
+- permission DB not enough for migrate
+- preview deployment uses DB that not should
 
 ### Upload jalan in local tapi fails in production
 
@@ -139,9 +139,9 @@ Periksa:
 - bucket/object policy or custom domain public already benar
 - user login and punya ownership work/chapter that sesuai
 
-## Dokumen terkait
+## Related documents
 
 - `env-vars.md`
 - `database-reset-and-seeding.md`
 - `debug-upload-issues.md`
-- `../apps/web/docs/V15_DEPLOYMENT_NOTES.md` for catatan historis that still relevant
+- `../apps/web/docs/V15_DEPLOYMENT_NOTES.md` for note historical that still relevant

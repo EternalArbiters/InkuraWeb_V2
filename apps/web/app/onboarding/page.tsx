@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
+import { hasCompletedProfileOnboarding } from "@/server/services/profile/demographics";
 import OnboardingForm from "./OnboardingForm";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export default async function OnboardingPage() {
   await requirePageUserId("/onboarding");
   const { profile } = await getViewerProfile();
 
-  if (profile.analyticsOnboardingCompletedAt) {
+  if (hasCompletedProfileOnboarding(profile)) {
     redirect("/home");
   }
 
@@ -21,6 +22,7 @@ export default async function OnboardingPage() {
             gender: profile.gender,
             birthMonth: profile.birthMonth,
             birthYear: profile.birthYear,
+            inkuraLanguage: profile.inkuraLanguage,
           }}
         />
       </div>

@@ -1,6 +1,6 @@
 # Server vs Client boundary (Stage 3)
 
-Tujuan stage this: repo **more rapi secara structure** with batas that clear antara:
+The goal of this stage: repo **more tidy secara structure** with batas that clear antara:
 
 - **Server-only code** (Prisma, NextAuth server session, Cloudflare R2, Resend email, crypto/bcrypt, Next headers/cookies)
 - **Client-only code** (browser APIs seperti `window`, `localStorage`, `crypto.subtle`, presigned upload via fetch browser)
@@ -16,9 +16,9 @@ Example:
 - `server/storage/*` → R2 (S3-compatible)
 - `server/uploads/*` → helper upload server-side
 - `server/http/*` → helper fetch server-side (forward cookies)
-- `server/services/*` → business logic (notifications, dll)
+- `server/services/*` → business logic (notifications, etc)
 
-Semua file server-only **required** punya `import "server-only";` in baris paling atas.
+All file server-only **required** punya `import "server-only";` in baris most atas.
 
 ### 2) Client-only helpers must ditandai `import "client-only";`
 
@@ -32,9 +32,9 @@ Example already ditandai:
 
 ### 3) Folder `apps/web/lib/**` for kode safe used in mana pun
 
-`lib/` should bercontent thing-thing seperti:
+`lib/` should contained thing-thing seperti:
 
-- catalog statis (`genreCatalog`, `warningCatalog`, dll)
+- catalog statis (`genreCatalog`, `warningCatalog`, etc)
 - util pure (`slugify`, `time`, `utils`)
 - helper client (still may, tapi required `client-only` if use browser API)
 
@@ -42,6 +42,6 @@ If sebuah modul butuh Prisma/R2/headers/cookies/bcrypt, **pindahkan to `server/`
 
 ## Checklist before merge
 
-1) Tidak there is import Prisma/NextAuth server session/R2 from komponen client (`"use client"`).
-2) Tidak there is modul `server/*` that in-import to client.
+1) There is no import of Prisma/NextAuth server session/R2 from client components (`"use client"`).
+2) There is no `server/*` module imported into the client.
 3) Jalankan `npm run verify` and `REGRESSION_CHECKLIST.md`.

@@ -9,13 +9,13 @@ test("seed admin can sign in, read seeded work, and post a comment thread", asyn
   await signInAsSeedAdmin(page);
 
   await page.goto('/browse/recent-updates');
-  await expect(page.getByText('Benara: Dosa Besar InSys Lab')).toBeVisible();
-  await page.getByText('Benara: Dosa Besar InSys Lab').first().click();
+  await expect(page.getByText('Benara: Great Sin of InSys Lab')).toBeVisible();
+  await page.getByText('Benara: Great Sin of InSys Lab').first().click();
 
-  await expect(page.getByRole('heading', { name: /Benara: Dosa Besar InSys Lab/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Benara: Great Sin of InSys Lab/i })).toBeVisible();
   await page.getByRole('link', { name: /Chapter 1/i }).first().click();
 
-  await expect(page.getByText('Selamat datang di Inkura.')).toBeVisible();
+  await expect(page.getByText('Welcome to Inkura.')).toBeVisible();
 
   await page.getByPlaceholder('Write a comment...').fill(commentText);
   await page.getByRole('button', { name: 'Send' }).click();

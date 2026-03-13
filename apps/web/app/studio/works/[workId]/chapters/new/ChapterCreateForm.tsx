@@ -291,7 +291,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
               <div>
                 {pageSummary.count} files · before {formatBytes(pageSummary.originalBytes)}
-                {pageSummary.ready ? ` · sesudah ${formatBytes(pageSummary.optimizedBytes)}` : " · menyiapkan optimasi..."}
+                {pageSummary.ready ? ` · after ${formatBytes(pageSummary.optimizedBytes)}` : " · preparing optimization..."}
               </div>
               {pageSummary.ready ? (
                 <div>

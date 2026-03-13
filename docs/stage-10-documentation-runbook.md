@@ -1,29 +1,29 @@
 # Stage 10 — Dokumentasi & Runbook final
 
-Tujuan stage 10 adalah menutup rangkaian perapian with membuat repo this **mudah dioperasikan oleh developer new** without perlu menebak-nebak structure, env, deploy flow, or cara debug masalah general.
+The goal of stage 10 is menutup rangkaian perapian with make repo this **easy dioperasikan oleh developer new** without need menebak-nebak structure, env, deploy flow, or cara debug issue general.
 
-Stage this not menambah features produk. Fokusnya adalah:
+Stage this not menambah features produk. Fokusnya is:
 
 - README root that benar-benar mencerminkan state repo currently
-- dokumentasi env vars that lengkap and consistent
+- dokumentasi env vars that complete and consistent
 - deployment runbook for Vercel + Neon + R2
 - panduan reset database, seeding, and sanity check
 - panduan debug upload issues
 
-## Yang diselesaikan in stage 10
+## What was completed in stage 10
 
 ### 1) README final repo
 
-README root now berfungsi sebagai entry point main for:
+README root now functions as entry point main for:
 
 - mengenali arsitektur repo
 - setup local cepat
 - command penting
-- list document that perlu dibaca
+- list document that need read
 
 ### 2) Sumber kebenaran env vars
 
-Dokumen `env-vars.md` and `apps/web/.env.example` disejajarkan with pemakaian env aktual in kode, terenter:
+The `env-vars.md` document and `apps/web/.env.example` were aligned with the actual env usage in code, including:
 
 - NextAuth
 - Neon/Postgres
@@ -39,7 +39,7 @@ Deploy now terdokumentasi from sudut panandg operasional:
 - required env
 - pilihan root directory Vercel
 - behavior `vercel-build`
-- kapan migrate dijalankan
+- when migrate run
 - checklist sealready deploy
 
 ### 4) Runbook database local
@@ -47,42 +47,42 @@ Deploy now terdokumentasi from sudut panandg operasional:
 Developer new now punya satu document for:
 
 - reset database local with safe
-- seed data awal
+- seed data initial
 - menjalankan sanity check
 - membedakan command local vs production
 
 ### 5) Runbook upload debugging
 
-Masalah upload adalah salah satu area that most sering membingungkan. Stage 10 menutup gap that with panduan that explain:
+Masalah upload is salah satu area that most often membingungkan. Stage 10 menutup gap that with panduan that explain:
 
-- urutan flow presign → upload → commit
+- order flow presign → upload → commit
 - jenis error that general
 - size/type rules
-- env mana that biasanya become sumber masalah
-- cara memakai `x-request-id` for melacak error in log
+- env mana that biasanya become sumber issue
+- cara uses `x-request-id` for melacak error in log
 
 ## Alur onboarding that direkomendasikan
 
-For developer new, urutan safest adalah:
+For developer new, order safest is:
 
 1. baca `README.md`
-2. copy `apps/web/.env.example` menjadi `.env.local`
+2. copy `apps/web/.env.example` become `.env.local`
 3. jalankan `npm install`
 4. jalankan `npm run db:init`
 5. jalankan `npm run dev`
 6. jalankan `npm run verify`
-7. check `REGRESSION_CHECKLIST.md` before perubahan besar
+7. check `REGRESSION_CHECKLIST.md` before major changes
 
 ## Definition of Done stage 10
 
-Stage 10 dianggap complete if:
+Stage 10 considered complete if:
 
-- developer new can menjalankan repo from scratch without bertanya file mana that must dibuka first
+- developer new can menjalankan repo from scratch without bertanya file mana that must opened first
 - env used kode tercermin in document and `.env.example`
 - deploy flow to Vercel/Neon/R2 terdokumentasi clear
 - reset DB, seed, and sanity check punya panduan tersendiri
-- masalah upload punya panduan debug that can directly used
+- issue upload punya panduan debug that can directly used
 
-## Catatan
+## Notes
 
-Stage 10 adalah penutup roadmap perapian. Snapshot after stage this semustnya menjadi baseline paling lengkap for pekerjaan berikutnya, because seluruh perubahan stage 0–10 already terakumulasi in sini.
+Stage 10 is closing roadmap perapian. Snapshot after stage this should become baseline most complete for pekerjaan next, because entire perubahan stage 0–10 already accumulated in here.

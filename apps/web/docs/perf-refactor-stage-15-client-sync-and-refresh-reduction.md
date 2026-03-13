@@ -1,27 +1,27 @@
 # Stage 15 — client sync and refresh reduction
 
-Paket 4 menurunkan `router.refresh()` in area interaksi ringan already punya local state.
+Paket 4 menurunkan `router.refresh()` in area interaksi light already punya local state.
 
-## Yang dcontentnkronkan without refresh penuh
+## What was synchronized without a full refresh
 
 - work like / favorite
 - work bookmark
 - work rating
-- chapter like (terenter floating reader action)
+- chapter like (including floating reader action)
 - studio works grid delete / publish toggle
 - navigasi after create/edit form studio and create list
 
 ## Prinsip
 
-- gunakan shared client state for interaksi that tampil in several komponen sekaligus
+- use shared client state for interaksi that tampil in several komponen sekaligus
 - patch local state from response mutation
-- gunakan `router.push()` without `router.refresh()` saat target page berikutnya akan fetch data sendiri
+- use `router.push()` without `router.refresh()` when target page next will fetch data sendiri
 
-## Catatan
+## Notes
 
-Masih there is area that intentionally not yet disapu pada pass this, especially mutation that memang mengubah shell page besar and still butuh refresh server state penuh.
+There are still areas that were intentionally not cleaned up in this pass, especially mutations that really change the large page shell and still need a full server-state refresh.
 
 
 ## Final sweep continuean
 
-Pass continuean this removing sisa `router.refresh()` pada list owner controls and chapter/comic pages manager with local state patch, sehingga area interaksi that still tersisa kini not lagi bergantung pada full refresh.
+This follow-up pass removes the remaining `router.refresh()` calls in list owner controls and the chapter/comic pages manager with local state patching, so the remaining interaction areas no longer depend on a full refresh.

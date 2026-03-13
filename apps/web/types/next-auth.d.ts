@@ -10,6 +10,7 @@ declare module "next-auth" {
       image?: string | null;
       profileOnboardingComplete?: boolean;
       analyticsOnboardingCompletedAt?: string | null;
+      inkuraLanguage?: "EN" | "ID" | null;
     };
   }
 
@@ -21,5 +22,19 @@ declare module "next-auth" {
     image?: string | null;
     profileOnboardingComplete?: boolean;
     analyticsOnboardingCompletedAt?: string | null;
+    inkuraLanguage?: "EN" | "ID" | null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    role?: string;
+    avatarFocusX?: number | null;
+    avatarFocusY?: number | null;
+    avatarZoom?: number | null;
+    profileOnboardingComplete?: boolean;
+    analyticsOnboardingCompletedAt?: string | null;
+    inkuraLanguage?: "EN" | "ID" | null;
   }
 }

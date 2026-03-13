@@ -1,11 +1,11 @@
 # Stage 6 — Pecah komponen UI “monster” (without change UI/features)
 
-Fokus stage this: **memecah komponen React client that terthen besar** menjadi modul kecil + hooks,
-for meningkatkan keterbacaan and memudahkan refactor stage berikutnya.
+Fokus stage this: **memecah komponen React client that terthen large** become modul small + hooks,
+for meningkatkan keterbacaan and memudahkan refactor stage next.
 
 Prinsip:
 
-- **Tidak mengubah behavior** (request API, response handling, className, and urutan render dijaga).
+- **Behavior is not changed** (API requests, response handling, className, and render order are preserved).
 - Memisah **stateful logic → hooks**.
 - Memisah **render/UI → komponen presentational**.
 
@@ -13,7 +13,7 @@ Prinsip:
 
 ### CommentSection
 
-Komponen `apps/web/app/components/work/CommentSection.tsx` beforenya bercontent:
+Komponen `apps/web/app/components/work/CommentSection.tsx` previously contained:
 
 - defincontent tipe comments
 - text parsing (||hidden||), URL auto-link
@@ -21,7 +21,7 @@ Komponen `apps/web/app/components/work/CommentSection.tsx` beforenya bercontent:
 - composer + upload attachments
 - render tree + actions (like/dislike/reply/edit/delete/pin/hide/report)
 
-Sekarang dipecah menjadi folder:
+Now it is split into a folder:
 
 `apps/web/app/components/work/comments/`
 
@@ -37,14 +37,14 @@ Sekarang dipecah menjadi folder:
 
 ### ReviewSection
 
-Komponen `apps/web/app/components/work/ReviewSection.tsx` beforenya bercontent:
+Komponen `apps/web/app/components/work/ReviewSection.tsx` previously contained:
 
 - tipe data review
 - renderer stars
 - fetch + sort + toggle helpful
 - modal composer (rating, spoiler, title/body)
 
-Sekarang dipecah menjadi folder:
+Now it is split into a folder:
 
 `apps/web/app/components/work/reviews/`
 
@@ -57,7 +57,7 @@ Sekarang dipecah menjadi folder:
 
 ### DashboardNavbar
 
-Komponen `apps/web/app/components/DashboardNavbar.tsx` beforenya mencampur:
+Komponen `apps/web/app/components/DashboardNavbar.tsx` previously mencampur:
 
 - theme toggle (dark mode)
 - navigation progress bar
@@ -65,28 +65,28 @@ Komponen `apps/web/app/components/DashboardNavbar.tsx` beforenya mencampur:
 - desktop search bar + overlay search
 - dropdown settings/category + profile
 
-Sekarang dipecah menjadi folder:
+Now it is split into a folder:
 
 `apps/web/app/components/dashboardNavbar/`
 
 - `constants.ts` — konstanta nav/search/category
-- `NavLink.tsx` — link active + prefetch=false (stabil with auth gating)
+- `NavLink.tsx` — link active + prefetch=false (stable with auth gating)
 - `useThemeToggle.ts` — state & side-effect theme
 - `useMobileHeaderVcontentbility.ts` — auto-hide header mobile + click handler
-- `useNavigationProgress.ts` — progress bar saat navigasi
+- `useNavigationProgress.ts` — progress bar when navigasi
 - `DesktopNavLinks.tsx` — list nav link main
 - `DesktopSearch.tsx` — search form desktop
 - `DesktopActions.tsx` — icon group + dropdown settings/category + profile
 - `SearchOverlay.tsx` — overlay search mobile/desktop
 - `ProgressBar.tsx` — progress bar component
 
-`DashboardNavbar.tsx` menjadi orchestrator that more tipis.
+`DashboardNavbar.tsx` become orchestrator that more tipis.
 
 ### Studio Work Forms
 
 #### Edit Work
 
-`apps/web/app/studio/works/[workId]/edit/WorkEditForm.tsx` dipecah menjadi modul local:
+`apps/web/app/studio/works/[workId]/edit/WorkEditForm.tsx` split become modul local:
 
 `apps/web/app/studio/works/[workId]/edit/components/`
 
@@ -102,7 +102,7 @@ Sekarang dipecah menjadi folder:
 
 #### New Work
 
-`apps/web/app/studio/new/NewWorkForm.tsx` dipecah menjadi:
+`apps/web/app/studio/new/NewWorkForm.tsx` split become:
 
 `apps/web/app/studio/new/components/`
 
@@ -114,7 +114,7 @@ Sekarang dipecah menjadi folder:
 
 ### Comic Pages Manager
 
-`apps/web/app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx` dipecah menjadi:
+`apps/web/app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx` split become:
 
 `apps/web/app/studio/works/[workId]/chapters/[chapterId]/pages/components/`
 
@@ -123,4 +123,4 @@ Sekarang dipecah menjadi folder:
 - `ChapterCoverCard.tsx` — UI thumbnail cover
 - `PagesGrid.tsx` — grid pages + actions
 
-Note: **behavior & UI intentionally dijaga sama** (only pemecahan modul).
+Note: **behavior & UI intentionally preserved same** (only splitting modul).

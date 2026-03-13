@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { readChapterInteraction, seedChapterInteraction, subscribeChapterInteraction, updateChapterInteraction } from "@/lib/chapterInteractionStore";
 
 function CircleButton({
@@ -102,6 +103,7 @@ function readReaderFloatingSeed(chapterId: string | null) {
 export default function FloatingActions() {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useUILanguageText("Shared Floating Actions");
 
   const isReader = useMemo(() => {
     if (!pathname) return false;
@@ -215,14 +217,14 @@ export default function FloatingActions() {
   return (
     <div className={containerClass}>
       {!shouldHideScrollTop ? (
-      <CircleButton ariaLabel="Scroll to top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={opacityClass}>
-        <ArrowUpIcon />
-      </CircleButton>
+        <CircleButton ariaLabel={t("Scroll to top")} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={opacityClass}>
+          <ArrowUpIcon />
+        </CircleButton>
       ) : null}
 
       {showChat && !isReader ? (
         <div className="hidden md:block">
-          <CircleButton ariaLabel="Chat Elya" href="/chat" className={opacityClass}>
+          <CircleButton ariaLabel={t("Chat Elya")} href="/chat" className={opacityClass}>
             <HeartChatIcon />
           </CircleButton>
         </div>
@@ -231,7 +233,7 @@ export default function FloatingActions() {
       {isReader && chapterId ? (
         <div className="hidden md:block">
           <CircleButton
-            ariaLabel={liked ? `Liked (${count})` : `Like chapter (${count})`}
+            ariaLabel={liked ? `${t("Liked")} (${count})` : `${t("Like chapter")} (${count})`}
             onClick={toggleChapterLike}
             className={`${opacityClass} ${isPending ? "pointer-events-none opacity-40" : ""}`}
           >

@@ -1,6 +1,6 @@
 # Perf refactor stage 05 — public detail and reading-list fan-out
 
-Tahap 5 fokus menutup sisa self-fetch server page in jflow public that sering dibuka user:
+Stage 5 focuses on closing the remaining self-fetch server pages in public flows that users open often:
 
 - detail work `/w/[slug]`
 - chapter list `/w/[slug]/chapters`
@@ -12,21 +12,21 @@ Tahap 5 fokus menutup sisa self-fetch server page in jflow public that sering di
 
 ## Masalah before stage 5
 
-Walaupun stage 1–4 already memangkas banyak fan-out, page public paling penting still melakukan pola this:
+Walaupun stage 1–4 already memangkas many fan-out, page public most penting still melakukan pola this:
 
 `server page -> fetch /api/... -> route handler -> service/db`
 
 Dampaknya:
 
 - satu page render still menghasilkan invocation additional
-- redirect legacy ikut memukul function internal only for mencari slug
+- redirect legacy also hitting function internal only for finding slug
 - detail work and reader menduplikasi boundary HTTP internal padathing already there is service server-only that suitable for direct use
 
 ## Perubahan main
 
 ### 1. Service lookup slug work
 
-Ditambahkan:
+Added:
 
 - `apps/web/server/services/works/workSlug.ts`
 
@@ -37,11 +37,11 @@ This service is reused by:
 
 ### 2. Service detail work public
 
-Ditambahkan:
+Added:
 
 - `apps/web/server/services/works/workPage.ts`
 
-Service this memindahkan logika detail work to reusable server service:
+Service this moving logika detail work to reusable server service:
 
 - lookup work by slug
 - gating mature / deviant love
@@ -59,7 +59,7 @@ Used by:
 
 ### 3. Service reader chapter public
 
-Ditambahkan:
+Added:
 
 - `apps/web/server/services/chapters/readChapter.ts`
 
@@ -78,7 +78,7 @@ Used by:
 
 ### 4. Service reading list
 
-Ditambahkan:
+Added:
 
 - `apps/web/server/services/readingLists/readingLists.ts`
 
@@ -100,11 +100,11 @@ Used by:
 - features not dihapus
 - API route is still kept for client-side behavior that still memerlukannya
 - the server page stops routing requests through internal HTTP for the same data
-- shape payload still dijaga so that UI not berubah
+- shape payload still preserved so that UI not berubah
 
 ## Dampak that ditargetkan
 
-Tahap 5 menurunkan invocation pada jflow public most frequently opened, especially:
+Stage 5 menurunkan invocation on jflow public most frequently opened, especially:
 
 - open work detail
 - open reader
@@ -116,13 +116,13 @@ Secara statis, hasil baseline berubah from:
 - server-page import `apiJson()`: `14 -> 5`
 - total call `apiJson()` in `app/**`: `17 -> 8`
 
-Sisa hotspot `apiJson()` after stage this tinggal area:
+The remaining `apiJson()` hotspots after this stage stay in these areas:
 
 - admin reports
 - studio work detail
 - studio chapter create/edit/pages
 
-Artinya sisa fan-out terbesar now already terkonsentrasi in surface creator/admin, no longer in the public reader flow.
+Artinya remaining fan-out terbesar now already concentrated in surface creator/admin, no longer in the public reader flow.
 
 ## File new
 
@@ -131,7 +131,7 @@ Artinya sisa fan-out terbesar now already terkonsentrasi in surface creator/admi
 - `apps/web/server/services/chapters/readChapter.ts`
 - `apps/web/server/services/readingLists/readingLists.ts`
 
-## File that diubah
+## File that changed
 
 - `apps/web/app/w/[slug]/page.tsx`
 - `apps/web/app/w/[slug]/chapters/page.tsx`
@@ -148,10 +148,10 @@ Artinya sisa fan-out terbesar now already terkonsentrasi in surface creator/admi
 - `apps/web/server/services/api/lists/route.ts`
 - `apps/web/server/services/api/lists/public/[slug]/route.ts`
 
-## Catatan verifikasi
+## Verification notes
 
 Minimum verification that was successfully run in this working environment:
 
 - `node apps/web/scripts/refactor-stage0-baseline.js`
 
-Environment container this still not yet stabil for `npm install` / Prisma / type packages penuh, become stage this not yet mengklaim `npm run verify` pass penuh.
+This container environment was still not stable enough for full `npm install` / Prisma / type package setup, so this stage does not yet claim a full `npm run verify` pass.

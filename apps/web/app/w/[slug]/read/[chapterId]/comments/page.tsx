@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getPublishedChapterReaderData } from "@/server/services/chapters/readChapter";
 import { fetchComments } from "@/server/services/comments/fetchComments";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
@@ -13,7 +14,6 @@ function safeSort(v: unknown): "latest" | "top" | "oldest" {
   const s = String(v || "").toLowerCase().trim();
   if (s === "top") return "top";
   if (s === "oldest" || s === "bottom") return "oldest";
-  // legacy: new
   return "latest";
 }
 
@@ -41,28 +41,35 @@ export default async function ChapterCommentsPage({
 
   if (gated) {
     const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
+    const [matureLabel, deviantMessage, matureMessage, openDeviantSettingsLabel, openMatureSettingsLabel, backToReaderLabel] = await Promise.all([
+      getActiveUILanguageText("18+ Mature Content", { section: "Page Work Detail" }),
+      getActiveUILanguageText("This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings.", { section: "Page Reader Comments" }),
+      getActiveUILanguageText("This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings.", { section: "Page Reader Comments" }),
+      getActiveUILanguageText("Open Settings (unlock 18+ + Deviant Love)", { section: "Page Reader" }),
+      getActiveUILanguageText("Open Settings (unlock + opt in to 18+)", { section: "Page Reader" }),
+      getActiveUILanguageText("Back to reader", { section: "Page Reader Comments" }),
+    ]);
+
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
             <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
-              {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
+              {isDeviant ? <LockLabel text="Deviant Love" /> : matureLabel}
             </div>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{work.title}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              {isDeviant
-                ? "This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings."
-                : "This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings."}
+              {isDeviant ? deviantMessage : matureMessage}
             </p>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Link href="/settings/account" className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110">
-                {isDeviant ? "Buka Settings (unlock 18+ + Deviant Love)" : "Buka Settings (unlock + opt-in 18+)"}
+                {isDeviant ? openDeviantSettingsLabel : openMatureSettingsLabel}
               </Link>
               <Link
                 href={`/w/${work.slug}/read/${chapter.id}`}
                 className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 font-semibold"
               >
-                Back to reader
+                {backToReaderLabel}
               </Link>
             </div>
           </div>
@@ -81,6 +88,11 @@ export default async function ChapterCommentsPage({
   const initialCanModerate = commentsRes.status === 200 ? !!((commentsRes as any).body?.canModerate) : false;
 
   const seededLikeCount = typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0;
+  const [goToWorkPageTitle, backToReaderTitle, commentsTitle] = await Promise.all([
+    getActiveUILanguageText("Go to work page", { section: "Page Reader Comments" }),
+    getActiveUILanguageText("Back to reader", { section: "Page Reader Comments" }),
+    getActiveUILanguageText("Comments", { section: "Page Reader Comments" }),
+  ]);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -95,14 +107,14 @@ export default async function ChapterCommentsPage({
             <Link
               href={`/w/${work.slug}`}
               className="block truncate text-sm text-gray-600 dark:text-gray-300 font-semibold hover:text-gray-900 dark:hover:text-white"
-              title="Go to work page"
+              title={goToWorkPageTitle}
             >
               {work.title}
             </Link>
             <Link
               href={`/w/${work.slug}/read/${chapter.id}`}
               className="mt-1 block truncate text-2xl font-extrabold tracking-tight hover:underline"
-              title="Back to reader"
+              title={backToReaderTitle}
             >
               {getChapterDisplayTitle(chapter.number, chapter.title, chapter.label, { short: true })}
             </Link>
@@ -112,7 +124,7 @@ export default async function ChapterCommentsPage({
         <CommentSection
           targetType="CHAPTER"
           targetId={chapter.id}
-          title="Comments"
+          title={commentsTitle}
           sort={sort}
           initialComments={initialComments as any}
           initialCanModerate={initialCanModerate}

@@ -1,9 +1,9 @@
 # Regression Checklist (Manual) – Inkura
 
-Checklist this used setiap kali kita refactor/rapihin repo so that **features not hilang**.
+Checklist this used each kali we refactor/tidy up repo so that **features not lost**.
 
 Prinsip:
-- Do not only mengandalkan build sukses.
+- Do not only mengandalkan build succeed.
 - Fokus to *critical user journeys* (Auth → Browse → Read → Interact → Studio → Admin).
 
 ---
@@ -13,7 +13,7 @@ Prinsip:
 ### A. Setup & DB
 
 1. Pastikan ENV already tercontent (`apps/web/.env.local`).
-2. Init DB (akan reset + seed):
+2. Init DB (will reset + seed):
 
 ```bash
 npm run db:init
@@ -35,10 +35,10 @@ Minimal siapkan 2 akun:
 - Email: `noelephgoddess.game@gmail.com`
 - Password: `admin123`
 
-2) **User biasa**
+2) **User regular**
 - Register through UI (email + password).
 
-> Note: role ADMIN in-enforce berdasarkan email. Akun lain not akan become admin walau `role` in DB diubah manual.
+> Note: role ADMIN in-enforce berdasarkan email. Akun lain not will become admin walau `role` in DB changed manual.
 
 ---
 
@@ -56,22 +56,22 @@ Optional (butuh DB konek):
 npm run sanity:db
 ```
 
-PASS if: not there is error pada lint/typecheck/build.
+PASS if: not there is error on lint/typecheck/build.
 
 ---
 
 ## 2) Auth & Account
 
-With **user biasa**:
+With **regular user**:
 
-1. Register (email/password) → must sukses.
+1. Register (email/password) → must succeed.
 2. Login → must enter to `/home`.
-3. Logout → session hilang.
+3. Logout → session lost.
 4. Login again.
 
 Forgot password (optional):
 - Request reset.
-- Jika `SHOW_RESET_TOKEN=1`, endpoint forgot-password menampilkan token/reset URL (dev).
+- If `SHOW_RESET_TOKEN=1`, endpoint forgot-password menampilkan token/reset URL (dev).
 - Confirm reset → password berubah → can login use password new.
 
 PASS if: not there is redirect loop (khususnya in route protected: `/home`, `/library`, `/studio`).
@@ -80,7 +80,7 @@ PASS if: not there is redirect loop (khususnya in route protected: `/home`, `/li
 
 ## 3) Browse & Search (works listing)
 
-With **user biasa** (not yet adultConfirmed):
+With **regular user** (not yet adultConfirmed):
 
 1. Buka `/home` → list tampil (not blank/500).
 2. Buka `/search`:
@@ -122,7 +122,7 @@ PASS if: reader not blank and assets (cover/pages) termuat.
 
 ## 5) Interaksi (like/bookmark/rating/review)
 
-With user biasa:
+With regular user:
 
 1. Like work → counter berubah.
 2. Bookmark work → enter to `/library`.
@@ -135,7 +135,7 @@ PASS if: not there is double-submit that bikin error and state consistent after 
 
 ## 6) Comments (thread, mention, pin, attachment)
 
-With user biasa:
+With regular user:
 
 1. Buat comments in work.
 2. Reply comments (nested).
@@ -152,7 +152,7 @@ PASS if: comment tree not rusak, sorting not error, and attachment valid.
 
 ## 7) Reading progress
 
-With user biasa:
+With regular user:
 
 1. Baca chapter sampai several scroll.
 2. Refresh or exit enter.
@@ -164,7 +164,7 @@ PASS if: progress still there is after reload.
 
 ## 8) Studio (creator flow)
 
-With user biasa:
+With regular user:
 
 1. Buka `/studio`.
 2. Create Work:
@@ -190,11 +190,11 @@ Skenario minimal:
 
 1. User A follow/like/bookmark work.
 2. Creator publish chapter new.
-3. User A must dapat notification.
+3. User A must can notification.
 
 Comments:
-4. Comment in work → owner work dapat notif.
-5. Reply comment → parent commenter dapat notif.
+4. Comment in work → owner work can notif.
+5. Reply comment → parent commenter can notif.
 
 PASS if: unread count berubah and list notif not error.
 
@@ -206,7 +206,7 @@ With **admin seed**:
 
 ### A. Admin pages protected
 1. Akses `/admin` and page admin lain.
-2. Pastikan user biasa **not** can enter (redirect/forbidden).
+2. Pastikan regular user **not** can enter (redirect/forbidden).
 
 ### B. Taxonomy manager
 1. Buka:
@@ -216,19 +216,19 @@ With **admin seed**:
    - `/admin/taxonomy/deviant-love`
 2. Add / Edit / Deactivate / Reactivate.
 3. Reorder and Save order.
-4. Cek `/search` sebagai user biasa: perubahan taxonomy ter-propagate.
+4. Cek `/search` as regular user: perubahan taxonomy ter-propagate.
 
 ### C. Reports
-1. User biasa report comment.
+1. User regular report comment.
 2. Admin buka queue report → report appear.
 
 PASS if: admin actions not 500 and perubahan kebaca user.
 
 ---
 
-## Catatan troubleshooting cepat
+## Quick troubleshooting notes
 
 - Build/lint fail after refactor: jalankan `npm run verify` and perbaiki before continue.
 - Upload failed: make sure ENV R2 benar and `R2_PUBLIC_BASE_URL` can diakses.
-- Tidak can enter admin: make sure login memakai email admin that in-enforce.
+- If you cannot enter admin, make sure the login uses the enforced admin email.
 

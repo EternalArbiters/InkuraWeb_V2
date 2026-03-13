@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { FaGoogle } from "react-icons/fa";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 function SignInInner() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params?.get("callbackUrl") || "/home";
+  const t = useUILanguageText("Page Sign In");
+  const tErrors = useUILanguageText("Shared Errors");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,11 +33,11 @@ function SignInInner() {
     setLoading(false);
 
     if (!res) {
-      setError("Login failed.");
+      setError(tErrors("Login failed."));
       return;
     }
     if (res.error) {
-      setError("Incorrect email/username or password.");
+      setError(tErrors("Incorrect email/username or password."));
       return;
     }
 
@@ -44,15 +47,15 @@ function SignInInner() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
       <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl shadow-2xl p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sign in to Inkura</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Use your email or username.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Sign in to Inkura")}</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t("Use your email or username.")}</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
           <input
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Email or username"
+            placeholder={t("Email or username")}
             autoComplete="username"
           />
           <input
@@ -60,7 +63,7 @@ function SignInInner() {
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Password"
+            placeholder={t("Password")}
             autoComplete="current-password"
           />
 
@@ -74,7 +77,7 @@ function SignInInner() {
             disabled={loading}
             className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
           >
-            {loading ? "Processing..." : "Sign In"}
+            {loading ? t("Processing...") : t("Sign In")}
           </button>
         </form>
 
@@ -83,19 +86,19 @@ function SignInInner() {
           onClick={() => signIn("google", { callbackUrl })}
           className="mt-3 w-full py-3 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105 flex items-center justify-center gap-2"
         >
-          <FaGoogle /> Continue with Google
+          <FaGoogle /> {t("Continue with Google")}
         </button>
 
         <div className="mt-3 text-sm">
           <Link href="/auth/forgot" className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
-            Forgot password?
+            {t("Forgot password?")}
           </Link>
         </div>
 
         <div className="mt-4 text-sm text-gray-700 dark:text-gray-200">
-          Don't have an account?{" "}
+          {t("Don't have an account?")}{" "}
           <Link href="/auth/signup" className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
-            Sign Up
+            {t("Sign Up")}
           </Link>
         </div>
       </div>
@@ -104,11 +107,13 @@ function SignInInner() {
 }
 
 export default function SignInPage() {
+  const tErrors = useUILanguageText("Shared Errors");
+
   return (
     <Suspense
       fallback={
         <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
-          <div className="text-sm text-gray-600 dark:text-gray-300">Loading...</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">{tErrors("Loading...")}</div>
         </main>
       }
     >

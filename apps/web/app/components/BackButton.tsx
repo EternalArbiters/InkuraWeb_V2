@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 export default function BackButton({
   href,
@@ -9,6 +10,8 @@ export default function BackButton({
   href: string;
   className?: string;
 }) {
+  const t = useUILanguageText("Shared Components");
+
   return (
     <Link
       href={href}
@@ -23,7 +26,7 @@ export default function BackButton({
         className
       }
     >
-      Back
+      {t("Back")}
     </Link>
   );
 }

@@ -1,23 +1,23 @@
 # Perf Refactor Stage 11 — observability and metrics
 
-This stage menambah observability that more operasional for iterasi performa berikutnya.
+This stage menambah observability that more operasional for iterasi performa next.
 
 ## Sasaran
 
 - tahu API route mana that benar-benar lambat
 - tahu query Prisma mana that become hotspot nyata
-- punya jejak waktu render for page besar
+- punya jejak waktu render for page large
 - punya metrik polling unread badge from browser
 - punya metrik upload client (durasi + ukuran before/after) for baseline before stage kompres upload
 
-## Yang ditambahkan
+## What was added
 
 ### 1. Slow API route metrics
 
 `apps/web/server/http/route.ts`
 
-- all route that through `apiRoute()` now otomatis:
-  - menambahkan header `server-timing`
+- all route that through `apiRoute()` now automatic:
+  - adding header `server-timing`
   - log `api.slow_route` if durasi methroughi threshold
   - still mempertahankan structured error logging already there is
 
@@ -27,13 +27,13 @@ This stage menambah observability that more operasional for iterasi performa ber
 `apps/web/server/observability/metrics.ts`
 
 - Prisma singleton now mengactivekan event `query`
-- query lambat akan dilog sebagai `db.slow_query`
+- query lambat will dilog as `db.slow_query`
 - query preview dipendekkan so that log still safe and terbaca
 - optional `INKURA_LOG_QUERIES=1` can used for investigasi that more verbose
 
 ### 3. Server page render timing
 
-Page besar current melog metrik render:
+Page large current melog metrik render:
 
 - `/home`
 - `/w/[slug]`
@@ -58,7 +58,7 @@ File new:
 - `apps/web/server/services/api/client-metrics/route.ts`
 - `apps/web/app/api/client-metrics/route.ts`
 
-Tujuan route this adalah menerima metrik ringan from browser and meneruskannya to structured log server.
+Goal route this is receives metrik light from browser and meneruskannya to structured log server.
 
 ## 5. Unread polling metrics
 
@@ -70,13 +70,13 @@ Badge unread now mengirim metrik:
 - trigger (`mount`, `timer`, `focus`, `vcontentbility`, `external`, `online`)
 - durasi fetch
 - count hasil
-- interval sejak poll beforenya
+- interval since poll previously
 
 Ini memberi jejak nyata tentang frekuensi polling unread count.
 
 ## 6. Upload client metrics
 
-File that disentuh:
+File that touched:
 
 - `apps/web/lib/r2UploadClient.ts`
 - `apps/web/lib/commentMediaClient.ts`
@@ -96,8 +96,8 @@ Metrik that dikirim:
 
 Note:
 
-- because stage kompres upload not yet dikerjakan, `beforeBytes` and `afterBytes` currently still sama
-- structure metrik this intentionally already dcontentapkan so that Tahap upload compression later tinggal mengcontent ukuran hasil optimasi
+- because stage kompres upload not yet dikerjakan, `beforeBytes` and `afterBytes` currently still same
+- structure metrik this intentionally already dcontentapkan so that Stage upload compression later stay mengcontent ukuran hasil optimasi
 
 ## Threshold default
 
@@ -108,7 +108,7 @@ Note:
 
 ## Dampak
 
-This stage not yet menghemat performa secara directly sebesar split cache/query, tetapi sangat penting because:
+This stage not yet saving performa secara directly sebesar split cache/query, but sangat penting because:
 
 - reducing optimasi that sifatnya menebak-nebak
 - mempermudah identifikasi route/query/page that most mathing

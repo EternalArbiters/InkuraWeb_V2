@@ -1,8 +1,8 @@
 # Storage Backfill Runbook (PR 6)
 
-PR 6 menambahkan alat for **audit, re-optimize, and cleanup** object image old in bucket R2.
+PR 6 adding alat for **audit, re-optimize, and cleanup** object image old in bucket R2.
 
-Tujuan utsafeya:
+The goal of this effort:
 - mengecilkan **storage existing**, not only upload new,
 - mendeteksi object that not lagi direferensikan DB,
 - memberi jflow backfill safe with **dry-run default**.
@@ -17,8 +17,8 @@ Apply (`--apply`) safe used for referensi that **not tergantung sha256 unik**:
 
 ## Audit-only for comment media
 
-`MediaObject` comment image / gif memakai `sha256` unik sebagai kontrak dedupe.
-Karena that PR 6 intentionally menjadikan scope berikut sebagai **audit-only**:
+`MediaObject` comment image / gif uses `sha256` unik as kontrak dedupe.
+Because PR 6 intentionally made the following scopes **audit-only**:
 - `comment_images`
 - `comment_gifs`
 
@@ -34,7 +34,7 @@ For dua scope this, use:
 npm --workspace apps/web run storage:audit -- --scope=all
 ```
 
-Opsi berguna:
+Opsi useful:
 - `--scope=avatar|covers|pages|comment_images|comment_gifs|all`
 - `--skip-r2` for audit berbasis DB saja
 - `--head-limit=50` for sample HEAD check
@@ -54,9 +54,9 @@ npm --workspace apps/web run storage:reoptimize -- --scope=pages --limit=100
 
 Script this:
 - download object old from R2,
-- re-encode memakai profile upload same,
+- re-encode uses profile upload same,
 - menghitung berapa byte that can dihemat,
-- **not menulis perubahan apa pun** sampai Anda menambahkan `--apply`.
+- **not menulis perubahan apa pun** sampai Anda adding `--apply`.
 
 Opsi penting:
 - `--apply`
@@ -72,7 +72,7 @@ Example apply safe bertahap:
 npm --workspace apps/web run storage:reoptimize -- --scope=covers --limit=25 --apply
 ```
 
-Example apply + hapus object old after pointer DB dipindah:
+Example apply + delete object old after pointer DB moved:
 
 ```bash
 npm --workspace apps/web run storage:reoptimize -- --scope=pages --limit=25 --apply --delete-old
@@ -99,11 +99,11 @@ Default safety:
 
 ## Urutan operasi that direkomendasikan
 
-1. Jalankan audit penuh:
+1. Run a full audit:
    ```bash
    npm --workspace apps/web run storage:audit -- --scope=all
    ```
-2. Jalankan dry-run re-optimize for satu scope kecil first:
+2. Jalankan dry-run re-optimize for satu scope small first:
    ```bash
    npm --workspace apps/web run storage:reoptimize -- --scope=avatar --limit=25
    ```
@@ -111,14 +111,14 @@ Default safety:
    - avatar
    - covers
    - pages
-4. Setelah pointer DB stabil, new jalankan cleanup orphan:
+4. Setelah pointer DB stable, new jalankan cleanup orphan:
    ```bash
    npm --workspace apps/web run storage:cleanup-orphans -- --scope=all --apply
    ```
 
-## Catatan penting
+## Important note
 
-- Script `storage:reoptimize` membuat **key new** (`*.reopt-v1.*`) so that safe terhadap cache/CDN immutable. Ini intentionally dipilih daripada overwrite-in-place.
-- `MediaObject` comment media not diubah pointer-nya in PR 6 because perlu migrasi dedupe tersendiri.
-- Sethen mulai with `--limit` kecil and **without `--apply`**.
-- Simpan output JSON audit before apply, so that rollback more mudah.
+- Script `storage:reoptimize` make **key new** (`*.reopt-v1.*`) so that safe terhadap cache/CDN immutable. Ini intentionally selected daripada overwrite-in-place.
+- `MediaObject` comment media not changed pointer-nya in PR 6 because need migrasi dedupe tersendiri.
+- Sethen mulai with `--limit` small and **without `--apply`**.
+- Save the audit JSON output before applying changes, so rollback is easier.

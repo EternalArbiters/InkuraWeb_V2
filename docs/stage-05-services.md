@@ -1,8 +1,8 @@
 # Stage 05 — Service Layer (Business Logic)
 
-Tujuan stage this: **memindahkan “business logic” exit from API route handler** so that route become tipis (orchestration), sementara rules + transaksi + query kompleks terkumpul in `server/services/**`.
+The goal of this stage: **moving “business logic” exit from API route handler** so that route become tipis (orchestration), sementara rules + transaksi + query kompleks terkumpul in `server/services/**`.
 
-> Prinsip: *without mengubah behavior/features*, only clean up structure.
+> Prinsip: *without changing behavior/features*, only clean up structure.
 
 ## Struktur new
 
@@ -16,8 +16,8 @@ Lokasi main:
 - `apps/web/server/services/comments/*`
   - `fetchComments.ts` — logika GET `/api/comments`
   - `createComment.ts` — logika POST `/api/comments` (+ best-effort notify)
-  - `mutations.ts` — edit/hapus, like/dislike, pin, hide
-  - `tree.ts` — builder tree + sorting root pinned/top/newest, dll
+  - `mutations.ts` — edit/delete, like/dislike, pin, hide
+  - `tree.ts` — builder tree + sorting root pinned/top/newest, etc
   - `moderation.ts` — author/admin moderation check (WORK/CHAPTER)
 
 - `apps/web/server/services/studio/*`
@@ -27,7 +27,7 @@ Lokasi main:
   - `chapterPages.ts` — upload/replace pages for comic chapter
   - `session.ts`, `creator.ts` — helper auth/role/permission
 
-## Route that dibuat tipis
+## Route that created tipis
 
 - `GET /api/works` → `server/services/works/listPublishedWorks.ts`
 - `GET/POST /api/comments` → `server/services/comments/*`
@@ -39,8 +39,8 @@ Lokasi main:
 - `GET/PATCH /api/studio/chapters/[chapterId]` → `server/services/studio/chapters.ts`
 - `POST /api/studio/chapters/[chapterId]/pages` → `server/services/studio/chapterPages.ts`
 
-## Catatan kompatibilitas
+## Compatibility notes
 
-- Response shape and status code kept semirip mungkin with stage beforenya.
+- Response shape and status code kept as similar as possible might with stage previously.
 - Side-effect notifications for comment/pin/new chapter still **best-effort** (error not mengfailedkan request main).
 

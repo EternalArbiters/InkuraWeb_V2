@@ -5,6 +5,9 @@ import "../lib/fontawesome";
 import CustomCursor from "./components/CustomCursor";
 import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
+import UILanguageProvider from "./components/ui-language/UILanguageProvider";
+import { DEFAULT_GUEST_INKURA_LANGUAGE } from "@/lib/inkuraLanguage";
+import { getAllUILanguageCatalogs } from "@/server/services/uiLanguage/catalog";
 
 // The root layout is intentionally left as `auto` so only pages/routes that truly need
 // per-request rendering become dynamic. This prevents the entire app from also being
@@ -28,17 +31,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const catalogs = await getAllUILanguageCatalogs();
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
         <SessionWrapper>
-          <CustomCursor />
-          <LayoutClientWrapper>{children}</LayoutClientWrapper>
+          <UILanguageProvider catalogs={catalogs} initialLanguage={DEFAULT_GUEST_INKURA_LANGUAGE}>
+            <CustomCursor />
+            <LayoutClientWrapper>{children}</LayoutClientWrapper>
+          </UILanguageProvider>
         </SessionWrapper>
       </body>
     </html>

@@ -1,10 +1,10 @@
-# Perf Refactor — Tahap 1 Fan-out Request Reduction
+# Perf Refactor — Stage 1 Fan-out Request Reduction
 
-Tahap 1 focuses on one target: **reducing fan-out requests from server pages to internal APIs** without removing any features.
+Stage 1 focuses on one target: **reducing fan-out requests from server pages to internal APIs** without removing any features.
 
 ## Sasaran stage this
 
-Masalah awal in baseline stage 0:
+Masalah initial in baseline stage 0:
 
 - `app/home/page.tsx` melakukan 5x `apiJson()` to `/api/works`
 - `app/search/page.tsx` melakukan fetch server-side for prefs, taxonomy, then `/api/works`
@@ -12,7 +12,7 @@ Masalah awal in baseline stage 0:
 - `app/studio/new/page.tsx` calls prefs + 3 taxonomy endpoint
 - `app/studio/works/[workId]/edit/page.tsx` calls detail work + 3 taxonomy endpoint
 
-Pola tersebut membuat satu page render berubah menjadi banyak invocation server internal.
+Pola that make satu page render berubah become many invocation server internal.
 
 ## Perubahan that enter in stage 1
 
@@ -20,7 +20,7 @@ Pola tersebut membuat satu page render berubah menjadi banyak invocation server 
 
 `apps/web/app/home/page.tsx`
 
-Sekarang home calls loader server directly:
+Now the home page calls the server loader directly:
 
 - `apps/web/server/services/home/getHomePageData.ts`
 - `apps/web/server/services/works/listPublishedWorks.ts`
@@ -31,7 +31,7 @@ API route `/api/works` is still kept for client / external caller that still mem
 
 `apps/web/app/search/page.tsx`
 
-Sekarang search directly memakai service server:
+Now search directly uses the server service:
 
 - `getViewerPreferences()`
 - `listActiveGenres()`
@@ -45,7 +45,7 @@ Behavior filter, gating, and hasil search still kept.
 
 `apps/web/app/settings/account/page.tsx`
 
-Sekarang page this mengambil:
+Now this page fetches:
 
 - preferences directly from service server
 - taxonomy directly from service server
@@ -66,12 +66,12 @@ Studio still punya behavior same:
 
 ### 5. Service reusable new to avoid duplikasi logic page vs API
 
-Ditambahkan:
+Added:
 
 - `apps/web/server/services/preferences/viewerPreferences.ts`
 - `apps/web/server/services/taxonomy/publicTaxonomy.ts`
 
-API route berikut now reuse service same, become kontrak API still hidup without copy-paste logic new:
+API route following now reuse service same, become kontrak API still hidup without copy-paste logic new:
 
 - `/api/me/preferences`
 - `/api/genres`
@@ -82,35 +82,35 @@ API route berikut now reuse service same, become kontrak API still hidup without
 
 `apps/web/server/services/works/listPublishedWorks.ts`
 
-Ditambahkan entrypoint new:
+Added a new entrypoint:
 
 - `listPublishedWorksFromSearchParams(searchParams)`
 
-Sehingga server page not perlu membangun HTTP request internal only for memakai logic same.
+Sehingga server page not need membangun HTTP request internal only for uses logic same.
 
 ## Dampak baseline statis
 
-Setelah stage 1, hasil scan `npm run refactor:stage0` menjadi:
+Setelah stage 1, hasil scan `npm run refactor:stage0` become:
 
-- `force-dynamic` exports: **45** _(not yet disentuh in stage this)_
-- server-page import `apiJson()`: **25** _(turun from 30)_
-- total call `apiJson()` in `app/**`: **29** _(turun from 50)_
-- `cache: "no-store"`: **7** _(not yet disentuh in stage this)_
-- header `Cache-Control: no-store`: **4** _(not yet disentuh in stage this)_
-- `setInterval()`: **3** _(not yet disentuh in stage this)_
+- `force-dynamic` exports: **45** _(not yet touched in stage this)_
+- server-page import `apiJson()`: **25** _(reduced from 30)_
+- total call `apiJson()` in `app/**`: **29** _(reduced from 50)_
+- `cache: "no-store"`: **7** _(not yet touched in stage this)_
+- header `Cache-Control: no-store`: **4** _(not yet touched in stage this)_
+- `setInterval()`: **3** _(not yet touched in stage this)_
 
 ## Delta dibanding baseline stage 0
 
 Perubahan statis that most terasa:
 
-- server-page import `apiJson()` turun **30 → 25**
-- total call `apiJson()` in `app/**` turun **50 → 29**
+- server-page import `apiJson()` reduced **30 → 25**
+- total call `apiJson()` in `app/**` reduced **50 → 29**
 
-Artinya stage 1 already memangkas sebagian besar hotspot self-fetch terbesar without mengubah features.
+Artinya stage 1 already memangkas sebagian large hotspot self-fetch terbesar without changing features.
 
-## Catatan that intentionally not yet disentuh
+## Notes on what has intentionally not been touched yet
 
-Tahap 1 **not yet** menyentuh:
+Stage 1 **not yet** touch:
 
 - root `force-dynamic`
 - strategi cache taxonomy/API
@@ -118,18 +118,18 @@ Tahap 1 **not yet** menyentuh:
 - dedupe query viewer/prefs lintas rail/home/search
 - middleware surface
 
-Itu memang ditahan for stage berikutnya so that rcontentko regresi still kecil.
+Itu memang held for stage next so that rcontentko regression still small.
 
 ## Verifikasi minimum for stage this
 
 - scan statis: `npm run refactor:stage0`
 - check manual: `docs/REGRESSION_CHECKLIST.md`
 
-Catatan container work saat stage this dibuat:
+Container work notes when this stage was created:
 
 - the static scan ran successfully
-- pemasangan dependency sempat not stabil, become verifikasi penuh `npm run verify` not yet can dikonfirmasi bersih from container this
+- Dependency installation was briefly unstable, so a full `npm run verify` could not yet be confirmed as clean from this container.
 
 ## Baseline for stage 2
 
-Tahap 2 must dimulai from ZIP hasil stage 1 this, not from snapshot beforenya.
+Stage 2 must dimulai from ZIP hasil stage 1 this, not from snapshot previously.

@@ -7,6 +7,7 @@ import { ApiError } from "@/server/http";
 export type ViewerPreferences = {
   adultConfirmed: boolean;
   deviantLoveConfirmed: boolean;
+  inkuraLanguage: "EN" | "ID" | null;
   preferredLanguages: string[];
   blockedGenreIds: string[];
   blockedWarningIds: string[];
@@ -19,6 +20,7 @@ function mapViewerPreferences(viewer: Awaited<ReturnType<typeof getViewerWithPre
   return {
     adultConfirmed: viewer.adultConfirmed,
     deviantLoveConfirmed: viewer.deviantLoveConfirmed,
+    inkuraLanguage: viewer.inkuraLanguage,
     preferredLanguages: viewer.preferredLanguages,
     blockedGenreIds: viewer.blockedGenreIds,
     blockedWarningIds: viewer.blockedWarningIds,

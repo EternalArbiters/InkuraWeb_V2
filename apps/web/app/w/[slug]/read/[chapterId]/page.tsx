@@ -14,6 +14,7 @@ import ProtectedNovelContent from "@/app/components/reader/ProtectedNovelContent
 import { getNovelReaderHtml } from "@/lib/novelContent";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import { logPageRenderMetric } from "@/server/observability/metrics";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -50,31 +51,39 @@ export default async function ReadChapterPage({
 
   if (gated) {
     const isDeviant = gateReason === "DEVIANT_LOVE" || gateReason === "BOTH";
+    const [matureLabel, deviantMessage, matureMessage, openDeviantSettingsLabel, openMatureSettingsLabel, backToWorkLabel] = await Promise.all([
+      getActiveUILanguageText("18+ Mature Content", { section: "Page Work Detail" }),
+      getActiveUILanguageText("This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings.", { section: "Page Reader" }),
+      getActiveUILanguageText("This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings.", { section: "Page Reader" }),
+      getActiveUILanguageText("Open Settings (unlock 18+ + Deviant Love)", { section: "Page Reader" }),
+      getActiveUILanguageText("Open Settings (unlock + opt in to 18+)", { section: "Page Reader" }),
+      getActiveUILanguageText("Back to work", { section: "Page Reader" }),
+    ]);
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
             <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
-              {isDeviant ? <LockLabel text="Deviant Love" /> : "18+ Mature Content"}
+              {isDeviant ? <LockLabel text="Deviant Love" /> : matureLabel}
             </div>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">{work.title}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               {isDeviant
-                ? "This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings."
-                : "This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings."}
+                ? deviantMessage
+                : matureMessage}
             </p>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Link
                 href="/settings/account"
                 className="px-4 py-2 rounded-xl bg-purple-600 text-white font-semibold hover:brightness-110"
               >
-                {isDeviant ? "Open Settings (unlock 18+ + Deviant Love)" : "Open Settings (unlock + opt in to 18+)"}
+                {isDeviant ? openDeviantSettingsLabel : openMatureSettingsLabel}
               </Link>
               <Link
                 href={`/w/${work.slug}`}
                 className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 font-semibold"
               >
-                Back to work
+                {backToWorkLabel}
               </Link>
             </div>
           </div>
@@ -170,9 +179,9 @@ export default async function ReadChapterPage({
                       <ComicPageStack pages={chapter.pages as any} />
                     ) : (
                       <div className="mx-4 lg:mx-0 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-                        <div className="text-lg font-bold">No pages yet</div>
+                        <div className="text-lg font-bold">{await getActiveUILanguageText("No pages yet", { section: "Page Reader" })}</div>
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                          This chapter has no pages yet. (Creators can upload them via Studio.)
+                          {await getActiveUILanguageText("This chapter has no pages yet. (Creators can upload them via Studio.)", { section: "Page Reader" })}
                         </p>
                       </div>
                     )
@@ -181,8 +190,8 @@ export default async function ReadChapterPage({
                       <ProtectedNovelContent html={novelHtml} />
                     ) : (
                       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 mx-4 lg:mx-0">
-                        <div className="text-lg font-bold">No text yet</div>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">This chapter has no text yet.</p>
+                        <div className="text-lg font-bold">{await getActiveUILanguageText("No text yet", { section: "Page Reader" })}</div>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{await getActiveUILanguageText("This chapter has no text yet.", { section: "Page Reader" })}</p>
                       </div>
                     )
                   )}

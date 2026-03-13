@@ -31,7 +31,7 @@ export default function WorkPublishTypeCard({
 
       {needsSource ? (
         <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/40 p-4 text-sm">
-          <div className="font-semibold">Peringatan hak cipta</div>
+          <div className="font-semibold">Copyright warning</div>
           <div className="mt-1 text-sm">
             If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given
             <b> 1 week</b> after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically.

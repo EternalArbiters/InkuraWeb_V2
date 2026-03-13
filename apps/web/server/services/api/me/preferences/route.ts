@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { normalizeInkuraLanguage } from "@/lib/inkuraLanguage";
 import { stringifyJsonStringArray } from "@/lib/prefs";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json } from "@/server/http";
@@ -25,9 +26,14 @@ export const PATCH = apiRoute(async (req: Request) => {
   const deviantLoveConfirmed = typeof body.deviantLoveConfirmed === "boolean" ? body.deviantLoveConfirmed : undefined;
 
   const preferredLanguages = Array.isArray(body.preferredLanguages) ? body.preferredLanguages.map(String) : undefined;
+  const inkuraLanguage = body.inkuraLanguage === null ? null : normalizeInkuraLanguage(body.inkuraLanguage);
   const blockedGenreIds = Array.isArray(body.blockedGenreIds) ? body.blockedGenreIds.map(String) : undefined;
   const blockedWarningIds = Array.isArray(body.blockedWarningIds) ? body.blockedWarningIds.map(String) : undefined;
   const blockedDeviantLoveIds = Array.isArray(body.blockedDeviantLoveIds) ? body.blockedDeviantLoveIds.map(String) : undefined;
+
+  if (body.inkuraLanguage !== undefined && body.inkuraLanguage !== null && !inkuraLanguage) {
+    return json({ error: "Invalid Inkura language" }, { status: 400 });
+  }
 
   const current = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -51,6 +57,7 @@ export const PATCH = apiRoute(async (req: Request) => {
   }
 
   if (preferredLanguages !== undefined) data.preferredLanguagesJson = stringifyJsonStringArray(preferredLanguages);
+  if (body.inkuraLanguage !== undefined) data.inkuraLanguage = inkuraLanguage;
   if (blockedGenreIds !== undefined) data.blockedGenres = { set: blockedGenreIds.map((id: string) => ({ id })) };
   if (blockedWarningIds !== undefined) data.blockedWarnings = { set: blockedWarningIds.map((id: string) => ({ id })) };
   if (blockedDeviantLoveIds !== undefined) data.blockedDeviantLove = { set: blockedDeviantLoveIds.map((id: string) => ({ id })) };
