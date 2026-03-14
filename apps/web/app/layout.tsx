@@ -6,12 +6,13 @@ import CustomCursor from "./components/CustomCursor";
 import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
 import UILanguageProvider from "./components/ui-language/UILanguageProvider";
-import { DEFAULT_GUEST_INKURA_LANGUAGE } from "@/lib/inkuraLanguage";
+import { inkuraLanguageToHtmlLang } from "@/lib/inkuraLanguage";
+import { getSession } from "@/server/auth/session";
 import { getAllUILanguageCatalogs } from "@/server/services/uiLanguage/catalog";
+import { getActiveInkuraLanguage } from "@/server/services/uiLanguage/runtime";
 
-// The root layout is intentionally left as `auto` so only pages/routes that truly need
-// per-request rendering become dynamic. This prevents the entire app from also being
-// considered dynamic just because a few pages read session/DB data.
+// Root language bootstrap is request-aware so server-rendered text and client UI
+// hydrate with the same active language on the very first paint.
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,13 +37,27 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const catalogs = await getAllUILanguageCatalogs();
+  const [catalogs, session, initialLanguage] = await Promise.all([
+    getAllUILanguageCatalogs(),
+    getSession(),
+    getActiveInkuraLanguage(),
+  ]);
+
+  const hydratedSession = session?.user
+    ? {
+        ...session,
+        user: {
+          ...session.user,
+          inkuraLanguage: initialLanguage,
+        },
+      }
+    : session;
 
   return (
-    <html lang="en">
+    <html lang={inkuraLanguageToHtmlLang(initialLanguage)} data-inkura-language={initialLanguage}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
-        <SessionWrapper>
-          <UILanguageProvider catalogs={catalogs} initialLanguage={DEFAULT_GUEST_INKURA_LANGUAGE}>
+        <SessionWrapper session={hydratedSession}>
+          <UILanguageProvider catalogs={catalogs} initialLanguage={initialLanguage}>
             <CustomCursor />
             <LayoutClientWrapper>{children}</LayoutClientWrapper>
           </UILanguageProvider>

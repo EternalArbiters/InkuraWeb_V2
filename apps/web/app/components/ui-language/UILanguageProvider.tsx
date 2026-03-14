@@ -9,6 +9,7 @@ import {
   resolveInkuraLanguage,
   type InkuraLanguageCode,
 } from "@/lib/inkuraLanguage";
+import { resolveClientInkuraLanguage } from "@/lib/uiLanguageBootstrap";
 import {
   canonicalizeUILanguageText,
   lookupUILanguageText,
@@ -242,13 +243,17 @@ export default function UILanguageProvider({
   const titleSourceRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const nextLanguage =
-      status === "authenticated"
-        ? resolveInkuraLanguage((session?.user as any)?.inkuraLanguage)
-        : DEFAULT_GUEST_INKURA_LANGUAGE;
+    setLanguageState((current) => {
+      const nextLanguage = resolveClientInkuraLanguage({
+        status,
+        sessionLanguage: (session?.user as any)?.inkuraLanguage,
+        initialLanguage: resolveInkuraLanguage(initialLanguage),
+        currentLanguage: current,
+      });
 
-    setLanguageState((current) => (current === nextLanguage ? current : nextLanguage));
-  }, [session, status]);
+      return current === nextLanguage ? current : nextLanguage;
+    });
+  }, [initialLanguage, session, status]);
 
   useEffect(() => {
     document.documentElement.lang = inkuraLanguageToHtmlLang(language);
