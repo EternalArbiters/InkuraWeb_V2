@@ -90,6 +90,17 @@ describe("UI language catalog", () => {
     ).toBe("Memuat...");
   });
 
+
+
+  it("allows duplicate source entries when their normalized targets are equivalent", () => {
+    expect(() =>
+      parseUILanguageCatalog(
+        "EN",
+        `==========\nShared Forms\n==========\n\nSaving…\nSaving...`
+      )
+    ).not.toThrow();
+  });
+
   it("falls back to EN when a translated line is missing", () => {
     const sourceCatalog = parseUILanguageCatalog("EN", sourceText);
     const translatedCatalog = parseUILanguageCatalog(

@@ -106,22 +106,28 @@ function parseEntryLine(language: InkuraLanguageCode, raw: string, line: number)
 
 function buildSectionLookup(sections: UILanguageSection[], language: InkuraLanguageCode) {
   const sectionLookup: Record<string, Record<string, string>> = {};
-  const globalCandidates = new Map<string, Set<string>>();
+  const globalCandidates = new Map<string, Map<string, string>>();
 
   for (const section of sections) {
     const perSection = (sectionLookup[section.name] ||= {});
     for (const entry of section.entries) {
       const sourceKey = canonicalizeUILanguageText(entry.source);
       const existing = perSection[sourceKey];
-      if (existing && existing !== entry.target) {
+      if (existing && canonicalizeUILanguageText(existing) !== canonicalizeUILanguageText(entry.target)) {
         throw new Error(
           `[UIlanguage:${language}] Duplicate source text with different translations in section "${section.name}" on line ${entry.line}: ${entry.source}`
         );
       }
-      perSection[sourceKey] = entry.target;
 
-      const values = globalCandidates.get(sourceKey) ?? new Set<string>();
-      values.add(entry.target);
+      if (!existing) {
+        perSection[sourceKey] = entry.target;
+      }
+
+      const values = globalCandidates.get(sourceKey) ?? new Map<string, string>();
+      const targetKey = canonicalizeUILanguageText(entry.target);
+      if (!values.has(targetKey)) {
+        values.set(targetKey, entry.target);
+      }
       globalCandidates.set(sourceKey, values);
     }
   }
@@ -129,7 +135,7 @@ function buildSectionLookup(sections: UILanguageSection[], language: InkuraLangu
   const globalLookup: Record<string, string> = {};
   for (const [source, values] of globalCandidates.entries()) {
     if (values.size === 1) {
-      globalLookup[source] = Array.from(values)[0] as string;
+      globalLookup[source] = Array.from(values.values())[0] as string;
     }
   }
 
