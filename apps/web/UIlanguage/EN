@@ -67,6 +67,7 @@ Login failed.
 Incorrect email/username or password.
 Password confirmation does not match.
 Sign-up failed.
+Failed to reset password.
 
 ==========
 Shared Dialogs
@@ -146,6 +147,7 @@ Continue with Google
 Forgot password?
 Don't have an account?
 Sign Up
+Sign In
 
 ==========
 Page Sign Up
@@ -158,6 +160,9 @@ Email
 Password (min 6)
 Confirm password
 Already have an account?
+Processing...
+Sign Up
+Sign In
 
 ==========
 Page Forgot Password
@@ -169,6 +174,8 @@ Create reset token
 If the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.)
 Reset token (debug)
 Continue to password reset
+Email or username
+Processing...
 
 ==========
 Page Reset Password
@@ -179,6 +186,8 @@ Enter a new password.
 New password
 Password updated successfully. Redirecting to sign in...
 Reset
+Processing...
+Back
 
 ==========
 Shared Error View
@@ -345,13 +354,11 @@ Link (optional)
 No reports yet.
 Send a report to the admin
 
-
 ==========
 Sweep app/admin/analytics/AdminAnalyticsActions.tsx
 ==========
 
 Failed to rebuild analytics
-
 
 ==========
 Sweep app/admin/analytics/AdminAnalyticsDashboard.tsx
@@ -396,7 +403,6 @@ User breakdown by gender and age band for the active range.
 Work reads
 Work views
 
-
 ==========
 Sweep app/admin/analytics/details/page.tsx
 ==========
@@ -418,20 +424,17 @@ There are no events to display for this range yet.
 There is no admin activity that needs to be excluded in this range yet.
 This account is included in the primary analytics dataset.
 
-
 ==========
 Sweep app/admin/analytics/page.tsx
 ==========
 
 Audience, content, and growth in one place
 
-
 ==========
 Sweep app/admin/error.tsx
 ==========
 
 Admin page error
-
 
 ==========
 Sweep app/admin/notify/AdminNotifyClient.tsx
@@ -443,14 +446,12 @@ Target user is required (ex: @username)
 To (@username or email)
 Write your message to the user…
 
-
 ==========
 Sweep app/admin/notify/page.tsx
 ==========
 
 Notify user
 Send a direct notification to a specific user.
-
 
 ==========
 Sweep app/admin/reports/AdminReportsClient.tsx
@@ -461,20 +462,17 @@ Comment not found (maybe deleted).
 In: (unknown target)
 No open reports
 
-
 ==========
 Sweep app/admin/reports/page.tsx
 ==========
 
 Admin Reports
 
-
 ==========
 Sweep app/admin/taxonomy/deviant-love/page.tsx
 ==========
 
 Deviant Love Tags
-
 
 ==========
 Sweep app/admin/taxonomy/layout.tsx
@@ -483,13 +481,11 @@ Sweep app/admin/taxonomy/layout.tsx
 Admin • Taxonomy
 Manage genres, tags, warnings, and Deviant Love directly from the web UI.
 
-
 ==========
 Sweep app/admin/taxonomy/warnings/page.tsx
 ==========
 
 Warning Tags
-
 
 ==========
 Sweep app/all/page.tsx
@@ -503,7 +499,6 @@ Best rated
 Most liked
 Translator (username / name)
 
-
 ==========
 Sweep app/app-download/page.tsx
 ==========
@@ -511,20 +506,17 @@ Sweep app/app-download/page.tsx
 App Download
 Placeholder. Play Store / App Store links will be added later.
 
-
 ==========
 Sweep app/auth/error/page.tsx
 ==========
 
 Sign-in Failed
 
-
 ==========
 Sweep app/browse/_components/BrowseListPage.tsx
 ==========
 
 Advanced search
-
 
 ==========
 Sweep app/chat/page.tsx
@@ -537,7 +529,6 @@ Hi~ I'm here to listen to you
 Send message
 Write something to Elya...
 
-
 ==========
 Sweep app/comic/page.tsx
 ==========
@@ -549,13 +540,11 @@ Best rated
 Most liked
 Translator (username / name)
 
-
 ==========
 Sweep app/components/ThumbCropper.tsx
 ==========
 
 Pick image
-
 
 ==========
 Sweep app/components/WorksGrid.tsx
@@ -564,20 +553,17 @@ Sweep app/components/WorksGrid.tsx
 No works
 There is no data to display yet.
 
-
 ==========
 Sweep app/components/landing/LandingFooter.tsx
 ==========
 
 Follow Us
 
-
 ==========
 Sweep app/components/landing/ScrollToTopButton.tsx
 ==========
 
 Scroll to Top
-
 
 ==========
 Sweep app/components/library/ReadingProgressCard.tsx
@@ -586,13 +572,11 @@ Sweep app/components/library/ReadingProgressCard.tsx
 Continue reading
 No cover
 
-
 ==========
 Sweep app/components/reader/DesktopReaderDock.tsx
 ==========
 
 All chapters
-
 
 ==========
 Sweep app/components/reader/ProtectedNovelContent.tsx
@@ -601,13 +585,11 @@ Sweep app/components/reader/ProtectedNovelContent.tsx
 Long-swipe left/right to turn the page
 Novel reader content
 
-
 ==========
 Sweep app/components/ui-language/UILanguageProvider.tsx
 ==========
 
 useUILanguage must be used inside <UILanguageProvider>.
-
 
 ==========
 Sweep app/components/ui/FloatingNotice.tsx
@@ -615,20 +597,17 @@ Sweep app/components/ui/FloatingNotice.tsx
 
 Dismiss notification
 
-
 ==========
 Sweep app/components/user/FollowToggleButton.tsx
 ==========
 
 Failed to update follow status
 
-
 ==========
 Sweep app/components/user/ProfileShareButton.tsx
 ==========
 
 Inkura profile
-
 
 ==========
 Sweep app/components/user/PublicProfileActionsMenu.tsx
@@ -638,7 +617,6 @@ Failed to submit report
 Failed to update block status
 Profile actions
 
-
 ==========
 Sweep app/components/work/AddToListButton.tsx
 ==========
@@ -646,7 +624,6 @@ Sweep app/components/work/AddToListButton.tsx
 Add to List
 Add to list
 Create list
-
 
 ==========
 Sweep app/components/work/CommentSection.tsx
@@ -669,7 +646,6 @@ Failed to update comment
 No comments yet.
 Report sent. Thank you!
 
-
 ==========
 Sweep app/components/work/InteractiveWorkCard.tsx
 ==========
@@ -677,13 +653,11 @@ Sweep app/components/work/InteractiveWorkCard.tsx
 No cover
 Translation language
 
-
 ==========
 Sweep app/components/work/LikeButton.tsx
 ==========
 
 Like work
-
 
 ==========
 Sweep app/components/work/ReviewSection.tsx
@@ -693,13 +667,11 @@ Loading reviews…
 No reviews yet. Be the first!
 Sort reviews
 
-
 ==========
 Sweep app/components/work/SeriesArcsPanel.tsx
 ==========
 
 More in this series
-
 
 ==========
 Sweep app/components/work/WorkChaptersWebtoon.tsx
@@ -708,13 +680,11 @@ Sweep app/components/work/WorkChaptersWebtoon.tsx
 No chapters yet.
 No image
 
-
 ==========
 Sweep app/components/work/WorkRowCard.tsx
 ==========
 
 No cover
-
 
 ==========
 Sweep app/components/work/comments/CommentBody.tsx
@@ -722,7 +692,6 @@ Sweep app/components/work/comments/CommentBody.tsx
 
 Tap to hide
 Tap to reveal
-
 
 ==========
 Sweep app/components/work/comments/CommentCard.tsx
@@ -736,7 +705,6 @@ Save edit
 Send reply
 Write a reply...
 
-
 ==========
 Sweep app/components/work/comments/CommentComposer.tsx
 ==========
@@ -745,13 +713,11 @@ Attach image/GIF
 Insert link
 Write a comment...
 
-
 ==========
 Sweep app/components/work/reviews/ReviewCard.tsx
 ==========
 
 · edited
-
 
 ==========
 Sweep app/components/work/reviews/ReviewModal.tsx
@@ -760,13 +726,11 @@ Sweep app/components/work/reviews/ReviewModal.tsx
 Short summary
 Write your thoughts…
 
-
 ==========
 Sweep app/content/[slug]/page.tsx
 ==========
 
 Work detail placeholder so all /content/* links do not 404.
-
 
 ==========
 Sweep app/creator/[slug]/page.tsx
@@ -774,20 +738,17 @@ Sweep app/creator/[slug]/page.tsx
 
 Creator profile placeholder so /creator/* links do not 404.
 
-
 ==========
 Sweep app/events/[slug]/page.tsx
 ==========
 
 Event page placeholder so /events/* links do not 404.
 
-
 ==========
 Sweep app/forum/[slug]/page.tsx
 ==========
 
 Forum thread placeholder so /forum/* links do not 404.
-
 
 ==========
 Sweep app/genre/page.tsx
@@ -796,20 +757,17 @@ Sweep app/genre/page.tsx
 No genres yet. Add them via seed / studio.
 Select a genre
 
-
 ==========
 Sweep app/layout.tsx
 ==========
 
 An International Platform For Original Works Made Without AI
 
-
 ==========
 Sweep app/library/bookmarks/page.tsx
 ==========
 
 All works you have bookmarked.
-
 
 ==========
 Sweep app/library/page.tsx
@@ -821,14 +779,12 @@ No lists yet.
 No reading history yet.
 Your Collections
 
-
 ==========
 Sweep app/lists/[slug]/ListPageShell.tsx
 ==========
 
 Empty list
 There is no work to show yet.
-
 
 ==========
 Sweep app/lists/[slug]/listWorksGrid.tsx
@@ -837,7 +793,6 @@ Sweep app/lists/[slug]/listWorksGrid.tsx
 No works
 Remove from list
 The works in this list cannot be shown to the current viewer.
-
 
 ==========
 Sweep app/lists/[slug]/ownerControls.tsx
@@ -848,7 +803,6 @@ Manage list
 Network error.
 Public (shareable)
 Title cannot be empty.
-
 
 ==========
 Sweep app/lists/new/newListForm.tsx
@@ -861,13 +815,11 @@ Title is required.
 short description...
 — works inside the list still follow the viewer's 18+/Deviant Love gate
 
-
 ==========
 Sweep app/lists/new/page.tsx
 ==========
 
 New Collection
-
 
 ==========
 Sweep app/lists/page.tsx
@@ -876,13 +828,11 @@ Sweep app/lists/page.tsx
 No items yet
 No list yet.
 
-
 ==========
 Sweep app/notifications/NotificationsClient.tsx
 ==========
 
 No notification yet
-
 
 ==========
 Sweep app/novel/page.tsx
@@ -895,14 +845,12 @@ Best rated
 Most liked
 Translator (username / name)
 
-
 ==========
 Sweep app/profile/comments/page.tsx
 ==========
 
 All Comments
 Sort comments
-
 
 ==========
 Sweep app/profile/page.tsx
@@ -914,14 +862,12 @@ Published Works
 Recent Comments
 Recent Reviews
 
-
 ==========
 Sweep app/profile/reviews/page.tsx
 ==========
 
 All Reviews
 Sort reviews
-
 
 ==========
 Sweep app/reset-password/page.tsx
@@ -933,13 +879,11 @@ Repeat password
 Reset Password
 Token is missing from the URL.
 
-
 ==========
 Sweep app/search/_components/ActiveFiltersBar.tsx
 ==========
 
 Active filters:
-
 
 ==========
 Sweep app/search/_components/SearchForm.tsx
@@ -963,7 +907,6 @@ Search for title, description....
 Status / Publish / Chapters
 username / name
 
-
 ==========
 Sweep app/search/_components/WorksGrid.tsx
 ==========
@@ -971,20 +914,17 @@ Sweep app/search/_components/WorksGrid.tsx
 No results
 Try another keyword or change the filters.
 
-
 ==========
 Sweep app/search/page.tsx
 ==========
 
 Advance Search
 
-
 ==========
 Sweep app/search/users/page.tsx
 ==========
 
 Search username / name
-
 
 ==========
 Sweep app/settings/history/page.tsx
@@ -993,20 +933,17 @@ Sweep app/settings/history/page.tsx
 No history yet.
 Reading History
 
-
 ==========
 Sweep app/settings/profile/ProfileForm.tsx
 ==========
 
 Upload failed
 
-
 ==========
 Sweep app/settings/profile/components/AvatarPickerCard.tsx
 ==========
 
 Signed in as
-
 
 ==========
 Sweep app/settings/profile/components/ProfileFieldsCard.tsx
@@ -1020,13 +957,11 @@ Profile links
 Tell readers a little about yourself
 Your display name
 
-
 ==========
 Sweep app/settings/profile/page.tsx
 ==========
 
 Edit Profile
-
 
 ==========
 Sweep app/studio/StudioWorksGridClient.tsx
@@ -1037,7 +972,6 @@ No cover
 Open / Edit
 View public page
 
-
 ==========
 Sweep app/studio/new/NewWorkForm.tsx
 ==========
@@ -1047,14 +981,12 @@ Example: The Eruption Saga
 Series (optional)
 Series title
 
-
 ==========
 Sweep app/studio/new/components/DeviantLoveCard.tsx
 ==========
 
 18+ / Mature
 Deviant Love Tags
-
 
 ==========
 Sweep app/studio/new/components/PublishTypeCard.tsx
@@ -1077,7 +1009,6 @@ Reupload (Reuploader)
 Source URL (required)
 Translation (Translator)
 
-
 ==========
 Sweep app/studio/new/components/WorkBasicsCard.tsx
 ==========
@@ -1091,13 +1022,11 @@ Tags (comma)
 Work Title
 action, romance, comedy
 
-
 ==========
 Sweep app/studio/new/page.tsx
 ==========
 
 Create new work
-
 
 ==========
 Sweep app/studio/series/StudioSeriesManagerClient.tsx
@@ -1113,13 +1042,11 @@ Request failed
 Series title
 Unassigned works
 
-
 ==========
 Sweep app/studio/series/page.tsx
 ==========
 
 Manage series
-
 
 ==========
 Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
@@ -1128,13 +1055,11 @@ Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
 Delete chapter
 Delete failed
 
-
 ==========
 Sweep app/studio/works/[workId]/PublishToggle.tsx
 ==========
 
 Failed to update status
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/ChapterEditForm.tsx
@@ -1157,13 +1082,11 @@ Prolog, Bonus, Chapter 0...
 Upload error
 Upload failed
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/page.tsx
 ==========
 
 Edit Chapter
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx
@@ -1171,13 +1094,11 @@ Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx
 
 Upload error
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/ChapterCoverCard.tsx
 ==========
 
 Chapter cover
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.tsx
@@ -1186,20 +1107,17 @@ Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.
 Move page down
 Move page up
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/UploadPagesCard.tsx
 ==========
 
 Upload pages
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/page.tsx
 ==========
 
 Manage Pages
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/new/ChapterCreateForm.tsx
@@ -1217,13 +1135,11 @@ Prolog / Bonus / Chapter 0
 Sort Number
 Upload error
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/new/page.tsx
 ==========
 
 New Chapter
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/WorkEditForm.tsx
@@ -1233,7 +1149,6 @@ Failed to process cover
 Original author credit is required
 Original translator credit is required for Reupload
 Source URL is required
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/CreditsSourceFields.tsx
@@ -1248,7 +1163,6 @@ Publisher (optional)
 Source URL (required)
 Uploader note (optional)
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
 ==========
@@ -1256,7 +1170,6 @@ Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
 Arc order
 Example: The Eruption Saga
 Series title
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkBasicsFields.tsx
@@ -1266,13 +1179,11 @@ Comic type
 Max. 5 subtitles.
 Subtitles (optional)
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkCoverCard.tsx
 ==========
 
 Optimizing cover...
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkPublishTypeCard.tsx
@@ -1282,7 +1193,6 @@ Sweep app/studio/works/[workId]/edit/components/WorkPublishTypeCard.tsx
 Copyright warning
 Publish type
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
 ==========
@@ -1290,13 +1200,11 @@ Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
 18+ / Mature
 Deviant Love Tags
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/page.tsx
 ==========
 
 Edit work
-
 
 ==========
 Sweep app/studio/works/[workId]/page.tsx
@@ -1306,7 +1214,6 @@ Edit chapter
 Manage pages
 No chapters yet.
 
-
 ==========
 Sweep app/u/[username]/page.tsx
 ==========
@@ -1314,20 +1221,17 @@ Sweep app/u/[username]/page.tsx
 Published Works
 Recent Reviews
 
-
 ==========
 Sweep app/w/[slug]/chapters/page.tsx
 ==========
 
 All Chapters
 
-
 ==========
 Sweep app/w/[slug]/series/page.tsx
 ==========
 
 More in this series
-
 
 ==========
 Sweep components/ComicPageFilesPicker.tsx
@@ -1345,13 +1249,11 @@ Upload all images
 Upload chapter PDF
 Upload chapter ZIP
 
-
 ==========
 Sweep components/ContentWarningsGate.tsx
 ==========
 
 Content Warning
-
 
 ==========
 Sweep components/GenreTriStatePicker.tsx
@@ -1360,13 +1262,11 @@ Sweep components/GenreTriStatePicker.tsx
 Loading…
 Search for genre...
 
-
 ==========
 Sweep components/MultiSelectPicker.tsx
 ==========
 
 Search...
-
 
 ==========
 Sweep components/NovelRichTextEditor.tsx
@@ -1381,7 +1281,6 @@ Numbered list
 Upload image
 Write the chapter content...
 
-
 ==========
 Sweep components/SearchPresets.tsx
 ==========
@@ -1390,14 +1289,12 @@ No presets yet.
 Preset name...
 Saved Presets
 
-
 ==========
 Sweep components/TagMultiInput.tsx
 ==========
 
 Looking for tag suggestions...
 Type a tag then press Enter (or choose a suggestion) ...
-
 
 ==========
 Sweep components/admin/taxonomyManager/TaxonomyEditorDialog.tsx
@@ -1406,7 +1303,6 @@ Sweep components/admin/taxonomyManager/TaxonomyEditorDialog.tsx
 Leave blank to auto-generate from the name.
 e.g. Manhwa
 
-
 ==========
 Sweep components/admin/taxonomyManager/TaxonomyManagerInner.tsx
 ==========
@@ -1414,7 +1310,6 @@ Sweep components/admin/taxonomyManager/TaxonomyManagerInner.tsx
 Failed to load
 Failed to reorder
 Failed to sort
-
 
 ==========
 Sweep components/admin/taxonomyManager/TaxonomyTable.tsx
@@ -1431,13 +1326,11 @@ Sweep app/components/work/comments/useCommentComposer.ts
 Failed to send comment
 Paste link URL (https://...)
 
-
 ==========
 Sweep app/components/work/comments/useComments.ts
 ==========
 
 Failed to load comments
-
 
 ==========
 Sweep app/components/work/reviews/useReviews.ts
@@ -1449,7 +1342,6 @@ Failed to save review
 Rating must be 1..5
 Review text is required
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/useComicPagesManager.ts
 ==========
@@ -1458,7 +1350,6 @@ Commit failed
 Delete this page?
 Move failed
 Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones.
-
 
 ==========
 Sweep lib/comicPageImports.ts
@@ -1471,13 +1362,11 @@ The PDF did not produce any image pages
 The ZIP does not contain supported image files
 Window is unavailable
 
-
 ==========
 Sweep lib/comicTypeCatalog.ts
 ==========
 
 Unknown / Any
-
 
 ==========
 Sweep lib/commentMediaClient.ts
@@ -1486,20 +1375,17 @@ Sweep lib/commentMediaClient.ts
 Failed to commit media
 Failed to presign comment media
 
-
 ==========
 Sweep lib/languageCatalog.ts
 ==========
 
 Other / Unknown
 
-
 ==========
 Sweep lib/r2UploadClient.ts
 ==========
 
 Failed to presign upload
-
 
 ==========
 Sweep lib/time.ts
@@ -1515,8 +1401,6 @@ Updated 3 hours ago
 Updated 9 days ago
 Updated just now
 just now
-
-
 
 ==========
 Sweep app/components/user/ProfileLinksSheet.tsx
@@ -1745,7 +1629,6 @@ Inkura Mascot
 Footer Illustration
 Inkura Logo
 Sorry, an error occurred while loading this page.
-
 Online
 Sign-in failed
 An error occurred while loading the Admin page. Try again or return to the admin dashboard.
@@ -1779,7 +1662,6 @@ Example: Login bug, chapter cannot be opened, etc.
 Explain the issue + steps to reproduce.
 Title is required.
 • Mature
-
 Newest
 Original
 Translation
@@ -2050,3 +1932,144 @@ Event:
 Creator:
 Content:
 No optimization needed
+
+==========
+Page Browse Catalog
+==========
+
+All Works
+Advanced search
+Newest
+Most liked
+Best rated
+Any publish type
+Original
+Translation
+Reupload
+Author (username / name)
+Translator (username / name)
+Apply
+Comics
+Novels
+
+==========
+Page App Download
+==========
+
+App Download
+Placeholder. Play Store / App Store links will be added later.
+Coming soon.
+
+==========
+Page Admin Report
+==========
+
+Inbox reports from users.
+Send a report/issue to the admin. (Not for illegal requests, okay? 😅)
+
+==========
+Page Studio
+==========
+
+Image inserted into the chapter content.
+Failed to upload image.
+Enter link URL
+Delete this work? This will remove the work, chapters, and related data. This cannot be undone.
+Delete failed
+Delete "{title}"? This will remove the chapter and its related data. This cannot be undone.
+Delete chapter
+Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones.
+Commit failed
+
+==========
+Page Comments
+==========
+
+Failed to send reply
+Failed to edit comment
+Delete this comment? (Replies will also be deleted)
+Failed to delete comment
+Failed to update comment
+Comment hidden
+Comment shown again
+Failed to pin comment
+Comment pinned
+Comment unpinned
+Report sent. Thank you!
+Paste link URL (https://...)
+
+==========
+Page Lists
+==========
+
+List title cannot be empty.
+Failed to save.
+Network error.
+Delete this list?
+Failed to delete.
+Manage list
+Title
+Description
+Public (shareable)
+Saved!
+Saving...
+Save
+Delete list
+
+==========
+Page Admin Taxonomy
+==========
+
+Failed
+Deactivate "{name}"? (soft delete)
+Failed to reorder
+
+==========
+Page Profile
+==========
+
+Share Profile
+Shared
+Copied
+Copy failed
+Copy profile URL
+Profile actions
+Unblock
+Block
+Why do you want to report @{username}?
+Profile report: @{username}
+Failed to submit report
+Report
+
+==========
+Page Chat
+==========
+
+Hi~ I'm here to listen to you
+Elya can't reply right now (⁠╥⁠﹏⁠╥⁠)
+Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠)
+Chat Elya~
+Online
+Write something to Elya...
+
+==========
+Page Admin
+==========
+
+Admin page error
+An error occurred while loading the Admin page. Try again or return to the admin dashboard.
+
+==========
+Page Reset Password Legacy
+==========
+
+Token is missing from the URL.
+Reset Password
+Enter your new password. Reset links are only valid for a limited time.
+New password
+Minimum 6 characters
+Confirm password
+Repeat password
+Processing...
+Success! Redirecting...
+If the link is invalid or expired, request a new one via “Forgot password”.

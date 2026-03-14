@@ -67,6 +67,7 @@ Login failed. = Gagal masuk.
 Incorrect email/username or password. = Email/nama pengguna atau kata sandi salah.
 Password confirmation does not match. = Konfirmasi kata sandi tidak cocok.
 Sign-up failed. = Pendaftaran gagal.
+Failed to reset password. = Gagal mengatur ulang kata sandi.
 
 ==========
 Shared Dialogs
@@ -146,6 +147,7 @@ Continue with Google = Lanjutkan dengan Google
 Forgot password? = Lupa kata sandi?
 Don't have an account? = Belum punya akun?
 Sign Up = Daftar
+Sign In = Masuk
 
 ==========
 Page Sign Up
@@ -158,6 +160,9 @@ Email = Email
 Password (min 6) = Kata sandi (min 6)
 Confirm password = Konfirmasi kata sandi
 Already have an account? = Sudah punya akun?
+Processing... = Memproses...
+Sign Up = Daftar
+Sign In = Masuk
 
 ==========
 Page Forgot Password
@@ -169,6 +174,8 @@ Create reset token = Buat token reset
 If the account is found, reset-password instructions have been generated. (For production, connect email delivery. If you need the token displayed, set SHOW_RESET_TOKEN=1.) = Jika akun ditemukan, instruksi reset kata sandi telah dibuat. (Untuk production, sambungkan pengiriman email. Jika kamu perlu token ditampilkan, set SHOW_RESET_TOKEN=1.)
 Reset token (debug) = Token reset (debug)
 Continue to password reset = Lanjut ke reset kata sandi
+Email or username = Email atau nama pengguna
+Processing... = Memproses...
 
 ==========
 Page Reset Password
@@ -179,6 +186,8 @@ Enter a new password. = Masukkan kata sandi baru.
 New password = Kata sandi baru
 Password updated successfully. Redirecting to sign in... = Kata sandi berhasil diperbarui. Mengarahkan ke halaman masuk...
 Reset = Atur ulang
+Processing... = Memproses...
+Back = Kembali
 
 ==========
 Shared Error View
@@ -345,13 +354,11 @@ Link (optional) = Tautan (opsional)
 No reports yet. = Belum ada laporan.
 Send a report to the admin = Kirim laporan ke admin
 
-
 ==========
 Sweep app/admin/analytics/AdminAnalyticsActions.tsx
 ==========
 
 Failed to rebuild analytics = Gagal membangun ulang analitik
-
 
 ==========
 Sweep app/admin/analytics/AdminAnalyticsDashboard.tsx
@@ -396,7 +403,6 @@ User breakdown by gender and age band for the active range. = Rincian pengguna b
 Work reads = Pembacaan work
 Work views = Tampilan work
 
-
 ==========
 Sweep app/admin/analytics/details/page.tsx
 ==========
@@ -418,20 +424,17 @@ There are no events to display for this range yet. = Belum ada event untuk ditam
 There is no admin activity that needs to be excluded in this range yet. = Belum ada aktivitas admin yang perlu dikecualikan dalam rentang ini.
 This account is included in the primary analytics dataset. = Akun ini disertakan dalam dataset analitik utama.
 
-
 ==========
 Sweep app/admin/analytics/page.tsx
 ==========
 
 Audience, content, and growth in one place = Audiens, konten, dan pertumbuhan di satu tempat
 
-
 ==========
 Sweep app/admin/error.tsx
 ==========
 
 Admin page error = Kesalahan halaman admin
-
 
 ==========
 Sweep app/admin/notify/AdminNotifyClient.tsx
@@ -443,14 +446,12 @@ Target user is required (ex: @username) = Target pengguna wajib diisi (contoh: @
 To (@username or email) = Kepada (@username atau email)
 Write your message to the user… = Tulis pesanmu untuk pengguna…
 
-
 ==========
 Sweep app/admin/notify/page.tsx
 ==========
 
 Notify user = Notifikasi user
 Send a direct notification to a specific user. = Kirim notifikasi langsung ke pengguna tertentu.
-
 
 ==========
 Sweep app/admin/reports/AdminReportsClient.tsx
@@ -461,20 +462,17 @@ Comment not found (maybe deleted). = Komentar tidak ditemukan (mungkin sudah dih
 In: (unknown target) = Di: (target tidak diketahui)
 No open reports = Tidak ada laporan terbuka
 
-
 ==========
 Sweep app/admin/reports/page.tsx
 ==========
 
 Admin Reports = Laporan Admin
 
-
 ==========
 Sweep app/admin/taxonomy/deviant-love/page.tsx
 ==========
 
 Deviant Love Tags = Tag Deviant Love
-
 
 ==========
 Sweep app/admin/taxonomy/layout.tsx
@@ -483,13 +481,11 @@ Sweep app/admin/taxonomy/layout.tsx
 Admin • Taxonomy = Admin • Taksonomi
 Manage genres, tags, warnings, and Deviant Love directly from the web UI. = Kelola genre, tag, warning, dan Deviant Love langsung dari web UI.
 
-
 ==========
 Sweep app/admin/taxonomy/warnings/page.tsx
 ==========
 
 Warning Tags = Tag Peringatan
-
 
 ==========
 Sweep app/all/page.tsx
@@ -503,7 +499,6 @@ Best rated = Rating terbaik
 Most liked = Paling disukai
 Translator (username / name) = Penerjemah (username / nama)
 
-
 ==========
 Sweep app/app-download/page.tsx
 ==========
@@ -511,20 +506,17 @@ Sweep app/app-download/page.tsx
 App Download = Unduh Aplikasi
 Placeholder. Play Store / App Store links will be added later. = Placeholder. Tautan Play Store / App Store akan ditambahkan nanti.
 
-
 ==========
 Sweep app/auth/error/page.tsx
 ==========
 
 Sign-in Failed = Gagal masuk
 
-
 ==========
 Sweep app/browse/_components/BrowseListPage.tsx
 ==========
 
 Advanced search = Pencarian lanjutan
-
 
 ==========
 Sweep app/chat/page.tsx
@@ -537,7 +529,6 @@ Hi~ I'm here to listen to you = Hai~ Aku di sini untuk mendengarkanmu
 Send message = Kirim pesan
 Write something to Elya... = Tulis sesuatu untuk Elya...
 
-
 ==========
 Sweep app/comic/page.tsx
 ==========
@@ -549,13 +540,11 @@ Best rated = Rating terbaik
 Most liked = Paling disukai
 Translator (username / name) = Penerjemah (username / nama)
 
-
 ==========
 Sweep app/components/ThumbCropper.tsx
 ==========
 
 Pick image = Pick gambar
-
 
 ==========
 Sweep app/components/WorksGrid.tsx
@@ -564,20 +553,17 @@ Sweep app/components/WorksGrid.tsx
 No works = Tidak ada work
 There is no data to display yet. = Belum ada data untuk ditampilkan.
 
-
 ==========
 Sweep app/components/landing/LandingFooter.tsx
 ==========
 
 Follow Us = Ikuti Kami
 
-
 ==========
 Sweep app/components/landing/ScrollToTopButton.tsx
 ==========
 
 Scroll to Top = Gulir ke Atas
-
 
 ==========
 Sweep app/components/library/ReadingProgressCard.tsx
@@ -586,13 +572,11 @@ Sweep app/components/library/ReadingProgressCard.tsx
 Continue reading = Lanjut membaca
 No cover = Tidak ada cover
 
-
 ==========
 Sweep app/components/reader/DesktopReaderDock.tsx
 ==========
 
 All chapters = Semua chapter
-
 
 ==========
 Sweep app/components/reader/ProtectedNovelContent.tsx
@@ -601,13 +585,11 @@ Sweep app/components/reader/ProtectedNovelContent.tsx
 Long-swipe left/right to turn the page = Geser panjang kiri/kanan untuk membalik halaman
 Novel reader content = Konten reader novel
 
-
 ==========
 Sweep app/components/ui-language/UILanguageProvider.tsx
 ==========
 
 useUILanguage must be used inside <UILanguageProvider>. = useUILanguage harus digunakan di dalam <UILanguageProvider>.
-
 
 ==========
 Sweep app/components/ui/FloatingNotice.tsx
@@ -615,20 +597,17 @@ Sweep app/components/ui/FloatingNotice.tsx
 
 Dismiss notification = Tutup notifikasi
 
-
 ==========
 Sweep app/components/user/FollowToggleButton.tsx
 ==========
 
 Failed to update follow status = Gagal memperbarui status follow
 
-
 ==========
 Sweep app/components/user/ProfileShareButton.tsx
 ==========
 
 Inkura profile = Profil Inkura
-
 
 ==========
 Sweep app/components/user/PublicProfileActionsMenu.tsx
@@ -638,7 +617,6 @@ Failed to submit report = Gagal mengirim laporan
 Failed to update block status = Gagal memperbarui status blokir
 Profile actions = Aksi profil
 
-
 ==========
 Sweep app/components/work/AddToListButton.tsx
 ==========
@@ -646,7 +624,6 @@ Sweep app/components/work/AddToListButton.tsx
 Add to List = Tambahkan ke List
 Add to list = Tambahkan ke list
 Create list = Buat list
-
 
 ==========
 Sweep app/components/work/CommentSection.tsx
@@ -669,7 +646,6 @@ Failed to update comment = Gagal memperbarui komentar
 No comments yet. = Belum ada komentar.
 Report sent. Thank you! = Laporan terkirim. Terima kasih!
 
-
 ==========
 Sweep app/components/work/InteractiveWorkCard.tsx
 ==========
@@ -677,13 +653,11 @@ Sweep app/components/work/InteractiveWorkCard.tsx
 No cover = Tidak ada cover
 Translation language = Bahasa terjemahan
 
-
 ==========
 Sweep app/components/work/LikeButton.tsx
 ==========
 
 Like work = Sukai work
-
 
 ==========
 Sweep app/components/work/ReviewSection.tsx
@@ -693,13 +667,11 @@ Loading reviews… = Memuat ulasan…
 No reviews yet. Be the first! = Belum ada ulasan. Jadilah yang pertama!
 Sort reviews = Urutkan ulasan
 
-
 ==========
 Sweep app/components/work/SeriesArcsPanel.tsx
 ==========
 
 More in this series = Lainnya di series ini
-
 
 ==========
 Sweep app/components/work/WorkChaptersWebtoon.tsx
@@ -708,13 +680,11 @@ Sweep app/components/work/WorkChaptersWebtoon.tsx
 No chapters yet. = Belum ada chapter.
 No image = Tidak ada gambar
 
-
 ==========
 Sweep app/components/work/WorkRowCard.tsx
 ==========
 
 No cover = Tidak ada cover
-
 
 ==========
 Sweep app/components/work/comments/CommentBody.tsx
@@ -722,7 +692,6 @@ Sweep app/components/work/comments/CommentBody.tsx
 
 Tap to hide = Ketuk untuk menyembunyikan
 Tap to reveal = Ketuk untuk menampilkan
-
 
 ==========
 Sweep app/components/work/comments/CommentCard.tsx
@@ -736,7 +705,6 @@ Save edit = Simpan edit
 Send reply = Kirim balasan
 Write a reply... = Tulis balasan...
 
-
 ==========
 Sweep app/components/work/comments/CommentComposer.tsx
 ==========
@@ -745,13 +713,11 @@ Attach image/GIF = Lampirkan gambar/GIF
 Insert link = Sisipkan tautan
 Write a comment... = Tulis komentar...
 
-
 ==========
 Sweep app/components/work/reviews/ReviewCard.tsx
 ==========
 
 · edited = · diedit
-
 
 ==========
 Sweep app/components/work/reviews/ReviewModal.tsx
@@ -760,13 +726,11 @@ Sweep app/components/work/reviews/ReviewModal.tsx
 Short summary = Ringkasan singkat
 Write your thoughts… = Tulis pendapatmu…
 
-
 ==========
 Sweep app/content/[slug]/page.tsx
 ==========
 
 Work detail placeholder so all /content/* links do not 404. = Placeholder detail work agar semua link /content/* tidak menghasilkan 404.
-
 
 ==========
 Sweep app/creator/[slug]/page.tsx
@@ -774,20 +738,17 @@ Sweep app/creator/[slug]/page.tsx
 
 Creator profile placeholder so /creator/* links do not 404. = Placeholder profil creator agar /creator/* tidak menghasilkan 404.
 
-
 ==========
 Sweep app/events/[slug]/page.tsx
 ==========
 
 Event page placeholder so /events/* links do not 404. = Placeholder halaman event agar /events/* tidak menghasilkan 404.
 
-
 ==========
 Sweep app/forum/[slug]/page.tsx
 ==========
 
 Forum thread placeholder so /forum/* links do not 404. = Placeholder thread forum agar /forum/* tidak menghasilkan 404.
-
 
 ==========
 Sweep app/genre/page.tsx
@@ -796,20 +757,17 @@ Sweep app/genre/page.tsx
 No genres yet. Add them via seed / studio. = Tidak ada genre yet. add them via seed / studio.
 Select a genre = Pilih genre
 
-
 ==========
 Sweep app/layout.tsx
 ==========
 
 An International Platform For Original Works Made Without AI = Platform Internasional untuk Karya Orisinal yang Dibuat Tanpa AI
 
-
 ==========
 Sweep app/library/bookmarks/page.tsx
 ==========
 
 All works you have bookmarked. = Semua work yang sudah kamu bookmark.
-
 
 ==========
 Sweep app/library/page.tsx
@@ -821,14 +779,12 @@ No lists yet. = Belum ada list.
 No reading history yet. = Belum ada riwayat baca.
 Your Collections = Koleksimu
 
-
 ==========
 Sweep app/lists/[slug]/ListPageShell.tsx
 ==========
 
 Empty list = List kosong
 There is no work to show yet. = Belum ada work untuk ditampilkan.
-
 
 ==========
 Sweep app/lists/[slug]/listWorksGrid.tsx
@@ -837,7 +793,6 @@ Sweep app/lists/[slug]/listWorksGrid.tsx
 No works = Tidak ada work
 Remove from list = Hapus dari list
 The works in this list cannot be shown to the current viewer. = Work dalam list ini tidak dapat ditampilkan kepada viewer saat ini.
-
 
 ==========
 Sweep app/lists/[slug]/ownerControls.tsx
@@ -848,7 +803,6 @@ Manage list = Kelola list
 Network error. = Kesalahan jaringan.
 Public (shareable) = Publik (bisa dibagikan)
 Title cannot be empty. = Judul tidak boleh kosong.
-
 
 ==========
 Sweep app/lists/new/newListForm.tsx
@@ -861,13 +815,11 @@ Title is required. = Title wajib diisi.
 short description... = deskripsi singkat...
 — works inside the list still follow the viewer's 18+/Deviant Love gate = — work di dalam list tetap mengikuti gate 18+/Deviant Love milik viewer
 
-
 ==========
 Sweep app/lists/new/page.tsx
 ==========
 
 New Collection = Baru koleksi
-
 
 ==========
 Sweep app/lists/page.tsx
@@ -876,13 +828,11 @@ Sweep app/lists/page.tsx
 No items yet = Tidak ada items yet
 No list yet. = Belum ada list.
 
-
 ==========
 Sweep app/notifications/NotificationsClient.tsx
 ==========
 
 No notification yet = Tidak ada notifikasi yet
-
 
 ==========
 Sweep app/novel/page.tsx
@@ -895,14 +845,12 @@ Best rated = Rating terbaik
 Most liked = Paling disukai
 Translator (username / name) = Penerjemah (username / nama)
 
-
 ==========
 Sweep app/profile/comments/page.tsx
 ==========
 
 All Comments = Semua Komentar
 Sort comments = Urutkan komentar
-
 
 ==========
 Sweep app/profile/page.tsx
@@ -914,14 +862,12 @@ Published Works = Published Work
 Recent Comments = Komentar Terbaru
 Recent Reviews = Ulasan Terbaru
 
-
 ==========
 Sweep app/profile/reviews/page.tsx
 ==========
 
 All Reviews = Semua Ulasan
 Sort reviews = Urutkan ulasan
-
 
 ==========
 Sweep app/reset-password/page.tsx
@@ -933,13 +879,11 @@ Repeat password = Ulangi kata sandi
 Reset Password = Atur Ulang Kata Sandi
 Token is missing from the URL. = Token tidak ada di URL.
 
-
 ==========
 Sweep app/search/_components/ActiveFiltersBar.tsx
 ==========
 
 Active filters: = Filter aktif:
-
 
 ==========
 Sweep app/search/_components/SearchForm.tsx
@@ -963,7 +907,6 @@ Search for title, description.... = Cari judul, deskripsi....
 Status / Publish / Chapters = Status / Publikasi / Chapter
 username / name = username / nama
 
-
 ==========
 Sweep app/search/_components/WorksGrid.tsx
 ==========
@@ -971,20 +914,17 @@ Sweep app/search/_components/WorksGrid.tsx
 No results = Tidak ada results
 Try another keyword or change the filters. = Coba kata kunci lain atau ubah filternya.
 
-
 ==========
 Sweep app/search/page.tsx
 ==========
 
 Advance Search = Pencarian Lanjutan
 
-
 ==========
 Sweep app/search/users/page.tsx
 ==========
 
 Search username / name = Cari username / nama
-
 
 ==========
 Sweep app/settings/history/page.tsx
@@ -993,20 +933,17 @@ Sweep app/settings/history/page.tsx
 No history yet. = Belum ada riwayat.
 Reading History = Membaca Riwayat
 
-
 ==========
 Sweep app/settings/profile/ProfileForm.tsx
 ==========
 
 Upload failed = Unggah gagal
 
-
 ==========
 Sweep app/settings/profile/components/AvatarPickerCard.tsx
 ==========
 
 Signed in as = Masuk sebagai
-
 
 ==========
 Sweep app/settings/profile/components/ProfileFieldsCard.tsx
@@ -1020,13 +957,11 @@ Profile links = Tautan profil
 Tell readers a little about yourself = Ceritakan sedikit tentang dirimu kepada pembaca
 Your display name = Nama tampilanmu
 
-
 ==========
 Sweep app/settings/profile/page.tsx
 ==========
 
 Edit Profile = Edit Profil
-
 
 ==========
 Sweep app/studio/StudioWorksGridClient.tsx
@@ -1037,7 +972,6 @@ No cover = Tidak ada cover
 Open / Edit = Buka / Edit
 View public page = Lihat halaman publik
 
-
 ==========
 Sweep app/studio/new/NewWorkForm.tsx
 ==========
@@ -1047,14 +981,12 @@ Example: The Eruption Saga = Contoh: The Eruption Saga
 Series (optional) = Series (opsional)
 Series title = Judul series
 
-
 ==========
 Sweep app/studio/new/components/DeviantLoveCard.tsx
 ==========
 
 18+ / Mature = 18+ / Dewasa
 Deviant Love Tags = Tag Deviant Love
-
 
 ==========
 Sweep app/studio/new/components/PublishTypeCard.tsx
@@ -1077,7 +1009,6 @@ Reupload (Reuploader) = Reupload (Pengunggah Ulang)
 Source URL (required) = URL sumber (wajib)
 Translation (Translator) = Terjemahan (Penerjemah)
 
-
 ==========
 Sweep app/studio/new/components/WorkBasicsCard.tsx
 ==========
@@ -1091,13 +1022,11 @@ Tags (comma) = Tag (koma)
 Work Title = Judul Work
 action, romance, comedy = aksi, romansa, komedi
 
-
 ==========
 Sweep app/studio/new/page.tsx
 ==========
 
 Create new work = Buat work baru
-
 
 ==========
 Sweep app/studio/series/StudioSeriesManagerClient.tsx
@@ -1113,13 +1042,11 @@ Request failed = Permintaan gagal
 Series title = Judul series
 Unassigned works = Work yang belum ditetapkan
 
-
 ==========
 Sweep app/studio/series/page.tsx
 ==========
 
 Manage series = Kelola series
-
 
 ==========
 Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
@@ -1128,13 +1055,11 @@ Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
 Delete chapter = Hapus chapter
 Delete failed = Gagal menghapus
 
-
 ==========
 Sweep app/studio/works/[workId]/PublishToggle.tsx
 ==========
 
 Failed to update status = Gagal update status
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/ChapterEditForm.tsx
@@ -1157,13 +1082,11 @@ Prolog, Bonus, Chapter 0... = Prolog, Bonus, Chapter 0...
 Upload error = Kesalahan unggah
 Upload failed = Unggah gagal
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/page.tsx
 ==========
 
 Edit Chapter = Edit Chapter
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx
@@ -1171,13 +1094,11 @@ Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/ComicPagesManager.tsx
 
 Upload error = Kesalahan unggah
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/ChapterCoverCard.tsx
 ==========
 
 Chapter cover = Cover chapter
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.tsx
@@ -1186,20 +1107,17 @@ Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.
 Move page down = Turunkan halaman
 Move page up = Naikkan halaman
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/UploadPagesCard.tsx
 ==========
 
 Upload pages = Unggah halaman
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/page.tsx
 ==========
 
 Manage Pages = Kelola Halaman
-
 
 ==========
 Sweep app/studio/works/[workId]/chapters/new/ChapterCreateForm.tsx
@@ -1217,13 +1135,11 @@ Prolog / Bonus / Chapter 0 = Prolog / Bonus / Chapter 0
 Sort Number = Nomor Urut
 Upload error = Kesalahan unggah
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/new/page.tsx
 ==========
 
 New Chapter = Baru Chapter
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/WorkEditForm.tsx
@@ -1233,7 +1149,6 @@ Failed to process cover = Gagal memproses cover
 Original author credit is required = Kredit penulis asli wajib diisi
 Original translator credit is required for Reupload = Kredit penerjemah asli wajib diisi untuk Reupload
 Source URL is required = URL sumber wajib diisi
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/CreditsSourceFields.tsx
@@ -1248,7 +1163,6 @@ Publisher (optional) = Penerbit (opsional)
 Source URL (required) = URL sumber (wajib)
 Uploader note (optional) = Catatan pengunggah (opsional)
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
 ==========
@@ -1256,7 +1170,6 @@ Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
 Arc order = Urutan arc
 Example: The Eruption Saga = Contoh: The Eruption Saga
 Series title = Judul series
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkBasicsFields.tsx
@@ -1266,13 +1179,11 @@ Comic type = Jenis komik
 Max. 5 subtitles. = Maks. 5 subtitle.
 Subtitles (optional) = Subtitle (opsional)
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkCoverCard.tsx
 ==========
 
 Optimizing cover... = Mengoptimalkan cover...
-
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkPublishTypeCard.tsx
@@ -1282,7 +1193,6 @@ Sweep app/studio/works/[workId]/edit/components/WorkPublishTypeCard.tsx
 Copyright warning = Peringatan hak cipta
 Publish type = Jenis publikasi
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
 ==========
@@ -1290,13 +1200,11 @@ Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
 18+ / Mature = 18+ / Dewasa
 Deviant Love Tags = Tag Deviant Love
 
-
 ==========
 Sweep app/studio/works/[workId]/edit/page.tsx
 ==========
 
 Edit work = Edit work
-
 
 ==========
 Sweep app/studio/works/[workId]/page.tsx
@@ -1306,7 +1214,6 @@ Edit chapter = Edit chapter
 Manage pages = Kelola halaman
 No chapters yet. = Belum ada chapter.
 
-
 ==========
 Sweep app/u/[username]/page.tsx
 ==========
@@ -1314,20 +1221,17 @@ Sweep app/u/[username]/page.tsx
 Published Works = Published Work
 Recent Reviews = Ulasan Terbaru
 
-
 ==========
 Sweep app/w/[slug]/chapters/page.tsx
 ==========
 
 All Chapters = Semua Chapter
 
-
 ==========
 Sweep app/w/[slug]/series/page.tsx
 ==========
 
 More in this series = Lainnya di series ini
-
 
 ==========
 Sweep components/ComicPageFilesPicker.tsx
@@ -1345,13 +1249,11 @@ Upload all images = Unggah semua gambar
 Upload chapter PDF = Unggah PDF chapter
 Upload chapter ZIP = Unggah ZIP chapter
 
-
 ==========
 Sweep components/ContentWarningsGate.tsx
 ==========
 
 Content Warning = Peringatan Konten
-
 
 ==========
 Sweep components/GenreTriStatePicker.tsx
@@ -1360,13 +1262,11 @@ Sweep components/GenreTriStatePicker.tsx
 Loading… = Memuat…
 Search for genre... = Cari genre...
 
-
 ==========
 Sweep components/MultiSelectPicker.tsx
 ==========
 
 Search... = Cari...
-
 
 ==========
 Sweep components/NovelRichTextEditor.tsx
@@ -1381,7 +1281,6 @@ Numbered list = Daftar bernomor
 Upload image = Unggah gambar
 Write the chapter content... = Tulis konten chapter...
 
-
 ==========
 Sweep components/SearchPresets.tsx
 ==========
@@ -1390,14 +1289,12 @@ No presets yet. = Belum ada preset.
 Preset name... = Nama preset...
 Saved Presets = Preset Tersimpan
 
-
 ==========
 Sweep components/TagMultiInput.tsx
 ==========
 
 Looking for tag suggestions... = Mencari saran tag...
 Type a tag then press Enter (or choose a suggestion) ... = Ketik tag lalu Enter (atau pilih saran) ...
-
 
 ==========
 Sweep components/admin/taxonomyManager/TaxonomyEditorDialog.tsx
@@ -1406,7 +1303,6 @@ Sweep components/admin/taxonomyManager/TaxonomyEditorDialog.tsx
 Leave blank to auto-generate from the name. = Biarkan kosong untuk membuat otomatis dari nama.
 e.g. Manhwa = mis. Manhwa
 
-
 ==========
 Sweep components/admin/taxonomyManager/TaxonomyManagerInner.tsx
 ==========
@@ -1414,7 +1310,6 @@ Sweep components/admin/taxonomyManager/TaxonomyManagerInner.tsx
 Failed to load = Gagal memuat
 Failed to reorder = Gagal mengurutkan ulang
 Failed to sort = Gagal menyortir
-
 
 ==========
 Sweep components/admin/taxonomyManager/TaxonomyTable.tsx
@@ -1431,13 +1326,11 @@ Sweep app/components/work/comments/useCommentComposer.ts
 Failed to send comment = Gagal mengirim komentar
 Paste link URL (https://...) = Tempel URL tautan (https://...)
 
-
 ==========
 Sweep app/components/work/comments/useComments.ts
 ==========
 
 Failed to load comments = Gagal memuat komentar
-
 
 ==========
 Sweep app/components/work/reviews/useReviews.ts
@@ -1449,7 +1342,6 @@ Failed to save review = Gagal menyimpan ulasan
 Rating must be 1..5 = Rating harus 1..5
 Review text is required = Teks ulasan wajib diisi
 
-
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/useComicPagesManager.ts
 ==========
@@ -1458,7 +1350,6 @@ Commit failed = Commit gagal
 Delete this page? = Hapus halaman ini?
 Move failed = Gagal memindahkan
 Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones. = Ganti semua halaman yang ada? Ini akan menghapus halaman saat ini (beserta file R2-nya) sebelum menyimpan yang baru.
-
 
 ==========
 Sweep lib/comicPageImports.ts
@@ -1471,13 +1362,11 @@ The PDF did not produce any image pages = PDF tidak menghasilkan halaman gambar
 The ZIP does not contain supported image files = ZIP tidak berisi file gambar yang didukung
 Window is unavailable = Window tidak tersedia
 
-
 ==========
 Sweep lib/comicTypeCatalog.ts
 ==========
 
 Unknown / Any = Tidak diketahui / Apa saja
-
 
 ==========
 Sweep lib/commentMediaClient.ts
@@ -1486,20 +1375,17 @@ Sweep lib/commentMediaClient.ts
 Failed to commit media = Gagal commit media
 Failed to presign comment media = Gagal presign media komentar
 
-
 ==========
 Sweep lib/languageCatalog.ts
 ==========
 
 Other / Unknown = Lainnya / Tidak diketahui
 
-
 ==========
 Sweep lib/r2UploadClient.ts
 ==========
 
 Failed to presign upload = Gagal presign upload
-
 
 ==========
 Sweep lib/time.ts
@@ -1515,8 +1401,6 @@ Updated 3 hours ago = Diperbarui 3 jam yang lalu
 Updated 9 days ago = Diperbarui 9 hari yang lalu
 Updated just now = Diperbarui baru saja
 just now = baru saja
-
-
 
 ==========
 Sweep app/components/user/ProfileLinksSheet.tsx
@@ -1745,7 +1629,6 @@ Inkura Mascot = Maskot Inkura
 Footer Illustration = Ilustrasi Footer
 Inkura Logo = Logo Inkura
 Sorry, an error occurred while loading this page. = Maaf, terjadi kesalahan saat memuat halaman ini.
-
 Online = Online
 Sign-in failed = Gagal Masuk
 An error occurred while loading the Admin page. Try again or return to the admin dashboard. = Terjadi kesalahan saat memuat halaman Admin. Coba lagi atau kembali ke dashboard admin.
@@ -2049,3 +1932,144 @@ Event: = Event:
 Creator: = Kreator:
 Content: = Konten:
 No optimization needed = Tidak perlu optimasi
+
+==========
+Page Browse Catalog
+==========
+
+All Works = Semua Work
+Advanced search = Pencarian lanjutan
+Newest = Terbaru
+Most liked = Paling disukai
+Best rated = Rating terbaik
+Any publish type = Jenis publikasi apa saja
+Original = Original
+Translation = Terjemahan
+Reupload = Reupload
+Author (username / name) = Penulis (username / nama)
+Translator (username / name) = Penerjemah (username / nama)
+Apply = Terapkan
+Comics = Komik
+Novels = Novel
+
+==========
+Page App Download
+==========
+
+App Download = Unduh Aplikasi
+Placeholder. Play Store / App Store links will be added later. = Placeholder. Tautan Play Store / App Store akan ditambahkan nanti.
+Coming soon. = Segera hadir.
+
+==========
+Page Admin Report
+==========
+
+Inbox reports from users. = Kotak masuk laporan dari pengguna.
+Send a report/issue to the admin. (Not for illegal requests, okay? 😅) = Kirim laporan/masalah ke admin. (Bukan untuk permintaan ilegal, ya? 😅)
+
+==========
+Page Studio
+==========
+
+Image inserted into the chapter content. = Gambar dimasukkan ke isi chapter.
+Failed to upload image. = Gagal mengunggah gambar.
+Enter link URL = Masukkan URL tautan
+Delete this work? This will remove the work, chapters, and related data. This cannot be undone. = Hapus karya ini? Ini akan menghapus karya, chapter, dan data terkait. Ini tidak bisa dibatalkan.
+Delete failed = Gagal menghapus
+Delete "{title}"? This will remove the chapter and its related data. This cannot be undone. = Hapus "{title}"? Ini akan menghapus chapter dan data terkaitnya. Ini tidak bisa dibatalkan.
+Delete chapter = Hapus chapter
+Replace all existing pages? This will delete the current pages (and their R2 files) before saving the new ones. = Ganti semua halaman yang ada? Ini akan menghapus halaman saat ini (dan file R2-nya) sebelum menyimpan yang baru.
+Commit failed = Gagal menyimpan perubahan
+
+==========
+Page Comments
+==========
+
+Failed to send reply = Gagal mengirim balasan
+Failed to edit comment = Gagal mengedit komentar
+Delete this comment? (Replies will also be deleted) = Hapus komentar ini? (Balasan juga akan dihapus)
+Failed to delete comment = Gagal menghapus komentar
+Failed to update comment = Gagal memperbarui komentar
+Comment hidden = Komentar disembunyikan
+Comment shown again = Komentar ditampilkan lagi
+Failed to pin comment = Gagal menyematkan komentar
+Comment pinned = Komentar disematkan
+Comment unpinned = Komentar batal disematkan
+Report sent. Thank you! = Laporan terkirim. Terima kasih!
+Paste link URL (https://...) = Tempel URL tautan (https://...)
+
+==========
+Page Lists
+==========
+
+List title cannot be empty. = Judul list tidak boleh kosong.
+Failed to save. = Gagal menyimpan.
+Network error. = Kesalahan jaringan.
+Delete this list? = Hapus list ini?
+Failed to delete. = Gagal menghapus.
+Manage list = Kelola list
+Title = Judul
+Description = Deskripsi
+Public (shareable) = Publik (bisa dibagikan)
+Saved! = Tersimpan!
+Saving... = Menyimpan...
+Save = Simpan
+Delete list = Hapus list
+
+==========
+Page Admin Taxonomy
+==========
+
+Failed = Gagal
+Deactivate "{name}"? (soft delete) = Nonaktifkan "{name}"? (soft delete)
+Failed to reorder = Gagal mengurutkan ulang
+
+==========
+Page Profile
+==========
+
+Share Profile = Bagikan Profil
+Shared = Dibagikan
+Copied = Disalin
+Copy failed = Gagal menyalin
+Copy profile URL = Salin URL profil
+Profile actions = Aksi profil
+Unblock = Buka blokir
+Block = Blokir
+Why do you want to report @{username}? = Kenapa kamu ingin melaporkan @{username}?
+Profile report: @{username} = Laporan profil: @{username}
+Failed to submit report = Gagal mengirim laporan
+Report = Laporkan
+
+==========
+Page Chat
+==========
+
+Hi~ I'm here to listen to you = Hai~ Aku di sini untuk mendengarkanmu
+Elya can't reply right now (⁠╥⁠﹏⁠╥⁠) = Elya belum bisa membalas sekarang (⁠╥⁠﹏⁠╥⁠)
+Elya is having trouble replying... (⁠╥⁠﹏⁠╥⁠) = Elya sedang kesulitan membalas... (⁠╥⁠﹏⁠╥⁠)
+Chat Elya~ = Chat Elya~
+Online = Online
+Write something to Elya... = Tulis sesuatu untuk Elya...
+
+==========
+Page Admin
+==========
+
+Admin page error = Kesalahan halaman admin
+An error occurred while loading the Admin page. Try again or return to the admin dashboard. = Terjadi kesalahan saat memuat halaman Admin. Coba lagi atau kembali ke dashboard admin.
+
+==========
+Page Reset Password Legacy
+==========
+
+Token is missing from the URL. = Token tidak ada di URL.
+Reset Password = Atur Ulang Kata Sandi
+Enter your new password. Reset links are only valid for a limited time. = Masukkan kata sandi barumu. Tautan reset hanya berlaku untuk waktu terbatas.
+New password = Kata sandi baru
+Minimum 6 characters = Minimal 6 karakter
+Confirm password = Konfirmasi kata sandi
+Repeat password = Ulangi kata sandi
+Processing... = Memproses...
+Success! Redirecting... = Berhasil! Mengarahkan...
+If the link is invalid or expired, request a new one via “Forgot password”. = Jika tautan tidak valid atau kedaluwarsa, minta yang baru lewat “Lupa kata sandi”.
