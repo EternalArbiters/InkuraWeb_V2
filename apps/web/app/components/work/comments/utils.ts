@@ -1,5 +1,11 @@
-import { formatTimeAgo } from "@/lib/time";
+import { formatTimeAgo, EN_TIME_LOCALE, ID_TIME_LOCALE, type TimeLocale } from "@/lib/time";
 import type { CommentItem, DecoratedComment, SortMode } from "./types";
+
+export type CommentLocale = "EN" | "ID";
+
+function resolveTimeLocale(locale?: CommentLocale): TimeLocale {
+  return locale === "ID" ? ID_TIME_LOCALE : EN_TIME_LOCALE;
+}
 
 export function normalizeSort(v: unknown): SortMode {
   const s = String(v || "").toLowerCase().trim();
@@ -10,17 +16,18 @@ export function normalizeSort(v: unknown): SortMode {
   return "top";
 }
 
-export function decorateTree(nodes: CommentItem[]): DecoratedComment[] {
+export function decorateTree(nodes: CommentItem[], locale?: CommentLocale): DecoratedComment[] {
+  const timeLocale = resolveTimeLocale(locale);
   return (nodes || []).map((c) => {
-    const createdAtLabel = formatTimeAgo(c.createdAt);
-    const editedAtLabel = c.editedAt ? formatTimeAgo(c.editedAt) : null;
+    const createdAtLabel = formatTimeAgo(c.createdAt, { locale: timeLocale });
+    const editedAtLabel = c.editedAt ? formatTimeAgo(c.editedAt, { locale: timeLocale }) : null;
     const displayName = c.user?.name || c.user?.username || "Unknown";
     return {
       ...c,
       createdAtLabel,
       editedAtLabel,
       displayName,
-      replies: c.replies ? decorateTree(c.replies) : [],
+      replies: c.replies ? decorateTree(c.replies, locale) : [],
     };
   });
 }

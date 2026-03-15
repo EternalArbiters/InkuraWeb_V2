@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { RefreshCw } from "lucide-react";
-import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+import { useUILanguage, useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 import CommentComposer from "./comments/CommentComposer";
 import CommentThread from "./comments/CommentThread";
@@ -52,6 +52,7 @@ export default function CommentSection({
 }) {
   const router = useRouter();
   const t = useUILanguageText("Page Comments");
+  const { language } = useUILanguage();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -136,7 +137,7 @@ export default function CommentSection({
     return () => clearTimeout(t);
   }, [searchParams, loading, comments]);
 
-  const pretty = useMemo(() => decorateTree(comments), [comments]);
+  const pretty = useMemo(() => decorateTree(comments, language as "EN" | "ID"), [comments, language]);
 
   const startReply = (c: DecoratedComment) => {
     if (c.isHidden) return;

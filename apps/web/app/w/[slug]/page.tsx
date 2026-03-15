@@ -273,6 +273,12 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
 
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{work.title}</h1>
+              {work.status === "DRAFT" && viewer?.role === "ADMIN" ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-amber-400 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 dark:border-amber-500/60 dark:bg-amber-950/40 dark:text-amber-300">
+                  <span>⚠</span>
+                  <span>DRAF — hanya terlihat oleh admin</span>
+                </div>
+              ) : null}
               {subtitles.length ? (
                   <div className="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">
                     {subtitles.map((subtitle: string, index: number) => (

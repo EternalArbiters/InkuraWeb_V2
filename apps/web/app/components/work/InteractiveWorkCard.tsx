@@ -338,6 +338,11 @@ export default function InteractiveWorkCard({
               {topLeftBadge}
             </div>
           ) : null}
+          {work?.status === "DRAFT" ? (
+            <div className="rounded-full border border-amber-400/80 bg-amber-500/80 px-3 py-1 text-[10px] font-bold text-white shadow-sm backdrop-blur-sm">
+              DRAF
+            </div>
+          ) : null}
           {flag ? (
             <div
               className="rounded-full bg-black/45 px-3 py-1 text-[12px] leading-none text-white shadow-sm backdrop-blur-sm"

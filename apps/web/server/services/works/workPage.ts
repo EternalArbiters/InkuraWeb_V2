@@ -218,6 +218,164 @@ export async function getPublicWorkPageDataBySlug(slug: string) {
   );
 }
 
+// Admin-only: loads any work regardless of status (draft/published), bypasses cache.
+async function loadAdminWorkPageDataBySlug(slug: string) {
+  const work = await prisma.work.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      subtitle: true,
+      subtitleJson: true,
+      description: true,
+      coverImage: true,
+      type: true,
+      comicType: true,
+      status: true,
+      isMature: true,
+      language: true,
+      origin: true,
+      completion: true,
+      publishType: true,
+      originalAuthorCredit: true,
+      originalTranslatorCredit: true,
+      sourceUrl: true,
+      uploaderNote: true,
+      translatorCredit: true,
+      companyCredit: true,
+      prevArcUrl: true,
+      nextArcUrl: true,
+      seriesId: true,
+      seriesOrder: true,
+      series: {
+        select: {
+          id: true,
+          title: true,
+          works: {
+            orderBy: [{ seriesOrder: "asc" }, { createdAt: "asc" }],
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              coverImage: true,
+              seriesOrder: true,
+              status: true,
+              type: true,
+              comicType: true,
+              publishType: true,
+              isMature: true,
+              language: true,
+              completion: true,
+              chapterCount: true,
+              likeCount: true,
+              ratingAvg: true,
+              ratingCount: true,
+              updatedAt: true,
+              lastChapterPublishedAt: true,
+              genres: { select: { name: true, slug: true } },
+              deviantLoveTags: { select: { name: true, slug: true } },
+              author: { select: { username: true, name: true, image: true } },
+              translator: { select: { username: true, name: true, image: true } },
+            },
+          },
+        },
+      },
+      likeCount: true,
+      ratingAvg: true,
+      ratingCount: true,
+      chapterCount: true,
+      createdAt: true,
+      updatedAt: true,
+      warningTags: { select: { name: true, slug: true } },
+      deviantLoveTags: { select: { name: true, slug: true } },
+      genres: { select: { name: true, slug: true } },
+      tags: { select: { name: true, slug: true } },
+      authorId: true,
+      author: { select: { username: true, name: true, image: true } },
+      translator: { select: { username: true, name: true, image: true } },
+      // Admin sees ALL chapters regardless of status
+      chapters: {
+        orderBy: [{ number: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          title: true,
+          number: true,
+          label: true,
+          status: true,
+          createdAt: true,
+          publishedAt: true,
+          isMature: true,
+          likeCount: true,
+          thumbnailImage: true,
+          thumbnailKey: true,
+          thumbnailFocusX: true,
+          thumbnailFocusY: true,
+          thumbnailZoom: true,
+          pages: {
+            orderBy: { order: "asc" },
+            take: 3,
+            select: { imageUrl: true },
+          },
+          warningTags: { select: { name: true, slug: true } },
+        },
+      },
+    },
+  });
+
+  if (!work) {
+    return { ok: false as const, status: 404 as const, error: "Not found" as const };
+  }
+
+  const chapterLoveCount = Array.isArray(work.chapters)
+    ? work.chapters.reduce((sum: number, chapter: any) => sum + Number(chapter.likeCount ?? 0), 0)
+    : 0;
+
+  const visibleChapters = Array.isArray(work.chapters)
+    ? work.chapters.map((chapter: any) => ({
+        ...chapter,
+        thumbnailUrl: resolveChapterThumb(chapter),
+      }))
+    : [];
+
+  const seriesWorks = Array.isArray(work.series?.works)
+    ? work.series.works.filter((item: any) => String(item.id) !== String(work.id))
+    : [];
+
+  const orderedSeries = Array.isArray(work.series?.works) ? work.series.works : [];
+  const currentIndex = orderedSeries.findIndex((item: any) => String(item.id) === String(work.id));
+  const previousSeriesWork = currentIndex > 0 ? orderedSeries[currentIndex - 1] : null;
+  const nextSeriesWork = currentIndex >= 0 && currentIndex < orderedSeries.length - 1 ? orderedSeries[currentIndex + 1] : null;
+
+  const previousArc = previousSeriesWork
+    ? { href: `/w/${previousSeriesWork.slug}`, title: previousSeriesWork.title, coverImage: previousSeriesWork.coverImage, label: await getActiveUILanguageText("Previous Arc") }
+    : work.prevArcUrl
+      ? { href: work.prevArcUrl, title: "Previous Arc", coverImage: null, label: await getActiveUILanguageText("Previous Arc") }
+      : null;
+
+  const nextArc = nextSeriesWork
+    ? { href: `/w/${nextSeriesWork.slug}`, title: nextSeriesWork.title, coverImage: nextSeriesWork.coverImage, label: await getActiveUILanguageText("Next Arc") }
+    : work.nextArcUrl
+      ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: await getActiveUILanguageText("Next Arc") }
+      : null;
+
+  const subtitles = parseWorkSubtitles(work.subtitleJson, work.subtitle);
+
+  return {
+    ok: true as const,
+    work: {
+      ...work,
+      subtitles,
+      chapters: visibleChapters,
+      seriesTitle: work.series?.title || null,
+      seriesWorks,
+      previousArc,
+      nextArc,
+      chapterLoveCount,
+    },
+  };
+}
+
 export async function getViewerWorkPagePayload(work: any) {
   const viewer = await profileHotspot("workPage.viewerPayload", { workId: work.id, chapterCount: Array.isArray(work.chapters) ? work.chapters.length : 0 }, () => getViewerBasic());
   const gate = computeWorkGate({
@@ -299,6 +457,33 @@ export async function getViewerWorkPagePayload(work: any) {
 }
 
 export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResult> {
+  // Check if viewer is admin first — admin can see draft works, bypass cache
+  const viewerForAdminCheck = await getViewerBasic();
+  if (viewerForAdminCheck?.role === "ADMIN") {
+    const base = await loadAdminWorkPageDataBySlug(slug);
+    if (!base.ok) return base;
+
+    const viewerPayload = await getViewerWorkPagePayload(base.work);
+    if (viewerPayload.gated) {
+      return {
+        ok: true,
+        gated: true,
+        gateReason: viewerPayload.gateReason,
+        viewer: viewerPayload.viewer,
+        work: base.work,
+      };
+    }
+
+    return {
+      ok: true,
+      gated: false,
+      viewer: viewerPayload.viewer,
+      progress: viewerPayload.progress,
+      interactions: viewerPayload.interactions,
+      work: base.work,
+    };
+  }
+
   const base = await getPublicWorkPageDataBySlug(slug);
   if (!base.ok) return base;
 

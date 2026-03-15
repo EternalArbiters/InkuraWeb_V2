@@ -158,7 +158,8 @@ export async function listPublishedWorksFromSearchParams(
   const effectiveExcludeWarnings = excludeWarnings.filter((w) => !includeWarningsSet.has(w));
   const effectiveExcludeDeviant = excludeDeviant.filter((d) => !includeDeviantSet.has(d));
 
-  const where: any = { status: "PUBLISHED" };
+  const isAdmin = !!viewer && viewer.role === "ADMIN";
+  const where: any = isAdmin ? {} : { status: "PUBLISHED" };
 
   if (type === "NOVEL" || type === "COMIC") where.type = type;
 

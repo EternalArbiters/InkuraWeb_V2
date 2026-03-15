@@ -526,6 +526,7 @@ Sweep app/components/work/ReviewSection.tsx
 Loading reviews…
 No reviews yet. Be the first!
 Sort reviews
+You can't vote your own review
 
 Sweep app/components/work/SeriesArcsPanel.tsx
 

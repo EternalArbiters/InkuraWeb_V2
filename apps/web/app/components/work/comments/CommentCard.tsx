@@ -20,6 +20,7 @@ import {
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { DecoratedComment, ReplyTarget, TargetType } from "./types";
 import CommentBody from "./CommentBody";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 export type CommentCardProps = {
   comment: DecoratedComment;
@@ -111,6 +112,8 @@ export default function CommentCard(props: CommentCardProps) {
     onToggleHide,
   } = props;
 
+  const t = useUILanguageText("Page Comments");
+
   const hidden = (c.isHidden ?? false) as boolean;
   const spoiler = (c.isSpoiler ?? false) as boolean;
   const showSpoiler = !spoiler || revealed[c.id];
@@ -135,11 +138,11 @@ export default function CommentCard(props: CommentCardProps) {
     const chapterPrefix = c.chapter.label?.trim()
       ? c.chapter.label.trim()
       : Number.isFinite(chapterNumber)
-        ? `Chapter ${chapterNumber}`
-        : "Chapter";
+        ? `${t("Chapter")} ${chapterNumber}`
+        : t("Chapter");
     const chapterTitle = String(c.chapter.title || "").trim();
     return chapterTitle ? `${chapterPrefix}: ${chapterTitle}` : chapterPrefix;
-  }, [c.chapter, showChapterContext]);
+  }, [c.chapter, showChapterContext, t]);
 
   const ratingStars = useMemo(() => {
     if (!(showUserRating && sectionTargetType === "WORK")) return null;
@@ -207,7 +210,7 @@ export default function CommentCard(props: CommentCardProps) {
 
       {chapterContextLabel ? (
         <div className="mt-1 text-[11px] font-medium text-purple-700 dark:text-purple-300">
-          From {chapterContextLabel}
+          {t("From")} {chapterContextLabel}
         </div>
       ) : null}
 
@@ -397,33 +400,33 @@ export default function CommentCard(props: CommentCardProps) {
           onClick={() => setShowReplies((prev) => !prev)}
           className="mt-2 inline-flex text-[11px] font-semibold text-purple-600 transition hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
         >
-          {showReplies ? `Hide reply (${replyCount})` : `See reply (${replyCount})`}
+          {showReplies ? `${t("Hide reply")} (${replyCount})` : `${t("See reply")} (${replyCount})`}
         </button>
       ) : null}
 
       {isReplyingHere ? (
         <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
           <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-            Reply to <span className="text-purple-700 dark:text-purple-300">{replyTo?.displayName}</span>
+            {t("Reply to")} <span className="text-purple-700 dark:text-purple-300">{replyTo?.displayName}</span>
           </div>
           <textarea
             ref={replyRef}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Write a reply..."
+            placeholder={t("Write a reply...")}
             className="mt-2 w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 min-h-[80px]"
           />
           <div className="mt-2 flex items-center justify-between">
             <div className="text-[11px] text-gray-600 dark:text-gray-300">
-              Tip: you can hide text with ||like this||
+              {t("Tip: you can hide text with ||like this||")}
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onCancelReply}
                 className="inline-flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                aria-label="Cancel reply"
-                title="Cancel"
+                aria-label={t("Cancel reply")}
+                title={t("Cancel reply")}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -432,8 +435,8 @@ export default function CommentCard(props: CommentCardProps) {
                 disabled={isPending || !replyText.trim()}
                 onClick={onSubmitReply}
                 className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 disabled:opacity-60"
-                aria-label="Send reply"
-                title="Send"
+                aria-label={t("Send reply")}
+                title={t("Send reply")}
               >
                 <SendHorizonal className={`h-3.5 w-3.5 ${isPending ? "animate-pulse" : ""}`} />
               </button>
@@ -444,11 +447,11 @@ export default function CommentCard(props: CommentCardProps) {
 
       {reportFor === c.id ? (
         <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-3">
-          <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">Report reason</div>
+          <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">{t("Report reason")}</div>
           <input
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
-            placeholder="Example: spam, hate speech, harassment..."
+            placeholder={t("Example: spam, hate speech, harassment...")}
             className="mt-2 w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 text-sm"
           />
           <div className="mt-2 flex items-center justify-end gap-2">
