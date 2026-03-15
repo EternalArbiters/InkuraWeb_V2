@@ -194,21 +194,24 @@ export default async function ProfilePage() {
   const profileLinks = parseProfileLinks(profile.profileUrlsJson, profile.profileUrl);
   const [
     tAddUrl, tJoined, tEditProfile, tPublishedWorks, tCollections, tRecentReviews,
-    tRecentComments, tNoCollections, tNoReviews, tNoComments, tAllReviews, tAllComments, tWorks,
+    tRecentComments, tNoCollections, tNoReviews, tNoComments, tAllReviews, tAllComments,
+    tWorks, tFollowers, tFollowing,
   ] = await Promise.all([
     getActiveUILanguageText("Add URL"),
-    getActiveUILanguageText("Joined").catch(() => "Bergabung"),
+    getActiveUILanguageText("Joined"),
     getActiveUILanguageText("Edit Profile"),
     getActiveUILanguageText("Published Works"),
     getActiveUILanguageText("Collections"),
     getActiveUILanguageText("Recent Reviews"),
-    getActiveUILanguageText("Recent Comments").catch(() => "Komentar Terbaru"),
-    getActiveUILanguageText("Belum ada koleksi.").catch(() => "Belum ada koleksi."),
-    getActiveUILanguageText("Belum ada review.").catch(() => "Belum ada ulasan."),
-    getActiveUILanguageText("Belum ada komentar.").catch(() => "Belum ada komentar."),
+    getActiveUILanguageText("Recent Comments"),
+    getActiveUILanguageText("No collections yet."),
+    getActiveUILanguageText("No reviews yet."),
+    getActiveUILanguageText("No comments yet."),
     getActiveUILanguageText("All reviews"),
     getActiveUILanguageText("All comments"),
-    getActiveUILanguageText("Published Works").catch(() => "Karya"),
+    getActiveUILanguageText("Works"),
+    getActiveUILanguageText("Followers"),
+    getActiveUILanguageText("Following"),
   ]);
 
   return (
