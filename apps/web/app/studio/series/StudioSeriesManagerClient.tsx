@@ -64,6 +64,7 @@ export default function StudioSeriesManagerClient({
   initialSeries: SeriesLite[];
   initialUnassignedWorks: WorkLite[];
 }) {
+  const t = useUILanguageText();
   const [series, setSeries] = React.useState<SeriesLite[]>(initialSeries);
   const [unassignedWorks, setUnassignedWorks] = React.useState<WorkLite[]>(initialUnassignedWorks);
   const [selectedSeriesId, setSelectedSeriesId] = React.useState<string>(initialSeries[0]?.id || "");

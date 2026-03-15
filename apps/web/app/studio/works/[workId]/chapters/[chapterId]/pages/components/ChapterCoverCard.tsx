@@ -11,6 +11,7 @@ export default function ChapterCoverCard({
   loading: boolean;
   onClear: () => void;
 }) {
+  const t = useUILanguageText();
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center justify-between gap-3">

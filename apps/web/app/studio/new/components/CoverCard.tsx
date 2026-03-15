@@ -30,6 +30,7 @@ export default function CoverCard({
   coverPreparing: boolean;
   onPickCover: (file: File | null) => void | Promise<void>;
 }) {
+  const t = useUILanguageText();
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
       <div className="text-sm font-semibold">Cover</div>

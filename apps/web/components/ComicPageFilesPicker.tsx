@@ -51,6 +51,7 @@ const MODE_COPY: Record<
 };
 
 function formatBytes(bytes: number) {
+  const t = useUILanguageText();
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
   let value = bytes;
