@@ -550,9 +550,12 @@ Sweep app/components/work/comments/CommentCard.tsx
 Cancel edit
 Cancel reply
 Example: spam, hate speech, harassment...
+From
+Reply to
 Report reason
 Save edit
 Send reply
+Tip: you can hide text with ||like this||
 Write a reply...
 
 Sweep app/components/work/comments/CommentComposer.tsx
