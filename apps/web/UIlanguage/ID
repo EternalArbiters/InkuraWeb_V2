@@ -952,7 +952,7 @@ Sweep app/settings/profile/components/ProfileFieldsCard.tsx
 3–24 chars. Use letters, numbers, dash, underscore. = 3–24 karakter. Gunakan huruf, angka, tanda hubung, dan garis bawah.
 Display name = Nama tampilan
 Maximum 200 characters. = Maksimal 200 karakter.
-Maximum 5 links. Give each one a short title so it displays neatly like a link sheet. = Maksimal 5 tautan.
+Maximum 5 links. = Maksimal 5 tautan.
 Profile links = Tautan profil
 Tell readers a little about yourself = Ceritakan sedikit tentang dirimu kepada pembaca
 Your display name = Nama tampilanmu
