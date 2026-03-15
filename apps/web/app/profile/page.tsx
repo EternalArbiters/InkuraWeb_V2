@@ -12,6 +12,7 @@ import { parseProfileLinks } from "@/lib/profileUrls";
 import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
 import { getViewerComments, getViewerReviews } from "@/server/services/profile/viewerActivity";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -191,6 +192,7 @@ export default async function ProfilePage() {
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;
   const profileLinks = parseProfileLinks(profile.profileUrlsJson, profile.profileUrl);
+  const tAddUrl = await getActiveUILanguageText("Add URL");
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -229,7 +231,7 @@ export default async function ProfilePage() {
                     href="/settings/profile"
                     className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                   >
-                    + {t("Add URL")}
+                    + {tAddUrl}
                   </Link>
                 ) : null}
                 <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {formatDate(profile.createdAt)}</div>
