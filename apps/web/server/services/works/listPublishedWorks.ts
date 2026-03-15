@@ -331,10 +331,13 @@ export async function listPublishedWorksFromSearchParams(
 
   if (AND.length) where.AND = AND;
 
-  let orderBy: any = [{ updatedAt: "desc" }, { id: "desc" }];
+  // Sort by lastChapterPublishedAt (when a new chapter was first published) so that
+  // "Recently Updated" reflects actual chapter activity, not metadata/like/rating edits.
+  // Works without any published chapters fall back via nulls: "last".
+  let orderBy: any = [{ lastChapterPublishedAt: { sort: "desc", nulls: "last" } }, { updatedAt: "desc" }, { id: "desc" }];
   if (sort === "liked") orderBy = [{ likeCount: "desc" }, { id: "desc" }];
   if (sort === "rated") {
-    orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { updatedAt: "desc" }, { id: "desc" }];
+    orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { lastChapterPublishedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }];
   }
 
   const query: any = {

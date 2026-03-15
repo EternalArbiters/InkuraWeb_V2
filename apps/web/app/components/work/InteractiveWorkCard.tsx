@@ -30,6 +30,7 @@ type WorkCardData = {
   slug?: string | null;
   title?: string | null;
   coverImage?: string | null;
+  status?: string | null;
   type?: string | null;
   comicType?: string | null;
   publishType?: string | null;
