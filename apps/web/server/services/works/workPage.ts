@@ -105,6 +105,7 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
               ratingAvg: true,
               ratingCount: true,
               updatedAt: true,
+      lastChapterPublishedAt: true,
               genres: { select: { name: true, slug: true } },
               deviantLoveTags: { select: { name: true, slug: true } },
               author: { select: { username: true, name: true, image: true } },

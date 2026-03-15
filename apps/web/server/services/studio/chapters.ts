@@ -43,7 +43,11 @@ function safeLabel(v: unknown) {
 
 async function recomputePublishedChapterCount(workId: string) {
   const count = await prisma.chapter.count({ where: { workId, status: "PUBLISHED" } as any });
-  await prisma.work.update({ where: { id: workId }, data: { chapterCount: count } });
+  // Use $executeRaw to update chapterCount WITHOUT triggering @updatedAt
+  await prisma.$executeRaw`
+    UPDATE "Work" SET "chapterCount" = ${count}
+    WHERE "id" = ${workId}
+  `;
 }
 
 async function canEditWork(userId: string, role: string, workId: string) {
@@ -198,8 +202,13 @@ export async function createStudioChapter(req: Request) {
 
   await recomputePublishedChapterCount(workId);
 
-  // Notify favorite/bookmark readers when a chapter is published
+  // Update lastChapterPublishedAt when chapter is first published
   if (chapter.status === "PUBLISHED") {
+    await prisma.$executeRaw`
+      UPDATE "Work" SET "lastChapterPublishedAt" = NOW()
+      WHERE "id" = ${workId}
+        AND ("lastChapterPublishedAt" IS NULL OR NOW() > "lastChapterPublishedAt")
+    `;
     await notifyNewChapter({ workId, chapterId: chapter.id, actorId: userId });
   }
 
@@ -354,10 +363,16 @@ export async function patchStudioChapter(req: Request, chapterId: string) {
 
   await recomputePublishedChapterCount(updated.workId);
 
-  // Notify favorite/bookmark readers if this PATCH just published the chapter
+  // Notify and update lastChapterPublishedAt when chapter is first published
   const wasPublished = owned.chapter.status === "PUBLISHED";
   const nowPublished = updated.status === "PUBLISHED";
   if (!wasPublished && nowPublished) {
+    // Only advance the timestamp — never go backwards
+    await prisma.$executeRaw`
+      UPDATE "Work" SET "lastChapterPublishedAt" = NOW()
+      WHERE "id" = ${updated.workId}
+        AND ("lastChapterPublishedAt" IS NULL OR NOW() > "lastChapterPublishedAt")
+    `;
     await notifyNewChapter({ workId: updated.workId, chapterId: updated.id, actorId: userId });
   }
 

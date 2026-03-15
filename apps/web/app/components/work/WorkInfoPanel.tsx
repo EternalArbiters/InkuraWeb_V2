@@ -29,7 +29,7 @@ export default function WorkInfoPanel({ work }: { work: any }) {
   const origin = String(work?.origin || "UNKNOWN");
   const language = work?.language ? String(work.language).toUpperCase() : "UNKNOWN";
 
-  const updated = work?.updatedAt ? new Date(work.updatedAt) : null;
+  const updated = work?.lastChapterPublishedAt ? new Date(work.lastChapterPublishedAt) : (work?.updatedAt ? new Date(work.updatedAt) : null);
   const updatedLabel = updated ? updated.toLocaleString() : "-";
 
   return (

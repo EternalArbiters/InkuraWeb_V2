@@ -22,11 +22,13 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
       const existing = await tx.workLike.findUnique({ where: { userId_workId: { userId, workId } } });
       if (existing) {
         await tx.workLike.delete({ where: { userId_workId: { userId, workId } } });
-        const updated = await tx.work.update({ where: { id: workId }, data: { likeCount: { decrement: 1 } }, select: { likeCount: true } });
+        await tx.$executeRaw`UPDATE "Work" SET "likeCount" = GREATEST(0, "likeCount" - 1) WHERE "id" = ${workId}`;
+        const updated = await tx.work.findUnique({ where: { id: workId }, select: { likeCount: true } });
         return { liked: false, likeCount: Math.max(0, updated.likeCount) };
       }
       await tx.workLike.create({ data: { userId, workId } });
-      const updated = await tx.work.update({ where: { id: workId }, data: { likeCount: { increment: 1 } }, select: { likeCount: true } });
+      await tx.$executeRaw`UPDATE "Work" SET "likeCount" = "likeCount" + 1 WHERE "id" = ${workId}`;
+      const updated = await tx.work.findUnique({ where: { id: workId }, select: { likeCount: true } });
       return { liked: true, likeCount: updated.likeCount };
     });
     if (result.liked) {

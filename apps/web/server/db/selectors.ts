@@ -69,6 +69,7 @@ export const workCardSelect = {
   title: true,
   coverImage: true,
   updatedAt: true,
+  lastChapterPublishedAt: true,
   type: true,
   comicType: true,
   likeCount: true,

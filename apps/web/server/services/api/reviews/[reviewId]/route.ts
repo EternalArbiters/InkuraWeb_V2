@@ -80,13 +80,7 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
         ratingAvg = Number(agg._avg.value ?? 0);
         ratingCount = Number(agg._count.value ?? 0);
 
-        await tx.work.update({
-          where: { id: existing.workId },
-          data: {
-            ratingAvg,
-            ratingCount,
-          },
-        });
+        await tx.$executeRaw`UPDATE "Work" SET "ratingAvg" = ${ratingAvg}, "ratingCount" = ${ratingCount} WHERE "id" = ${existing.workId}`;
       } else {
         const currentWork = await tx.work.findUnique({
           where: { id: existing.workId },

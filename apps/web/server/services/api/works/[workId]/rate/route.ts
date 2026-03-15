@@ -32,7 +32,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     const agg = await prisma.workRating.aggregate({ where: { workId }, _avg: { value: true }, _count: { value: true } });
     const ratingAvg = Number(agg._avg.value ?? 0);
     const ratingCount = Number(agg._count.value ?? 0);
-    await prisma.work.update({ where: { id: workId }, data: { ratingAvg, ratingCount } });
+    await prisma.$executeRaw`UPDATE "Work" SET "ratingAvg" = ${ratingAvg}, "ratingCount" = ${ratingCount} WHERE "id" = ${workId}`;
     await trackAnalyticsEventSafe({ req, eventType: "RATING_SUBMIT", userId, workId, path: req.url, routeName: "work.rate", metadata: { value } });
     return json({ ok: true, myRating: value, ratingAvg, ratingCount });
   } catch (e) {

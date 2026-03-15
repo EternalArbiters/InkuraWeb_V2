@@ -10,6 +10,7 @@ export type WorkBadgeInput = {
   language?: string | null;
   comicType?: string | null;
   updatedAt?: string | Date | null;
+  lastChapterPublishedAt?: string | Date | null;
 };
 
 function normalize(v?: string | null) {
@@ -61,7 +62,7 @@ export default function WorkCoverBadges({ work }: { work: WorkBadgeInput }) {
   const type = normalize(work.type) || "WORK";
   const publishLabel = publishTypeLabel(work.publishType);
   const flag = originFlagEmoji(work);
-  const updatedAt = work.updatedAt ? new Date(work.updatedAt as any) : null;
+  const updatedAt = work.lastChapterPublishedAt ? new Date(work.lastChapterPublishedAt as any) : (work.updatedAt ? new Date(work.updatedAt as any) : null);
   const isUp = !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000;
 
   return (

@@ -43,6 +43,7 @@ type WorkCardData = {
   ratingAvg?: number | null;
   ratingCount?: number | null;
   updatedAt?: string | Date | null;
+  lastChapterPublishedAt?: string | Date | null;
   author?: Person;
   translator?: Person;
   viewerBookmarked?: boolean | null;
@@ -170,7 +171,7 @@ export default function InteractiveWorkCard({
     const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
     return {
       isUp: !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000,
-      updatedLabel: formatUpdatedAt(work?.updatedAt, { thresholdDays: 100, locale: timeLocale }),
+      updatedLabel: formatUpdatedAt(work?.lastChapterPublishedAt ?? work?.updatedAt, { thresholdDays: 100, locale: timeLocale }),
     };
   };
 
@@ -182,7 +183,7 @@ export default function InteractiveWorkCard({
     const interval = setInterval(() => setTimeState(computeTimeState()), 60_000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [work?.updatedAt, timeLocale]);
+  }, [work?.lastChapterPublishedAt, work?.updatedAt, timeLocale]);
   const publishLabel = publishTypeLabel(work?.publishType);
   const uploader = personLabel(work?.author) || personLabel(work?.translator);
   const topLabel = overlayTypeLabel({ type: work?.type, comicType: work?.comicType });

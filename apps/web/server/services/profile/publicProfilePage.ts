@@ -198,6 +198,7 @@ export async function getPublicCollectionsPageData(username: string) {
                   description: true,
                   isPublic: true,
                   updatedAt: true,
+            lastChapterPublishedAt: true,
                   _count: { select: { items: true } },
                   items: {
                     orderBy: [{ sortOrder: "asc" }, { addedAt: "desc" }],

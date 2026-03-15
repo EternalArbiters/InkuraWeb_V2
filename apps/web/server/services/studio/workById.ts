@@ -155,11 +155,24 @@ export async function patchStudioWorkById(req: Request, workId: string) {
     const body = await req.json().catch(() => ({} as any));
     const status = safeStatus(body?.status);
 
+    const existing2 = await prisma.work.findUnique({
+      where: { id: workId },
+      select: { status: true, lastChapterPublishedAt: true },
+    });
+
     const updated = await prisma.work.update({
       where: { id: workId },
       data: { status: status as any },
       select: { id: true, slug: true, status: true },
     });
+
+    // When a work is published for the very first time, stamp lastChapterPublishedAt
+    if (status === "PUBLISHED" && existing2?.status !== "PUBLISHED" && !existing2?.lastChapterPublishedAt) {
+      await prisma.$executeRaw`
+        UPDATE "Work" SET "lastChapterPublishedAt" = NOW()
+        WHERE "id" = ${workId} AND "lastChapterPublishedAt" IS NULL
+      `;
+    }
 
     return { status: 200, body: { ok: true, work: updated } };
   }

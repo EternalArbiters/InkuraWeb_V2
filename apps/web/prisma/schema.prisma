@@ -294,6 +294,9 @@ model Work {
   analyticsEvents AnalyticsEvent[]
   analyticsDailyWorks AnalyticsDailyWork[]
 
+  // v25: only updates when a new chapter is first published
+  lastChapterPublishedAt DateTime?
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

@@ -51,7 +51,8 @@ export async function resequenceSeries(db: DbClient, seriesId: string | null | u
     works.map((work, index) => {
       const nextOrder = index + 1;
       if (work.seriesOrder === nextOrder) return null;
-      return db.work.update({ where: { id: work.id }, data: { seriesOrder: nextOrder } });
+      await db.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${nextOrder} WHERE "id" = ${work.id}`;
+      return;
     })
   );
 }
@@ -97,7 +98,7 @@ export async function assignWorkToSeries(
 
   if (!title) {
     const previousSeriesId = work.seriesId;
-    await db.work.update({ where: { id: workId }, data: { seriesId: null, seriesOrder: null } });
+    await db.$executeRaw`UPDATE "Work" SET "seriesId" = NULL, "seriesOrder" = NULL WHERE "id" = ${workId}`;
     await resequenceSeries(db, previousSeriesId);
     await cleanupEmptySeries(db, previousSeriesId);
     return null;
@@ -114,13 +115,7 @@ export async function assignWorkToSeries(
   const nextOrder = requestedOrder ?? fallbackOrder;
 
   const previousSeriesId = work.seriesId;
-  await db.work.update({
-    where: { id: workId },
-    data: {
-      seriesId: series.id,
-      seriesOrder: nextOrder,
-    },
-  });
+  await db.$executeRaw`UPDATE "Work" SET "seriesId" = ${series.id}, "seriesOrder" = ${nextOrder} WHERE "id" = ${workId}`;
 
   if (previousSeriesId && previousSeriesId !== series.id) {
     await resequenceSeries(db, previousSeriesId);
@@ -173,6 +168,7 @@ export async function listStudioSeries() {
             status: true,
             coverImage: true,
             updatedAt: true,
+        lastChapterPublishedAt: true,
             seriesOrder: true,
           },
         },
@@ -189,6 +185,7 @@ export async function listStudioSeries() {
         status: true,
         coverImage: true,
         updatedAt: true,
+        lastChapterPublishedAt: true,
       },
     }),
   ]);
@@ -252,10 +249,8 @@ export async function patchStudioSeries(req: Request): Promise<StudioSeriesRespo
 
     const [series, work] = await Promise.all([assertSeriesOwner(userId, seriesId), assertWorkOwner(userId, workId)]);
     const max = await prisma.work.aggregate({ where: { seriesId }, _max: { seriesOrder: true } });
-    await prisma.work.update({
-      where: { id: work.id },
-      data: { seriesId: series.id, seriesOrder: (max._max.seriesOrder ?? 0) + 1 },
-    });
+    const newOrder = (max._max.seriesOrder ?? 0) + 1;
+    await prisma.$executeRaw`UPDATE "Work" SET "seriesId" = ${series.id}, "seriesOrder" = ${newOrder} WHERE "id" = ${work.id}`;
 
     if (work.seriesId && work.seriesId !== series.id) {
       await resequenceSeries(prisma, work.seriesId);
@@ -274,7 +269,7 @@ export async function patchStudioSeries(req: Request): Promise<StudioSeriesRespo
 
     const work = await assertWorkOwner(userId, workId);
     const previousSeriesId = work.seriesId;
-    await prisma.work.update({ where: { id: work.id }, data: { seriesId: null, seriesOrder: null } });
+    await prisma.$executeRaw`UPDATE "Work" SET "seriesId" = NULL, "seriesOrder" = NULL WHERE "id" = ${work.id}`;
     await resequenceSeries(prisma, previousSeriesId);
     await cleanupEmptySeries(prisma, previousSeriesId);
 
@@ -311,7 +306,7 @@ export async function patchStudioSeries(req: Request): Promise<StudioSeriesRespo
     reordered.splice(targetIndex, 0, moved);
 
     await Promise.all(
-      reordered.map((work, idx) => prisma.work.update({ where: { id: work.id }, data: { seriesOrder: idx + 1 } }))
+      reordered.map((work, idx) => prisma.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${idx + 1} WHERE "id" = ${work.id}`)
     );
 
     return { status: 200, body: { ok: true } };
@@ -333,7 +328,7 @@ export async function patchStudioSeries(req: Request): Promise<StudioSeriesRespo
     }
 
     await Promise.all(
-      orderedWorkIds.map((workId, index) => prisma.work.update({ where: { id: workId }, data: { seriesOrder: index + 1 } }))
+      orderedWorkIds.map((workId, index) => prisma.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${index + 1} WHERE "id" = ${workId}`)
     );
 
     return { status: 200, body: { ok: true } };

@@ -78,7 +78,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
       const ratingAvg = Number(agg._avg.value ?? 0);
       const ratingCount = Number(agg._count.value ?? 0);
 
-      await tx.work.update({ where: { id: workId }, data: { ratingAvg, ratingCount } });
+      await tx.$executeRaw`UPDATE "Work" SET "ratingAvg" = ${ratingAvg}, "ratingCount" = ${ratingCount} WHERE "id" = ${workId}`;
 
       return { review, ratingAvg, ratingCount };
     });
