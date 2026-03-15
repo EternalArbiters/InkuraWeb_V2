@@ -73,12 +73,15 @@ Failed to reset password. = Gagal mengatur ulang kata sandi.
 Shared Dialogs
 ==========
 
-18+ Warning = Peringatan 18+
-By checking this box, you acknowledge that you are responsible for the content you choose to read. The developers are not responsible for what you access. This is your final warning. = Dengan mencentang kotak ini, kamu mengakui bahwa kamu bertanggung jawab atas konten yang kamu pilih untuk dibaca. Pengembang tidak bertanggung jawab atas apa yang kamu akses. Ini adalah peringatan terakhirmu.
-No, I do not want to continue. = Tidak, saya tidak ingin melanjutkan.
-Yes, I understand. = Ya, saya mengerti.
+NSFW Warning = Peringatan NSFW
+You are not allowed to unseal adult works if you are still a minor. Exit the settings and simply find works that are age-appropriate. There is nothing good about becoming an adult before your time. Even if you are an adult, unseal is still not recommended. Remember your Lord and leave this place; do not continue. The works that will appear if this seal is unseal will only increase your sins. It is time for you to repent and return to the right path. = Kamu tidak diizinkan membuka segel karya dewasa jika kamu masih di bawah umur, keluar dari pengaturan dan cari saja karya yang sesuai untuk umurmu. Tidak ada yang bagus dari menjadi dewasa sebelum waktunya. Bahkan jika kamu sudah dewasa, membuka segel ini tetap tidak disarankan. Ingatlah Tuhanmu dan keluarlah dari sini, jangan melanjutkannya. Karya-karya yang akan muncul jika segel ini terbuka, dapat menambah dosamu. Sudah saatnya kamu bertaubat dan kembali ke jalan yang benar.
+I get it, thanks for reminding me. = Aku mengerti, terima kasih sudah mengingatkan.
+I don't care! Just open the seal! = Aku tidak peduli! Buka saja segelnya!
 Deviant Love Warning = Peringatan Cinta Terlarang
-By checking this box, you confirm that you are not under any pressure and that you accept responsibility for what you choose to view. This content may be extreme. = Dengan mencentang kotak ini, kamu menegaskan bahwa kamu tidak berada di bawah tekanan apa pun dan menerima tanggung jawab atas apa yang kamu pilih untuk lihat. Konten ini mungkin ekstrem.
+This work, which contains deviant love, clearly violates morals and social standards. The deviant love in question is a form of sexual deviance that is not a good idea to imitate. You are strongly advised not to open this seal, as viewing this type of work could lead you further away from being a normal human being. It's best to refrain from doing so. = Karya yang mengandung cinta terlarang ini, sudah pasti bertentangan dengan moral dan standar sosial. Cinta terlarang yang dimaksud adalah jenis penyimpangan seksual yang tidak baik untuk ditiru. Kamu sangat tidak disarankan membuka segel ini karena melihat jenis karya ini bisa membuatmu semakin jauh dari menjadi manusia normal. Sebaiknya kamu mengurungkan niat untuk itu.
+I warned you, okay! If you don't heed my warning, then don't blame me or drag me to the court of justice in the afterlife. You must take full responsibility for yourself and the sins you've committed. I don't want any involvement in this. = Aku sudah memperingatkanmu loh, ya! Kalau kamu tidak peduli dengan peringatanku, maka jangan salahkan aku atau menyeretku di pengadilan akhirat nanti. Kamu harus bertanggung jawab penuh atas dirimu sendiri dan dosa yang kau perbuat sendiri. Aku tidak mau terlibat atas ini.
+.... After I thought about it, I decided not to. = .... Setelah kupikir-pikir, tidak jadi deh.
+Okay, okay! Shut up! I know that! I won't involve you! = Iya, iya! Bawel! Aku tahu itu! Aku tidak akan melibatkanmu!
 
 ==========
 Shared Forms
@@ -314,19 +317,19 @@ Page Work Detail
 ==========
 
 18+ Mature Content = Konten Dewasa 18+
-This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di pengaturan akun.
-This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di pengaturan akun.
-Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Cinta Terlarang masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Cinta Terlarang.
-NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content". = NSFW masih terkunci. Pastikan kamu sudah mencentang "I am 18+" dan mengaktifkan "Include mature content".
+This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini mengandung tema cinta terlarang dalam artian penyimpangan. Untuk membacanya, kamu perlu mengkonfirmasi dirimu sudah dewasa dan bersedia membaca jenis cerita cinta terlarang di pengaturan akun.
+This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini mengandung adegan dewasa yang tidak sesuai untuk anak di bawah umur. Untuk membacanya, kamu perlu mengkonfirmasi dirimu sudah dewasa di pengaturan akun.
+Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Cinta terlarang masih terkunci. Kami tidak bisa mengizinkan tema cinta terlarang meraihmu kecuali kamu sudah dewasa untuk memahami bahwa ini adalah jenis penyimpangan.
+NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content". = NSFW masih terkunci. Kamu perlu mengkonfirmasi bahwa dirimu sudah dewasa dan bisa bertanggung jawab atas dirimu sendiri, sebelum membukanya.
 
 ==========
 Page Reader
 ==========
 
-This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di pengaturan akun.
-This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di pengaturan akun.
-Open Settings (unlock 18+ + Deviant Love) = Buka pengaturan akun (buka 18+ + Cinta Terlarang)
-Open Settings (unlock + opt in to 18+) = Buka pengaturan akun (buka + ikut serta 18+)
+This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini mengandung tema cinta terlarang dalam artian penyimpangan. Untuk membacanya, kamu perlu mengkonfirmasi dirimu sudah dewasa dan bersedia membaca jenis cerita cinta terlarang di pengaturan akun.
+This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings. = Chapter ini mengandung adegan dewasa yang tidak sesuai untuk anak di bawah umur. Untuk membacanya, kamu perlu mengkonfirmasi dirimu sudah dewasa di pengaturan akun.
+Open Settings (unlock 18+ + Deviant Love) = Buka pengaturan akun (konfirmasi 18+ + Cinta Terlarang)
+Open Settings (unlock + opt in to 18+) = Buka pengaturan akun (konfirmasi 18+)
 Back to work = Kembali ke karya
 No pages yet = Belum ada halaman
 This chapter has no pages yet. (Creators can upload them via Studio.) = Chapter ini belum punya halaman. (Creator bisa mengunggahnya lewat Studio.)
@@ -337,8 +340,8 @@ This chapter has no text yet. = Chapter ini belum punya teks.
 Page Reader Comments
 ==========
 
-This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membaca dan berkomentar, kamu perlu membuka 18+ dan Cinta Terlarang di pengaturan akun.
-This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membaca dan berkomentar, kamu perlu membukanya dan ikut serta di pengaturan akun.
+This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini mengandung tema cinta terlarang. Untuk membaca dan berkomentar, kamu perlu mengkonfirmasi dirimu sudah dewasa dan tidak mempermasalahkan cinta terlarang, di pengaturan akun.
+This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings. = Chapter ini mengandung adegan dewasa yang tidak sesuai untuk anak di bawah umur. Untuk membaca dan berkomentar, kamu perlu mengkonfirmasi dirimu sudah dewasa di pengaturan akun.
 Back to reader = Kembali ke reader
 Go to work page = Pergi ke halaman karya
 Comments = Komentar
@@ -2119,7 +2122,7 @@ Collection = Koleksi
 No followers yet. = Belum ada pengikut.
 Not following anyone yet. = Belum mengikuti siapapun.
 No comments yet. = Belum ada komentar.
-No reviews yet. = Belum ada review.
+No reviews yet. = Belum ada ulasan.
 Browse works = Jelajahi karya
 New list = Koleksi baru
 Min chapters = Min. chapter
@@ -2136,7 +2139,7 @@ Create series = Buat Kelompok Karya
 Rename = Ganti nama
 Every work already belongs to a series. = Semua karya sudah masuk ke dalam kelompok karya yang ada.
 Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP. = Otomatis dioptimalkan sebelum diunggah. Maks. 2MB. Format: JPG/PNG/WebP.
-If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically. = Jika pemilik hak cipta melaporkan pelanggaran hak cipta, Anda mungkin akan dimintai pertanggungjawaban. Untuk menghindari kerugian bagi Inkura, pembaca, dan diri Anda sendiri, Anda akan diberi waktu 1 minggu setelah pemberitahuan untuk menghapus karya tersebut. Jika tidak dihapus dalam waktu tersebut, Inkura akan menghapusnya secara otomatis.
+If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically. = Jika pemilik hak cipta melaporkan pelanggaran hak cipta, kamu mungkin akan dimintai pertanggungjawaban. Untuk menghindari kerugian bagi Inkura, pembaca, dan dirimu sendiri, kamu akan diberi waktu 1 minggu setelah pemberitahuan diberikan, untuk menghapus karya tersebut. Jika tidak dihapus dalam waktu tersebut, Inkura akan menghapusnya secara otomatis.
 Add sub title = Tambahkan judul lainnya
 Add images = Masukkan gambar
 Choose all images = Pilih semua gambar
@@ -2155,6 +2158,7 @@ Clear All = Reset
 Add to selected series = Tambahkan Ke Kelompok Karya Pilihan
 Works = Karya
 Bergabung = Bergabung
+No published works yet. = Belum ada karya yang diterbitkan.
 No collections yet. = Belum ada koleksi.
 Share URL Profile = Bagikan URL Profile
 No public reviews yet. = Belum ada review.
