@@ -316,7 +316,7 @@ Page Work Detail
 18+ Mature Content = Konten Dewasa 18+
 This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
 This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
-Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Cinta Terlarang masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Cinta Terlarang. = Deviant Love masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Deviant Love.
+Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Cinta Terlarang masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Cinta Terlarang.
 NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content". = NSFW masih terkunci. Pastikan kamu sudah mencentang "I am 18+" dan mengaktifkan "Include mature content".
 
 ==========
@@ -767,7 +767,7 @@ An International Platform For Original Works Made Without AI = Platform Internas
 Sweep app/library/bookmarks/page.tsx
 ==========
 
-All works you have bookmarked. = Semua karya yang sudah kamu simpan. = Semua karya yang sudah kamu simpan.
+All works you have bookmarked. = Semua karya yang sudah kamu simpan.
 
 ==========
 Sweep app/library/page.tsx
