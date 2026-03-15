@@ -53,7 +53,7 @@ export default function ConfirmAdultDialog({ open, setOpen, onConfirm }: Props) 
                 {t("You are not allowed to unseal adult works if you are still a minor. Exit the settings and simply find works that are age-appropriate. There is nothing good about becoming an adult before your time. Even if you are an adult, unseal is still not recommended. Remember your Lord and leave this place; do not continue. The works that will appear if this seal is unseal will only increase your sins. It is time for you to repent and return to the right path.")}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+            <DialogFooter className="flex-col gap-2 sm:flex-col">
               <Button variant="outline" type="button" onClick={() => handleOpenChange(false)} className="whitespace-normal text-center h-auto py-2">
                 {t("I get it, thanks for reminding me.")}
               </Button>

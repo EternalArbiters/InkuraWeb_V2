@@ -53,7 +53,7 @@ export default function ConfirmDeviantLoveDialog({ open, setOpen, onConfirm }: P
                 {t("This work, which contains deviant love, clearly violates morals and social standards. The deviant love in question is a form of sexual deviance that is not a good idea to imitate. You are strongly advised not to open this seal, as viewing this type of work could lead you further away from being a normal human being. It's best to refrain from doing so.")}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+            <DialogFooter className="flex-col gap-2 sm:flex-col">
               <Button variant="outline" type="button" onClick={() => handleOpenChange(false)} className="whitespace-normal text-center h-auto py-2">
                 {t("I get it, thanks for reminding me.")}
               </Button>
