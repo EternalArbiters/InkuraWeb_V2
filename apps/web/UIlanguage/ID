@@ -314,8 +314,8 @@ Page Work Detail
 ==========
 
 18+ Mature Content = Konten Dewasa 18+
-This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
-This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
+This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di pengaturan akun.
+This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di pengaturan akun.
 Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Cinta Terlarang masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Cinta Terlarang.
 NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content". = NSFW masih terkunci. Pastikan kamu sudah mencentang "I am 18+" dan mengaktifkan "Include mature content".
 
@@ -323,10 +323,10 @@ NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include matur
 Page Reader
 ==========
 
-This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
-This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
-Open Settings (unlock 18+ + Deviant Love) = Buka Settings (buka 18+ + Cinta Terlarang)
-Open Settings (unlock + opt in to 18+) = Buka Settings (buka + ikut serta 18+)
+This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di pengaturan akun.
+This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di pengaturan akun.
+Open Settings (unlock 18+ + Deviant Love) = Buka pengaturan akun (buka 18+ + Cinta Terlarang)
+Open Settings (unlock + opt in to 18+) = Buka pengaturan akun (buka + ikut serta 18+)
 Back to work = Kembali ke karya
 No pages yet = Belum ada halaman
 This chapter has no pages yet. (Creators can upload them via Studio.) = Chapter ini belum punya halaman. (Creator bisa mengunggahnya lewat Studio.)
@@ -337,8 +337,8 @@ This chapter has no text yet. = Chapter ini belum punya teks.
 Page Reader Comments
 ==========
 
-This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membaca dan berkomentar, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
-This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membaca dan berkomentar, kamu perlu membukanya dan ikut serta di Settings.
+This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membaca dan berkomentar, kamu perlu membuka 18+ dan Cinta Terlarang di pengaturan akun.
+This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membaca dan berkomentar, kamu perlu membukanya dan ikut serta di pengaturan akun.
 Back to reader = Kembali ke reader
 Go to work page = Pergi ke halaman karya
 Comments = Komentar
@@ -893,7 +893,7 @@ Advanced Filters = Filter Lanjutan
 Any genre = Genre apa saja
 Best rated = Rating terbaik
 Deviant include mode: = Mode penyertaan Cinta Terlarang:
-Enable it in Settings → Account. = Aktifkan di Settings → Account.
+Enable it in Settings → Account. = Aktifkan di Pengaturan → Akun.
 Genre include mode: = Mode penyertaan genre:
 Hide (default) = Sembunyikan (default)
 Most liked = Paling disukai
@@ -2127,7 +2127,6 @@ Max chapters = Maks. chapter
 Only = Hanya
 Ignore my language preferences (settings) = Abaikan preferensi bahasa saya (pengaturan)
 Ignore my blocked genres/NSFW (settings) = Abaikan genre/NSFW yang saya blokir (pengaturan)
-Enable it in Settings → Account. = Aktifkan di Pengaturan → Akun.
 Any = Apa saja
 
 Mark all read = Tandai semua sudah dibaca
@@ -2172,5 +2171,7 @@ N works, ordered by arc = N karya, di urutkan berdasarkan arc
 Item = karya
 Works = Karya
 No cover yet. = Belum memasang sampul.
-Empty collection = Belum ada koleksi
+Empty collection = Koleksi masih kosong
 No works yet. = Belum ada karya.
+Previous Arc = Arc Sebelumnya
+Next Arc = Arc Selanjutnya

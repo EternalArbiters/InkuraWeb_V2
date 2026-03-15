@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listStudioSeries } from "@/server/services/studio/series";
 import StudioSeriesManagerClient from "./StudioSeriesManagerClient";
@@ -8,6 +9,11 @@ export const dynamic = "force-dynamic";
 export default async function StudioSeriesPage() {
   await requirePageUserId("/studio/series");
   const { series, unassignedWorks } = await listStudioSeries();
+  const [tManageSeries, tBackToStudio, tCreateNewWork] = await Promise.all([
+    getActiveUILanguageText("Manage series"),
+    getActiveUILanguageText("Back to Studio"),
+    getActiveUILanguageText("Create new work"),
+  ]);
 
   const initialSeries = (Array.isArray(series) ? series : []).map((item) => ({
     ...item,
@@ -27,14 +33,14 @@ export default async function StudioSeriesPage() {
       <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-<h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">Manage series</h1>
+<h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{tManageSeries}</h1>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/studio" className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900">
-              Back to studio
+              {tBackToStudio}
             </Link>
             <Link href="/studio/new" className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
-              Create new work
+              {tCreateNewWork}
             </Link>
           </div>
         </div>

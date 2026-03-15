@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import prisma from "@/server/db/prisma";
 import { publicUrlForKey } from "@/server/uploads/upload";
 import {
@@ -179,15 +180,15 @@ async function loadPublicWorkPageDataBySlug(slug: string) {
   const nextSeriesWork = currentIndex >= 0 && currentIndex < orderedSeries.length - 1 ? orderedSeries[currentIndex + 1] : null;
 
   const previousArc = previousSeriesWork
-    ? { href: `/w/${previousSeriesWork.slug}`, title: previousSeriesWork.title, coverImage: previousSeriesWork.coverImage, label: "Previous Arc" }
+    ? { href: `/w/${previousSeriesWork.slug}`, title: previousSeriesWork.title, coverImage: previousSeriesWork.coverImage, label: await getActiveUILanguageText("Previous Arc") }
     : work.prevArcUrl
-      ? { href: work.prevArcUrl, title: "Previous Arc", coverImage: null, label: "Previous Arc" }
+      ? { href: work.prevArcUrl, title: "Previous Arc", coverImage: null, label: await getActiveUILanguageText("Previous Arc") }
       : null;
 
   const nextArc = nextSeriesWork
-    ? { href: `/w/${nextSeriesWork.slug}`, title: nextSeriesWork.title, coverImage: nextSeriesWork.coverImage, label: "Next Arc" }
+    ? { href: `/w/${nextSeriesWork.slug}`, title: nextSeriesWork.title, coverImage: nextSeriesWork.coverImage, label: await getActiveUILanguageText("Next Arc") }
     : work.nextArcUrl
-      ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: "Next Arc" }
+      ? { href: work.nextArcUrl, title: "Next Arc", coverImage: null, label: await getActiveUILanguageText("Next Arc") }
       : null;
 
   const subtitles = parseWorkSubtitles(work.subtitleJson, work.subtitle);

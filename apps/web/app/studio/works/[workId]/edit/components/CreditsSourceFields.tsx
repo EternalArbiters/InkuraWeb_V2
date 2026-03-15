@@ -42,6 +42,7 @@ export default function CreditsSourceFields({
           value={originalAuthorCredit}
           onChange={(e) => setOriginalAuthorCredit(e.target.value)}
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          placeholder={t("Example: Original author name / studio / etc.")}
         />
       </label>
 
