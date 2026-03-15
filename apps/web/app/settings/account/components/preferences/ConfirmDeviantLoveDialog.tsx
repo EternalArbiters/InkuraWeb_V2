@@ -54,10 +54,10 @@ export default function ConfirmDeviantLoveDialog({ open, setOpen, onConfirm }: P
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => handleOpenChange(false)}>
+              <Button variant="outline" type="button" onClick={() => handleOpenChange(false)} className="whitespace-normal text-center h-auto py-2">
                 {t("I get it, thanks for reminding me.")}
               </Button>
-              <Button type="button" onClick={handleIDontCare}>
+              <Button type="button" onClick={handleIDontCare} className="whitespace-normal text-center h-auto py-2">
                 {t("I don't care! Just open the seal!")}
               </Button>
             </DialogFooter>
@@ -70,12 +70,12 @@ export default function ConfirmDeviantLoveDialog({ open, setOpen, onConfirm }: P
                 {t("I warned you, okay! If you don't heed my warning, then don't blame me or drag me to the court of justice in the afterlife. You must take full responsibility for yourself and the sins you've committed. I don't want any involvement in this.")}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" type="button" onClick={handleBack}>
-                {t(".... After I thought about it, I decided not to.")}
-              </Button>
-              <Button type="button" onClick={handleFinalConfirm}>
+            <DialogFooter className="flex-col gap-2 sm:flex-col">
+              <Button type="button" onClick={handleFinalConfirm} className="w-full whitespace-normal text-center h-auto py-2">
                 {t("Okay, okay! Shut up! I know that! I won't involve you!")}
+              </Button>
+              <Button variant="outline" type="button" onClick={handleBack} className="w-full whitespace-normal text-center h-auto py-2">
+                {t(".... After I thought about it, I decided not to.")}
               </Button>
             </DialogFooter>
           </>
