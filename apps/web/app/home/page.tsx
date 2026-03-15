@@ -12,8 +12,8 @@ export default async function HomePage() {
 
   try {
     await requirePageUserId("/home");
-    const { trendingComics, trendingNovels, recent, originals, translations } = await getHomePageData();
-    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel] =
+    const { trendingComics, trendingNovels, recent, originals, translations, draftWorks } = await getHomePageData();
+    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel] =
       await Promise.all([
         getActiveUILanguageText("Home", { section: "Page Home" }),
         getActiveUILanguageText("Search", { section: "Navigation" }),
@@ -23,6 +23,7 @@ export default async function HomePage() {
         getActiveUILanguageText("New Originals", { section: "Page Home" }),
         getActiveUILanguageText("Latest Translations", { section: "Page Home" }),
         getActiveUILanguageText("Recently Updated", { section: "Page Home" }),
+        getActiveUILanguageText("Still Draft", { section: "Page Home" }),
       ]);
 
     return (
@@ -53,6 +54,9 @@ export default async function HomePage() {
           <WorkRail title={originalsLabel} href="/browse/new-originals" works={originals} />
           <WorkRail title={translationsLabel} href="/browse/latest-translations" works={translations} />
           <WorkRail title={recentLabel} href="/browse/recent-updates" works={recent} />
+          {draftWorks && draftWorks.length > 0 ? (
+            <WorkRail title={draftLabel} href="/studio" works={draftWorks} />
+          ) : null}
 
           <footer className="pt-6 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-300">
             Inkura v16

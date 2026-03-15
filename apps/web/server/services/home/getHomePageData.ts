@@ -14,46 +14,69 @@ import {
   getViewerWorkInteractions,
 } from "@/server/services/works/viewerInteractions";
 import { profileHotspot } from "@/server/observability/profiling";
+import prisma from "@/server/db/prisma";
+import { workCardSelect } from "@/server/db/selectors";
+
+function sortByRecentActivity(works: any[]): any[] {
+  return works.slice().sort((a, b) => {
+    const ta = new Date(a.lastChapterPublishedAt ?? a.updatedAt ?? 0).getTime();
+    const tb = new Date(b.lastChapterPublishedAt ?? b.updatedAt ?? 0).getTime();
+    return tb - ta;
+  });
+}
 
 export async function getPublicHomePageData() {
+  // v2: cache key bumped so stale pre-fix data is not served
   return withCachedPublicData(
-    ["public-home:v1"],
+    ["public-home:v2"],
     [publicHomeTag(), publicWorksTag()],
     PUBLIC_CONTENT_REVALIDATE.home,
     async () =>
       profileHotspot("home.publicRails", { rails: 5 }, async () => {
         const [trendingComics, trendingNovels, recent, originals, translations] = await Promise.all([
-        listPublishedWorksFromSearchParams(new URLSearchParams("type=COMIC&sort=liked&take=20"), {
-          viewer: null,
-          includeViewerInteractions: false,
-        }),
-        listPublishedWorksFromSearchParams(new URLSearchParams("type=NOVEL&sort=liked&take=20"), {
-          viewer: null,
-          includeViewerInteractions: false,
-        }),
-        listPublishedWorksFromSearchParams(new URLSearchParams("sort=newest&take=20"), {
-          viewer: null,
-          includeViewerInteractions: false,
-        }),
-        listPublishedWorksFromSearchParams(new URLSearchParams("publishType=ORIGINAL&sort=newest&take=20"), {
-          viewer: null,
-          includeViewerInteractions: false,
-        }),
-        listPublishedWorksFromSearchParams(new URLSearchParams("publishType=TRANSLATION&sort=newest&take=20"), {
-          viewer: null,
-          includeViewerInteractions: false,
-        }),
-      ]);
+          listPublishedWorksFromSearchParams(new URLSearchParams("type=COMIC&sort=liked&take=20"), {
+            viewer: null,
+            includeViewerInteractions: false,
+          }),
+          listPublishedWorksFromSearchParams(new URLSearchParams("type=NOVEL&sort=liked&take=20"), {
+            viewer: null,
+            includeViewerInteractions: false,
+          }),
+          listPublishedWorksFromSearchParams(new URLSearchParams("sort=newest&take=20"), {
+            viewer: null,
+            includeViewerInteractions: false,
+          }),
+          listPublishedWorksFromSearchParams(new URLSearchParams("publishType=ORIGINAL&sort=newest&take=20"), {
+            viewer: null,
+            includeViewerInteractions: false,
+          }),
+          listPublishedWorksFromSearchParams(new URLSearchParams("publishType=TRANSLATION&sort=newest&take=20"), {
+            viewer: null,
+            includeViewerInteractions: false,
+          }),
+        ]);
 
         return {
           trendingComics: trendingComics.works,
           trendingNovels: trendingNovels.works,
-          recent: recent.works,
-          originals: originals.works,
-          translations: translations.works,
+          // Sort using coalesce(lastChapterPublishedAt, updatedAt) so order is correct
+          // even for works created before lastChapterPublishedAt field existed (nulls)
+          recent: sortByRecentActivity(recent.works),
+          originals: sortByRecentActivity(originals.works),
+          translations: sortByRecentActivity(translations.works),
         };
       })
   );
+}
+
+// Fetch draft works for admin — never cached, always fresh
+async function getAdminDraftWorks(): Promise<any[]> {
+  return prisma.work.findMany({
+    where: { status: "DRAFT" },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    take: 20,
+    select: workCardSelect,
+  });
 }
 
 export async function getViewerHomePagePayload(workIds: string[]) {
@@ -84,8 +107,12 @@ export async function getHomePageData() {
   );
 
   const { viewer, interactions } = await getViewerHomePagePayload(allWorkIds);
+
+  // Fetch draft works only for admin — not cached, always fresh
+  const draftWorks = viewer?.role === "ADMIN" ? await getAdminDraftWorks() : [];
+
   if (!viewer?.id) {
-    return base;
+    return { ...base, draftWorks: [] };
   }
 
   return {
@@ -94,5 +121,6 @@ export async function getHomePageData() {
     recent: applyViewerWorkInteractions(base.recent as any[], interactions),
     originals: applyViewerWorkInteractions(base.originals as any[], interactions),
     translations: applyViewerWorkInteractions(base.translations as any[], interactions),
+    draftWorks,
   };
 }
