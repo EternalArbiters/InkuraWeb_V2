@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 type WorkPreview = {
   id?: string;
@@ -24,8 +25,9 @@ function pickWork(entry: PreviewEntry) {
   return entry;
 }
 
-export default function CollectionRailCard({ href, title, description, itemCount = 0, items = [], layout = "rail" }: CollectionRailCardProps) {
+export default async function CollectionRailCard({ href, title, description, itemCount = 0, items = [], layout = "rail" }: CollectionRailCardProps) {
   const previews = items.map((entry) => pickWork(entry)).filter(Boolean).slice(0, 3) as WorkPreview[];
+  const tEmptyCollection = await getActiveUILanguageText("{tEmptyCollection}");
 
   return (
     <Link
@@ -61,7 +63,7 @@ export default function CollectionRailCard({ href, title, description, itemCount
         </div>
       ) : (
         <div className="mt-4 flex min-h-[120px] items-center justify-center rounded-[16px] border border-dashed border-gray-300/90 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-          Empty collection
+          {tEmptyCollection}
         </div>
       )}
     </Link>

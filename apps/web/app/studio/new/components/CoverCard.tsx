@@ -64,7 +64,7 @@ export default function CoverCard({
             </div>
           ) : (
             <div className="text-[11px] text-gray-600 dark:text-gray-300">
-              No cover yet.
+              {t("No cover yet.")}
             </div>
           )}
           {coverOptimizationSummary ? (

@@ -10,7 +10,12 @@ export default async function StudioPage() {
   await requirePageUserId("/studio");
   const { works } = await listStudioWorksForViewer();
 
-  const tCreateNew = await getActiveUILanguageText("Create new");
+  const [tCreateNew, tManageSeries, tSettings, tNoWorks] = await Promise.all([
+    getActiveUILanguageText("Create new"),
+    getActiveUILanguageText("Manage series"),
+    getActiveUILanguageText("Settings"),
+    getActiveUILanguageText("No works yet."),
+  ]);
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
@@ -23,19 +28,19 @@ export default async function StudioPage() {
               href="/settings/account"
               className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
             >
-              Settings
+              {tSettings}
             </Link>
             <Link
               href="/studio/series"
-              className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold"
+              className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold text-center"
             >
-              Manage series
+              {tManageSeries}
             </Link>
             <Link
               href="/studio/new"
-              className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110"
+              className="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 text-center"
             >
-              Create new
+              {tCreateNew}
             </Link>
           </div>
         </div>
@@ -43,7 +48,7 @@ export default async function StudioPage() {
         <div className="mt-8">
           {works.length === 0 ? (
             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-              No works yet.
+              {tNoWorks}
             </div>
           ) : (
             <StudioWorksGridClient works={works as any} />

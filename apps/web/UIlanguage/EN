@@ -784,7 +784,6 @@ Create new work
 
 Sweep app/studio/series/StudioSeriesManagerClient.tsx
 
-Add a work into the selected series.
 Create a new series
 Drag to reorder, or use move buttons.
 Manage series
@@ -1519,3 +1518,6 @@ Works
 Back to Profile
 No series yet.
 This page could not be found.
+No cover yet.
+Empty collection
+No works yet.

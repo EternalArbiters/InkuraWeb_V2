@@ -1031,7 +1031,6 @@ Create new work = Buat karya baru
 Sweep app/studio/series/StudioSeriesManagerClient.tsx
 ==========
 
-Add a work into the selected series. = Tambahkan karya ke kelompok karya yang dipilih.
 Create a new series = Buat Kelompok Karya Baru
 Drag to reorder, or use move buttons. = Seret untuk mengurutkan ulang, atau gunakan tombol pindah.
 Manage series = Kelola Kelompok Karya
@@ -2152,7 +2151,7 @@ Add URL = Tambah URL
 Exclude = Kecualikan
 Pages = Halaman
 
-Clear All = Kosongkan kembali
+Clear All = Reset
 
 Add to selected series = Tambahkan Ke Kelompok Karya Pilihan
 Works = Karya
@@ -2168,6 +2167,10 @@ This page could not be found. = Halaman ini belum di buat.
 
 Back to Library = Kembali ke Perpustakaan
 Add to selected series = Tambahkan Ke Kelompok Karya Pilihan
-Edit Info = Ubah InfoN works, ordered by arc = N karya, di urutkan berdasarkan arc
+Edit Info = Ubah Info
+N works, ordered by arc = N karya, di urutkan berdasarkan arc
 Item = karya
 Works = Karya
+No cover yet. = Belum memasang sampul.
+Empty collection = Belum ada koleksi
+No works yet. = Belum ada karya.

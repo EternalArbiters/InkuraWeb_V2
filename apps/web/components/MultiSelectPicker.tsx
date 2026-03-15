@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 export type PickerItem = { id: string; name: string; slug: string };
 
@@ -23,6 +24,7 @@ export default function MultiSelectPicker({
   placeholder = "Search...",
   className,
 }: Props) {
+  const t = useUILanguageText();
   const [q, setQ] = React.useState("");
 
   const filtered = React.useMemo(() => {
@@ -59,13 +61,13 @@ export default function MultiSelectPicker({
             onClick={() => onChange([])}
             className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm"
           >
-            Reset
+            {t("Clear All") || "Reset"}
           </button>
         </div>
       </div>
 
       <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-        Chosen: <b>{selectedIds.length}</b>
+        {t("Chosen") || "Chosen"}: <b>{selectedIds.length}</b>
       </div>
 
       <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">

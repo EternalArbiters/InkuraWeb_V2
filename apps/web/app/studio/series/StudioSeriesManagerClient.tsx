@@ -222,7 +222,7 @@ export default function StudioSeriesManagerClient({
             type="button"
             onClick={createSeries}
             disabled={saving || !newSeriesTitle.trim()}
-            className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-60 text-center"
           >
             {t("Create series")}
           </button>
@@ -358,7 +358,6 @@ export default function StudioSeriesManagerClient({
 
       <aside className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
         <div className="text-sm font-extrabold">{t("Unassigned works")}</div>
-        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{t("Add a work into the selected series.")}</div>
         <div className="mt-4 grid gap-3">
           {unassignedWorks.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 p-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
