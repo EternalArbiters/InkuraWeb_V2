@@ -37,7 +37,7 @@ function PublishedWorksRail({ title, works }: { title: string; works: any[] }) {
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-lg md:text-xl font-extrabold tracking-tight">{title}</h3>
         <div className="text-xs font-medium uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
-          {works.length} work{works.length === 1 ? "" : "s"}
+          {works.length} karya
         </div>
       </div>
 
@@ -192,7 +192,24 @@ export default async function ProfilePage() {
   const avatarFocusY = Number.isFinite(Number(profile.avatarFocusY)) ? Number(profile.avatarFocusY) : 50;
   const avatarZoom = Number.isFinite(Number(profile.avatarZoom)) ? Math.max(1, Number(profile.avatarZoom)) : 1;
   const profileLinks = parseProfileLinks(profile.profileUrlsJson, profile.profileUrl);
-  const tAddUrl = await getActiveUILanguageText("Add URL");
+  const [
+    tAddUrl, tJoined, tEditProfile, tPublishedWorks, tCollections, tRecentReviews,
+    tRecentComments, tNoCollections, tNoReviews, tNoComments, tAllReviews, tAllComments, tWorks,
+  ] = await Promise.all([
+    getActiveUILanguageText("Add URL"),
+    getActiveUILanguageText("Joined").catch(() => "Bergabung"),
+    getActiveUILanguageText("Edit Profile"),
+    getActiveUILanguageText("Published Works"),
+    getActiveUILanguageText("Collections"),
+    getActiveUILanguageText("Recent Reviews"),
+    getActiveUILanguageText("Recent Comments").catch(() => "Komentar Terbaru"),
+    getActiveUILanguageText("Belum ada koleksi.").catch(() => "Belum ada koleksi."),
+    getActiveUILanguageText("Belum ada review.").catch(() => "Belum ada ulasan."),
+    getActiveUILanguageText("Belum ada komentar.").catch(() => "Belum ada komentar."),
+    getActiveUILanguageText("All reviews"),
+    getActiveUILanguageText("All comments"),
+    getActiveUILanguageText("Published Works").catch(() => "Karya"),
+  ]);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -234,7 +251,7 @@ export default async function ProfilePage() {
                     + {tAddUrl}
                   </Link>
                 ) : null}
-                <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {formatDate(profile.createdAt)}</div>
+                <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">{tJoined} {formatDate(profile.createdAt)}</div>
               </div>
             </div>
 
@@ -243,7 +260,7 @@ export default async function ProfilePage() {
                 href="/settings/profile"
                 className="inline-flex min-w-0 flex-1 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 md:flex-none"
               >
-                Edit Profile
+                {tEditProfile}
               </Link>
               <ProfileShareButton
                 path={profile.username ? `/u/${profile.username}` : "/profile"}
@@ -255,16 +272,16 @@ export default async function ProfilePage() {
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
-            <ProfileStat label="Works" value={publishedWorksCount} />
-            <ProfileStat label="Followers" value={followersCount} href="/profile/followers" />
-            <ProfileStat label="Following" value={followingCount} href="/profile/following" />
+            <ProfileStat label={tWorks} value={publishedWorksCount} />
+            <ProfileStat label={tFollowers} value={followersCount} href="/profile/followers" />
+            <ProfileStat label={tFollowing} value={followingCount} href="/profile/following" />
           </div>
         </section>
 
         <section className="mt-8 rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-<h2 className="text-3xl font-extrabold tracking-tight">Published Works</h2>
+<h2 className="text-3xl font-extrabold tracking-tight">{tPublishedWorks}</h2>
             </div>
           </div>
 
@@ -284,7 +301,7 @@ export default async function ProfilePage() {
           <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm self-start">
             <div className="flex items-end justify-between gap-3">
               <div>
-<h2 className="text-2xl font-extrabold tracking-tight">Collections</h2>
+<h2 className="text-2xl font-extrabold tracking-tight">{tCollections}</h2>
               </div>
               <ActionLink href="/lists">See all</ActionLink>
             </div>
@@ -305,7 +322,7 @@ export default async function ProfilePage() {
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-                No collections yet.
+                {tNoCollections}
               </div>
             )}
           </section>
@@ -313,7 +330,7 @@ export default async function ProfilePage() {
           <div className="grid gap-8 self-start">
             <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
               <div>
-<h2 className="text-2xl font-extrabold tracking-tight">Recent Reviews</h2>
+<h2 className="text-2xl font-extrabold tracking-tight">{tRecentReviews}</h2>
               </div>
 
               {reviewFeed.items.length ? (
@@ -323,18 +340,18 @@ export default async function ProfilePage() {
                       <ProfileReviewCard key={review.id} review={review} />
                     ))}
                   </div>
-                  {reviewsCount > 3 ? <MoreButton href="/profile/reviews">All reviews</MoreButton> : null}
+                  {reviewsCount > 3 ? <MoreButton href="/profile/reviews">{tAllReviews}</MoreButton> : null}
                 </>
               ) : (
                 <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-                  No reviews yet.
+                  {tNoReviews}
                 </div>
               )}
             </section>
 
             <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 shadow-sm">
               <div>
-<h2 className="text-2xl font-extrabold tracking-tight">Recent Comments</h2>
+<h2 className="text-2xl font-extrabold tracking-tight">{tRecentComments}</h2>
               </div>
 
               {commentFeed.items.length ? (
@@ -344,11 +361,11 @@ export default async function ProfilePage() {
                       <ProfileCommentCard key={comment.id} comment={comment} />
                     ))}
                   </div>
-                  {commentsCount > 3 ? <MoreButton href="/profile/comments">All comments</MoreButton> : null}
+                  {commentsCount > 3 ? <MoreButton href="/profile/comments">{tAllComments}</MoreButton> : null}
                 </>
               ) : (
                 <div className="mt-5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">
-                  No comments yet.
+                  {tNoComments}
                 </div>
               )}
             </section>

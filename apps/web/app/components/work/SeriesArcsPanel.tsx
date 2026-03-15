@@ -1,5 +1,6 @@
 import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import Link from "next/link";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 type SeriesWork = {
   id: string;
@@ -76,7 +77,7 @@ function ArcCard({ arc }: { arc: ArcLink }) {
   );
 }
 
-export default function SeriesArcsPanel({
+export default async function SeriesArcsPanel({
   seriesTitle,
   works,
   currentWorkId,
@@ -158,6 +159,11 @@ export default function SeriesArcsPanel({
   const hasPanel = !!seriesTitle || nearbyItems.length > 1 || previousArc || nextArc;
   if (!hasPanel) return null;
 
+  const [tMoreInSeries, tCurrent] = await Promise.all([
+    getActiveUILanguageText("More in this series"),
+    getActiveUILanguageText("Chosen"),
+  ]);
+
   const titleNode = seriesTitle ? (
     <Link
       href={`/w/${currentWorkSlug}/series`}
@@ -172,7 +178,7 @@ export default function SeriesArcsPanel({
   return (
     <section className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
       <div className="min-w-0 rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-950/30">
-        <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">More in this series</div>
+        <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">{tMoreInSeries}</div>
         {titleNode}
 
         {nearbyItems.length ? (
@@ -187,7 +193,7 @@ export default function SeriesArcsPanel({
                       work={item as any}
                       className={`w-[9.25rem] shrink-0 snap-start sm:w-[9.75rem] ${active ? "border-purple-500/70 dark:border-purple-500" : ""}`}
                       topLeftBadge={typeof item.seriesOrder === "number" ? `Arc ${item.seriesOrder}` : null}
-                      bottomRightBadge={active ? "Current" : null}
+                      bottomRightBadge={active ? tCurrent : null}
                     />
                   );
                 })}

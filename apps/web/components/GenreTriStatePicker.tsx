@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Genre = { id: string; name: string; slug: string };
 
@@ -31,6 +32,7 @@ export default function GenreTriStatePicker({
   placeholder = "Search for genre...",
   fallbackFetch,
 }: Props) {
+  const t = useUILanguageText();
   const [q, setQ] = React.useState("");
   const [include, setInclude] = React.useState<string[]>(initialInclude);
   const [exclude, setExclude] = React.useState<string[]>(initialExclude);
@@ -149,7 +151,7 @@ export default function GenreTriStatePicker({
             onClick={clearAll}
             className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm"
           >
-            Reset
+            {t("Clear All") || "Clear All"}
           </button>
         </div>
       </div>
@@ -159,7 +161,7 @@ export default function GenreTriStatePicker({
       <input type="hidden" name={nameExclude} value={exclude.join(",")} />
 
       <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-        Include: <b>{include.length}</b> &nbsp;•&nbsp; Exclude: <b>{exclude.length}</b>
+        {t("Include") || "Include"}: <b>{include.length}</b> &nbsp;•&nbsp; {t("Exclude") || "Exclude"}: <b>{exclude.length}</b>
       </div>
 
       {items.length === 0 ? (

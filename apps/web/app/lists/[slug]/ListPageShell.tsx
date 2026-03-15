@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import ShareButton from "@/app/components/work/ShareButton";
@@ -30,6 +32,7 @@ export default function ListPageShell({
   initialItems: Item[];
   isOwner: boolean;
 }) {
+  const t = useUILanguageText();
   const [list, setList] = useState<ListLike>(initialList);
   const [items, setItems] = useState<Item[]>(initialItems);
 
@@ -56,7 +59,7 @@ export default function ListPageShell({
           </div>
 
           <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            by <b><PublicUserLink user={ownerLabel} className="hover:text-purple-400" /></b> • {itemCount} item
+            by <b><PublicUserLink user={ownerLabel} className="hover:text-purple-400" /></b> • {itemCount} {t("Item") || "item"}
           </div>
 
           {list.description ? (
@@ -100,7 +103,7 @@ export default function ListPageShell({
 
       {empty ? (
         <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-8">
-          <div className="text-lg font-extrabold">Empty list</div>
+          <div className="text-lg font-extrabold">Koleksi Masih Kosong</div>
           {isOwner ? (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               Add works from the work page (using the “Add to List” button) or search for works via Search.

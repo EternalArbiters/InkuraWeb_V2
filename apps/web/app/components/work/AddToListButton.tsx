@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { useEffect, useMemo, useState } from "react";
 import { ListPlus, Check, Loader2 } from "lucide-react";
 import { getOrFetchClientResource, mutateClientResource, seedClientResource } from "@/lib/clientResourceCache";
@@ -24,6 +25,7 @@ export default function AddToListButton({
   className?: string;
   initialLists?: ListLite[] | null;
 }) {
+  const t = useUILanguageText();
   const [open, setOpen] = useState(false);
   const [lists, setLists] = useState<ListLite[] | null>(initialLists);
   const [loading, setLoading] = useState(false);
@@ -120,8 +122,8 @@ export default function AddToListButton({
   };
 
   const label = useMemo(() => {
-    if (!open) return "Add to List";
-    return "Close";
+    if (!open) return t("Add to List");
+    return t("Close");
   }, [open]);
 
   return (
@@ -174,7 +176,7 @@ export default function AddToListButton({
                             <div className="min-w-0">
                               <div className="text-sm font-semibold truncate">{l.title}</div>
                               <div className="text-xs text-gray-600 dark:text-gray-300">
-                                {(l._count?.items ?? 0)} item • {l.isPublic ? "Public" : "Private"}
+                                {(l._count?.items ?? 0)} {t("Item") || "item"} • {l.isPublic ? "Public" : "Private"}
                               </div>
                             </div>
 
@@ -243,7 +245,7 @@ export default function AddToListButton({
                           <div className="min-w-0">
                             <div className="text-sm font-semibold truncate">{l.title}</div>
                             <div className="text-xs text-gray-600 dark:text-gray-300">
-                              {(l._count?.items ?? 0)} item • {l.isPublic ? "Public" : "Private"}
+                              {(l._count?.items ?? 0)} {t("Item") || "item"} • {l.isPublic ? "Public" : "Private"}
                             </div>
                           </div>
 

@@ -7,8 +7,6 @@ const GENDERS = [
   { value: "", label: "Prefer not to say" },
   { value: "MALE", label: "Male" },
   { value: "FEMALE", label: "Female" },
-  { value: "NON_BINARY", label: "Non-binary" },
-  { value: "OTHER", label: "Other" },
 ];
 
 const MONTHS = [
@@ -66,18 +64,18 @@ export default function ProfileFieldsCard({
   return (
     <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 grid gap-5">
       <div>
-        <div className="text-sm font-semibold text-gray-900 dark:text-white">Display name</div>
+        <div className="text-sm font-semibold text-gray-900 dark:text-white">{t("Display name")}</div>
         <input
           className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
           value={name}
           onChange={(e) => onNameChange(e.target.value.slice(0, 60))}
           maxLength={60}
-          placeholder="Your display name"
+          placeholder={t("Your display name")}
         />
       </div>
 
       <div>
-        <div className="text-sm font-semibold text-gray-900 dark:text-white">Username</div>
+        <div className="text-sm font-semibold text-gray-900 dark:text-white">{t("Username")}</div>
         <input
           className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
           value={username}
@@ -101,7 +99,7 @@ export default function ProfileFieldsCard({
           value={bio}
           onChange={(e) => onBioChange(e.target.value.slice(0, 200))}
           maxLength={200}
-          placeholder="Tell readers a little about yourself"
+          placeholder={t("Tell readers a little about yourself")}
         />
         <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 200 characters.</div>
       </div>
@@ -109,7 +107,7 @@ export default function ProfileFieldsCard({
       <div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold text-gray-900 dark:text-white">Profile links</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-white">{t("Profile links")}</div>
             <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 5 links.</div>
           </div>
           <button
@@ -178,7 +176,7 @@ export default function ProfileFieldsCard({
 
       <div className="grid gap-4 md:grid-cols-3">
         <div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-white">Gender</div>
+          <div className="text-sm font-semibold text-gray-900 dark:text-white">{t("Gender")}</div>
           <select
             className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
             value={gender}
@@ -186,36 +184,36 @@ export default function ProfileFieldsCard({
           >
             {GENDERS.map((option) => (
               <option key={option.value || "empty"} value={option.value}>
-                {option.label}
+                {t(option.label) || option.label}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-white">Birth month</div>
+          <div className="text-sm font-semibold text-gray-900 dark:text-white">{t("Birth month")}</div>
           <select
             className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
             value={birthMonth}
             onChange={(e) => onBirthMonthChange(e.target.value ? Number(e.target.value) : "")}
           >
-            <option value="">Select month</option>
+            <option value="">{t("Select month")}</option>
             {MONTHS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {t(option.label) || option.label}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-white">Birth year</div>
+          <div className="text-sm font-semibold text-gray-900 dark:text-white">{t("Birth year")}</div>
           <select
             className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
             value={birthYear}
             onChange={(e) => onBirthYearChange(e.target.value ? Number(e.target.value) : "")}
           >
-            <option value="">Select year</option>
+            <option value="">{t("Select year")}</option>
             {years.map((year) => (
               <option key={year} value={year}>
                 {year}

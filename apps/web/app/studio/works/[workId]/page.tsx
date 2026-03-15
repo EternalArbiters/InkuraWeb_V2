@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { ApiError } from "@/server/http";
 import { getStudioWorkById } from "@/server/services/studio/workById";
 import { parseWorkSubtitles } from "@/lib/workSubtitles";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import DeleteChapterButton from "./DeleteChapterButton";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,15 @@ export default async function StudioWorkPage({
   const publishType = String(work.publishType || "ORIGINAL").toUpperCase();
   const isComic = work.type === "COMIC";
   const subtitles = parseWorkSubtitles(work.subtitleJson, work.subtitle);
+
+  const [tEditInfo, tNewChapter, tViewPublicPage, tChapters, tNoChaptersYet, tBackToStudio] = await Promise.all([
+    getActiveUILanguageText("Edit info"),
+    getActiveUILanguageText("New Chapter"),
+    getActiveUILanguageText("View public page"),
+    getActiveUILanguageText("Chapters"),
+    getActiveUILanguageText("No chapters yet."),
+    getActiveUILanguageText("Back to Studio"),
+  ]);
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -103,31 +113,31 @@ export default async function StudioWorkPage({
               href={`/studio/works/${work.id}/edit`}
               className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold text-center"
             >
-              Edit Info
+              {tEditInfo}
             </Link>
             <Link
               href={`/studio/works/${work.id}/chapters/new`}
               className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center"
             >
-              New chapter
+              {tNewChapter}
             </Link>
             <Link
               href={`/w/${work.slug}`}
               className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-semibold text-center"
             >
-              View public page
+              {tViewPublicPage}
             </Link>
           </div>
         </div>
 
         <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
           <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-800">
-            <div className="text-sm font-semibold">Chapters</div>
+            <div className="text-sm font-semibold">{tChapters}</div>
           </div>
 
           <div className="divide-y divide-gray-200 dark:divide-gray-800">
             {(work.chapters || []).length === 0 ? (
-              <div className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
+              <div className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">{tNoChaptersYet}</div>
             ) : (
               (work.chapters || []).map((ch: any) => {
                 const thumb = ch.thumbnailImage || null;

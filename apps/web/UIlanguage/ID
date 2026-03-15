@@ -569,7 +569,7 @@ Scroll to Top = Gulir ke Atas
 Sweep app/components/library/ReadingProgressCard.tsx
 ==========
 
-Continue reading = Lanjut membaca
+Continue reading = Lanjut Baca
 No cover = Tidak ada cover
 
 ==========
@@ -621,8 +621,8 @@ Profile actions = Aksi profil
 Sweep app/components/work/AddToListButton.tsx
 ==========
 
-Add to List = Tambahkan ke List
-Add to list = Tambahkan ke list
+Add to List = Koleksi
+Add to list = Koleksi
 Create list = Buat list
 
 ==========
@@ -767,13 +767,12 @@ An International Platform For Original Works Made Without AI = Platform Internas
 Sweep app/library/bookmarks/page.tsx
 ==========
 
-All works you have bookmarked. = Semua karya yang sudah kamu simpan.
 
 ==========
 Sweep app/library/page.tsx
 ==========
 
-Continue Reading = Lanjut Membaca
+Continue Reading = Lanjut Baca
 No bookmarks yet. = Belum ada simpanan.
 No lists yet. = Belum ada list.
 No reading history yet. = Belum ada riwayat baca.
@@ -783,7 +782,7 @@ Your Collections = Koleksimu
 Sweep app/lists/[slug]/ListPageShell.tsx
 ==========
 
-Empty list = Koleksi masih kosong
+Empty list = Koleksi Masih Kosong
 There is no work to show yet. = Belum ada karya untuk ditampilkan.
 
 ==========
@@ -901,7 +900,7 @@ Most liked = Paling disukai
 NSFW include mode: = Mode penyertaan NSFW:
 OR (any included) = OR (salah satu disertakan)
 Search for NSFW tag... = Cari tag NSFW...
-Search for deviant love tag... = Cari tag deviant love...
+Search for deviant love tag... = Cari Jenis Cinta Terlarang
 Search for genre... = Cari genre...
 Search for title, description.... = Cari judul, deskripsi....
 Status / Publish / Chapters = Status / Publikasi / Chapter
@@ -961,7 +960,7 @@ Your display name = Nama tampilanmu
 Sweep app/settings/profile/page.tsx
 ==========
 
-Edit Profile = Edit Profil
+Edit Profile = Ubah Profile
 
 ==========
 Sweep app/studio/StudioWorksGridClient.tsx
@@ -1019,7 +1018,7 @@ Max. 5 subtitles. = Maks. 5 judul lainnya.
 Short synopsis... = Sinopsis singkat...
 Subtitles (optional) = Judul lainnya (opsional)
 Tags (comma) = Tag (koma)
-Work Title = Judul Work
+Work Title = Judul Karya
 action, romance, comedy = aksi, romansa, komedi
 
 ==========
@@ -1139,7 +1138,7 @@ Upload error = Kesalahan unggah
 Sweep app/studio/works/[workId]/chapters/new/page.tsx
 ==========
 
-New Chapter = Bab Baru
+New Chapter = Chapter Baru
 
 ==========
 Sweep app/studio/works/[workId]/edit/WorkEditForm.tsx
@@ -1204,7 +1203,7 @@ Deviant Love Tags = Tag Cinta Terlarang
 Sweep app/studio/works/[workId]/edit/page.tsx
 ==========
 
-Edit work = Edit work
+Edit work = Ubah Info
 
 ==========
 Sweep app/studio/works/[workId]/page.tsx
@@ -1413,7 +1412,7 @@ Option A Shared Profile & Comments
 ==========
 
 Unknown = Tidak diketahui
-Share Profile = Bagikan Profil
+Share Profile = Bagikan URL Profile
 Shared = Dibagikan
 Copied = Disalin
 Copy failed = Gagal menyalin
@@ -1741,7 +1740,7 @@ Bookmarks = Simpanan
 Sent to = Dikirim ke
 Arc = Arc
 Subtitle = Subjudul
-Chapter = Bab
+Chapter = Chapter
 Page = Halaman
 Link = Tautan
 Open collection = Buka koleksi
@@ -1873,8 +1872,8 @@ Warnings = Peringatan
 Dismissed = Ditutup
 Resolved = Diselesaikan
 Send = Kirim
-Create a new series = Buat seri baru
-Series title = Judul seri
+Create a new series = Buat Kelompok Karya Baru
+Series title = Judul Kelompok Karya
 Move up = Naikkan
 Move down = Turunkan
 Set Draft = Jadikan Draft
@@ -1911,7 +1910,7 @@ Like = Suka
 Unlike = Batal suka
 Liked = Disukai
 Open = Buka
-Chapter = Bab
+Chapter = Chapter
 Page = Halaman
 Link = Tautan
 Sent to = Dikirim ke
@@ -2030,7 +2029,7 @@ Failed to reorder = Gagal mengurutkan ulang
 Page Profile
 ==========
 
-Share Profile = Bagikan Profil
+Share Profile = Bagikan URL Profile
 Shared = Dibagikan
 Copied = Disalin
 Copy failed = Gagal menyalin
@@ -2087,7 +2086,7 @@ Start = Mulai
 Events = Event
 Event = Acara
 Legal = Legal
-Series = Seri
+Series = Kelompok Karya
 Draft = Draf
 Followers = Pengikut
 Following = Mengikuti
@@ -2121,7 +2120,7 @@ Collection = Koleksi
 No followers yet. = Belum ada pengikut.
 Not following anyone yet. = Belum mengikuti siapapun.
 No comments yet. = Belum ada komentar.
-No reviews yet. = Belum ada ulasan.
+No reviews yet. = Belum ada review.
 Browse works = Jelajahi karya
 New list = Koleksi baru
 Min chapters = Min. chapter
@@ -2145,10 +2144,29 @@ Add images = Masukkan gambar
 Choose all images = Pilih semua gambar
 Clear queue = Hapus antrian
 There are no pages in the queue yet. = Belum ada halaman atau gambar yang diunggah.
-Edit info = Ubah info
+Edit info = Ubah Info
 No cover selected yet. The system will automatically take one from the chapter pages. = Belum ada sampul yang dipilih. Sistem akan otomatis menggunakan salah satu dari halaman chapter.
 Use as cover = Jadikan sampul
 Chosen = Dipilih
 Add URL = Tambah URL
 Exclude = Kecualikan
 Pages = Halaman
+
+Clear All = Kosongkan kembali
+
+Tambahkan Ke Kelompok Karya Pilihan = Tambahkan Ke Kelompok Karya Pilihan
+Karya = karya
+Bergabung = Bergabung
+No collections yet. = Belum ada koleksi.
+Share URL Profile = Bagikan URL Profile
+No public reviews yet. = Belum ada review.
+Kembali ke Perpustakaan = Kembali ke Perpustakaan
+Joined = Bergabung
+Back to Profile = Kembali ke Profil
+No series yet. = Belum ada kelompok karya.
+This page could not be found. = Halaman ini belum di buat.
+
+Back to Library = Kembali ke Perpustakaan
+Add to selected series = Tambahkan Ke Kelompok Karya Pilihan
+Edit Info = Ubah InfoN works, ordered by arc = N karya, di urutkan berdasarkan arc
+Item = karya

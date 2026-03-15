@@ -9,6 +9,7 @@ import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
 import HorizontalRail from "@/app/home/HorizontalRail";
 import { parseProfileLinks } from "@/lib/profileUrls";
 import { logPageRenderMetric } from "@/server/observability/metrics";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { getProfilePageData } from "@/server/services/profile/publicProfilePage";
 
 export const dynamic = "force-dynamic";
@@ -95,10 +96,31 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     }
 
     const { user, viewer, viewerFollowingUser, viewerBlockedUser, visibleWorks, visibleLists, visibleReviews } = data;
+    const [tJoined, tPublishedWorks, tCollections, tRecentReviews, tNoCollections, tNoPublicReviews, tWorks, tFollowers, tFollowing] = await Promise.all([
+      getActiveUILanguageText("Bergabung").catch(() => "Bergabung"),
+      getActiveUILanguageText("Published Works"),
+      getActiveUILanguageText("Collections"),
+      getActiveUILanguageText("Recent Reviews"),
+      getActiveUILanguageText("Belum ada koleksi.").catch(() => "Belum ada koleksi."),
+      getActiveUILanguageText("Belum ada review.").catch(() => "Belum ada review."),
+      getActiveUILanguageText("Published Works").catch(() => "Works"),
+      getActiveUILanguageText("Followers"),
+      getActiveUILanguageText("Following"),
+    ]);
     const displayName = (user.name && user.name.trim()) || (user.username && user.username.trim()) || "Unknown";
     const isSelf = viewer?.id === user.id;
     const profileLinks = parseProfileLinks(user.profileUrlsJson, user.profileUrl);
     const callbackPath = `/u/${user.username}`;
+    const [tJoined, tPublishedWorks, tCollections, tRecentReviews,
+           tNoCollections, tNoPublicReviews, tShareProfile] = await Promise.all([
+      getActiveUILanguageText("Joined"),
+      getActiveUILanguageText("Published Works"),
+      getActiveUILanguageText("Collections"),
+      getActiveUILanguageText("Recent Reviews"),
+      getActiveUILanguageText("Belum ada koleksi."),
+      getActiveUILanguageText("Belum ada review."),
+      getActiveUILanguageText("Share Profile"),
+    ]);
 
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -136,7 +158,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                       <ProfileLinksSheet links={profileLinks} />
                     </div>
                   ) : null}
-                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">Joined {joinedLabel(user.createdAt)}</div>
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">{tJoined} {joinedLabel(user.createdAt)}</div>
                 </div>
               </div>
             </div>
@@ -167,16 +189,16 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
             ) : null}
 
             <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
-              <StatCard label="Works" value={user.stats?.publishedWorksCount || 0} />
-              <StatCard label="Followers" value={user.stats?.followersCount || 0} href={`/u/${user.username}/followers`} />
-              <StatCard label="Following" value={user.stats?.followingCount || 0} href={`/u/${user.username}/following`} />
+              <StatCard label={tWorks} value={user.stats?.publishedWorksCount || 0} />
+              <StatCard label={tFollowers} value={user.stats?.followersCount || 0} href={`/u/${user.username}/followers`} />
+              <StatCard label={tFollowing} value={user.stats?.followingCount || 0} href={`/u/${user.username}/following`} />
             </div>
           </div>
 
           <section className="mt-8">
             <div className="flex items-center justify-between gap-3">
               <div>
-<h2 className="text-xl font-extrabold tracking-tight">Published Works</h2>
+<h2 className="text-xl font-extrabold tracking-tight">{tPublishedWorks}</h2>
               </div>
             </div>
             <div className="mt-4">
@@ -187,7 +209,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
           <section className="mt-8">
             <div className="flex items-end justify-between gap-3">
               <div>
-<h2 className="text-xl font-extrabold tracking-tight">Collections</h2>
+<h2 className="text-xl font-extrabold tracking-tight">{tCollections}</h2>
               </div>
               <ActionLink href={`/u/${user.username}/collections`}>See all</ActionLink>
             </div>
@@ -209,14 +231,14 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
               </div>
             ) : (
               <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 text-sm text-gray-600 dark:text-gray-300">
-                No collections yet.
+                {tNoCollections}
               </div>
             )}
           </section>
 
           <section className="mt-8">
             <div>
-<h2 className="text-xl font-extrabold tracking-tight">Recent Reviews</h2>
+<h2 className="text-xl font-extrabold tracking-tight">{tRecentReviews}</h2>
             </div>
 
             {visibleReviews.length ? (
@@ -227,7 +249,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
               </div>
             ) : (
               <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 text-sm text-gray-600 dark:text-gray-300">
-                No public reviews yet.
+                {tNoPublicReviews}
               </div>
             )}
           </section>

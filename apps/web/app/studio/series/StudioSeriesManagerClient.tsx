@@ -210,12 +210,12 @@ export default function StudioSeriesManagerClient({
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)_320px]">
       <aside className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
-        <div className="text-sm font-extrabold">Series</div>
+        <div className="text-sm font-extrabold">{t("Kelompok Karya") || "Kelompok Karya"}</div>
         <div className="mt-3 grid gap-2">
           <input
             value={newSeriesTitle}
             onChange={(e) => setNewSeriesTitle(e.target.value)}
-            placeholder="Create a new series"
+            placeholder={t("Create a new series")}
             className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900"
           />
           <button
@@ -224,14 +224,14 @@ export default function StudioSeriesManagerClient({
             disabled={saving || !newSeriesTitle.trim()}
             className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
           >
-            Create series
+            {t("Create series")}
           </button>
         </div>
 
         <div className="mt-4 grid gap-2">
           {series.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-              No series yet.
+              {t("No series yet.") || "Belum ada kelompok karya."}
             </div>
           ) : (
             series.map((item) => (
@@ -246,7 +246,7 @@ export default function StudioSeriesManagerClient({
                 }`}
               >
                 <div className="truncate text-sm font-semibold">{item.title}</div>
-                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{item.works.length} works</div>
+                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{item.works.length} karya</div>
               </button>
             ))
           )}
@@ -257,7 +257,7 @@ export default function StudioSeriesManagerClient({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm font-extrabold">{t("Manage series")}</div>
-            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Drag to reorder, or use move buttons.</div>
+            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{t("Drag to reorder, or use move buttons.")}</div>
           </div>
           {selectedSeries ? (
             <div className="flex w-full gap-2 sm:w-auto">
@@ -273,7 +273,7 @@ export default function StudioSeriesManagerClient({
                 disabled={saving || !renameTitle.trim()}
                 className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 dark:border-gray-800 dark:hover:bg-gray-900"
               >
-                Rename
+                {t("Rename")}
               </button>
             </div>
           ) : null}
@@ -287,13 +287,13 @@ export default function StudioSeriesManagerClient({
 
         {!selectedSeries ? (
           <div className="mt-4 rounded-2xl border border-dashed border-gray-200 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-            Select a series first.
+            {t("Select a series first.") || "Pilih kelompok karya terlebih dahulu."}
           </div>
         ) : (
           <div className="mt-4 grid gap-3">
             {selectedSeries.works.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-                This series does not have any work yet.
+                {t("This series does not have any work yet.") || "Kelompok karya ini belum punya karya."}
               </div>
             ) : (
               selectedSeries.works.map((work, index) => (
@@ -357,8 +357,8 @@ export default function StudioSeriesManagerClient({
       </section>
 
       <aside className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
-        <div className="text-sm font-extrabold">Unassigned works</div>
-        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Add a work into the selected series.</div>
+        <div className="text-sm font-extrabold">{t("Unassigned works")}</div>
+        <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{t("Add a work into the selected series.")}</div>
         <div className="mt-4 grid gap-3">
           {unassignedWorks.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 p-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
@@ -375,7 +375,7 @@ export default function StudioSeriesManagerClient({
                   onClick={() => addWork(work.id)}
                   className="mt-3 w-full rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 dark:border-gray-800 dark:hover:bg-gray-900"
                 >
-                  Add to selected series
+                  {t("Add to selected series")}
                 </button>
               </div>
             ))

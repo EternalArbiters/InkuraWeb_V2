@@ -4,6 +4,7 @@ import WorkEditForm from "./WorkEditForm";
 import { ApiError } from "@/server/http";
 import { getStudioWorkById } from "@/server/services/studio/workById";
 import { listActiveDeviantLoveTags, listActiveGenres, listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +17,12 @@ export default async function WorkEditPage({
   const workId = params.workId;
 
   try {
-    const [workRes, genres, warningTags, deviantLoveTags] = await Promise.all([
+    const [workRes, genres, warningTags, deviantLoveTags, tEditWork] = await Promise.all([
       getStudioWorkById(workId),
       listActiveGenres({ take: 200 }),
       listActiveWarningTags({ take: 100 }),
       listActiveDeviantLoveTags({ take: 200 }),
+      getActiveUILanguageText("Edit work"),
     ]);
 
     return (
@@ -28,7 +30,7 @@ export default async function WorkEditPage({
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit work</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tEditWork}</h1>
             </div>
             <BackButton href={`/studio/works/${workId}`} />
           </div>

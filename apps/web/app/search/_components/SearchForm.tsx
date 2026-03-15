@@ -99,6 +99,7 @@ export default async function SearchForm({
     tDeviantIncludeMode, tNsfwIncludeMode,
     tIgnoreLangPref, tIgnoreBlockedGenres,
     tSearchForTitle, tTag, tEnableSettings,
+    tSearchDeviantLove, tSearchNsfw, tSearchGenre, tClearAll,
   ] = await Promise.all([
     getActiveUILanguageText("Advance Search", { section: "Page Search" }),
     getActiveUILanguageText("Newest"),
@@ -142,6 +143,10 @@ export default async function SearchForm({
     getActiveUILanguageText("Search for title, description...."),
     getActiveUILanguageText("Tags"),
     getActiveUILanguageText("Enable it in Settings → Account."),
+    getActiveUILanguageText("Search for deviant love tag..."),
+    getActiveUILanguageText("Search for NSFW tag..."),
+    getActiveUILanguageText("Search for genre..."),
+    getActiveUILanguageText("Clear All"),
   ]);
   return (
     <form
@@ -362,7 +367,7 @@ export default async function SearchForm({
             nameInclude="gi"
             nameExclude="ge"
             title="Genres"
-            placeholder="Search for genre..."
+            placeholder={tSearchGenre}
             fallbackFetch="genres"
           />
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -390,7 +395,7 @@ export default async function SearchForm({
                 nameInclude="di"
                 nameExclude="de"
                 title="Deviant Love"
-                placeholder="Search for deviant love tag..."
+                placeholder={tSearchDeviantLove}
                 fallbackFetch="deviantLove"
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -429,7 +434,7 @@ export default async function SearchForm({
                 nameInclude="wi"
                 nameExclude="we"
                 title="NSFW"
-                placeholder="Search for NSFW tag..."
+                placeholder={tSearchNsfw}
                 fallbackFetch="warnings"
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">

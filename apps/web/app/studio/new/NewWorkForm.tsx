@@ -6,7 +6,9 @@ import MultiSelectPicker, { type PickerItem } from "@/components/MultiSelectPick
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimization";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import CoverCard from "./components/CoverCard";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import DeviantLoveCard from "./components/DeviantLoveCard";
 import PublishTypeCard from "./components/PublishTypeCard";
 import SubmitRow from "./components/SubmitRow";
@@ -42,6 +44,7 @@ function buildOptimizationSummary(prepared: PreparedUploadFile | null) {
 
 export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Props) {
   const router = useRouter();
+  const t = useUILanguageText();
 
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
@@ -264,19 +267,19 @@ export default function NewWorkForm({ genres, warningTags, deviantLoveTags }: Pr
       />
 
       <div className="rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
-<div className="text-sm font-semibold">Series (optional)</div>
+<div className="text-sm font-semibold">{t("Series (optional)")}</div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <label className="grid gap-2 text-sm">
-            <span className="font-medium">Series title</span>
+            <span className="font-medium">{t("Series title")}</span>
             <input
               value={seriesTitle}
               onChange={(e) => setSeriesTitle(e.target.value)}
-              placeholder="Example: The Eruption Saga"
+              placeholder={t("Example: The Eruption Saga")}
               className="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
             />
           </label>
           <label className="grid gap-2 text-sm">
-            <span className="font-medium">Arc order</span>
+            <span className="font-medium">{t("Arc order")}</span>
             <input
               value={seriesOrder}
               onChange={(e) => setSeriesOrder(e.target.value.replace(/[^0-9]/g, ""))}

@@ -4,6 +4,7 @@ import BackButton from "@/app/components/BackButton";
 import LoadMoreList from "@/app/components/LoadMoreList";
 import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -96,14 +97,22 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
     })) as any[]),
   ]);
 
+  const [tMoreInSeries, tCurrent] = await Promise.all([
+    getActiveUILanguageText("More in this series"),
+    getActiveUILanguageText("Chosen"),
+  ]);
+
+  const tWorksOrderedByArcTemplate = await getActiveUILanguageText("N works, ordered by arc").catch(() => "N works, ordered by arc");
+  const tWorksOrderedByArc = tWorksOrderedByArcTemplate.replace("N", String(allWorks.length));
+
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">More in this series</div>
+            <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">{tMoreInSeries}</div>
             <div className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">{seriesTitle}</div>
-            <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{allWorks.length} works, ordered by arc.</div>
+            <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{tWorksOrderedByArc}</div>
           </div>
           <BackButton href={`/w/${work.slug}`} />
         </div>
@@ -116,7 +125,7 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
                 key={item.id}
                 work={item as any}
                 topLeftBadge={typeof item.seriesOrder === "number" ? `Arc ${item.seriesOrder}` : null}
-                bottomRightBadge={active ? "Current" : null}
+                bottomRightBadge={active ? tCurrent : null}
                 className={active ? "border-purple-500/70 dark:border-purple-500" : ""}
               />
             );
