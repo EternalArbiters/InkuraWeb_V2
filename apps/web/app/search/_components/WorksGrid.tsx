@@ -9,6 +9,10 @@ type Props = {
 };
 
 export default async function WorksGrid({ works, canViewMature, searchQuery, searchType }: Props) {
+  const [tNoResults, tTryAnother] = await Promise.all([
+    getActiveUILanguageText("No results"),
+    getActiveUILanguageText("Try another keyword or change the filters."),
+  ]);
   return (
     <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
       {works.map((w: any, index: number) => {
