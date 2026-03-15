@@ -24,12 +24,12 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
         await tx.workLike.delete({ where: { userId_workId: { userId, workId } } });
         await tx.$executeRaw`UPDATE "Work" SET "likeCount" = GREATEST(0, "likeCount" - 1) WHERE "id" = ${workId}`;
         const updated = await tx.work.findUnique({ where: { id: workId }, select: { likeCount: true } });
-        return { liked: false, likeCount: Math.max(0, updated.likeCount) };
+        return { liked: false, likeCount: Math.max(0, updated?.likeCount ?? 0) };
       }
       await tx.workLike.create({ data: { userId, workId } });
       await tx.$executeRaw`UPDATE "Work" SET "likeCount" = "likeCount" + 1 WHERE "id" = ${workId}`;
       const updated = await tx.work.findUnique({ where: { id: workId }, select: { likeCount: true } });
-      return { liked: true, likeCount: updated.likeCount };
+      return { liked: true, likeCount: updated?.likeCount ?? 0 };
     });
     if (result.liked) {
       await trackAnalyticsEventSafe({ req, eventType: "WORK_LIKE", userId, workId, path: req.url, routeName: "work.like" });
