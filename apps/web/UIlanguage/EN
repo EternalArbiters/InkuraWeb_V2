@@ -107,7 +107,6 @@ Select year
 Save
 Saving…
 Saved
-Saving...
 
 ==========
 Page Settings Account
@@ -1560,7 +1559,6 @@ Inbox reports
 My reports
 Refreshing...
 Sending...
-Sending…
 Rebuilding...
 Rebuild aggregates
 Admin message
@@ -1581,7 +1579,6 @@ All events that are actually used by analytics after admin activity is filtered 
 Non-admin user accounts that had events in this range.
 Anonymous visitors without an account who still count as public traffic.
 Admin events intentionally excluded from main analytics.
-Inbox reports from users.
 
 ==========
 Option A Upload Helpers & Editors
@@ -1660,7 +1657,6 @@ Title is required.
 Message is required.
 Example: Login bug, chapter cannot be opened, etc.
 Explain the issue + steps to reproduce.
-Title is required.
 • Mature
 Newest
 Original
