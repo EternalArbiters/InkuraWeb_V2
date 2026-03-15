@@ -333,11 +333,12 @@ export async function listPublishedWorksFromSearchParams(
 
   // Sort by lastChapterPublishedAt (when a new chapter was first published) so that
   // "Recently Updated" reflects actual chapter activity, not metadata/like/rating edits.
-  // Works without any published chapters fall back via nulls: "last".
-  let orderBy: any = [{ lastChapterPublishedAt: { sort: "desc", nulls: "last" } }, { updatedAt: "desc" }, { id: "desc" }];
+  // Use updatedAt as DB sort — app layer will re-sort by coalesce(lastChapterPublishedAt, updatedAt)
+  // to handle works created before the lastChapterPublishedAt field existed (nulls).
+  let orderBy: any = [{ updatedAt: "desc" }, { id: "desc" }];
   if (sort === "liked") orderBy = [{ likeCount: "desc" }, { id: "desc" }];
   if (sort === "rated") {
-    orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { lastChapterPublishedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }];
+    orderBy = [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { updatedAt: "desc" }, { id: "desc" }];
   }
 
   const query: any = {
@@ -419,7 +420,13 @@ export async function listPublishedWorksFromSearchParams(
   }
 
   return {
-    works: worksWithViewer,
+    works: sort === "newest"
+      ? worksWithViewer.slice().sort((a: any, b: any) => {
+          const ta = new Date(a.lastChapterPublishedAt ?? a.updatedAt ?? 0).getTime();
+          const tb = new Date(b.lastChapterPublishedAt ?? b.updatedAt ?? 0).getTime();
+          return tb - ta;
+        })
+      : worksWithViewer,
     nextCursor,
     viewer: withViewerSummary(viewer, canViewMature, canViewDeviantLove),
   };
