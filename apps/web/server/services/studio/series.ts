@@ -48,11 +48,10 @@ export async function resequenceSeries(db: DbClient, seriesId: string | null | u
   });
 
   await Promise.all(
-    works.map((work, index) => {
+    works.map(async (work, index) => {
       const nextOrder = index + 1;
       if (work.seriesOrder === nextOrder) return null;
       await db.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${nextOrder} WHERE "id" = ${work.id}`;
-      return;
     })
   );
 }
@@ -306,7 +305,7 @@ export async function patchStudioSeries(req: Request): Promise<StudioSeriesRespo
     reordered.splice(targetIndex, 0, moved);
 
     await Promise.all(
-      reordered.map((work, idx) => prisma.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${idx + 1} WHERE "id" = ${work.id}`)
+      reordered.map(async (work, idx) => prisma.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${idx + 1} WHERE "id" = ${work.id}`)
     );
 
     return { status: 200, body: { ok: true } };
@@ -328,7 +327,7 @@ export async function patchStudioSeries(req: Request): Promise<StudioSeriesRespo
     }
 
     await Promise.all(
-      orderedWorkIds.map((workId, index) => prisma.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${index + 1} WHERE "id" = ${workId}`)
+      orderedWorkIds.map(async (workId, index) => prisma.$executeRaw`UPDATE "Work" SET "seriesOrder" = ${index + 1} WHERE "id" = ${workId}`)
     );
 
     return { status: 200, body: { ok: true } };
