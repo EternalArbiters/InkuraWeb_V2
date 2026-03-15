@@ -36,7 +36,7 @@ export default function WorkPublishTypeCard({
         <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/60 dark:bg-yellow-950/40 p-4 text-sm">
           <div className="font-semibold">{t("Copyright warning")}</div>
           <div className="mt-1 text-sm">
-            {t("{t("If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically.")}")}
+            {t("If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically.")}
           </div>
         </div>
       ) : null}

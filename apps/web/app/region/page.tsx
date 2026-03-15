@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
-import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import PageScaffold from "../components/PageScaffold";
 
 export default async function RegionPage() {
