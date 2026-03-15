@@ -159,10 +159,19 @@ export default async function SeriesArcsPanel({
   const hasPanel = !!seriesTitle || nearbyItems.length > 1 || previousArc || nextArc;
   if (!hasPanel) return null;
 
-  const [tMoreInSeries, tCurrent] = await Promise.all([
+  const [tMoreInSeries, tCurrent, tPreviousArc, tNextArc] = await Promise.all([
     getActiveUILanguageText("More in this series"),
     getActiveUILanguageText("Chosen"),
+    getActiveUILanguageText("Previous Arc"),
+    getActiveUILanguageText("Next Arc"),
   ]);
+
+  // Translate arc labels from the data
+  function translateArcLabel(label: string) {
+    if (label === "Previous Arc") return tPreviousArc;
+    if (label === "Next Arc") return tNextArc;
+    return label;
+  }
 
   const titleNode = seriesTitle ? (
     <Link
@@ -204,8 +213,8 @@ export default async function SeriesArcsPanel({
 
         {previousArc || nextArc ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {previousArc ? <ArcCard arc={previousArc} /> : <div className="hidden sm:block" />}
-            {nextArc ? <ArcCard arc={nextArc} /> : null}
+            {previousArc ? <ArcCard arc={{ ...previousArc, label: translateArcLabel(previousArc.label) }} /> : <div className="hidden sm:block" />}
+            {nextArc ? <ArcCard arc={{ ...nextArc, label: translateArcLabel(nextArc.label) }} /> : null}
           </div>
         ) : null}
       </div>
