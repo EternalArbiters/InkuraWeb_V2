@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 import * as React from "react";
 import { ArrowDown, ArrowUp, FileArchive, FileText, ImagePlus, Images, Trash2, X } from "lucide-react";
 import { importComicPagesFromPdf, importComicPagesFromZip, sortComicPageFiles } from "@/lib/comicPageImports";
@@ -297,7 +299,7 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
       <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold">Page queue</div>
+            <div className="text-sm font-semibold">{t("Pages")}</div>
             <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">{files.length} pages • total {formatBytes(totalBytes)}</div>
           </div>
           {files.length ? (
@@ -314,7 +316,7 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
 
         {previewFiles.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-gray-200 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-            There are no pages in the queue yet.
+            {t("There are no pages in the queue yet.")}
           </div>
         ) : (
           <div className="mt-4 grid gap-3">

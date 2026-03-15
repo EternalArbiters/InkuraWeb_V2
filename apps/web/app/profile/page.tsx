@@ -229,7 +229,7 @@ export default async function ProfilePage() {
                     href="/settings/profile"
                     className="mt-3 inline-flex items-center text-sm font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                   >
-                    + Add URL
+                    + {t("Add URL")}
                   </Link>
                 ) : null}
                 <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Joined {formatDate(profile.createdAt)}</div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 function formatBytes(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
@@ -34,11 +36,12 @@ export default function WorkCoverCard({
   coverOptimizationSummary: string | null;
   coverPreparing: boolean;
 }) {
+  const t = useUILanguageText();
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold">Cover</div>
+          <div className="text-sm font-semibold">{t("Cover")}</div>
         </div>
         <label className="inline-flex items-center gap-2 text-sm">
           <input
@@ -72,7 +75,7 @@ export default function WorkCoverCard({
             className="text-sm"
           />
           <div className="text-[11px] text-gray-600 dark:text-gray-300">
-            Auto-optimized before upload. Target max 2MB. JPG/PNG/WebP.
+            {t("Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP.")}
           </div>
           {coverPreparing ? (
             <div className="text-[11px] text-gray-600 dark:text-gray-300">Optimizing cover...</div>

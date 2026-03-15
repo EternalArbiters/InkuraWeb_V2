@@ -952,7 +952,7 @@ Sweep app/settings/profile/components/ProfileFieldsCard.tsx
 3–24 chars. Use letters, numbers, dash, underscore.
 Display name
 Maximum 200 characters.
-Maximum 5 links. Give each one a short title so it displays neatly like a link sheet.
+Maximum 5 links.
 Profile links
 Tell readers a little about yourself
 Your display name
@@ -2131,3 +2131,24 @@ Ignore my language preferences (settings)
 Ignore my blocked genres/NSFW (settings)
 Enable it in Settings → Account.
 Any
+
+Mark all read
+Create new
+Back to Studio
+Create series
+Rename
+Every work already belongs to a series.
+Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP.
+If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically.
+Add sub title
+Add images
+Choose all images
+Clear queue
+There are no pages in the queue yet.
+Edit info
+No cover selected yet. The system will automatically take one from the chapter pages.
+Use as cover
+Chosen
+Add URL
+Exclude
+Pages

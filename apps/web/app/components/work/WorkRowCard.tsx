@@ -6,7 +6,8 @@ import OriginFlag from "@/app/components/OriginFlag";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import FavoriteIconButton from "@/app/components/work/FavoriteIconButton";
 import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
-import { formatUpdatedAt } from "@/lib/time";
+import { formatUpdatedAt, EN_TIME_LOCALE, ID_TIME_LOCALE } from "@/lib/time";
+import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
 
 type Person = { username?: string | null; name?: string | null; image?: string | null } | null | undefined;
 
@@ -99,11 +100,14 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
   const author = work?.author;
   const translator = work?.translator;
   const uploader: Person = author?.username || author?.name ? author : translator;
+  const { language } = useUILanguage();
+  const timeLocale = language === "ID" ? ID_TIME_LOCALE : EN_TIME_LOCALE;
+
   const computeTimeState = () => {
     const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
     return {
       isUp: !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000,
-      updatedLabel: formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 }),
+      updatedLabel: formatUpdatedAt(work?.updatedAt, { thresholdDays: 100, locale: timeLocale }),
     };
   };
 
@@ -115,8 +119,7 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
     const interval = setInterval(() => setTimeState(computeTimeState()), 60_000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [work?.updatedAt]);
-
+  }, [work?.updatedAt, timeLocale]);
   const flag = originFlagEmoji({ type: work?.type, comicType: work?.comicType, language: work?.language });
   const type = normalize(work?.type) || "WORK";
   const publishLabel = publishTypeLabel(work?.publishType);

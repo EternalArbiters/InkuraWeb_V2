@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import PageScaffold from "../components/PageScaffold";
 
-export default function RegionPage() {
+export default async function RegionPage() {
+  const tRegion = await getActiveUILanguageText("Regions");
   return (
     <PageScaffold
-      title="Region"
+      title={tRegion}
     >
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
         <ul className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">

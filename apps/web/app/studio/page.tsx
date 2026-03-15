@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StudioWorksGridClient from "./StudioWorksGridClient";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listStudioWorksForViewer } from "@/server/services/studio/works";
 
@@ -9,6 +10,7 @@ export default async function StudioPage() {
   await requirePageUserId("/studio");
   const { works } = await listStudioWorksForViewer();
 
+  const tCreateNew = await getActiveUILanguageText("Create new");
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">

@@ -110,7 +110,7 @@ export default function ProfileFieldsCard({
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold text-gray-900 dark:text-white">Profile links</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 5 links. Give each one a short title so it displays neatly like a link sheet.</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 5 links.</div>
           </div>
           <button
             type="button"
@@ -121,7 +121,7 @@ export default function ProfileFieldsCard({
             }}
             className="rounded-full border border-purple-400/60 px-3 py-1.5 text-xs font-semibold text-purple-300 hover:bg-purple-500/10 disabled:opacity-40"
           >
-            + Add URL
+            + {t("Add URL")}
           </button>
         </div>
 
@@ -226,7 +226,6 @@ export default function ProfileFieldsCard({
       </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        Demographic fields help analytics and can be changed any time. We only ask month and year, not full birth date.
       </p>
     </div>
   );

@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 
 import OriginFlag from "@/app/components/OriginFlag";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
-import { formatUpdatedAt } from "@/lib/time";
+import { formatUpdatedAt, EN_TIME_LOCALE, ID_TIME_LOCALE } from "@/lib/time";
+import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
 import { sendAnalyticsEvent } from "@/lib/analyticsClient";
 
 type Person = {
@@ -162,12 +163,14 @@ export default function InteractiveWorkCard({
   const href = work?.slug ? `/w/${work.slug}` : work?.id ? `/work/${work.id}` : "#";
   const title = work?.title || "Untitled";
   const flag = translationFlagEmoji(work?.language);
+  const { language } = useUILanguage();
+  const timeLocale = language === "ID" ? ID_TIME_LOCALE : EN_TIME_LOCALE;
 
   const computeTimeState = () => {
     const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
     return {
       isUp: !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000,
-      updatedLabel: formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 }),
+      updatedLabel: formatUpdatedAt(work?.updatedAt, { thresholdDays: 100, locale: timeLocale }),
     };
   };
 
@@ -179,7 +182,7 @@ export default function InteractiveWorkCard({
     const interval = setInterval(() => setTimeState(computeTimeState()), 60_000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [work?.updatedAt]);
+  }, [work?.updatedAt, timeLocale]);
   const publishLabel = publishTypeLabel(work?.publishType);
   const uploader = personLabel(work?.author) || personLabel(work?.translator);
   const topLabel = overlayTypeLabel({ type: work?.type, comicType: work?.comicType });

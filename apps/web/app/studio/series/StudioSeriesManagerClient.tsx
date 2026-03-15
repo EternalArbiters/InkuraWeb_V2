@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 import * as React from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { seedClientResource } from "@/lib/clientResourceCache";
@@ -253,7 +255,7 @@ export default function StudioSeriesManagerClient({
       <section className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="text-sm font-extrabold">Manage series</div>
+            <div className="text-sm font-extrabold">{t("Manage series")}</div>
             <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Drag to reorder, or use move buttons.</div>
           </div>
           {selectedSeries ? (
@@ -261,7 +263,7 @@ export default function StudioSeriesManagerClient({
               <input
                 value={renameTitle}
                 onChange={(e) => setRenameTitle(e.target.value)}
-                placeholder="Series title"
+                placeholder={t("Series title")}
                 className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900"
               />
               <button

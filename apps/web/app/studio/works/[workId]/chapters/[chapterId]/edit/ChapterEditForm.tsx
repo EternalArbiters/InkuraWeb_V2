@@ -200,7 +200,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="font-semibold">Chapter cover</div>
+            <div className="font-semibold">{t(t("Chapter cover"))}</div>
           </div>
         </div>
 
@@ -348,7 +348,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
           value={authorNote}
           onChange={(e) => setAuthorNote(e.target.value)}
           rows={5}
-          placeholder="Message from the author/uploader for this chapter..."
+          placeholder="{t("Message from the author/uploader for this chapter...")}"
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
         />
       </label>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 export default function ChapterCoverCard({
   thumbnailImage,
   loading,
@@ -47,7 +49,7 @@ export default function ChapterCoverCard({
             </div>
           ) : (
             <div className="text-xs text-gray-600 dark:text-gray-300">
-              No cover selected yet. The system will automatically take one from the chapter pages.
+              {t("No cover selected yet. The system will automatically take one from the chapter pages.")}
             </div>
           )}
         </div>

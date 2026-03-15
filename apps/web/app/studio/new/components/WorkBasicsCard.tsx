@@ -74,7 +74,7 @@ export default function WorkBasicsCard({
             }}
             className="rounded-full border border-purple-400/60 px-3 py-1.5 text-xs font-semibold text-purple-300 hover:bg-purple-500/10 disabled:opacity-40"
           >
-            + Add sub title
+            {t("Add sub title")}
           </button>
         </div>
 

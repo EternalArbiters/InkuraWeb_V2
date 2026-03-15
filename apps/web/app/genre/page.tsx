@@ -1,3 +1,4 @@
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import Link from "next/link";
 import { listActiveGenres } from "@/server/services/taxonomy/publicTaxonomy";
 import PageScaffold from "../components/PageScaffold";
@@ -13,6 +14,7 @@ export default async function GenrePage() {
     genres = [];
   }
 
+  const tOpenSearch = await getActiveUILanguageText("Open Search");
   return (
     <PageScaffold
       title="Genre"

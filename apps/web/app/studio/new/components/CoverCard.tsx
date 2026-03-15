@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 function formatBytes(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
@@ -32,7 +34,7 @@ export default function CoverCard({
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
       <div className="text-sm font-semibold">Cover</div>
       <div className="text-xs text-gray-600 dark:text-gray-300">
-        Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP.
+        {t("Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP.")}
       </div>
       <div className="grid md:grid-cols-[140px,1fr] gap-4 items-start">
         <div className="border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-hidden aspect-[2/3]">

@@ -77,7 +77,7 @@ Shared Dialogs
 By checking this box, you acknowledge that you are responsible for the content you choose to read. The developers are not responsible for what you access. This is your final warning. = Dengan mencentang kotak ini, kamu mengakui bahwa kamu bertanggung jawab atas konten yang kamu pilih untuk dibaca. Pengembang tidak bertanggung jawab atas apa yang kamu akses. Ini adalah peringatan terakhirmu.
 No, I do not want to continue. = Tidak, saya tidak ingin melanjutkan.
 Yes, I understand. = Ya, saya mengerti.
-Deviant Love Warning = Peringatan Deviant Love
+Deviant Love Warning = Peringatan Cinta Terlarang
 By checking this box, you confirm that you are not under any pressure and that you accept responsibility for what you choose to view. This content may be extreme. = Dengan mencentang kotak ini, kamu menegaskan bahwa kamu tidak berada di bawah tekanan apa pun dan menerima tanggung jawab atas apa yang kamu pilih untuk lihat. Konten ini mungkin ekstrem.
 
 ==========
@@ -119,7 +119,7 @@ Inkura Language = Bahasa Inkura
 Choose which language Inkura should use for the website UI. = Pilih bahasa yang harus digunakan Inkura untuk UI website.
 Mature / 18+ = Dewasa / 18+
 I'm 18+ (Unlock it) = Saya 18+ (Buka aksesnya)
-Deviant Love = Deviant Love
+Deviant Love = Cinta Terlarang
 Unlock it = Buka aksesnya
 
 ==========
@@ -298,7 +298,7 @@ Uploads have moved to Creator Studio (Work → Chapter → text/pages). = Upload
 Creator Studio = Creator Studio
 Create a Work (NOVEL/COMIC), create a Chapter, then upload: text for novels or images for comics. = Buat Work (NOVEL/COMIC), buat Chapter, lalu unggah: teks untuk novel atau gambar untuk komik.
 Open Studio = Buka Studio
-Create New Work = Buat Work Baru
+Create New Work = Buat Karya Baru
 Reader = Reader
 The reader supports NOVEL (text) and COMIC (vertical pages). = Reader mendukung NOVEL (teks) dan COMIC (halaman vertikal).
 Explore = Jelajahi
@@ -314,18 +314,18 @@ Page Work Detail
 ==========
 
 18+ Mature Content = Konten Dewasa 18+
-This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Deviant Love. Untuk membacanya, kamu perlu membuka 18+ dan Deviant Love di Settings.
+This work is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Karya ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
 This work is marked 18+. To read it, you need to unlock it and opt in under Settings. = Karya ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
-Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Deviant Love masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Deviant Love.
+Deviant Love is locked. Make sure you have enabled 18+ and then unlocked Deviant Love. = Cinta Terlarang masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Cinta Terlarang. = Deviant Love masih terkunci. Pastikan kamu sudah mengaktifkan 18+ lalu membuka Deviant Love.
 NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content". = NSFW masih terkunci. Pastikan kamu sudah mencentang "I am 18+" dan mengaktifkan "Include mature content".
 
 ==========
 Page Reader
 ==========
 
-This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Deviant Love. Untuk membacanya, kamu perlu membuka 18+ dan Deviant Love di Settings.
+This chapter is marked as Deviant Love. To read it, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membacanya, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
 This chapter is marked 18+. To read it, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membacanya, kamu perlu membukanya dan ikut serta di Settings.
-Open Settings (unlock 18+ + Deviant Love) = Buka Settings (buka 18+ + Deviant Love)
+Open Settings (unlock 18+ + Deviant Love) = Buka Settings (buka 18+ + Cinta Terlarang)
 Open Settings (unlock + opt in to 18+) = Buka Settings (buka + ikut serta 18+)
 Back to work = Kembali ke karya
 No pages yet = Belum ada halaman
@@ -337,7 +337,7 @@ This chapter has no text yet. = Chapter ini belum punya teks.
 Page Reader Comments
 ==========
 
-This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Deviant Love. Untuk membaca dan berkomentar, kamu perlu membuka 18+ dan Deviant Love di Settings.
+This chapter is marked as Deviant Love. To read and comment, you need to unlock 18+ and Deviant Love in Settings. = Chapter ini ditandai sebagai Cinta Terlarang. Untuk membaca dan berkomentar, kamu perlu membuka 18+ dan Cinta Terlarang di Settings.
 This chapter is marked 18+. To read and comment, you need to unlock it and opt in under Settings. = Chapter ini ditandai 18+. Untuk membaca dan berkomentar, kamu perlu membukanya dan ikut serta di Settings.
 Back to reader = Kembali ke reader
 Go to work page = Pergi ke halaman karya
@@ -368,7 +368,7 @@ Admin activity is excluded from the analytics aggregate. = Aktivitas admin dikec
 Audience profile = Profil audiens
 Audit view = Tampilan audit
 Avg daily active = Rata-rata aktif harian
-Bookmark conversion = Konversi bookmark
+Bookmark conversion = Konversi simpanan
 By age band = Berdasarkan rentang usia
 By gender = Berdasarkan gender
 Chapter reads = Pembacaan chapter
@@ -395,13 +395,13 @@ The most frequently used queries and how effective their results are. = Kueri ya
 Top creators = Creator teratas
 Top genres = Genre teratas
 Top rows = Baris teratas
-Top works = Work teratas
+Top works = Karya teratas
 Traffic trend = Tren trafik
 Unique visitors and active users per day. = Pengunjung unik dan pengguna aktif per hari.
 Unknown creator = Creator tidak diketahui
 User breakdown by gender and age band for the active range. = Rincian pengguna berdasarkan gender dan rentang usia untuk rentang aktif.
-Work reads = Pembacaan work
-Work views = Tampilan work
+Work reads = Pembacaan karya
+Work views = Tampilan karya
 
 ==========
 Sweep app/admin/analytics/details/page.tsx
@@ -472,14 +472,14 @@ Admin Reports = Laporan Admin
 Sweep app/admin/taxonomy/deviant-love/page.tsx
 ==========
 
-Deviant Love Tags = Tag Deviant Love
+Deviant Love Tags = Tag Cinta Terlarang
 
 ==========
 Sweep app/admin/taxonomy/layout.tsx
 ==========
 
 Admin • Taxonomy = Admin • Taksonomi
-Manage genres, tags, warnings, and Deviant Love directly from the web UI. = Kelola genre, tag, warning, dan Deviant Love langsung dari web UI.
+Manage genres, tags, warnings, and Deviant Love directly from the web UI. = Kelola genre, tag, warning, dan Cinta Terlarang langsung dari web UI.
 
 ==========
 Sweep app/admin/taxonomy/warnings/page.tsx
@@ -492,7 +492,7 @@ Sweep app/all/page.tsx
 ==========
 
 Advanced search = Pencarian lanjutan
-All Works = Semua Work
+All Works = Semua Karya
 Any publish type = Jenis publikasi apa saja
 Author (username / name) = Penulis (username / nama)
 Best rated = Rating terbaik
@@ -550,7 +550,7 @@ Pick image = Pilih gambar
 Sweep app/components/WorksGrid.tsx
 ==========
 
-No works = Tidak ada work
+No works = Tidak ada karya
 There is no data to display yet. = Belum ada data untuk ditampilkan.
 
 ==========
@@ -657,7 +657,7 @@ Translation language = Bahasa terjemahan
 Sweep app/components/work/LikeButton.tsx
 ==========
 
-Like work = Sukai work
+Like work = Sukai karya
 
 ==========
 Sweep app/components/work/ReviewSection.tsx
@@ -671,7 +671,7 @@ Sort reviews = Urutkan ulasan
 Sweep app/components/work/SeriesArcsPanel.tsx
 ==========
 
-More in this series = Lainnya di series ini
+More in this series = Karya lain di kelompok ini
 
 ==========
 Sweep app/components/work/WorkChaptersWebtoon.tsx
@@ -767,14 +767,14 @@ An International Platform For Original Works Made Without AI = Platform Internas
 Sweep app/library/bookmarks/page.tsx
 ==========
 
-All works you have bookmarked. = Semua work yang sudah kamu bookmark.
+All works you have bookmarked. = Semua karya yang sudah kamu simpan. = Semua karya yang sudah kamu simpan.
 
 ==========
 Sweep app/library/page.tsx
 ==========
 
 Continue Reading = Lanjut Membaca
-No bookmarks yet. = Belum ada bookmark.
+No bookmarks yet. = Belum ada simpanan.
 No lists yet. = Belum ada list.
 No reading history yet. = Belum ada riwayat baca.
 Your Collections = Koleksimu
@@ -783,16 +783,16 @@ Your Collections = Koleksimu
 Sweep app/lists/[slug]/ListPageShell.tsx
 ==========
 
-Empty list = List kosong
-There is no work to show yet. = Belum ada work untuk ditampilkan.
+Empty list = Koleksi masih kosong
+There is no work to show yet. = Belum ada karya untuk ditampilkan.
 
 ==========
 Sweep app/lists/[slug]/listWorksGrid.tsx
 ==========
 
-No works = Tidak ada work
+No works = Tidak ada karya
 Remove from list = Hapus dari list
-The works in this list cannot be shown to the current viewer. = Work dalam list ini tidak dapat ditampilkan kepada viewer saat ini.
+The works in this list cannot be shown to the current viewer. = Karya dalam koleksi ini tidak dapat ditampilkan saat ini.
 
 ==========
 Sweep app/lists/[slug]/ownerControls.tsx
@@ -813,7 +813,7 @@ Failed to create list. = Gagal membuat list.
 Network error. = Kesalahan jaringan.
 Title is required. = Title wajib diisi.
 short description... = deskripsi singkat...
-— works inside the list still follow the viewer's 18+/Deviant Love gate = — work di dalam list tetap mengikuti gate 18+/Deviant Love milik viewer
+— works inside the list still follow the viewer's 18+/Deviant Love gate = — karya di dalam koleksi tetap mengikuti gate 18+/Cinta Terlarang milik pembaca
 
 ==========
 Sweep app/lists/new/page.tsx
@@ -825,7 +825,7 @@ New Collection = Koleksi Baru
 Sweep app/lists/page.tsx
 ==========
 
-No items yet = Tidak ada item
+No items yet = Belum ada karya
 No list yet. = Belum ada list.
 
 ==========
@@ -893,7 +893,7 @@ AND (all included) = AND (semua disertakan)
 Advanced Filters = Filter Lanjutan
 Any genre = Genre apa saja
 Best rated = Rating terbaik
-Deviant include mode: = Mode penyertaan deviant:
+Deviant include mode: = Mode penyertaan Cinta Terlarang:
 Enable it in Settings → Account. = Aktifkan di Settings → Account.
 Genre include mode: = Mode penyertaan genre:
 Hide (default) = Sembunyikan (default)
@@ -952,7 +952,7 @@ Sweep app/settings/profile/components/ProfileFieldsCard.tsx
 3–24 chars. Use letters, numbers, dash, underscore. = 3–24 karakter. Gunakan huruf, angka, tanda hubung, dan garis bawah.
 Display name = Nama tampilan
 Maximum 200 characters. = Maksimal 200 karakter.
-Maximum 5 links. Give each one a short title so it displays neatly like a link sheet. = Maksimal 5 tautan. Beri masing-masing judul singkat agar tampil rapi seperti lembar tautan.
+Maximum 5 links. Give each one a short title so it displays neatly like a link sheet. = Maksimal 5 tautan.
 Profile links = Tautan profil
 Tell readers a little about yourself = Ceritakan sedikit tentang dirimu kepada pembaca
 Your display name = Nama tampilanmu
@@ -978,15 +978,15 @@ Sweep app/studio/new/NewWorkForm.tsx
 
 Arc order = Urutan arc
 Example: The Eruption Saga = Contoh: The Eruption Saga
-Series (optional) = Series (opsional)
-Series title = Judul series
+Series (optional) = Kelompok Karya (opsional)
+Series title = Judul Kelompok Karya
 
 ==========
 Sweep app/studio/new/components/DeviantLoveCard.tsx
 ==========
 
 18+ / Mature = 18+ / Dewasa
-Deviant Love Tags = Tag Deviant Love
+Deviant Love Tags = Tag Cinta Terlarang
 
 ==========
 Sweep app/studio/new/components/PublishTypeCard.tsx
@@ -1015,9 +1015,9 @@ Sweep app/studio/new/components/WorkBasicsCard.tsx
 
 Comic type = Jenis komik
 Max. 25 tags. = Max. 25 tag.
-Max. 5 subtitles. = Maks. 5 subtitle.
+Max. 5 subtitles. = Maks. 5 judul lainnya.
 Short synopsis... = Sinopsis singkat...
-Subtitles (optional) = Subtitle (opsional)
+Subtitles (optional) = Judul lainnya (opsional)
 Tags (comma) = Tag (koma)
 Work Title = Judul Work
 action, romance, comedy = aksi, romansa, komedi
@@ -1026,27 +1026,27 @@ action, romance, comedy = aksi, romansa, komedi
 Sweep app/studio/new/page.tsx
 ==========
 
-Create new work = Buat work baru
+Create new work = Buat karya baru
 
 ==========
 Sweep app/studio/series/StudioSeriesManagerClient.tsx
 ==========
 
-Add a work into the selected series. = Tambahkan work ke series yang dipilih.
-Create a new series = Buat series baru
+Add a work into the selected series. = Tambahkan karya ke kelompok karya yang dipilih.
+Create a new series = Buat Kelompok Karya Baru
 Drag to reorder, or use move buttons. = Seret untuk mengurutkan ulang, atau gunakan tombol pindah.
-Manage series = Kelola series
+Manage series = Kelola Kelompok Karya
 Move down = Turunkan
 Move up = Naikkan
 Request failed = Permintaan gagal
-Series title = Judul series
-Unassigned works = Work yang belum ditetapkan
+Series title = Judul Kelompok Karya
+Unassigned works = Karya yang belum ditetapkan
 
 ==========
 Sweep app/studio/series/page.tsx
 ==========
 
-Manage series = Kelola series
+Manage series = Kelola Kelompok Karya
 
 ==========
 Sweep app/studio/works/[workId]/DeleteChapterButton.tsx
@@ -1066,11 +1066,11 @@ Sweep app/studio/works/[workId]/chapters/[chapterId]/edit/ChapterEditForm.tsx
 ==========
 
 18+ / Mature (Chapter) = 18+ / Dewasa (Chapter)
-Author message (optional) = Pesan penulis (opsional)
+Author message (optional) = Pesan (opsional)
 Chapter Label = Label Chapter
 Chapter Number = Nomor Chapter
 Chapter Order = Urutan Chapter
-Chapter cover = Cover chapter
+Chapter cover = Sampul Chapter
 Chapter label = Label chapter
 Comic pages = Halaman komik
 Comic pages are managed on the "Manage Pages" page. = Halaman komik dikelola di halaman "Kelola Halaman".
@@ -1098,7 +1098,7 @@ Upload error = Kesalahan unggah
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/ChapterCoverCard.tsx
 ==========
 
-Chapter cover = Cover chapter
+Chapter cover = Sampul Chapter
 
 ==========
 Sweep app/studio/works/[workId]/chapters/[chapterId]/pages/components/PagesGrid.tsx
@@ -1169,15 +1169,15 @@ Sweep app/studio/works/[workId]/edit/components/WorkArcFields.tsx
 
 Arc order = Urutan arc
 Example: The Eruption Saga = Contoh: The Eruption Saga
-Series title = Judul series
+Series title = Judul Kelompok Karya
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkBasicsFields.tsx
 ==========
 
 Comic type = Jenis komik
-Max. 5 subtitles. = Maks. 5 subtitle.
-Subtitles (optional) = Subtitle (opsional)
+Max. 5 subtitles. = Maks. 5 judul lainnya.
+Subtitles (optional) = Judul lainnya (opsional)
 
 ==========
 Sweep app/studio/works/[workId]/edit/components/WorkCoverCard.tsx
@@ -1198,7 +1198,7 @@ Sweep app/studio/works/[workId]/edit/components/WorkTaxonomyFields.tsx
 ==========
 
 18+ / Mature = 18+ / Dewasa
-Deviant Love Tags = Tag Deviant Love
+Deviant Love Tags = Tag Cinta Terlarang
 
 ==========
 Sweep app/studio/works/[workId]/edit/page.tsx
@@ -1231,7 +1231,7 @@ All Chapters = Semua Chapter
 Sweep app/w/[slug]/series/page.tsx
 ==========
 
-More in this series = Lainnya di series ini
+More in this series = Karya lain di kelompok ini
 
 ==========
 Sweep components/ComicPageFilesPicker.tsx
@@ -1279,7 +1279,7 @@ Heading 3 = Heading 3
 Horizontal line = Garis horizontal
 Numbered list = Daftar bernomor
 Upload image = Unggah gambar
-Write the chapter content... = Tulis konten chapter...
+Write the chapter content... = Selamat menulis novelmu ^^
 
 ==========
 Sweep components/SearchPresets.tsx
@@ -1483,14 +1483,14 @@ Original translator credit is required for Reupload. = Original translator credi
 Failed to update status = Gagal update status
 Set Draft = Setel Draft
 Publish = Publikasikan
-Status: Published = Status: Dipublikasikan
-Status: Draft = Status: Draft
+Status: Published = Status: Telah Terbit
+Status: Draft = Status: Masih Draft
 Updating... = Memperbarui...
 Content is required for NOVEL = Content wajib diisi untuk NOVEL
 Creating chapter... = Membuat chapter...
 Saving page list... = Menyimpan daftar halaman...
 Failed to save the pages. The chapter was created; please re-upload them in Manage Pages. = Gagal menyimpan halaman. Chapter sudah dibuat; coba upload ulang di Manage Pages.
-Open Manage Pages = Buka Manage Pages
+Open Manage Pages = Buka Kelola Halaman
 Preparing pages... = Menyiapkan halaman...
 Create Chapter = Buat Chapter
 Fill in the Chapter Label if auto mode is turned off. = Isi Chapter Label kalau mode auto dimatikan.
@@ -1501,7 +1501,7 @@ Preparing... = Menyiapkan...
 Image inserted into the chapter content. = Gambar dimasukkan ke isi chapter.
 Failed to upload image. = Gagal mengunggah gambar.
 Enter link URL = Masukkan URL tautan
-Write the chapter content... = Tulis isi chapter...
+Write the chapter content... = Selamat menulis novelmu ^^
 Type a tag then press Enter (or choose a suggestion) ... = Ketik tag lalu Enter (atau pilih saran) ...
 Example: Original author name / studio / etc. = Contoh: Nama author asli / studio / dll
 Example: Translator name / group = Contoh: Nama translator / group
@@ -1641,7 +1641,7 @@ Community Function Not Added Yet. = Fungsi Community Belum Ditambahkan.
 Open the Demo Forum = Buka Forum Demo
 Open the Demo Event = Buka Event Demo
 Select a genre = Pilih genre
-Open Search = Buka Search
+Open Search = Buka Pencarian
 No genres yet. Add them via seed / studio. = Belum ada genre. Tambahkan lewat seed / studio.
 Explore All = Jelajahi Semua
 Japan = Jepang
@@ -1651,7 +1651,7 @@ Thailand = Thailand
 Vietnam = Vietnam
 US = AS
 Global = Global
-Search Translator = Cari Translator
+Search Translator = Cari Penerjemah
 Processing import... = Memproses impor...
 Creating... = Membuat...
 View public page = Lihat halaman publik
@@ -1695,8 +1695,8 @@ Next = Berikutnya
 Menu = Menu
 Follow = Ikuti
 Following = Mengikuti
-Bookmark = Tandai
-Bookmarked = Sudah di-bookmark
+Bookmark = Simpan
+Bookmarked = Tersimpan
 Favorite = Favorit
 Favorited = Sudah difavoritkan
 Helpful = Membantu
@@ -1737,7 +1737,7 @@ Hide reply = Sembunyikan balasan
 See reply = Lihat balasan
 Admin = Admin
 Searches = Pencarian
-Bookmarks = Bookmark
+Bookmarks = Simpanan
 Sent to = Dikirim ke
 Arc = Arc
 Subtitle = Subjudul
@@ -1878,12 +1878,12 @@ Series title = Judul seri
 Move up = Naikkan
 Move down = Turunkan
 Set Draft = Jadikan Draft
-Status: Published = Status: Dipublikasikan
-Status: Draft = Status: Draft
+Status: Published = Status: Telah Terbit
+Status: Draft = Status: Masih Draft
 Original (Author) = Orisinal (Penulis)
 Translation (Translator) = Terjemahan (Penerjemah)
 Reupload (Reuploader) = Unggah Ulang (Pengunggah Ulang)
-Deviant Love Tags = Tag Deviant Love
+Deviant Love Tags = Tag Cinta Terlarang
 Content is required for NOVEL = Konten wajib diisi untuk NOVEL
 Creating chapter... = Membuat chapter...
 Chapter created but id is missing = Chapter berhasil dibuat tetapi id tidak ada
@@ -1939,7 +1939,7 @@ No optimization needed = Tidak perlu optimasi
 Page Browse Catalog
 ==========
 
-All Works = Semua Work
+All Works = Semua Karya
 Advanced search = Pencarian lanjutan
 Newest = Terbaru
 Most liked = Paling disukai
@@ -2123,7 +2123,7 @@ Not following anyone yet. = Belum mengikuti siapapun.
 No comments yet. = Belum ada komentar.
 No reviews yet. = Belum ada ulasan.
 Browse works = Jelajahi karya
-New list = List baru
+New list = Koleksi baru
 Min chapters = Min. chapter
 Max chapters = Maks. chapter
 Only = Hanya
@@ -2131,3 +2131,25 @@ Ignore my language preferences (settings) = Abaikan preferensi bahasa saya (peng
 Ignore my blocked genres/NSFW (settings) = Abaikan genre/NSFW yang saya blokir (pengaturan)
 Enable it in Settings → Account. = Aktifkan di Pengaturan → Akun.
 Any = Apa saja
+
+Mark all read = Tandai semua sudah dibaca
+Create new = Buat baru
+Back to Studio = Kembali ke Studio
+Create series = Buat Kelompok Karya
+Rename = Ganti nama
+Every work already belongs to a series. = Semua karya sudah masuk ke dalam kelompok karya yang ada.
+Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP. = Otomatis dioptimalkan sebelum diunggah. Maks. 2MB. Format: JPG/PNG/WebP.
+If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically. = Jika pemilik hak cipta melaporkan pelanggaran hak cipta, Anda mungkin akan dimintai pertanggungjawaban. Untuk menghindari kerugian bagi Inkura, pembaca, dan diri Anda sendiri, Anda akan diberi waktu 1 minggu setelah pemberitahuan untuk menghapus karya tersebut. Jika tidak dihapus dalam waktu tersebut, Inkura akan menghapusnya secara otomatis.
+Add sub title = Tambahkan judul lainnya
+Add images = Masukkan gambar
+Choose all images = Pilih semua gambar
+Clear queue = Hapus antrian
+There are no pages in the queue yet. = Belum ada halaman atau gambar yang diunggah.
+Edit info = Ubah info
+No cover selected yet. The system will automatically take one from the chapter pages. = Belum ada sampul yang dipilih. Sistem akan otomatis menggunakan salah satu dari halaman chapter.
+Use as cover = Jadikan sampul
+Chosen = Dipilih
+Demographic fields help analytics and can be changed any time. We only ask month and year, not full birth date. = 
+Add URL = Tambah URL
+Exclude = Kecualikan
+Pages = Halaman

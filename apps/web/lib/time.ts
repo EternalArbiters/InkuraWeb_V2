@@ -6,9 +6,44 @@ function toDate(v: DateLike): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function plural(n: number, unit: string) {
-  return `${n} ${unit}${n === 1 ? "" : "s"}`;
-}
+export type TimeLocale = {
+  justNow: string;
+  minutesAgo: (n: number) => string;
+  hoursAgo: (n: number) => string;
+  daysAgo: (n: number) => string;
+  monthsAgo: (n: number) => string;
+  yearsAgo: (n: number) => string;
+  updatedJustNow: string;
+  updatedMinutesAgo: (n: number) => string;
+  updatedHoursAgo: (n: number) => string;
+  updatedDaysAgo: (n: number) => string;
+};
+
+export const EN_TIME_LOCALE: TimeLocale = {
+  justNow: "just now",
+  minutesAgo: (n) => `${n} ${n === 1 ? "minute" : "minutes"} ago`,
+  hoursAgo: (n) => `${n} ${n === 1 ? "hour" : "hours"} ago`,
+  daysAgo: (n) => `${n} ${n === 1 ? "day" : "days"} ago`,
+  monthsAgo: (n) => `${n} ${n === 1 ? "month" : "months"} ago`,
+  yearsAgo: (n) => `${n} ${n === 1 ? "year" : "years"} ago`,
+  updatedJustNow: "Updated just now",
+  updatedMinutesAgo: (n) => `Updated ${n} ${n === 1 ? "minute" : "minutes"} ago`,
+  updatedHoursAgo: (n) => `Updated ${n} ${n === 1 ? "hour" : "hours"} ago`,
+  updatedDaysAgo: (n) => `Updated ${n} ${n === 1 ? "day" : "days"} ago`,
+};
+
+export const ID_TIME_LOCALE: TimeLocale = {
+  justNow: "baru saja",
+  minutesAgo: (n) => `${n} menit yang lalu`,
+  hoursAgo: (n) => `${n} jam yang lalu`,
+  daysAgo: (n) => `${n} hari yang lalu`,
+  monthsAgo: (n) => `${n} bulan yang lalu`,
+  yearsAgo: (n) => `${n} tahun yang lalu`,
+  updatedJustNow: "Diperbarui baru saja",
+  updatedMinutesAgo: (n) => `Diperbarui ${n} menit yang lalu`,
+  updatedHoursAgo: (n) => `Diperbarui ${n} jam yang lalu`,
+  updatedDaysAgo: (n) => `Diperbarui ${n} hari yang lalu`,
+};
 
 /**
  * Returns a label like:
@@ -23,6 +58,7 @@ export function formatUpdatedAt(
   opts?: {
     now?: Date;
     thresholdDays?: number;
+    locale?: TimeLocale;
   }
 ) {
   const d = toDate(updatedAt);
@@ -30,6 +66,7 @@ export function formatUpdatedAt(
 
   const now = opts?.now ?? new Date();
   const thresholdDays = opts?.thresholdDays ?? 100;
+  const locale = opts?.locale ?? EN_TIME_LOCALE;
 
   const diffMs = Math.max(0, now.getTime() - d.getTime());
   const diffMinutes = Math.floor(diffMs / (60 * 1000));
@@ -40,10 +77,10 @@ export function formatUpdatedAt(
     return `Updated ${d.toISOString().slice(0, 10)}`;
   }
 
-  if (diffMinutes < 1) return "Updated just now";
-  if (diffHours < 1) return `Updated ${plural(diffMinutes, "minute")} ago`;
-  if (diffDays < 1) return `Updated ${plural(diffHours, "hour")} ago`;
-  return `Updated ${plural(diffDays, "day")} ago`;
+  if (diffMinutes < 1) return locale.updatedJustNow;
+  if (diffHours < 1) return locale.updatedMinutesAgo(diffMinutes);
+  if (diffDays < 1) return locale.updatedHoursAgo(diffHours);
+  return locale.updatedDaysAgo(diffDays);
 }
 
 
@@ -55,11 +92,12 @@ export function formatUpdatedAt(
  * - "9 days ago"
  * - "2 months ago"
  */
-export function formatTimeAgo(value: DateLike, opts?: { now?: Date }) {
+export function formatTimeAgo(value: DateLike, opts?: { now?: Date; locale?: TimeLocale }) {
   const d = toDate(value);
   if (!d) return "";
 
   const now = opts?.now ?? new Date();
+  const locale = opts?.locale ?? EN_TIME_LOCALE;
   const diffMs = Math.max(0, now.getTime() - d.getTime());
   const diffMinutes = Math.floor(diffMs / (60 * 1000));
   const diffHours = Math.floor(diffMs / (60 * 60 * 1000));
@@ -67,10 +105,10 @@ export function formatTimeAgo(value: DateLike, opts?: { now?: Date }) {
   const diffMonths = Math.floor(diffDays / 30);
   const diffYears = Math.floor(diffDays / 365);
 
-  if (diffMinutes < 1) return "just now";
-  if (diffHours < 1) return `${plural(diffMinutes, "minute")} ago`;
-  if (diffDays < 1) return `${plural(diffHours, "hour")} ago`;
-  if (diffDays < 30) return `${plural(diffDays, "day")} ago`;
-  if (diffDays < 365) return `${plural(Math.max(1, diffMonths), "month")} ago`;
-  return `${plural(Math.max(1, diffYears), "year")} ago`;
+  if (diffMinutes < 1) return locale.justNow;
+  if (diffHours < 1) return locale.minutesAgo(diffMinutes);
+  if (diffDays < 1) return locale.hoursAgo(diffHours);
+  if (diffDays < 30) return locale.daysAgo(diffDays);
+  if (diffDays < 365) return locale.monthsAgo(Math.max(1, diffMonths));
+  return locale.yearsAgo(Math.max(1, diffYears));
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { dispatchNavBadgeRefresh } from "@/app/components/navBadgeEvents";
@@ -15,6 +17,7 @@ type NotificationItem = {
 };
 
 export default function NotificationsClient({ initial }: { initial: NotificationItem[] }) {
+  const t = useUILanguageText();
   const [items, setItems] = useState(initial);
   const [isPending, startTransition] = useTransition();
 
@@ -51,7 +54,7 @@ export default function NotificationsClient({ initial }: { initial: Notification
           onClick={markAll}
           className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline disabled:opacity-60"
         >
-          Mark all read
+          {t("Mark all read")}
         </button>
       </div>
 
