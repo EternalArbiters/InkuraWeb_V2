@@ -27,7 +27,7 @@ export default async function ProfileCommentsPage({
   const { items, sort } = await getViewerComments(userId, { sort: rawSort, take: 100 });
   const [tAllComments, tSortComments, tNoComments] = await Promise.all([
     getActiveUILanguageText("All Comments"),
-    getActiveUILanguageText({tSortComments}),
+    getActiveUILanguageText("Sort comments"),
     getActiveUILanguageText("No comments yet."),
   ]);
 

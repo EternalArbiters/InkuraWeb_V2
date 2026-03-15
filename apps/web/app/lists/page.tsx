@@ -22,8 +22,8 @@ export default async function ListsPage() {
     getActiveUILanguageText("Collection"),
     getActiveUILanguageText("New list"),
     getActiveUILanguageText("Library"),
-    getActiveUILanguageText({tNoListYet}),
-    getActiveUILanguageText({tNoItemsYet}),
+    getActiveUILanguageText("No list yet."),
+    getActiveUILanguageText("No items yet"),
     getActiveUILanguageText("Sign In"),
     getActiveUILanguageText("Browse works", { section: "Page Lists" }),
   ]);

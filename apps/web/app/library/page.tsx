@@ -19,11 +19,11 @@ export default async function LibraryPage() {
     getActiveUILanguageText("Library"),
     getActiveUILanguageText("Continue Reading"),
     getActiveUILanguageText("See all"),
-    getActiveUILanguageText({tNoHistory}),
+    getActiveUILanguageText("No reading history yet."),
     getActiveUILanguageText("Bookmarks"),
-    getActiveUILanguageText({tNoBookmarks}),
+    getActiveUILanguageText("No bookmarks yet."),
     getActiveUILanguageText("Your Collections"),
-    getActiveUILanguageText({tNoLists}),
+    getActiveUILanguageText("No lists yet."),
   ]);
     return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">

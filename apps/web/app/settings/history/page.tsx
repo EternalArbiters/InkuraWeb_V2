@@ -13,7 +13,7 @@ export default async function ReadingHistoryPage() {
   const [tReadingHistory, tAccountSettings, tNoHistory] = await Promise.all([
     getActiveUILanguageText("Reading History"),
     getActiveUILanguageText("Account Settings"),
-    getActiveUILanguageText({tNoHistory}),
+    getActiveUILanguageText("No history yet."),
   ]);
 
   return (
