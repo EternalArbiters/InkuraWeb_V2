@@ -373,8 +373,8 @@ export default async function SearchForm({
                 defaultValue={includeMode === "and" ? "and" : "or"}
                 className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
               >
-                <option value="or">OR (any included)</option>
-                <option value="and">AND (all included)</option>
+                <option value="or">{tOrAny}</option>
+                <option value="and">{tAndAll}</option>
               </select>
             </label>
           </div>
@@ -401,8 +401,8 @@ export default async function SearchForm({
                     defaultValue={deviantMode === "and" ? "and" : "or"}
                     className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
                   >
-                    {tOrAny}</option>
-                    <option value="and">{tAndAll}
+                    <option value="or">{tOrAny}</option>
+                    <option value="and">{tAndAll}</option>
                   </select>
                 </label>
               </div>
@@ -440,8 +440,8 @@ export default async function SearchForm({
                     defaultValue={warningMode === "and" ? "and" : "or"}
                     className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
                   >
-                    {tOrAny}</option>
-                    <option value="and">{tAndAll}
+                    <option value="or">{tOrAny}</option>
+                    <option value="and">{tAndAll}</option>
                   </select>
                 </label>
               </div>
