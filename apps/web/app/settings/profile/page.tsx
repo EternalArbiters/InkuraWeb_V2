@@ -1,5 +1,6 @@
 import BackButton from "@/app/components/BackButton";
 import { parseProfileLinks } from "@/lib/profileUrls";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 import ProfileForm from "./ProfileForm";
@@ -9,13 +10,14 @@ export const dynamic = "force-dynamic";
 export default async function EditProfilePage() {
   await requirePageUserId("/settings/profile");
   const { profile: p } = await getViewerProfile();
+  const tEditProfile = await getActiveUILanguageText("Edit Profile");
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <div>
-<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Edit Profile</h1>
+<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tEditProfile}</h1>
           </div>
           <BackButton href="/home" />
         </div>

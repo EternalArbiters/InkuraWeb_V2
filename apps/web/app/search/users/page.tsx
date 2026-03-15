@@ -2,6 +2,7 @@ import * as React from "react";
 
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 import AnalyticsTrackedLink from "@/app/components/analytics/AnalyticsTrackedLink";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { parseUserSearchParams, searchUsers, type UserSearchScope } from "@/server/services/search/userSearch";
 
 export const dynamic = "force-dynamic";
@@ -98,7 +99,13 @@ export default async function UserSearchPage({
   const raw = await searchParamsPromise;
   const parsed = parseUserSearchParams(raw);
   const data = await searchUsers(parsed);
-
+  const [tUsers, tAuthors, tTranslators, tSearch, tSearchUserName] = await Promise.all([
+    getActiveUILanguageText("User"),
+    getActiveUILanguageText("Authors"),
+    getActiveUILanguageText("Translators"),
+    getActiveUILanguageText("Search"),
+    getActiveUILanguageText("Search username / name"),
+  ]);
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -113,20 +120,20 @@ export default async function UserSearchPage({
             defaultValue={data.scope}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
           >
-            <option value="all">Users</option>
-            <option value="authors">Authors</option>
-            <option value="translators">Translators</option>
+            <option value="all">{tUsers}</option>
+            <option value="authors">{tAuthors}</option>
+            <option value="translators">{tTranslators}</option>
           </select>
 
           <input
             name="q"
             defaultValue={data.q}
-            placeholder="Search username / name"
+            placeholder={tSearchUserName}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
           />
 
           <button className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 py-3 font-semibold text-white hover:brightness-110">
-            Search
+            {tSearch}
           </button>
         </form>
 

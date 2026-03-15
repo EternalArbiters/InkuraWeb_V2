@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import ProfileReviewCard from "@/app/components/user/ProfileReviewCard";
 import ProfileSortSelect from "@/app/components/user/ProfileSortSelect";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerReviews } from "@/server/services/profile/viewerActivity";
 import LoadMoreList from "@/app/components/LoadMoreList";
@@ -25,6 +26,11 @@ export default async function ProfileReviewsPage({
   const resolvedSearchParams = (await searchParams) || {};
   const rawSort = Array.isArray(resolvedSearchParams.sort) ? resolvedSearchParams.sort[0] : resolvedSearchParams.sort;
   const { items, sort } = await getViewerReviews(userId, { sort: rawSort, take: 100 });
+  const [tAllReviews, tSortReviews, tNoReviews] = await Promise.all([
+    getActiveUILanguageText("All Reviews"),
+    getActiveUILanguageText("Sort reviews"),
+    getActiveUILanguageText("No reviews yet. Be the first!"),
+  ]);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -34,9 +40,9 @@ export default async function ProfileReviewsPage({
             <Link href="/profile" className="text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
               ← Back to profile
             </Link>
-<h1 className="mt-3 text-3xl font-extrabold tracking-tight">All Reviews</h1>
+<h1 className="mt-3 text-3xl font-extrabold tracking-tight">{tAllReviews}</h1>
           </div>
-          <ProfileSortSelect value={sort} label="Sort reviews" options={[...REVIEW_SORT_OPTIONS]} />
+          <ProfileSortSelect value={sort} label={tSortReviews} options={[...REVIEW_SORT_OPTIONS]} />
         </div>
 
         {items.length ? (
@@ -47,7 +53,7 @@ export default async function ProfileReviewsPage({
           </LoadMoreList>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-            No reviews yet.
+            {tNoReviews}
           </div>
         )}
       </div>

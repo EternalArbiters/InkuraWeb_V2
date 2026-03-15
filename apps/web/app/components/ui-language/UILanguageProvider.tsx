@@ -9,6 +9,15 @@ import {
   resolveInkuraLanguage,
   type InkuraLanguageCode,
 } from "@/lib/inkuraLanguage";
+import {
+  buildAutoTranslatePartialCandidates,
+  buildAutoTranslateReverseLookup,
+  buildAutoTranslateSourceMap,
+  replaceAutoTranslateKnownPhrases,
+  resolveAutoTranslateSourceText,
+  shouldAllowAutoTranslatePartialReplacement,
+  type AutoTranslateResolveMode,
+} from "@/lib/uiLanguageAutoTranslate";
 import { resolveClientInkuraLanguage } from "@/lib/uiLanguageBootstrap";
 import {
   canonicalizeUILanguageText,
@@ -49,128 +58,13 @@ const AUTO_TRANSLATE_IGNORE_SELECTOR = [
   ".ql-editor",
 ].join(",");
 
-const PARTIAL_TRANSLATION_SELECTOR = [
-  "button",
-  "a",
-  "label",
-  "option",
-  "summary",
-  "th",
-  "td",
-  "li",
-  "[role='button']",
-  "[role='link']",
-  "[role='menuitem']",
-  "[role='tab']",
-  "[role='option']",
-  "[role='switch']",
-  "[data-ui-language-partial='true']",
-].join(",");
-
-type PartialCandidate = {
-  candidate: string;
-  source: string;
-};
+const EXPLICIT_PARTIAL_TRANSLATION_SELECTOR = "[data-ui-language-partial='true']";
+// Partial replacement is intentionally opt-in only. It is too risky to run globally because
+// mixed content and already-localized text can be mutated incorrectly.
 
 function getCatalogOrFallback(catalogs: UILanguageCatalogMap, languageInput: unknown) {
   const language = resolveInkuraLanguage(languageInput);
   return catalogs[language] ?? catalogs[DEFAULT_GUEST_INKURA_LANGUAGE];
-}
-
-function buildSourceMap(catalog: UILanguageCatalog) {
-  const map = new Map<string, string>();
-  for (const section of catalog.sections) {
-    for (const entry of section.entries) {
-      const key = canonicalizeUILanguageText(entry.source);
-      if (!key || map.has(key)) continue;
-      map.set(key, entry.source);
-    }
-  }
-  return map;
-}
-
-function buildReverseLookup(catalogs: UILanguageCatalogMap) {
-  const lookup = new Map<string, string>();
-  const duplicates = new Set<string>();
-
-  for (const catalog of Object.values(catalogs)) {
-    for (const section of catalog.sections) {
-      for (const entry of section.entries) {
-        const targetKey = canonicalizeUILanguageText(entry.target);
-        const source = entry.source.trim();
-        if (!targetKey || !source || targetKey === canonicalizeUILanguageText(source)) continue;
-
-        if (lookup.has(targetKey) && lookup.get(targetKey) !== source) {
-          duplicates.add(targetKey);
-          continue;
-        }
-
-        lookup.set(targetKey, source);
-      }
-    }
-  }
-
-  for (const duplicate of duplicates) {
-    lookup.delete(duplicate);
-  }
-
-  return lookup;
-}
-
-function phraseVariants(text: string) {
-  const variants = new Set<string>();
-  const base = text.trim();
-  if (!base) return variants;
-  variants.add(base);
-  variants.add(base.replace(/'/g, "’"));
-  variants.add(base.replace(/\.\.\./g, "…"));
-  variants.add(base.replace(/'/g, "’").replace(/\.\.\./g, "…"));
-  return variants;
-}
-
-function buildPartialCandidates(catalogs: UILanguageCatalogMap, sourceCatalog: UILanguageCatalog) {
-  const phraseToSource = new Map<string, string>();
-  const duplicates = new Set<string>();
-
-  const register = (candidate: string, source: string) => {
-    const trimmedCandidate = candidate.trim();
-    const trimmedSource = source.trim();
-    if (!trimmedCandidate || !trimmedSource) return;
-    if (trimmedCandidate.length < 3) return;
-    if (!/[A-Za-z]/.test(trimmedCandidate)) return;
-
-    for (const variant of phraseVariants(trimmedCandidate)) {
-      if (phraseToSource.has(variant) && phraseToSource.get(variant) !== trimmedSource) {
-        duplicates.add(variant);
-        continue;
-      }
-      phraseToSource.set(variant, trimmedSource);
-    }
-  };
-
-  for (const section of sourceCatalog.sections) {
-    for (const entry of section.entries) {
-      register(entry.source, entry.source);
-    }
-  }
-
-  for (const catalog of Object.values(catalogs)) {
-    for (const section of catalog.sections) {
-      for (const entry of section.entries) {
-        if (entry.target.trim() !== entry.source.trim()) {
-          register(entry.target, entry.source);
-        }
-      }
-    }
-  }
-
-  for (const duplicate of duplicates) {
-    phraseToSource.delete(duplicate);
-  }
-
-  return Array.from(phraseToSource.entries())
-    .map(([candidate, source]) => ({ candidate, source }))
-    .sort((left, right) => right.candidate.length - left.candidate.length);
 }
 
 function shouldIgnoreElement(element: Element | null) {
@@ -180,7 +74,9 @@ function shouldIgnoreElement(element: Element | null) {
 
 function canPartiallyTranslate(element: Element | null) {
   if (!element || shouldIgnoreElement(element)) return false;
-  return !!element.closest(PARTIAL_TRANSLATION_SELECTOR);
+  return shouldAllowAutoTranslatePartialReplacement({
+    hasExplicitOptIn: !!element.closest(EXPLICIT_PARTIAL_TRANSLATION_SELECTOR),
+  });
 }
 
 function translateDocumentTitle(
@@ -206,24 +102,6 @@ function translateDocumentTitle(
 
   if (!source) return;
   document.title = lookupUILanguageText(catalog, source, { fallbackCatalog: sourceCatalog });
-}
-
-function replaceKnownPhrases(
-  rawValue: string,
-  activeCatalog: UILanguageCatalog,
-  sourceCatalog: UILanguageCatalog,
-  partialCandidates: PartialCandidate[]
-) {
-  let nextValue = rawValue;
-
-  for (const entry of partialCandidates) {
-    if (!nextValue.includes(entry.candidate)) continue;
-    const translated = lookupUILanguageText(activeCatalog, entry.source, { fallbackCatalog: sourceCatalog });
-    if (!translated || translated === entry.candidate) continue;
-    nextValue = nextValue.split(entry.candidate).join(translated);
-  }
-
-  return nextValue;
 }
 
 export default function UILanguageProvider({
@@ -285,21 +163,32 @@ export default function UILanguageProvider({
     if (typeof document === "undefined" || !document.body) return;
 
     const activeCatalog = value.catalog;
-    const sourceMap = buildSourceMap(sourceCatalog);
-    const reverseLookup = buildReverseLookup(catalogs);
-    const partialCandidates = buildPartialCandidates(catalogs, sourceCatalog);
+    const sourceMap = buildAutoTranslateSourceMap(sourceCatalog);
+    const reverseLookup = buildAutoTranslateReverseLookup(catalogs);
+    const partialCandidates = buildAutoTranslatePartialCandidates(catalogs, sourceCatalog);
+    const pendingRoots = new Set<ParentNode>();
+    const pendingAttributeElements = new Set<Element>();
+    const pendingTextNodes = new Set<Text>();
+    let fullDocumentRequested = false;
     let animationFrame = 0;
 
-    const resolveSourceText = (rawValue: string) => {
-      const canonical = canonicalizeUILanguageText(rawValue);
-      if (!canonical) return null;
-      return sourceMap.get(canonical) ?? reverseLookup.get(canonical) ?? null;
+    const clearPendingQueues = () => {
+      pendingRoots.clear();
+      pendingAttributeElements.clear();
+      pendingTextNodes.clear();
     };
+
+    const resolveSourceText = (rawValue: string, mode: AutoTranslateResolveMode) =>
+      resolveAutoTranslateSourceText(rawValue, {
+        mode,
+        sourceMap,
+        reverseLookup,
+      });
 
     const translateFromSource = (sourceText: string) =>
       lookupUILanguageText(activeCatalog, sourceText, { fallbackCatalog: sourceCatalog });
 
-    const translateTextNode = (node: Text) => {
+    const translateTextNode = (node: Text, mode: AutoTranslateResolveMode) => {
       const parentElement = node.parentElement;
       if (shouldIgnoreElement(parentElement)) return;
 
@@ -312,7 +201,7 @@ export default function UILanguageProvider({
       if (sourceText) {
         const translatedFromStored = translateFromSource(sourceText);
         if (trimmed !== sourceText && trimmed !== translatedFromStored) {
-          sourceText = resolveSourceText(trimmed);
+          sourceText = resolveSourceText(trimmed, mode);
           if (!sourceText) {
             textNodeSourceRef.current.delete(node);
           } else {
@@ -322,7 +211,7 @@ export default function UILanguageProvider({
       }
 
       if (!sourceText) {
-        sourceText = resolveSourceText(trimmed);
+        sourceText = resolveSourceText(trimmed, mode);
         if (sourceText) {
           textNodeSourceRef.current.set(node, sourceText);
         }
@@ -337,15 +226,14 @@ export default function UILanguageProvider({
         return;
       }
 
-      const allowSoftPartial = trimmed.length <= 60;
-      if (!canPartiallyTranslate(parentElement) && !allowSoftPartial) return;
-      const replaced = replaceKnownPhrases(rawValue, activeCatalog, sourceCatalog, partialCandidates);
+      if (!canPartiallyTranslate(parentElement)) return;
+      const replaced = replaceAutoTranslateKnownPhrases(rawValue, activeCatalog, sourceCatalog, partialCandidates);
       if (replaced !== rawValue) {
         node.nodeValue = replaced;
       }
     };
 
-    const translateAttributes = (element: Element) => {
+    const translateAttributes = (element: Element, mode: AutoTranslateResolveMode) => {
       if (shouldIgnoreElement(element)) return;
 
       let storedAttributes = attributeSourceRef.current.get(element);
@@ -362,7 +250,7 @@ export default function UILanguageProvider({
         if (sourceText) {
           const translatedFromStored = translateFromSource(sourceText);
           if (currentValue !== sourceText && currentValue !== translatedFromStored) {
-            sourceText = resolveSourceText(currentValue);
+            sourceText = resolveSourceText(currentValue, mode);
             if (!sourceText) {
               storedAttributes.delete(attributeName);
             } else {
@@ -372,7 +260,7 @@ export default function UILanguageProvider({
         }
 
         if (!sourceText) {
-          sourceText = resolveSourceText(currentValue);
+          sourceText = resolveSourceText(currentValue, mode);
           if (sourceText) {
             storedAttributes.set(attributeName, sourceText);
           }
@@ -387,37 +275,31 @@ export default function UILanguageProvider({
         }
 
         if (!canPartiallyTranslate(element)) continue;
-        const replaced = replaceKnownPhrases(currentValue, activeCatalog, sourceCatalog, partialCandidates);
+        const replaced = replaceAutoTranslateKnownPhrases(currentValue, activeCatalog, sourceCatalog, partialCandidates);
         if (replaced !== currentValue) {
           element.setAttribute(attributeName, replaced);
         }
       }
     };
 
-    const translateRoot = (rootNode: ParentNode) => {
+    const translateRoot = (rootNode: ParentNode, mode: AutoTranslateResolveMode) => {
       if (rootNode instanceof Element) {
-        translateAttributes(rootNode);
+        translateAttributes(rootNode, mode);
       }
 
       const elementWalker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ELEMENT);
       let currentElement = elementWalker.currentNode as Element | null;
       while (currentElement) {
-        translateAttributes(currentElement);
+        translateAttributes(currentElement, mode);
         currentElement = elementWalker.nextNode() as Element | null;
       }
 
       const textWalker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT);
       let currentTextNode = textWalker.currentNode as Text | null;
       while (currentTextNode) {
-        translateTextNode(currentTextNode);
+        translateTextNode(currentTextNode, mode);
         currentTextNode = textWalker.nextNode() as Text | null;
       }
-    };
-
-    const runTranslation = () => {
-      animationFrame = 0;
-      translateDocumentTitle(activeCatalog, sourceCatalog, sourceMap, reverseLookup, titleSourceRef);
-      translateRoot(document.body);
     };
 
     const scheduleTranslation = () => {
@@ -425,10 +307,86 @@ export default function UILanguageProvider({
       animationFrame = window.requestAnimationFrame(runTranslation);
     };
 
-    scheduleTranslation();
-
-    const observer = new MutationObserver(() => {
+    const queueFullDocumentTranslation = () => {
+      fullDocumentRequested = true;
       scheduleTranslation();
+    };
+
+    const queueRootTranslation = (rootNode: ParentNode | null) => {
+      if (!rootNode) return;
+      pendingRoots.add(rootNode);
+      scheduleTranslation();
+    };
+
+    const queueAttributeTranslation = (element: Element | null) => {
+      if (!element) return;
+      pendingAttributeElements.add(element);
+      scheduleTranslation();
+    };
+
+    const queueTextTranslation = (node: Text | null) => {
+      if (!node) return;
+      pendingTextNodes.add(node);
+      scheduleTranslation();
+    };
+
+    const flushIncrementalQueues = () => {
+      for (const element of pendingAttributeElements) {
+        translateAttributes(element, "incremental");
+      }
+
+      for (const textNode of pendingTextNodes) {
+        translateTextNode(textNode, "incremental");
+      }
+
+      for (const rootNode of pendingRoots) {
+        translateRoot(rootNode, "incremental");
+      }
+
+      clearPendingQueues();
+    };
+
+    const runTranslation = () => {
+      animationFrame = 0;
+      translateDocumentTitle(activeCatalog, sourceCatalog, sourceMap, reverseLookup, titleSourceRef);
+
+      if (fullDocumentRequested) {
+        fullDocumentRequested = false;
+        clearPendingQueues();
+        translateRoot(document.body, "full");
+        return;
+      }
+
+      flushIncrementalQueues();
+    };
+
+    queueFullDocumentTranslation();
+
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.type === "childList") {
+          for (const addedNode of Array.from(record.addedNodes)) {
+            if (addedNode instanceof Element || addedNode instanceof DocumentFragment) {
+              queueRootTranslation(addedNode);
+              continue;
+            }
+
+            if (addedNode instanceof Text) {
+              queueTextTranslation(addedNode);
+            }
+          }
+          continue;
+        }
+
+        if (record.type === "characterData" && record.target instanceof Text) {
+          queueTextTranslation(record.target);
+          continue;
+        }
+
+        if (record.type === "attributes" && record.target instanceof Element) {
+          queueAttributeTranslation(record.target);
+        }
+      }
     });
 
     observer.observe(document.body, {

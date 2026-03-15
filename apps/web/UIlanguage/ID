@@ -544,7 +544,7 @@ Translator (username / name) = Penerjemah (username / nama)
 Sweep app/components/ThumbCropper.tsx
 ==========
 
-Pick image = Pick gambar
+Pick image = Pilih gambar
 
 ==========
 Sweep app/components/WorksGrid.tsx
@@ -754,7 +754,7 @@ Forum thread placeholder so /forum/* links do not 404. = Placeholder thread foru
 Sweep app/genre/page.tsx
 ==========
 
-No genres yet. Add them via seed / studio. = Tidak ada genre yet. add them via seed / studio.
+No genres yet. Add them via seed / studio. = Belum ada genre. Tambahkan via seed / studio.
 Select a genre = Pilih genre
 
 ==========
@@ -819,20 +819,20 @@ short description... = deskripsi singkat...
 Sweep app/lists/new/page.tsx
 ==========
 
-New Collection = Baru koleksi
+New Collection = Koleksi Baru
 
 ==========
 Sweep app/lists/page.tsx
 ==========
 
-No items yet = Tidak ada items yet
+No items yet = Tidak ada item
 No list yet. = Belum ada list.
 
 ==========
 Sweep app/notifications/NotificationsClient.tsx
 ==========
 
-No notification yet = Tidak ada notifikasi yet
+No notification yet = Belum ada notifikasi
 
 ==========
 Sweep app/novel/page.tsx
@@ -858,7 +858,7 @@ Sweep app/profile/page.tsx
 
 All comments = Semua komentar
 All reviews = Semua ulasan
-Published Works = Published Work
+Published Works = Karya Diterbitkan
 Recent Comments = Komentar Terbaru
 Recent Reviews = Ulasan Terbaru
 
@@ -911,7 +911,7 @@ username / name = username / nama
 Sweep app/search/_components/WorksGrid.tsx
 ==========
 
-No results = Tidak ada results
+No results = Tidak ada hasil
 Try another keyword or change the filters. = Coba kata kunci lain atau ubah filternya.
 
 ==========
@@ -931,7 +931,7 @@ Sweep app/settings/history/page.tsx
 ==========
 
 No history yet. = Belum ada riwayat.
-Reading History = Membaca Riwayat
+Reading History = Riwayat Membaca
 
 ==========
 Sweep app/settings/profile/ProfileForm.tsx
@@ -1139,7 +1139,7 @@ Upload error = Kesalahan unggah
 Sweep app/studio/works/[workId]/chapters/new/page.tsx
 ==========
 
-New Chapter = Baru Chapter
+New Chapter = Bab Baru
 
 ==========
 Sweep app/studio/works/[workId]/edit/WorkEditForm.tsx
@@ -1218,7 +1218,7 @@ No chapters yet. = Belum ada chapter.
 Sweep app/u/[username]/page.tsx
 ==========
 
-Published Works = Published Work
+Published Works = Karya Diterbitkan
 Recent Reviews = Ulasan Terbaru
 
 ==========
@@ -1238,7 +1238,7 @@ Sweep components/ComicPageFilesPicker.tsx
 ==========
 
 Ideal for chapters that already exist as PDF files. = Ideal untuk chapter yang sudah ada sebagai file PDF.
-Make sure the files inside the ZIP are comic page images. = Make sure the files inside the ZIP are comic halaman gambar.
+Make sure the files inside the ZIP are comic page images. = Pastikan file di dalam ZIP berupa gambar halaman komik.
 Manual one by one = Manual satu per satu
 Move page down = Turunkan halaman
 Move page up = Naikkan halaman
@@ -1652,8 +1652,8 @@ Vietnam = Vietnam
 US = AS
 Global = Global
 Search Translator = Cari Translator
-Processing import... = Processing import...
-Creating... = Creating...
+Processing import... = Memproses impor...
+Creating... = Membuat...
 View public page = Lihat halaman publik
 View public page for {title} = Lihat halaman publik untuk {title}
 Title is required. = Title wajib diisi.
@@ -1661,11 +1661,11 @@ Message is required. = Message wajib diisi.
 Example: Login bug, chapter cannot be opened, etc. = Contoh: Bug login, chapter gak bisa dibuka, dll
 Explain the issue + steps to reproduce. = Jelasin masalahnya + langkah buat reproduce.
 Title is required. = Title wajib diisi.
-• Mature = • Mature
+• Mature = • Dewasa
 Newest = Terbaru
-Original = Original
+Original = Orisinal
 Translation = Terjemahan
-Reupload = Reupload
+Reupload = Unggah Ulang
 Apply = Terapkan
 Comics = Komik
 Novels = Novel
@@ -1680,7 +1680,7 @@ Private = Privat
 Hidden = Tersembunyi
 Lock = Kunci
 Locked = Terkunci
-Edit = Edit
+Edit = Ubah
 Remove = Hapus
 Delete = Hapus
 Create = Buat
@@ -1695,7 +1695,7 @@ Next = Berikutnya
 Menu = Menu
 Follow = Ikuti
 Following = Mengikuti
-Bookmark = Bookmark
+Bookmark = Tandai
 Bookmarked = Sudah di-bookmark
 Favorite = Favorit
 Favorited = Sudah difavoritkan
@@ -1717,7 +1717,7 @@ Source = Sumber
 Note = Catatan
 Chapters = Chapter
 Favorites = Favorit
-Rating = Rating
+Rating = Nilai
 Updated = Diperbarui
 Comments = Komentar
 Reviews = Ulasan
@@ -1741,7 +1741,7 @@ Bookmarks = Bookmark
 Sent to = Dikirim ke
 Arc = Arc
 Subtitle = Subjudul
-Chapter = Chapter
+Chapter = Bab
 Page = Halaman
 Link = Tautan
 Open collection = Buka koleksi
@@ -1762,6 +1762,8 @@ Failed to process the file. = Gagal memproses file.
 Failed to send comment = Gagal mengirim komentar
 Failed to fetch = Gagal mengambil
 Remove tag = Hapus tag
+Failed to load page = Gagal memuat halaman
+Tip: press Enter or comma to add a tag. = Tip: tekan Enter atau koma untuk menambahkan tag.
 View public page = Lihat halaman publik
 Create Chapter = Buat Chapter
 Delete chapter = Hapus chapter
@@ -1807,7 +1809,7 @@ Fanart & Artwork Upload = Upload Fanart & Artwork
 Share your visual works such as illustrations, zines, and comics to the community. = Bagikan karya visualmu seperti ilustrasi, zine, dan komik ke komunitas.
 Donate to Creator = Donasi ke Kreator
 Support your favorite creators and translators through the donation & premium system. = Dukung kreator dan penerjemah favoritmu melalui sistem donasi & premium.
-Event & Premium = Event & Premium
+Event & Premium = Acara & Premium
 Join community competitions and events, and get exclusive premium access. = Ikuti kompetisi dan event komunitas, serta dapatkan akses premium eksklusif.
 Active Community = Komunitas Aktif
 Have fun discussions, create a group, or chat with other creators & fans! = Nikmati diskusi seru, buat grup, atau chat dengan kreator & penggemar lainnya!
@@ -1875,7 +1877,7 @@ Create a new series = Buat seri baru
 Series title = Judul seri
 Move up = Naikkan
 Move down = Turunkan
-Set Draft = Set Draft
+Set Draft = Jadikan Draft
 Status: Published = Status: Dipublikasikan
 Status: Draft = Status: Draft
 Original (Author) = Orisinal (Penulis)
@@ -1909,7 +1911,7 @@ Like = Suka
 Unlike = Batal suka
 Liked = Disukai
 Open = Buka
-Chapter = Chapter
+Chapter = Bab
 Page = Halaman
 Link = Tautan
 Sent to = Dikirim ke
@@ -1928,7 +1930,7 @@ images were extracted from the ZIP successfully. = gambar berhasil diekstrak dar
 edited thumbnail not saved = thumbnail yang diedit belum disimpan
 unread = belum dibaca
 Forum: = Forum:
-Event: = Event:
+Event: = Acara:
 Creator: = Kreator:
 Content: = Konten:
 No optimization needed = Tidak perlu optimasi
@@ -1943,9 +1945,9 @@ Newest = Terbaru
 Most liked = Paling disukai
 Best rated = Rating terbaik
 Any publish type = Jenis publikasi apa saja
-Original = Original
+Original = Orisinal
 Translation = Terjemahan
-Reupload = Reupload
+Reupload = Unggah Ulang
 Author (username / name) = Penulis (username / nama)
 Translator (username / name) = Penerjemah (username / nama)
 Apply = Terapkan
@@ -2073,3 +2075,59 @@ Repeat password = Ulangi kata sandi
 Processing... = Memproses...
 Success! Redirecting... = Berhasil! Mengarahkan...
 If the link is invalid or expired, request a new one via “Forgot password”. = Jika tautan tidak valid atau kedaluwarsa, minta yang baru lewat “Lupa kata sandi”.
+
+==========
+Shared UI Extended
+==========
+
+Message = Pesan
+Views = Tampilan
+Readers = Pembaca
+Start = Mulai
+Events = Event
+Event = Acara
+Legal = Legal
+Series = Seri
+Draft = Draf
+Followers = Pengikut
+Following = Mengikuti
+Collections = Koleksi
+Ongoing = Berlangsung
+Completed = Selesai
+Hiatus = Hiatus
+Cancelled = Dibatalkan
+Fanfic = Fanfiksi
+Adaptation = Adaptasi
+Include = Sertakan
+Translators = Penerjemah
+Cover = Sampul
+Remove = Hapus
+Manga = Manga
+Manhwa = Manhwa
+Manhua = Manhua
+Webtoon = Webtoon
+Western = Barat
+Other = Lainnya
+Completion = Status Penyelesaian
+Preview = Pratinjau
+Published = Diterbitkan
+Content = Konten
+Summary = Ringkasan
+Order = Urutan
+Flags = Bendera
+Actions = Aksi
+Collection = Koleksi
+
+No followers yet. = Belum ada pengikut.
+Not following anyone yet. = Belum mengikuti siapapun.
+No comments yet. = Belum ada komentar.
+No reviews yet. = Belum ada ulasan.
+Browse works = Jelajahi karya
+New list = List baru
+Min chapters = Min. chapter
+Max chapters = Maks. chapter
+Only = Hanya
+Ignore my language preferences (settings) = Abaikan preferensi bahasa saya (pengaturan)
+Ignore my blocked genres/NSFW (settings) = Abaikan genre/NSFW yang saya blokir (pengaturan)
+Enable it in Settings → Account. = Aktifkan di Pengaturan → Akun.
+Any = Apa saja

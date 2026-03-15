@@ -2,6 +2,8 @@
 
 import { Star, X } from "lucide-react";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 export default function ReviewModal({
   open,
   title,
@@ -31,6 +33,7 @@ export default function ReviewModal({
   onClose: () => void;
   onSubmit: () => void;
 }) {
+  const t = useUILanguageText();
   if (!open) return null;
 
   return (
@@ -42,7 +45,7 @@ export default function ReviewModal({
             type="button"
             onClick={onClose}
             className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X size={16} />
           </button>
@@ -66,7 +69,7 @@ export default function ReviewModal({
                         ? "text-yellow-600 dark:text-yellow-300"
                         : "text-gray-400 dark:text-gray-600"
                     } hover:brightness-110`}
-                    aria-label={`Rate ${v}`}
+                    aria-label={`${t("Rate")} ${v}`}
                   >
                     <Star size={22} className={active ? "fill-current" : ""} />
                   </button>

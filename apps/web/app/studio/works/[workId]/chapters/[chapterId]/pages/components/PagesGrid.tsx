@@ -1,7 +1,9 @@
 "use client";
 
 import { ArrowDown, ArrowUp } from "lucide-react";
+
 import BackButton from "@/app/components/BackButton";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Page = { id: string; imageUrl: string; order: number };
 
@@ -20,6 +22,8 @@ export default function PagesGrid({
   onDelete: (id: string) => void;
   onMove: (id: string, direction: "up" | "down") => void;
 }) {
+  const t = useUILanguageText();
+
   return (
     <div className="grid gap-2">
       <div className="flex items-center justify-between">
@@ -42,7 +46,7 @@ export default function PagesGrid({
             >
               <div className="relative aspect-[3/4] bg-black/5 dark:bg-white/5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.imageUrl} alt={`Page ${p.order}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <img src={p.imageUrl} alt={`${t("Page")} ${p.order}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
               </div>
               <div className="grid gap-3 p-3">
                 <div className="flex items-center justify-between gap-2">
@@ -52,8 +56,8 @@ export default function PagesGrid({
                       type="button"
                       onClick={() => onMove(p.id, "up")}
                       disabled={loading || index === 0}
-                      aria-label="Move page up"
-                      title="Move page up"
+                      aria-label={t("Move page up")}
+                      title={t("Move page up")}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 disabled:opacity-40 dark:border-gray-800"
                     >
                       <ArrowUp className="h-4 w-4" />
@@ -62,8 +66,8 @@ export default function PagesGrid({
                       type="button"
                       onClick={() => onMove(p.id, "down")}
                       disabled={loading || index === pages.length - 1}
-                      aria-label="Move page down"
-                      title="Move page down"
+                      aria-label={t("Move page down")}
+                      title={t("Move page down")}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 disabled:opacity-40 dark:border-gray-800"
                     >
                       <ArrowDown className="h-4 w-4" />

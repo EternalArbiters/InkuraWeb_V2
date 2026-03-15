@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 type ComicPage = {
   id: string;
   imageUrl: string;
@@ -38,6 +40,7 @@ function ComicPageItem({
   index: number;
   total: number;
 }) {
+  const t = useUILanguageText();
   const [state, setState] = React.useState<"loading" | "loaded" | "error">("loading");
   const [meta, setMeta] = React.useState<ImageMeta | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
@@ -88,7 +91,7 @@ function ComicPageItem({
       />
 
       <div
-        aria-label={`Page ${typeof page.order === "number" ? page.order : index + 1}`}
+        aria-label={`${t("Page")} ${typeof page.order === "number" ? page.order : index + 1}`}
         role="img"
         className={[
           "relative z-[1] w-full bg-center bg-no-repeat transition-opacity duration-500",
@@ -117,7 +120,7 @@ function ComicPageItem({
 
       {state === "error" ? (
         <div className="absolute inset-x-0 bottom-4 z-[3] mx-auto w-fit rounded-full bg-red-600/85 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-          Failed to load page
+          {t("Failed to load page")}
         </div>
       ) : null}
     </div>

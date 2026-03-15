@@ -2,9 +2,15 @@
 
 import * as React from "react";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 export default function AdminNotifyClient() {
+  const t = useUILanguageText();
+  const translatedDefaultTitle = t("Admin message");
+  const defaultTitleRef = React.useRef(translatedDefaultTitle);
+
   const [to, setTo] = React.useState("@");
-  const [title, setTitle] = React.useState("Admin message");
+  const [title, setTitle] = React.useState(translatedDefaultTitle);
   const [message, setMessage] = React.useState("");
   const [href, setHref] = React.useState("/notifications");
 
@@ -12,17 +18,26 @@ export default function AdminNotifyClient() {
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    setTitle((current) => {
+      const previousDefault = defaultTitleRef.current;
+      defaultTitleRef.current = translatedDefaultTitle;
+      if (!current || current === previousDefault) return translatedDefaultTitle;
+      return current;
+    });
+  }, [translatedDefaultTitle]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setOk(null);
 
     if (!to.trim() || to.trim() === "@") {
-      setError("Target user is required (ex: @username)");
+      setError(t("Target user is required (ex: @username)"));
       return;
     }
     if (!message.trim()) {
-      setError("Message is required");
+      setError(t("Message is required"));
       return;
     }
 
@@ -34,11 +49,11 @@ export default function AdminNotifyClient() {
         body: JSON.stringify({ to, title, message, href }),
       });
       const data = await res.json().catch(() => ({} as any));
-      if (!res.ok) throw new Error(data?.error || "Failed");
-      setOk(`Sent to ${to}`);
+      if (!res.ok) throw new Error(data?.error || t("Failed"));
+      setOk(`${t("Sent to")} ${to}`);
       setMessage("");
     } catch (e: any) {
-      setError(e?.message || "Failed");
+      setError(e?.message || t("Failed"));
     } finally {
       setLoading(false);
     }
@@ -58,7 +73,7 @@ export default function AdminNotifyClient() {
       ) : null}
 
       <div className="grid gap-2">
-        <label className="text-sm font-semibold">To (@username or email)</label>
+        <label className="text-sm font-semibold">{t("To (@username or email)")}</label>
         <input
           value={to}
           onChange={(e) => setTo(e.target.value)}
@@ -68,7 +83,7 @@ export default function AdminNotifyClient() {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-semibold">Title</label>
+        <label className="text-sm font-semibold">{t("Title")}</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -77,18 +92,18 @@ export default function AdminNotifyClient() {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-semibold">Message</label>
+        <label className="text-sm font-semibold">{t("Message")}</label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={6}
           className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-          placeholder="Write your message to the user…"
+          placeholder={t("Write your message to the user…")}
         />
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-semibold">Link (optional)</label>
+        <label className="text-sm font-semibold">{t("Link (optional)")}</label>
         <input
           value={href}
           onChange={(e) => setHref(e.target.value)}
@@ -106,7 +121,7 @@ export default function AdminNotifyClient() {
           disabled={loading}
           className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110 disabled:opacity-60"
         >
-          {loading ? "Sending…" : "Send notification"}
+          {loading ? t("Sending...") : t("Send notification")}
         </button>
       </div>
     </form>

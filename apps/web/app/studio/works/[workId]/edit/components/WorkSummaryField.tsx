@@ -1,5 +1,7 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 export default function WorkSummaryField({
   description,
   setDescription,
@@ -7,9 +9,10 @@ export default function WorkSummaryField({
   description: string;
   setDescription: (v: string) => void;
 }) {
+  const t = useUILanguageText();
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold">Summary</span>
+      <span className="text-sm font-semibold">{t("Summary")}</span>
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}

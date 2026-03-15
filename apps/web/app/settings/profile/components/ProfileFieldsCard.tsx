@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { type ProfileLinkEntry } from "@/lib/profileUrls";
 
 const GENDERS = [
@@ -58,6 +59,7 @@ export default function ProfileFieldsCard({
   birthYear,
   onBirthYearChange,
 }: Props) {
+  const t = useUILanguageText();
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
   const canAddUrl = profileLinks.length < 5;
 
@@ -138,7 +140,7 @@ export default function ProfileFieldsCard({
                       onProfileLinksChange(next);
                     }}
                     maxLength={60}
-                    placeholder={`Link ${index + 1}`}
+                    placeholder={`${t("Link")} ${index + 1}`}
                   />
                 </div>
                 <div>
@@ -165,7 +167,7 @@ export default function ProfileFieldsCard({
                     onClick={() => onProfileLinksChange(profileLinks.filter((_, itemIndex) => itemIndex !== index))}
                     className="shrink-0 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                   >
-                    Remove
+                    {t("Remove")}
                   </button>
                 ) : null}
               </div>

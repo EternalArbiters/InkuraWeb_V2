@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 
 type Props = {
@@ -43,25 +44,26 @@ export default function WorkBasicsCard({
   tagsRaw,
   onTagsRawChange,
 }: Props) {
+  const t = useUILanguageText();
   const canAddSubtitle = subtitles.length < 5;
 
   return (
     <div className="rounded-2xl border border-gray-200 p-4 grid gap-3 dark:border-gray-800">
       <div className="grid gap-1">
-        <label className="text-sm font-semibold">Title</label>
+        <label className="text-sm font-semibold">{t("Title")}</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
-          placeholder="Work Title"
+          placeholder={t("Work Title")}
         />
       </div>
 
       <div className="grid gap-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold">Subtitles (optional)</div>
-            <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">Max. 5 subtitles.</div>
+            <div className="text-sm font-semibold">{t("Subtitles (optional)")}</div>
+            <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">{t("Max. 5 subtitles.")}</div>
           </div>
           <button
             type="button"
@@ -89,14 +91,14 @@ export default function WorkBasicsCard({
                   }}
                   maxLength={200}
                   className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
-                  placeholder={`Subtitle ${index + 1}`}
+                  placeholder={`${t("Subtitle")} ${index + 1}`}
                 />
                 <button
                   type="button"
                   onClick={() => setSubtitles(subtitles.filter((_, itemIndex) => itemIndex !== index))}
                   className="shrink-0 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
-                  Remove
+                  {t("Remove")}
                 </button>
               </div>
             ))}
@@ -106,32 +108,32 @@ export default function WorkBasicsCard({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="grid gap-1">
-          <label className="text-sm font-semibold">Type</label>
+          <label className="text-sm font-semibold">{t("Type")}</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as any)}
             className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
           >
-            <option value="NOVEL">Novel</option>
-            <option value="COMIC">Comic</option>
+            <option value="NOVEL">{t("Novel")}</option>
+            <option value="COMIC">{t("Comic")}</option>
           </select>
         </div>
 
         {type === "COMIC" ? (
           <div className="grid gap-1">
-            <label className="text-sm font-semibold">Comic type</label>
+            <label className="text-sm font-semibold">{t("Comic type")}</label>
             <select
               value={comicType}
               onChange={(e) => setComicType(e.target.value as any)}
               className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
             >
-              <option value="UNKNOWN">Unknown</option>
-              <option value="MANGA">Manga</option>
-              <option value="MANHWA">Manhwa</option>
-              <option value="MANHUA">Manhua</option>
-              <option value="WEBTOON">Webtoon</option>
-              <option value="WESTERN">Western</option>
-              <option value="OTHER">Other</option>
+              <option value="UNKNOWN">{t("Unknown")}</option>
+              <option value="MANGA">{t("Manga")}</option>
+              <option value="MANHWA">{t("Manhwa")}</option>
+              <option value="MANHUA">{t("Manhua")}</option>
+              <option value="WEBTOON">{t("Webtoon")}</option>
+              <option value="WESTERN">{t("Western")}</option>
+              <option value="OTHER">{t("Other")}</option>
             </select>
           </div>
         ) : (
@@ -140,7 +142,7 @@ export default function WorkBasicsCard({
       </div>
 
       <div className="grid gap-1">
-        <label className="text-sm font-semibold">Language</label>
+        <label className="text-sm font-semibold">{t("Language")}</label>
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
@@ -155,52 +157,52 @@ export default function WorkBasicsCard({
       </div>
 
       <div className="grid gap-1">
-        <label className="text-sm font-semibold">Origin</label>
+        <label className="text-sm font-semibold">{t("Origin")}</label>
         <select
           value={origin}
           onChange={(e) => setOrigin(e.target.value as any)}
           className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
         >
-          <option value="UNKNOWN">Unknown</option>
-          <option value="ORIGINAL">Original</option>
-          <option value="FANFIC">Fanfic</option>
-          <option value="ADAPTATION">Adaptation</option>
+          <option value="UNKNOWN">{t("Unknown")}</option>
+          <option value="ORIGINAL">{t("Original")}</option>
+          <option value="FANFIC">{t("Fanfic")}</option>
+          <option value="ADAPTATION">{t("Adaptation")}</option>
         </select>
       </div>
 
       <div className="grid gap-1">
-        <label className="text-sm font-semibold">Completion</label>
+        <label className="text-sm font-semibold">{t("Completion")}</label>
         <select
           value={completion}
           onChange={(e) => setCompletion(e.target.value)}
           className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
         >
-          <option value="ONGOING">Ongoing</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="HIATUS">Hiatus</option>
-          <option value="CANCELLED">Cancelled</option>
+          <option value="ONGOING">{t("Ongoing")}</option>
+          <option value="COMPLETED">{t("Completed")}</option>
+          <option value="HIATUS">{t("Hiatus")}</option>
+          <option value="CANCELLED">{t("Cancelled")}</option>
         </select>
       </div>
 
       <div className="grid gap-1">
-        <label className="text-sm font-semibold">Description</label>
+        <label className="text-sm font-semibold">{t("Description")}</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="min-h-[120px] rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
-          placeholder="Short synopsis..."
+          placeholder={t("Short synopsis...")}
         />
       </div>
 
       <div className="grid gap-1">
-        <label className="text-sm font-semibold">Tags (comma)</label>
+        <label className="text-sm font-semibold">{t("Tags (comma)")}</label>
         <input
           value={tagsRaw}
           onChange={(e) => onTagsRawChange(e.target.value)}
           className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-950"
-          placeholder="action, romance, comedy"
+          placeholder={t("action, romance, comedy")}
         />
-        <div className="text-[11px] text-gray-600 dark:text-gray-300">Max. 25 tags.</div>
+        <div className="text-[11px] text-gray-600 dark:text-gray-300">{t("Max. 25 tags.")}</div>
       </div>
     </div>
   );

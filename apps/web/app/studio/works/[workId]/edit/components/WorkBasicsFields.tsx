@@ -1,5 +1,6 @@
 "use client";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 
@@ -36,12 +37,13 @@ export default function WorkBasicsFields({
   origin,
   setOrigin,
 }: Props) {
+  const t = useUILanguageText();
   const canAddSubtitle = subtitles.length < 5;
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <label className="grid gap-2 md:col-span-2">
-        <span className="text-sm font-semibold">Title</span>
+        <span className="text-sm font-semibold">{t("Title")}</span>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -53,8 +55,8 @@ export default function WorkBasicsFields({
       <div className="grid gap-3 md:col-span-2">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold">Subtitles (optional)</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Max. 5 subtitles.</div>
+            <div className="text-sm font-semibold">{t("Subtitles (optional)")}</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t("Max. 5 subtitles.")}</div>
           </div>
           <button
             type="button"
@@ -82,14 +84,14 @@ export default function WorkBasicsFields({
                   }}
                   maxLength={200}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900"
-                  placeholder={`Subtitle ${index + 1}`}
+                  placeholder={`${t("Subtitle")} ${index + 1}`}
                 />
                 <button
                   type="button"
                   onClick={() => setSubtitles(subtitles.filter((_, itemIndex) => itemIndex !== index))}
                   className="shrink-0 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
-                  Remove
+                  {t("Remove")}
                 </button>
               </div>
             ))}
@@ -98,7 +100,7 @@ export default function WorkBasicsFields({
       </div>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold">Type</span>
+        <span className="text-sm font-semibold">{t("Type")}</span>
         <select
           value={type}
           onChange={(e) => {
@@ -108,14 +110,14 @@ export default function WorkBasicsFields({
           }}
           className="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
         >
-          <option value="NOVEL">Novel</option>
-          <option value="COMIC">Comic</option>
+          <option value="NOVEL">{t("Novel")}</option>
+          <option value="COMIC">{t("Comic")}</option>
         </select>
       </label>
 
       {type === "COMIC" ? (
         <label className="grid gap-2">
-          <span className="text-sm font-semibold">Comic type</span>
+          <span className="text-sm font-semibold">{t("Comic type")}</span>
           <select
             value={comicType}
             onChange={(e) => setComicType(e.target.value)}
@@ -131,7 +133,7 @@ export default function WorkBasicsFields({
       ) : null}
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold">Language</span>
+        <span className="text-sm font-semibold">{t("Language")}</span>
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
@@ -146,30 +148,30 @@ export default function WorkBasicsFields({
       </label>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold">Completion</span>
+        <span className="text-sm font-semibold">{t("Completion")}</span>
         <select
           value={completion}
           onChange={(e) => setCompletion(e.target.value)}
           className="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
         >
-          <option value="ONGOING">Ongoing</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="HIATUS">Hiatus</option>
-          <option value="CANCELLED">Cancelled</option>
+          <option value="ONGOING">{t("Ongoing")}</option>
+          <option value="COMPLETED">{t("Completed")}</option>
+          <option value="HIATUS">{t("Hiatus")}</option>
+          <option value="CANCELLED">{t("Cancelled")}</option>
         </select>
       </label>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold">Origin</span>
+        <span className="text-sm font-semibold">{t("Origin")}</span>
         <select
           value={origin}
           onChange={(e) => setOrigin(e.target.value)}
           className="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
         >
-          <option value="UNKNOWN">Unknown</option>
-          <option value="ORIGINAL">Original</option>
-          <option value="FANFIC">Fanfic</option>
-          <option value="ADAPTATION">Adaptation</option>
+          <option value="UNKNOWN">{t("Unknown")}</option>
+          <option value="ORIGINAL">{t("Original")}</option>
+          <option value="FANFIC">{t("Fanfic")}</option>
+          <option value="ADAPTATION">{t("Adaptation")}</option>
         </select>
       </label>
     </div>

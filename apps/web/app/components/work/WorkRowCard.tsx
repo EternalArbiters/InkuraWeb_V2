@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import OriginFlag from "@/app/components/OriginFlag";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
@@ -96,9 +99,23 @@ export default function WorkRowCard({ work }: { work: WorkLite }) {
   const author = work?.author;
   const translator = work?.translator;
   const uploader: Person = author?.username || author?.name ? author : translator;
-  const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
-  const isUp = !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000;
-  const updatedLabel = formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 });
+  const computeTimeState = () => {
+    const updatedAt = work?.updatedAt ? new Date(work.updatedAt as any) : null;
+    return {
+      isUp: !!updatedAt && Date.now() - +updatedAt < 24 * 60 * 60 * 1000,
+      updatedLabel: formatUpdatedAt(work?.updatedAt, { thresholdDays: 100 }),
+    };
+  };
+
+  const [timeState, setTimeState] = useState(computeTimeState);
+  const { isUp, updatedLabel } = timeState;
+
+  useEffect(() => {
+    setTimeState(computeTimeState());
+    const interval = setInterval(() => setTimeState(computeTimeState()), 60_000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [work?.updatedAt]);
 
   const flag = originFlagEmoji({ type: work?.type, comicType: work?.comicType, language: work?.language });
   const type = normalize(work?.type) || "WORK";

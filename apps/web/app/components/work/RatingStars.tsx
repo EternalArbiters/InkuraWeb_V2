@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Star } from "lucide-react";
+
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { readWorkInteraction, seedWorkInteraction, subscribeWorkInteraction, updateWorkInteraction } from "@/lib/workInteractionStore";
 
 type Props = {
@@ -20,6 +22,7 @@ export default function RatingStars({
   ratingCount,
   className = "",
 }: Props) {
+  const t = useUILanguageText();
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -79,7 +82,7 @@ export default function RatingStars({
               onClick={() => setRating(v)}
               disabled={isPending}
               className={`shrink-0 rounded p-0.5 ${active ? "text-yellow-600 dark:text-yellow-300" : "text-gray-400 dark:text-gray-500"} hover:brightness-110 disabled:opacity-60`}
-              aria-label={`Rate ${v}`}
+              aria-label={`${t("Rate")} ${v}`}
             >
               <Star size={18} className={`h-4 w-4 shrink-0 sm:h-5 sm:w-5 ${active ? "fill-current" : ""}`.trim()} />
             </button>

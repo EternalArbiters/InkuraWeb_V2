@@ -9,6 +9,7 @@ import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimiza
 import NovelRichTextEditor from "@/components/NovelRichTextEditor";
 import { novelContentHasMeaningfulContent } from "@/lib/novelContent";
 import FloatingNotice from "@/app/components/ui/FloatingNotice";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Chapter = {
   id: string;
@@ -55,6 +56,7 @@ function formatBytes(bytes: number) {
 
 export default function ChapterEditForm({ workId, workTitle, workType, chapter, warningTags }: Props) {
   const router = useRouter();
+  const t = useUILanguageText();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const [autoNumber, setAutoNumber] = React.useState(!chapter.label);
@@ -258,7 +260,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
             </label>
 
             <div className="grid gap-2">
-              <span className="text-sm font-semibold">Preview</span>
+              <span className="text-sm font-semibold">{t("Preview")}</span>
               <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
                 Chapter {number}
               </div>
@@ -308,8 +310,8 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
             onChange={(e) => setStatus(e.target.value)}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
           >
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">{t("Draft")}</option>
+            <option value="PUBLISHED">{t("Published")}</option>
           </select>
         </label>
 
@@ -330,7 +332,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
 
       {workType === "NOVEL" ? (
         <div className="grid gap-2">
-          <span className="text-sm font-semibold">Content</span>
+          <span className="text-sm font-semibold">{t("Content")}</span>
           <NovelRichTextEditor value={content} onChange={setContent} workId={workId} chapterId={chapter.id} />
         </div>
       ) : (

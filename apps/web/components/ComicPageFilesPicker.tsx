@@ -292,7 +292,7 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
       </div>
 
       {importError ? <div className="rounded-2xl border border-red-200 bg-red-50/60 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">{importError}</div> : null}
-      {importNote ? <div className="rounded-2xl border border-gray-200 bg-white/70 p-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-200">{importNote}</div> : null}
+      {importNote ? <div className="rounded-2xl border border-gray-200 bg-white/70 p-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-200" data-ui-language-partial="true">{importNote}</div> : null}
 
       <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">
         <div className="flex flex-wrap items-center justify-between gap-3">

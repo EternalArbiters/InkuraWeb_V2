@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
 import LoadMoreList from "@/app/components/LoadMoreList";
 
@@ -17,13 +18,22 @@ type ListLite = {
 
 export default async function ListsPage() {
   const data = await listReadingListsForViewer();
+  const [tCollection, tNewList, tLibrary, tNoListYet, tNoItemsYet, tSignIn, tBrowseWorks] = await Promise.all([
+    getActiveUILanguageText("Collection"),
+    getActiveUILanguageText("New list"),
+    getActiveUILanguageText("Library"),
+    getActiveUILanguageText({tNoListYet}),
+    getActiveUILanguageText({tNoItemsYet}),
+    getActiveUILanguageText("Sign In"),
+    getActiveUILanguageText("Browse works", { section: "Page Lists" }),
+  ]);
 
   if (!data) {
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-            <h1 className="text-2xl font-extrabold">Collectuion</h1>
+            <h1 className="text-2xl font-extrabold">{tCollection}</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               You must be logged in to create and manage your collections (Reading Lists)
             </p>
@@ -75,7 +85,7 @@ export default async function ListsPage() {
 
         {lists.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-8">
-            <div className="text-lg font-extrabold">No list yet.</div>
+            <div className="text-lg font-extrabold">{tNoListYet}</div>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               Create a list to group your favorite works (e.g.: “Indo Romance”, “Horror”, “Friend Recommendations”).
             </p>
@@ -130,7 +140,7 @@ export default async function ListsPage() {
                         ))
                       ) : (
                         <div className="col-span-3 text-sm text-gray-600 dark:text-gray-300">
-                          <span className="opacity-70">No items yet</span>
+                          <span className="opacity-70">{tNoItemsYet}</span>
                         </div>
                       )}
                     </div>

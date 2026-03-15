@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 type Props = {
   label?: string;
   value: string[];
@@ -24,6 +26,7 @@ export default function TagMultiInput({
   placeholder = "Type a tag then press Enter (or choose a suggestion) ...",
   maxTags = 50,
 }: Props) {
+  const t = useUILanguageText();
   const [input, setInput] = React.useState("");
   const [suggestions, setSuggestions] = React.useState<{ name: string }[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -31,23 +34,24 @@ export default function TagMultiInput({
   const current = React.useMemo(() => value || [], [value]);
 
   const canAdd = current.length < maxTags;
+  const translatedLabel = t(label);
+  const translatedPlaceholder = t(placeholder);
 
   const addTag = React.useCallback(
     (raw: string) => {
-      const t = normalizeTag(raw);
-      if (!t) return;
+      const nextTag = normalizeTag(raw);
+      if (!nextTag) return;
       if (!canAdd) return;
-      if (current.some((x) => x.toLowerCase() === t.toLowerCase())) return;
-      onChange([...current, t]);
+      if (current.some((item) => item.toLowerCase() === nextTag.toLowerCase())) return;
+      onChange([...current, nextTag]);
     },
     [canAdd, current, onChange],
   );
 
-  function removeTag(t: string) {
-    onChange(current.filter((x) => x !== t));
+  function removeTag(tagName: string) {
+    onChange(current.filter((item) => item !== tagName));
   }
 
-  // Fetch suggestions (debounced)
   React.useEffect(() => {
     const q = input.trim();
     if (!q) {
@@ -61,7 +65,7 @@ export default function TagMultiInput({
         const res = await fetch(`/api/tags?q=${encodeURIComponent(q)}&take=12`);
         const data = await res.json().catch(() => ({} as any));
         const tags = Array.isArray(data?.tags) ? data.tags : [];
-        setSuggestions(tags.map((t: any) => ({ name: String(t.name || "") })).filter((t: any) => t.name));
+        setSuggestions(tags.map((item: any) => ({ name: String(item.name || "") })).filter((item: any) => item.name));
       } catch {
         setSuggestions([]);
       } finally {
@@ -84,29 +88,33 @@ export default function TagMultiInput({
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold">{label}</div>
+        <div className="text-sm font-semibold">{translatedLabel}</div>
         <div className="text-xs text-gray-600 dark:text-gray-300">
           {current.length}/{maxTags}
         </div>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {current.map((t) => (
-          <span
-            key={t}
-            className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-          >
-            #{t}
-            <button
-              type="button"
-              onClick={() => removeTag(t)}
-              className="text-gray-500 hover:text-red-500"
-              aria-label={`Remove tag ${t}`}
+        {current.map((tagName) => {
+          const removeLabel = `${t("Remove tag")} ${tagName}`;
+          return (
+            <span
+              key={tagName}
+              className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
             >
-              
-            </button>
-          </span>
-        ))}
+              #{tagName}
+              <button
+                type="button"
+                onClick={() => removeTag(tagName)}
+                className="text-gray-500 hover:text-red-500"
+                aria-label={removeLabel}
+                title={removeLabel}
+              >
+                
+              </button>
+            </span>
+          );
+        })}
       </div>
 
       <div className="mt-3">
@@ -114,29 +122,29 @@ export default function TagMultiInput({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={placeholder}
+          placeholder={translatedPlaceholder}
           className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
         />
         {loading ? (
-          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">Looking for tag suggestions...</div>
+          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">{t("Looking for tag suggestions...")}</div>
         ) : null}
         {suggestions.length ? (
           <div className="mt-2 flex flex-wrap gap-2">
             {suggestions
-              .filter((s) => !current.some((x) => x.toLowerCase() === s.name.toLowerCase()))
+              .filter((suggestion) => !current.some((item) => item.toLowerCase() === suggestion.name.toLowerCase()))
               .slice(0, 12)
-              .map((s) => (
+              .map((suggestion) => (
                 <button
                   type="button"
-                  key={s.name}
+                  key={suggestion.name}
                   onClick={() => {
-                    addTag(s.name);
+                    addTag(suggestion.name);
                     setInput("");
                     setSuggestions([]);
                   }}
                   className="text-xs px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
                 >
-                  + {s.name}
+                  + {suggestion.name}
                 </button>
               ))}
           </div>
@@ -144,7 +152,7 @@ export default function TagMultiInput({
       </div>
 
       <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-        Tip: press <b>Enter</b> or comma to add a tag.
+        {t("Tip: press Enter or comma to add a tag.")}
       </div>
     </div>
   );

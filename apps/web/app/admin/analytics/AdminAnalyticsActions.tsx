@@ -3,6 +3,8 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+
 type Props = {
   start: string;
   end: string;
@@ -24,6 +26,7 @@ function buildQuery(args: { start?: string; end?: string; days?: number; limit?:
 }
 
 export default function AdminAnalyticsActions({ start, end, days, limit, hasCustomRange }: Props) {
+  const t = useUILanguageText();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -44,11 +47,11 @@ export default function AdminAnalyticsActions({ start, end, days, limit, hasCust
           body: JSON.stringify(payload),
         });
         const data = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(data?.error || data?.message || "Failed to rebuild analytics");
-        setMessage(`Aggregate rebuilt for ${data?.count || 0} day(s).`);
+        if (!response.ok) throw new Error(data?.error || data?.message || t("Failed to rebuild analytics"));
+        setMessage(`${t("Aggregate rebuilt for")} ${data?.count || 0} ${t("day(s).")}`);
         router.refresh();
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Failed to rebuild analytics");
+        setMessage(error instanceof Error ? error.message : t("Failed to rebuild analytics"));
       }
     });
   }
@@ -68,7 +71,7 @@ export default function AdminAnalyticsActions({ start, end, days, limit, hasCust
           disabled={isPending}
           className="rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200 dark:hover:bg-blue-950/60"
         >
-          {isPending ? "Rebuilding..." : "Rebuild aggregates"}
+          {isPending ? t("Rebuilding...") : t("Rebuild aggregates")}
         </button>
       </div>
       {message ? <div className="text-right text-xs text-gray-500 dark:text-gray-400">{message}</div> : null}

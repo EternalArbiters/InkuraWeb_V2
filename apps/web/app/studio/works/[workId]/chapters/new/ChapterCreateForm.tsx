@@ -9,6 +9,7 @@ import ComicPageFilesPicker from "@/components/ComicPageFilesPicker";
 import NovelRichTextEditor from "@/components/NovelRichTextEditor";
 import { novelContentHasMeaningfulContent } from "@/lib/novelContent";
 import FloatingNotice from "@/app/components/ui/FloatingNotice";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 type Props = {
   workId: string;
@@ -36,6 +37,7 @@ function formatBytes(bytes: number) {
 
 export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags }: Props) {
   const router = useRouter();
+  const t = useUILanguageText();
 
   const [title, setTitle] = React.useState("");
   const [autoLabel, setAutoLabel] = React.useState(true);
@@ -254,8 +256,8 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             onChange={(e) => setStatus(e.target.value)}
             className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
           >
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">{t("Draft")}</option>
+            <option value="PUBLISHED">{t("Published")}</option>
           </select>
         </label>
 
@@ -276,7 +278,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
 
       {workType === "NOVEL" ? (
         <div className="grid gap-2">
-          <span className="text-sm font-semibold">Content</span>
+          <span className="text-sm font-semibold">{t("Content")}</span>
           <NovelRichTextEditor value={content} onChange={setContent} workId={workId} />
         </div>
       ) : (

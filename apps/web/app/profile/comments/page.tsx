@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
 import ProfileSortSelect from "@/app/components/user/ProfileSortSelect";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerComments } from "@/server/services/profile/viewerActivity";
 import LoadMoreList from "@/app/components/LoadMoreList";
@@ -24,6 +25,11 @@ export default async function ProfileCommentsPage({
   const resolvedSearchParams = (await searchParams) || {};
   const rawSort = Array.isArray(resolvedSearchParams.sort) ? resolvedSearchParams.sort[0] : resolvedSearchParams.sort;
   const { items, sort } = await getViewerComments(userId, { sort: rawSort, take: 100 });
+  const [tAllComments, tSortComments, tNoComments] = await Promise.all([
+    getActiveUILanguageText("All Comments"),
+    getActiveUILanguageText({tSortComments}),
+    getActiveUILanguageText("No comments yet."),
+  ]);
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -33,9 +39,9 @@ export default async function ProfileCommentsPage({
             <Link href="/profile" className="text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
               ← Back to profile
             </Link>
-<h1 className="mt-3 text-3xl font-extrabold tracking-tight">All Comments</h1>
+<h1 className="mt-3 text-3xl font-extrabold tracking-tight">{tAllComments}</h1>
           </div>
-          <ProfileSortSelect value={sort} label="Sort comments" options={[...COMMENT_SORT_OPTIONS]} />
+          <ProfileSortSelect value={sort} label={tSortComments} options={[...COMMENT_SORT_OPTIONS]} />
         </div>
 
         {items.length ? (
@@ -46,7 +52,7 @@ export default async function ProfileCommentsPage({
           </LoadMoreList>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-300">
-            No comments yet.
+            {tNoComments}
           </div>
         )}
       </div>

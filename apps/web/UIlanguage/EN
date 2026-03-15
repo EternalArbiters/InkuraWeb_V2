@@ -1762,6 +1762,8 @@ Failed to process the file.
 Failed to send comment
 Failed to fetch
 Remove tag
+Failed to load page
+Tip: press Enter or comma to add a tag.
 View public page
 Create Chapter
 Delete chapter
@@ -2073,3 +2075,59 @@ Repeat password
 Processing...
 Success! Redirecting...
 If the link is invalid or expired, request a new one via “Forgot password”.
+
+==========
+Shared UI Extended
+==========
+
+Message
+Views
+Readers
+Start
+Events
+Event
+Legal
+Series
+Draft
+Followers
+Following
+Collections
+Ongoing
+Completed
+Hiatus
+Cancelled
+Fanfic
+Adaptation
+Include
+Translators
+Cover
+Remove
+Manga
+Manhwa
+Manhua
+Webtoon
+Western
+Other
+Completion
+Preview
+Published
+Content
+Summary
+Order
+Flags
+Actions
+Collection
+
+No followers yet.
+Not following anyone yet.
+No comments yet.
+No reviews yet.
+Browse works
+New list
+Min chapters
+Max chapters
+Only
+Ignore my language preferences (settings)
+Ignore my blocked genres/NSFW (settings)
+Enable it in Settings → Account.
+Any

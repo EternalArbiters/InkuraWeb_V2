@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { NAV_BADGE_REFRESH_EVENT } from "./navBadgeEvents";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { sendClientMetric } from "@/lib/clientMetrics";
 
 const VISIBLE_POLL_MS = 90_000;
@@ -36,6 +37,7 @@ export default function NavCountBadge({
   variant?: "absolute" | "inline";
   enabled?: boolean;
 }) {
+  const t = useUILanguageText();
   const [count, setCount] = React.useState<number>(0);
   const lastPollAtRef = React.useRef<number | null>(null);
 
@@ -135,8 +137,10 @@ export default function NavCountBadge({
       ? "min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-extrabold flex items-center justify-center"
       : "absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-extrabold flex items-center justify-center";
 
+  const unreadLabel = `${count} ${t("unread")}`;
+
   return (
-    <span className={base + " " + (className || "")} aria-label={`${count} unread`} title={`${count} unread`}>
+    <span className={base + " " + (className || "")} aria-label={unreadLabel} title={unreadLabel}>
       {fmt(count)}
     </span>
   );

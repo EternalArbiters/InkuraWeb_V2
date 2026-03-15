@@ -5,6 +5,7 @@ import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
 import { ReadingProgressRailCard } from "@/app/components/library/ReadingProgressCard";
 import HorizontalRail from "@/app/home/HorizontalRail";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
 
@@ -14,23 +15,32 @@ export default async function LibraryPage() {
   await requirePageUserId("/library");
   const { bookmarks, progress, lists } = await getViewerLibrary();
   const bookmarkWorks = bookmarks.map((entry) => entry.work).filter(Boolean);
-
-  return (
+  const [tLibrary, tContinueReading, tSeeAll, tNoHistory, tBookmarks, tNoBookmarks, tYourCollections, tNoLists] = await Promise.all([
+    getActiveUILanguageText("Library"),
+    getActiveUILanguageText("Continue Reading"),
+    getActiveUILanguageText("See all"),
+    getActiveUILanguageText({tNoHistory}),
+    getActiveUILanguageText("Bookmarks"),
+    getActiveUILanguageText({tNoBookmarks}),
+    getActiveUILanguageText("Your Collections"),
+    getActiveUILanguageText({tNoLists}),
+  ]);
+    return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Library</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tLibrary}</h1>
           </div>
         </div>
 
         <div className="mt-10">
           <div className="flex items-end justify-between gap-3">
-            <h2 className="text-lg font-bold">Continue Reading</h2>
-            <ActionLink href="/settings/history">See all</ActionLink>
+            <h2 className="text-lg font-bold">{tContinueReading}</h2>
+            <ActionLink href="/settings/history">{tSeeAll}</ActionLink>
           </div>
           {progress.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No reading history yet.</p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{tNoHistory}</p>
           ) : (
             <div className="mt-4">
               <HorizontalRail>
@@ -44,11 +54,11 @@ export default async function LibraryPage() {
 
         <div className="mt-12">
           <div className="flex items-end justify-between gap-3">
-            <h2 className="text-lg font-bold">Bookmarks</h2>
-            <ActionLink href="/library/bookmarks">See all</ActionLink>
+            <h2 className="text-lg font-bold">{tBookmarks}</h2>
+            <ActionLink href="/library/bookmarks">{tSeeAll}</ActionLink>
           </div>
           {bookmarkWorks.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No bookmarks yet.</p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{tNoBookmarks}</p>
           ) : (
             <div className="mt-4">
               <HorizontalRail>
@@ -67,12 +77,12 @@ export default async function LibraryPage() {
 
         <div className="mt-12">
           <div className="flex items-end justify-between gap-3">
-            <h2 className="text-lg font-bold">Your Collections</h2>
-            <ActionLink href="/lists">See all</ActionLink>
+            <h2 className="text-lg font-bold">{tYourCollections}</h2>
+            <ActionLink href="/lists">{tSeeAll}</ActionLink>
           </div>
 
           {lists.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No lists yet.</p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{tNoLists}</p>
           ) : (
             <div className="mt-4">
               <HorizontalRail>

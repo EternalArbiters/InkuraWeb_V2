@@ -2,13 +2,14 @@
 
 import { ExternalLink, Link2 } from "lucide-react";
 
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { displayUrlLabel, type ProfileLinkEntry } from "@/lib/profileUrls";
 
-function secondaryLabel(links: ProfileLinkEntry[]) {
+function secondaryLabel(links: ProfileLinkEntry[], moreLabel: string) {
   if (!links.length) return "";
   if (links.length === 1) return displayUrlLabel(links[0].url);
-  return `+${links.length - 1} more`;
+  return `+${links.length - 1} ${moreLabel}`;
 }
 
 export default function ProfileLinksSheet({
@@ -18,10 +19,11 @@ export default function ProfileLinksSheet({
   links: ProfileLinkEntry[];
   triggerClassName?: string;
 }) {
+  const t = useUILanguageText();
   if (!links.length) return null;
 
   const primary = links[0];
-  const secondary = secondaryLabel(links);
+  const secondary = secondaryLabel(links, t("more"));
 
   return (
     <Dialog>
@@ -41,7 +43,7 @@ export default function ProfileLinksSheet({
       <DialogContent className="!top-auto !bottom-0 !translate-y-0 max-w-2xl rounded-t-[28px] rounded-b-none border-gray-200 bg-white px-0 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-0 shadow-2xl dark:border-gray-800 dark:bg-gray-950">
         <div className="mx-auto mt-3 h-1.5 w-14 rounded-full bg-gray-300 dark:bg-gray-700" />
         <DialogHeader className="px-5 pt-4 text-left">
-          <DialogTitle className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">Links</DialogTitle>
+          <DialogTitle className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">{t("Links")}</DialogTitle>
         </DialogHeader>
 
         <div className="mt-4 max-h-[70vh] overflow-y-auto px-3 pb-2">

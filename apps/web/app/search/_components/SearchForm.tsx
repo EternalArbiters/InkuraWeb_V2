@@ -3,6 +3,7 @@ import LockLabel from "@/app/components/LockLabel";
 import GenreTriStatePicker from "@/components/GenreTriStatePicker";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 type Props = {
   q: string;
@@ -50,7 +51,7 @@ type Props = {
   canUseDeviantLoveTags: boolean;
 };
 
-export default function SearchForm({
+export default async function SearchForm({
   q,
   kind,
   sort,
@@ -86,6 +87,62 @@ export default function SearchForm({
   canUseNsfwTags,
   canUseDeviantLoveTags,
 }: Props) {
+  const [
+    tSearchTitle, tNewest, tMostLiked, tBestRated, tAnyGenre, tSearch,
+    tAdvancedFilters, tLanguage, tStatusPublishChapters, tCompletion,
+    tAny, tOngoing, tCompleted, tHiatus, tCancelled,
+    tOrigin, tOriginal, tFanfic, tAdaptation, tUnknown,
+    tPublishType, tTranslation, tReupload, tComicType,
+    tAuthor, tMinChapters, tMaxChapters, tTranslator,
+    tMature, tHideDefault, tInclude, tOnly,
+    tGenreIncludeMode, tOrAny, tAndAll,
+    tDeviantIncludeMode, tNsfwIncludeMode,
+    tIgnoreLangPref, tIgnoreBlockedGenres,
+    tSearchForTitle, tTag, tEnableSettings,
+  ] = await Promise.all([
+    getActiveUILanguageText("Advance Search", { section: "Page Search" }),
+    getActiveUILanguageText("Newest"),
+    getActiveUILanguageText("Most liked"),
+    getActiveUILanguageText("Best rated"),
+    getActiveUILanguageText("Any genre"),
+    getActiveUILanguageText("Search"),
+    getActiveUILanguageText("Advanced Filters"),
+    getActiveUILanguageText("Language"),
+    getActiveUILanguageText("Status / Publish / Chapters"),
+    getActiveUILanguageText("Completion"),
+    getActiveUILanguageText("Any"),
+    getActiveUILanguageText("Ongoing"),
+    getActiveUILanguageText("Completed"),
+    getActiveUILanguageText("Hiatus"),
+    getActiveUILanguageText("Cancelled"),
+    getActiveUILanguageText("Origin"),
+    getActiveUILanguageText("Original"),
+    getActiveUILanguageText("Fanfic"),
+    getActiveUILanguageText("Adaptation"),
+    getActiveUILanguageText("Unknown"),
+    getActiveUILanguageText("Publish type"),
+    getActiveUILanguageText("Translation"),
+    getActiveUILanguageText("Reupload"),
+    getActiveUILanguageText("Comic type"),
+    getActiveUILanguageText("Author (username / name)"),
+    getActiveUILanguageText("Min chapters", { section: "Page Search" }),
+    getActiveUILanguageText("Max chapters", { section: "Page Search" }),
+    getActiveUILanguageText("Translator (username / name)"),
+    getActiveUILanguageText("Mature / 18+"),
+    getActiveUILanguageText("Hide (default)"),
+    getActiveUILanguageText("Include"),
+    getActiveUILanguageText("Only", { section: "Page Search" }),
+    getActiveUILanguageText("Genre include mode:"),
+    getActiveUILanguageText("OR (any included)"),
+    getActiveUILanguageText("AND (all included)"),
+    getActiveUILanguageText("Deviant include mode:"),
+    getActiveUILanguageText("NSFW include mode:"),
+    getActiveUILanguageText("Ignore my language preferences (settings)", { section: "Page Search" }),
+    getActiveUILanguageText("Ignore my blocked genres/NSFW (settings)", { section: "Page Search" }),
+    getActiveUILanguageText("Search for title, description...."),
+    getActiveUILanguageText("Tags"),
+    getActiveUILanguageText("Enable it in Settings → Account."),
+  ]);
   return (
     <form
       className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_180px_180px_220px_180px_140px] gap-3"
@@ -95,7 +152,7 @@ export default function SearchForm({
       <input
         name="q"
         defaultValue={q}
-        placeholder="Search for title, description...."
+        placeholder={tSearchForTitle}
         className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
       />
 
@@ -104,7 +161,7 @@ export default function SearchForm({
         defaultValue={kind || "all"}
         className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
       >
-        <option value="all">All</option>
+        <option value="all">{tSearchTitle.includes("All") ? "All" : "All"}</option>
         <option value="novel">Novel</option>
         <option value="comic">Comic</option>
       </select>
@@ -114,9 +171,9 @@ export default function SearchForm({
         defaultValue={sort || "newest"}
         className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
       >
-        <option value="newest">Newest</option>
-        <option value="liked">Most liked</option>
-        <option value="rated">Best rated</option>
+        <option value="newest">{tNewest}</option>
+        <option value="liked">{tMostLiked}</option>
+        <option value="rated">{tBestRated}</option>
       </select>
 
       <select
@@ -124,7 +181,7 @@ export default function SearchForm({
         defaultValue={genre || ""}
         className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
       >
-        <option value="">Any genre</option>
+        <option value="">{tAnyGenre}</option>
         {genres.map((g: any) => (
           <option key={g.slug} value={g.slug}>
             {g.name}
@@ -135,21 +192,21 @@ export default function SearchForm({
       <input
         name="tag"
         defaultValue={tag}
-        placeholder="Tag"
+        placeholder={tTag}
         className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
       />
 
       <button className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110">
-        Search
+        {tSearch}
       </button>
 
       {/* Advanced filters */}
       <details className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 md:col-span-6">
-        <summary className="cursor-pointer select-none text-sm font-semibold">Advanced Filters</summary>
+        <summary className="cursor-pointer select-none text-sm font-semibold">{tAdvancedFilters}</summary>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-            <div className="text-sm font-semibold">Language</div>
+            <div className="text-sm font-semibold">{tLanguage}</div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {LANGUAGE_CATALOG.slice(0, 10).map((l) => (
                 <label key={l.code} className="flex items-center gap-2 text-sm">
@@ -160,76 +217,76 @@ export default function SearchForm({
             </div>
             <label className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input type="checkbox" name="ignoreLang" value="1" defaultChecked={ignoreLang} />
-              Ignore my language preferences (settings)
+              {tIgnoreLangPref}
             </label>
           </div>
 
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-            <div className="text-sm font-semibold">Status / Publish / Chapters</div>
+            <div className="text-sm font-semibold">{tStatusPublishChapters}</div>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Completion
+                {tCompletion}
                 <select
                   name="completion"
                   defaultValue={completion || ""}
                   className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
                 >
-                  <option value="">Any</option>
-                  <option value="ONGOING">Ongoing</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="HIATUS">Hiatus</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option value="">{tAny}</option>
+                  <option value="ONGOING">{tOngoing}</option>
+                  <option value="COMPLETED">{tCompleted}</option>
+                  <option value="HIATUS">{tHiatus}</option>
+                  <option value="CANCELLED">{tCancelled}</option>
                 </select>
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Origin
+                {tOrigin}
                 <select
                   name="origin"
                   defaultValue={origin || ""}
                   className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
                 >
-                  <option value="">Any</option>
-                  <option value="ORIGINAL">Original</option>
-                  <option value="FANFIC">Fanfic</option>
-                  <option value="ADAPTATION">Adaptation</option>
-                  <option value="UNKNOWN">Unknown</option>
+                  <option value="">{tAny}</option>
+                  <option value="ORIGINAL">{tOriginal}</option>
+                  <option value="FANFIC">{tFanfic}</option>
+                  <option value="ADAPTATION">{tAdaptation}</option>
+                  <option value="UNKNOWN">{tUnknown}</option>
                 </select>
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Publish type
+                {tPublishType}
                 <select
                   name="publishType"
                   defaultValue={publishType || ""}
                   className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
                 >
-                  <option value="">Any</option>
-                  <option value="ORIGINAL">Original</option>
-                  <option value="TRANSLATION">Translation</option>
-                  <option value="REUPLOAD">Reupload</option>
+                  <option value="">{tAny}</option>
+                  <option value="ORIGINAL">{tOriginal}</option>
+                  <option value="TRANSLATION">{tTranslation}</option>
+                  <option value="REUPLOAD">{tReupload}</option>
                 </select>
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Comic type
+                {tComicType}
                 <select
                   name="comicType"
                   defaultValue={comicType || ""}
                   className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
                 >
-                  <option value="">Any</option>
+                  <option value="">{tAny}</option>
                   {COMIC_TYPE_CATALOG.filter((x) => x.value !== "UNKNOWN").map((x) => (
                     <option key={x.value} value={x.value}>
                       {x.label}
                     </option>
                   ))}
-                  <option value="UNKNOWN">Unknown</option>
+                  <option value="UNKNOWN">{tUnknown}</option>
                 </select>
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Author
+                {tAuthor}
                 <input
                   name="author"
                   defaultValue={author}
@@ -239,7 +296,7 @@ export default function SearchForm({
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Min chapters
+                {tMinChapters}
                 <input
                   name="minCh"
                   type="number"
@@ -250,7 +307,7 @@ export default function SearchForm({
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300">
-                Max chapters
+                {tMaxChapters}
                 <input
                   name="maxCh"
                   type="number"
@@ -261,7 +318,7 @@ export default function SearchForm({
               </label>
 
               <label className="text-xs text-gray-600 dark:text-gray-300 col-span-2">
-                Translator
+                {tTranslator}
                 <input
                   name="translator"
                   defaultValue={translator}
@@ -272,22 +329,22 @@ export default function SearchForm({
 
               {showMatureFilter ? (
                 <label className="text-xs text-gray-600 dark:text-gray-300 col-span-2">
-                  Mature
+                  {tMature}
                   <select
                     name="mature"
                     defaultValue={mature || (defaultHideMature ? "hide" : "include")}
                     disabled={!canViewMature}
                     className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 disabled:opacity-60"
                   >
-                    <option value="hide">Hide (default)</option>
-                    <option value="include">Include</option>
-                    <option value="only">Only</option>
+                    <option value="hide">{tHideDefault}</option>
+                    <option value="include">{tInclude}</option>
+                    <option value="only">{tOnly}</option>
                   </select>
                   {!canViewMature ? (
                     <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
                       <span className="inline-flex items-center gap-2">
                         <LockLabel text="Mature" />
-                        <span>Enable it in Settings → Account.</span>
+                        <span>{tEnableSettings}</span>
                       </span>
                     </div>
                   ) : null}
@@ -310,7 +367,7 @@ export default function SearchForm({
           />
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <label className="flex items-center gap-2">
-              <span className="text-gray-600 dark:text-gray-300">Genre include mode:</span>
+              {tGenreIncludeMode}
               <select
                 name="gmode"
                 defaultValue={includeMode === "and" ? "and" : "or"}
@@ -338,14 +395,14 @@ export default function SearchForm({
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 <label className="flex items-center gap-2">
-                  <span className="text-gray-600 dark:text-gray-300">Deviant include mode:</span>
+                  {tDeviantIncludeMode}
                   <select
                     name="dmode"
                     defaultValue={deviantMode === "and" ? "and" : "or"}
                     className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
                   >
-                    <option value="or">OR (any included)</option>
-                    <option value="and">AND (all included)</option>
+                    {tOrAny}</option>
+                    <option value="and">{tAndAll}
                   </select>
                 </label>
               </div>
@@ -377,14 +434,14 @@ export default function SearchForm({
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 <label className="flex items-center gap-2">
-                  <span className="text-gray-600 dark:text-gray-300">NSFW include mode:</span>
+                  {tNsfwIncludeMode}
                   <select
                     name="wmode"
                     defaultValue={warningMode === "and" ? "and" : "or"}
                     className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
                   >
-                    <option value="or">OR (any included)</option>
-                    <option value="and">AND (all included)</option>
+                    {tOrAny}</option>
+                    <option value="and">{tAndAll}
                   </select>
                 </label>
               </div>
@@ -403,7 +460,7 @@ export default function SearchForm({
 
         <label className="mt-4 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
           <input type="checkbox" name="ignoreBlocked" value="1" defaultChecked={ignoreBlocked} />
-          Ignore my blocked genres/NSFW (settings)
+          {tIgnoreBlockedGenres}
         </label>
       </details>
     </form>
