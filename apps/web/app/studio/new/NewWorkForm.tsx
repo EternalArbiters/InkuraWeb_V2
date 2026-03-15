@@ -8,7 +8,6 @@ import { prepareUploadFile, type PreparedUploadFile } from "@/lib/uploadOptimiza
 
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import CoverCard from "./components/CoverCard";
-import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import DeviantLoveCard from "./components/DeviantLoveCard";
 import PublishTypeCard from "./components/PublishTypeCard";
 import SubmitRow from "./components/SubmitRow";

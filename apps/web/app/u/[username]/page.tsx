@@ -96,14 +96,18 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     }
 
     const { user, viewer, viewerFollowingUser, viewerBlockedUser, visibleWorks, visibleLists, visibleReviews } = data;
-    const [tJoined, tPublishedWorks, tCollections, tRecentReviews, tNoCollections, tNoPublicReviews, tWorks, tFollowers, tFollowing] = await Promise.all([
-      getActiveUILanguageText("Bergabung").catch(() => "Bergabung"),
+    const [
+      tJoined, tPublishedWorks, tCollections, tRecentReviews,
+      tNoCollections, tNoPublicReviews, tShareProfile, tWorks, tFollowers, tFollowing,
+    ] = await Promise.all([
+      getActiveUILanguageText("Joined"),
       getActiveUILanguageText("Published Works"),
       getActiveUILanguageText("Collections"),
       getActiveUILanguageText("Recent Reviews"),
-      getActiveUILanguageText("Belum ada koleksi.").catch(() => "Belum ada koleksi."),
-      getActiveUILanguageText("Belum ada review.").catch(() => "Belum ada review."),
-      getActiveUILanguageText("Published Works").catch(() => "Works"),
+      getActiveUILanguageText("No collections yet."),
+      getActiveUILanguageText("No public reviews yet."),
+      getActiveUILanguageText("Share Profile"),
+      getActiveUILanguageText("Works"),
       getActiveUILanguageText("Followers"),
       getActiveUILanguageText("Following"),
     ]);
@@ -111,16 +115,6 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     const isSelf = viewer?.id === user.id;
     const profileLinks = parseProfileLinks(user.profileUrlsJson, user.profileUrl);
     const callbackPath = `/u/${user.username}`;
-    const [tJoined, tPublishedWorks, tCollections, tRecentReviews,
-           tNoCollections, tNoPublicReviews, tShareProfile] = await Promise.all([
-      getActiveUILanguageText("Joined"),
-      getActiveUILanguageText("Published Works"),
-      getActiveUILanguageText("Collections"),
-      getActiveUILanguageText("Recent Reviews"),
-      getActiveUILanguageText("Belum ada koleksi."),
-      getActiveUILanguageText("Belum ada review."),
-      getActiveUILanguageText("Share Profile"),
-    ]);
 
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
