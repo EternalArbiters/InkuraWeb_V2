@@ -43,7 +43,7 @@ export default async function PublicCollectionsPage({ params }: { params: Promis
           </div>
         ) : (
           <LoadMoreList className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {data.visibleLists.map((list) => (
+            {data.visibleLists.map((list: any) => (
               <CollectionRailCard
                 key={list.id}
                 href={`/lists/${list.slug}`}
