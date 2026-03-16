@@ -79,11 +79,10 @@ export default function CommentSection({
   const replyRef = useRef<HTMLTextAreaElement | null>(null);
 
   const allowCompose = showComposer && scope === "target";
-  const isCompact = variant === "compact";
   const allowSort =
     showSortControl !== undefined
       ? showSortControl
-      : !isCompact && !headerRight;
+      : variant !== "compact" && !headerRight;
 
   const [sortMode, setSortMode] = useState<SortMode>(() => normalizeSort(sort));
   useEffect(() => {
@@ -394,7 +393,7 @@ export default function CommentSection({
   const onChangeSort = (next: SortMode) => {
     setSortMode(next);
     // Sync to URL (best-effort) for full pages.
-    if (!isCompact && scope === "target") {
+    if (variant !== "compact" && scope === "target") {
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("sort", next);
       const qs = sp.toString();
@@ -419,7 +418,7 @@ export default function CommentSection({
   };
 
   return (
-    <section id="comments" className={isCompact ? "mt-6" : "mt-10"}>
+    <section id="comments" className={variant === "compact" ? "mt-6" : "mt-10"}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-xl font-bold">{title}</h2>
         <div className="flex items-center gap-2">
@@ -454,7 +453,7 @@ export default function CommentSection({
         </div>
       </div>
 
-      <div className={isCompact ? "mt-4" : "mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-5"}>
+      <div className="mt-4">
         {allowCompose ? (
           <CommentComposer
             textareaRef={composer.textareaRef}
@@ -471,23 +470,33 @@ export default function CommentSection({
           />
         ) : null}
 
-        <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-          {unauthorized ? (
-            <span>
-              You are not signed in yet.{" "}
-              <Link
-                className="font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-                href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}
-              >
-                Sign in
-              </Link>
-            </span>
-          ) : null}
-          {info ? <span className="ml-2 text-emerald-700 dark:text-emerald-400">{info}</span> : null}
-          {error ? <span className="ml-2 text-red-600 dark:text-red-400">{error}</span> : null}
-        </div>
+        {unauthorized || info || error ? (
+          <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+            {unauthorized ? (
+              <span>
+                You are not signed in yet.{" "}
+                <Link
+                  className="font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                  href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}
+                >
+                  Sign in
+                </Link>
+              </span>
+            ) : null}
+            {info ? (
+              <span className={unauthorized ? "ml-2 text-emerald-700 dark:text-emerald-400" : "text-emerald-700 dark:text-emerald-400"}>
+                {info}
+              </span>
+            ) : null}
+            {error ? (
+              <span className={unauthorized || info ? "ml-2 text-red-600 dark:text-red-400" : "text-red-600 dark:text-red-400"}>
+                {error}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
-        {allowCompose ? <hr className={isCompact ? "my-4 border-gray-200 dark:border-gray-800" : "my-5 border-gray-200 dark:border-gray-800"} /> : null}
+        {allowCompose ? <hr className="my-5 border-gray-200 dark:border-gray-800" /> : null}
 
         {loading ? (
           <p className="text-sm text-gray-600 dark:text-gray-300">Loading...</p>
@@ -529,7 +538,6 @@ export default function CommentSection({
             onToggleDislike={toggleDislikeComment}
             onTogglePin={togglePin}
             onToggleHide={toggleHide}
-            variant={variant}
           />
         )}
       </div>
