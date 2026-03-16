@@ -19,7 +19,7 @@ function PageSkeleton({ index, total, state }: { index: number; total: number; s
   return (
     <div
       className={[
-        "pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-500",
+        "pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-300",
         state === "error" ? "bg-gray-200/90 dark:bg-gray-900/95" : "bg-gray-200/80 dark:bg-gray-900/90",
       ].join(" ")}
       aria-hidden="true"
@@ -44,6 +44,7 @@ function ComicPageItem({
   const [state, setState] = React.useState<"loading" | "loaded" | "error">("loading");
   const [meta, setMeta] = React.useState<ImageMeta | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const imageRef = React.useRef<HTMLImageElement | null>(null);
 
   React.useEffect(() => {
     const node = containerRef.current;
@@ -54,14 +55,39 @@ function ComicPageItem({
     return () => node.removeEventListener("selectstart", handleSelectStart);
   }, []);
 
+  React.useEffect(() => {
+    setState("loading");
+    setMeta(null);
+
+    const img = imageRef.current;
+    if (!img) return;
+
+    if (img.complete) {
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        setMeta({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        });
+        setState("loaded");
+      } else {
+        setState("error");
+      }
+    }
+  }, [page.imageUrl]);
+
   const aspectRatio = meta && meta.width > 0 && meta.height > 0 ? `${meta.width} / ${meta.height}` : undefined;
-  const safeImageUrl = page.imageUrl.replace(/"/g, "\\\"");
 
   return (
     <div
       ref={containerRef}
       className="relative isolate overflow-hidden bg-gray-200 dark:bg-gray-900 select-none"
-      style={{ minHeight: "42vh", WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
+      style={{
+        minHeight: "42vh",
+        aspectRatio,
+        WebkitTouchCallout: "none",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+      }}
       onContextMenu={(event) => event.preventDefault()}
       onDragStart={(event) => event.preventDefault()}
       onCopy={(event) => event.preventDefault()}
@@ -69,16 +95,25 @@ function ComicPageItem({
     >
       {state !== "loaded" ? <PageSkeleton index={index} total={total} state={state} /> : null}
 
-      {/* Hidden preloader keeps native lazy loading without exposing a tappable image element. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={imageRef}
         src={page.imageUrl}
-        alt=""
-        aria-hidden="true"
-        loading={index <= 1 ? "eager" : "lazy"}
+        alt={`${t("Page")} ${typeof page.order === "number" ? page.order : index + 1}`}
+        loading={index === 0 ? "eager" : "lazy"}
+        fetchPriority={index === 0 ? "high" : "auto"}
         decoding="async"
         draggable={false}
-        className="sr-only"
+        className={[
+          "relative z-[1] block h-auto w-full transition-opacity duration-300",
+          state === "error" ? "opacity-0" : "opacity-100",
+        ].join(" ")}
+        style={{
+          WebkitTouchCallout: "none",
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          pointerEvents: "none",
+        }}
         onLoad={(event) => {
           const target = event.currentTarget;
           setMeta({
@@ -88,25 +123,6 @@ function ComicPageItem({
           setState("loaded");
         }}
         onError={() => setState("error")}
-      />
-
-      <div
-        aria-label={`${t("Page")} ${typeof page.order === "number" ? page.order : index + 1}`}
-        role="img"
-        className={[
-          "relative z-[1] w-full bg-center bg-no-repeat transition-opacity duration-500",
-          state === "loaded" ? "opacity-100" : "opacity-0",
-        ].join(" ")}
-        style={{
-          aspectRatio,
-          minHeight: meta ? undefined : "42vh",
-          backgroundImage: state === "loaded" ? `url("${safeImageUrl}")` : undefined,
-          backgroundSize: "contain",
-          WebkitTouchCallout: "none",
-          WebkitUserSelect: "none",
-          userSelect: "none",
-          pointerEvents: "none",
-        }}
       />
 
       {/* Transparent shield so long-press targets the container instead of media. */}
@@ -131,7 +147,7 @@ export default function ComicPageStack({ pages }: { pages: ComicPage[] }) {
   const total = pages.length;
 
   return (
-    <div className="-mx-0 sm:-mx-0 lg:mx-0 flex flex-col gap-0">
+    <div className="-mx-0 flex flex-col gap-0 sm:-mx-0 lg:mx-0">
       {pages.map((page, index) => (
         <ComicPageItem key={page.id} page={page} index={index} total={total} />
       ))}
