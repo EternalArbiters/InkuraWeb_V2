@@ -11,7 +11,7 @@ describe("upload optimization profiles", () => {
   it("defines conservative profile contracts for each scope", () => {
     expect(getUploadProfile("avatar").preferredContentType).toBe("image/webp");
     expect(getUploadProfile("covers").targetAspectRatio).toBe(3 / 4);
-    expect(getUploadProfile("pages").maxMegapixels).toBe(6);
+    expect(getUploadProfile("pages").maxMegapixels).toBe(10);
     expect(getUploadProfile("comment_gifs").allowOptimization).toBe(false);
   });
 
@@ -31,13 +31,13 @@ describe("upload optimization decision helpers", () => {
     expect(avatarTarget.resized).toBe(true);
     expect(avatarTarget.scale).toBeCloseTo(640 / 2400);
 
-    const pageTarget = getTargetImageDimensions({ scope: "pages", width: 2200, height: 3600 });
-    expect(pageTarget.width).toBeLessThanOrEqual(1800);
-    expect(pageTarget.height).toBeLessThanOrEqual(3200);
+    const pageTarget = getTargetImageDimensions({ scope: "pages", width: 2600, height: 4200 });
+    expect(pageTarget.width).toBeLessThanOrEqual(2400);
+    expect(pageTarget.height).toBeLessThanOrEqual(4200);
     expect(pageTarget.resized).toBe(true);
   });
 
-  it("picks alpha-safe webp output and skips tiny modern assets", () => {
+  it("picks alpha-safe webp output for non-page images and preserves page formats", () => {
     expect(
       chooseOptimizedContentType({
         scope: "comment_images",
@@ -45,6 +45,14 @@ describe("upload optimization decision helpers", () => {
         hasAlpha: true,
       })
     ).toBe("image/webp");
+
+    expect(
+      chooseOptimizedContentType({
+        scope: "pages",
+        sourceContentType: "image/jpeg",
+        hasAlpha: false,
+      })
+    ).toBe("image/jpeg");
 
     expect(
       shouldSkipOptimization({

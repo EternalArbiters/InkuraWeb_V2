@@ -101,6 +101,7 @@ export function chooseOptimizedContentType(params: {
 
   if (!isImageContentType(source)) return source || "application/octet-stream";
   if (source === "image/gif") return "image/gif";
+  if (scope === "pages") return source;
   if (hasAlpha && profile.preserveAlpha) return "image/webp";
   return profile.preferredContentType || source;
 }
@@ -124,7 +125,10 @@ export function shouldSkipOptimization(params: {
   }
 
   const { resized } = getTargetImageDimensions({ scope, width, height });
-  const modernTarget = normalizedType === profile.preferredContentType || (profile.preserveAlpha && normalizedType === "image/webp");
+  const modernTarget =
+    scope === "pages"
+      ? normalizedType === "image/webp" || normalizedType === "image/png" || normalizedType === "image/jpeg"
+      : normalizedType === profile.preferredContentType || (profile.preserveAlpha && normalizedType === "image/webp");
   const smallEnough = profile.skipReencodeBelowBytes != null && sizeBytes > 0 && sizeBytes <= profile.skipReencodeBelowBytes;
 
   if (!resized && modernTarget && smallEnough) {
@@ -233,12 +237,14 @@ export async function prepareUploadFile(params: {
       });
     }
 
-    if (
-      blob.size >= file.size * 0.98 &&
-      target.width === decoded.width &&
-      target.height === decoded.height &&
-      contentType === originalContentType
-    ) {
+    const sameDimensions = target.width === decoded.width && target.height === decoded.height;
+    const sameContentType = contentType === originalContentType;
+    const minimalSavingsRatio =
+      scope === "pages" && sameDimensions && sameContentType && (originalContentType === "image/jpeg" || originalContentType === "image/webp")
+        ? 0.1
+        : 0.02;
+
+    if (blob.size >= file.size * (1 - minimalSavingsRatio) && sameDimensions && sameContentType) {
       return makePreparedUploadFile({
         originalFile: file,
         file,

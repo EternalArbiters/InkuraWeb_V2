@@ -33,8 +33,8 @@ describe("upload presign rules", () => {
 
     expect(avatar.minWidth).toBe(64);
     expect(avatar.maxLongEdge).toBe(640);
-    expect(pages.maxLongEdge).toBe(2400);
-    expect(pages.maxMegapixels).toBe(6);
+    expect(pages.maxLongEdge).toBe(3600);
+    expect(pages.maxMegapixels).toBe(10);
   });
 
   it("normalizes sha256 hashes and generates deterministic comment media keys", () => {
