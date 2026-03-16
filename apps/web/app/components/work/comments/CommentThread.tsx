@@ -10,7 +10,7 @@ export default function CommentThread({
   comments: DecoratedComment[];
 } & Omit<CommentCardProps, "comment" | "depth">) {
   return (
-    <div className="space-y-4">
+    <div className={cardProps.variant === "compact" ? "divide-y divide-gray-200 dark:divide-gray-800" : "space-y-4"}>
       {comments.map((c) => (
         <CommentCard key={c.id} {...cardProps} comment={c} depth={0} />
       ))}

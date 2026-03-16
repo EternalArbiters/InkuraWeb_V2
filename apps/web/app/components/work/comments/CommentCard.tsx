@@ -67,6 +67,7 @@ export type CommentCardProps = {
   onToggleDislike: (commentId: string) => void;
   onTogglePin: (commentId: string, pin: boolean) => void;
   onToggleHide: (commentId: string, hide: boolean) => void;
+  variant?: "full" | "compact";
 };
 
 function clamp(n: number, min: number, max: number) {
@@ -110,9 +111,11 @@ export default function CommentCard(props: CommentCardProps) {
     onToggleDislike,
     onTogglePin,
     onToggleHide,
+    variant = "full",
   } = props;
 
   const t = useUILanguageText("Page Comments");
+  const isCompact = variant === "compact";
 
   const hidden = (c.isHidden ?? false) as boolean;
   const spoiler = (c.isSpoiler ?? false) as boolean;
@@ -162,13 +165,24 @@ export default function CommentCard(props: CommentCardProps) {
   return (
     <div
       id={`comment-${c.id}`}
-      className={`rounded-xl border px-4 py-3 ${
-        depth > 0 ? "bg-white/60 dark:bg-gray-950/80" : "bg-white dark:bg-gray-950"
-      } ${
-        isPinned
-          ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20"
-          : "border-gray-200 dark:border-gray-800"
-      } ${isFocused ? "ring-2 ring-amber-400/40" : ""}`}
+      className={
+        isCompact
+          ? [
+              depth > 0 ? "pt-3 pl-3" : "py-4",
+              depth > 0 ? "border-l border-gray-200 dark:border-gray-800" : "",
+              isPinned ? "rounded-xl bg-purple-50/50 px-3 dark:bg-purple-950/10" : "",
+              isFocused ? "rounded-xl bg-amber-50/60 px-3 dark:bg-amber-950/10" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")
+          : `rounded-xl border px-4 py-3 ${
+              depth > 0 ? "bg-white/60 dark:bg-gray-950/80" : "bg-white dark:bg-gray-950"
+            } ${
+              isPinned
+                ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20"
+                : "border-gray-200 dark:border-gray-800"
+            } ${isFocused ? "ring-2 ring-amber-400/40" : ""}`
+      }
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
@@ -188,7 +202,7 @@ export default function CommentCard(props: CommentCardProps) {
           </div>
           {ratingStars}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {hidden ? (
             <span className="px-2 py-0.5 text-[11px] font-semibold border border-amber-300/60 text-amber-700 dark:text-amber-300 dark:border-amber-500/40">
               Hidden
@@ -420,7 +434,7 @@ export default function CommentCard(props: CommentCardProps) {
             <div className="text-[11px] text-gray-600 dark:text-gray-300">
               {t("Tip: you can hide text with ||like this||")}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={onCancelReply}
@@ -475,7 +489,7 @@ export default function CommentCard(props: CommentCardProps) {
       ) : null}
 
       {showReplies && Array.isArray(c.replies) && c.replies.length ? (
-        <div className="mt-3 space-y-3 border-l border-gray-200 pl-3 dark:border-gray-800">
+        <div className={isCompact ? "mt-3 space-y-3" : "mt-3 space-y-3 border-l border-gray-200 pl-3 dark:border-gray-800"}>
           {c.replies.map((r) => (
             <CommentCard
               key={r.id}

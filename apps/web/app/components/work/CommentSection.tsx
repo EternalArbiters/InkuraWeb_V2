@@ -79,10 +79,11 @@ export default function CommentSection({
   const replyRef = useRef<HTMLTextAreaElement | null>(null);
 
   const allowCompose = showComposer && scope === "target";
+  const isCompact = variant === "compact";
   const allowSort =
     showSortControl !== undefined
       ? showSortControl
-      : variant !== "compact" && !headerRight;
+      : !isCompact && !headerRight;
 
   const [sortMode, setSortMode] = useState<SortMode>(() => normalizeSort(sort));
   useEffect(() => {
@@ -393,7 +394,7 @@ export default function CommentSection({
   const onChangeSort = (next: SortMode) => {
     setSortMode(next);
     // Sync to URL (best-effort) for full pages.
-    if (variant !== "compact" && scope === "target") {
+    if (!isCompact && scope === "target") {
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("sort", next);
       const qs = sp.toString();
@@ -418,7 +419,7 @@ export default function CommentSection({
   };
 
   return (
-    <section id="comments" className={variant === "compact" ? "mt-6" : "mt-10"}>
+    <section id="comments" className={isCompact ? "mt-6" : "mt-10"}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="text-xl font-bold">{title}</h2>
         <div className="flex items-center gap-2">
@@ -453,7 +454,7 @@ export default function CommentSection({
         </div>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-5">
+      <div className={isCompact ? "mt-4" : "mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-5"}>
         {allowCompose ? (
           <CommentComposer
             textareaRef={composer.textareaRef}
@@ -486,7 +487,7 @@ export default function CommentSection({
           {error ? <span className="ml-2 text-red-600 dark:text-red-400">{error}</span> : null}
         </div>
 
-        <hr className="my-5 border-gray-200 dark:border-gray-800" />
+        {allowCompose ? <hr className={isCompact ? "my-4 border-gray-200 dark:border-gray-800" : "my-5 border-gray-200 dark:border-gray-800"} /> : null}
 
         {loading ? (
           <p className="text-sm text-gray-600 dark:text-gray-300">Loading...</p>
@@ -528,6 +529,7 @@ export default function CommentSection({
             onToggleDislike={toggleDislikeComment}
             onTogglePin={togglePin}
             onToggleHide={toggleHide}
+            variant={variant}
           />
         )}
       </div>
