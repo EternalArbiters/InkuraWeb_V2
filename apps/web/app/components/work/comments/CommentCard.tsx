@@ -67,6 +67,7 @@ export type CommentCardProps = {
   onToggleDislike: (commentId: string) => void;
   onTogglePin: (commentId: string, pin: boolean) => void;
   onToggleHide: (commentId: string, hide: boolean) => void;
+  variant?: "full" | "compact" | "plain";
 };
 
 function clamp(n: number, min: number, max: number) {
@@ -110,6 +111,7 @@ export default function CommentCard(props: CommentCardProps) {
     onToggleDislike,
     onTogglePin,
     onToggleHide,
+    variant = "full",
   } = props;
 
   const t = useUILanguageText("Page Comments");
@@ -144,6 +146,25 @@ export default function CommentCard(props: CommentCardProps) {
     return chapterTitle ? `${chapterPrefix}: ${chapterTitle}` : chapterPrefix;
   }, [c.chapter, showChapterContext, t]);
 
+
+  const useCommentCard = variant === "full";
+  const wrapperClassName = useCommentCard
+    ? `rounded-xl border px-4 py-3 ${
+        depth > 0 ? "bg-white/60 dark:bg-gray-950/80" : "bg-white dark:bg-gray-950"
+      } ${
+        isPinned
+          ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20"
+          : "border-gray-200 dark:border-gray-800"
+      } ${isFocused ? "ring-2 ring-amber-400/40" : ""}`
+    : `${depth === 0 ? "py-5" : "py-4 pl-4"} ${
+        isPinned && depth === 0
+          ? "border-l-2 border-purple-400/70 dark:border-purple-500/60"
+          : ""
+      } ${isFocused ? "rounded-xl bg-amber-50/40 ring-1 ring-amber-400/30 dark:bg-amber-950/10" : ""}`;
+  const repliesContainerClassName = useCommentCard
+    ? "mt-3 space-y-3 border-l border-gray-200 pl-3 dark:border-gray-800"
+    : "mt-3 space-y-0 border-l border-gray-200 pl-4 dark:border-gray-800";
+
   const ratingStars = useMemo(() => {
     if (!(showUserRating && sectionTargetType === "WORK")) return null;
     const raw = (c as any).userRating;
@@ -162,13 +183,7 @@ export default function CommentCard(props: CommentCardProps) {
   return (
     <div
       id={`comment-${c.id}`}
-      className={[
-        isPinned || isFocused ? "rounded-2xl px-4 py-4" : depth === 0 ? "py-5" : "py-1",
-        isPinned ? "border border-purple-300/70 bg-purple-50/40 dark:border-purple-500/40 dark:bg-purple-950/15" : "",
-        isFocused ? "ring-2 ring-amber-400/40" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={wrapperClassName}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
@@ -214,7 +229,7 @@ export default function CommentCard(props: CommentCardProps) {
         </div>
       ) : null}
 
-      {hidden ? (
+            {hidden ? (
         <p className="mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400">
           (This comment has been hidden by a moderator)
         </p>
@@ -475,7 +490,7 @@ export default function CommentCard(props: CommentCardProps) {
       ) : null}
 
       {showReplies && Array.isArray(c.replies) && c.replies.length ? (
-        <div className="mt-3 space-y-3 border-l border-gray-200 pl-4 dark:border-gray-800">
+        <div className={repliesContainerClassName}>
           {c.replies.map((r) => (
             <CommentCard
               key={r.id}

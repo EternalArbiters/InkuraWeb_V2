@@ -126,6 +126,7 @@ export default async function ChapterCommentsPage({
           targetId={chapter.id}
           title={commentsTitle}
           sort={sort}
+          variant="plain"
           initialComments={initialComments as any}
           initialCanModerate={initialCanModerate}
         />

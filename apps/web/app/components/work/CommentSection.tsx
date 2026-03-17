@@ -40,7 +40,7 @@ export default function CommentSection({
   showComposer?: boolean;
   // Accept legacy aliases from older links/query params.
   sort?: SortMode | "new" | "latest";
-  variant?: "full" | "compact";
+  variant?: "full" | "compact" | "plain";
   scope?: ScopeMode;
   workId?: string;
   headerRight?: ReactNode;
@@ -83,6 +83,8 @@ export default function CommentSection({
     showSortControl !== undefined
       ? showSortControl
       : variant !== "compact" && !headerRight;
+
+  const useSectionCard = variant === "full";
 
   const [sortMode, setSortMode] = useState<SortMode>(() => normalizeSort(sort));
   useEffect(() => {
@@ -453,7 +455,11 @@ export default function CommentSection({
         </div>
       </div>
 
-      <div className="mt-4">
+      <div
+        className={useSectionCard
+          ? "mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-5"
+          : "mt-4"}
+      >
         {allowCompose ? (
           <CommentComposer
             textareaRef={composer.textareaRef}
@@ -470,33 +476,23 @@ export default function CommentSection({
           />
         ) : null}
 
-        {unauthorized || info || error ? (
-          <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-            {unauthorized ? (
-              <span>
-                You are not signed in yet.{" "}
-                <Link
-                  className="font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-                  href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}
-                >
-                  Sign in
-                </Link>
-              </span>
-            ) : null}
-            {info ? (
-              <span className={unauthorized ? "ml-2 text-emerald-700 dark:text-emerald-400" : "text-emerald-700 dark:text-emerald-400"}>
-                {info}
-              </span>
-            ) : null}
-            {error ? (
-              <span className={unauthorized || info ? "ml-2 text-red-600 dark:text-red-400" : "text-red-600 dark:text-red-400"}>
-                {error}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
+        <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+          {unauthorized ? (
+            <span>
+              You are not signed in yet.{" "}
+              <Link
+                className="font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                href={`/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`}
+              >
+                Sign in
+              </Link>
+            </span>
+          ) : null}
+          {info ? <span className="ml-2 text-emerald-700 dark:text-emerald-400">{info}</span> : null}
+          {error ? <span className="ml-2 text-red-600 dark:text-red-400">{error}</span> : null}
+        </div>
 
-        {allowCompose ? <hr className="my-5 border-gray-200 dark:border-gray-800" /> : null}
+        <hr className={useSectionCard ? "my-5 border-gray-200 dark:border-gray-800" : "my-5 border-gray-200/80 dark:border-gray-800/80"} />
 
         {loading ? (
           <p className="text-sm text-gray-600 dark:text-gray-300">Loading...</p>
@@ -538,6 +534,7 @@ export default function CommentSection({
             onToggleDislike={toggleDislikeComment}
             onTogglePin={togglePin}
             onToggleHide={toggleHide}
+            variant={variant}
           />
         )}
       </div>
