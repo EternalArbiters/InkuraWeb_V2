@@ -90,7 +90,7 @@ export function safeFilename(name: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
-export type UploadScope = "covers" | "pages" | "files";
+export type UploadScope = "covers" | "pages" | "files" | "admin_report_attachments";
 
 export function makeObjectKey(params: {
   userId: string;

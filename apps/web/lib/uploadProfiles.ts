@@ -3,6 +3,7 @@ export type UploadOptimizationScope =
   | "covers"
   | "pages"
   | "files"
+  | "admin_report_attachments"
   | "comment_images"
   | "comment_gifs";
 
@@ -100,6 +101,29 @@ export const UPLOAD_PROFILES: Record<UploadOptimizationScope, UploadOptimization
     notes: [
       "Preserve the uploaded page format unless the file is genuinely oversized.",
       "Only downscale very large pages so reader text stays sharp while storage remains bounded.",
+    ],
+  },
+  admin_report_attachments: {
+    scope: "admin_report_attachments",
+    maxBytes: 10 * MB,
+    allowedContentTypes: ["image/webp", "image/png", "image/jpeg", "application/pdf", "application/octet-stream"],
+    allowOptimization: false,
+    preferredContentType: null,
+    preserveAlpha: true,
+    stripMetadata: false,
+    preserveAnimation: false,
+    quality: null,
+    minWidth: null,
+    minHeight: null,
+    maxWidth: null,
+    maxHeight: null,
+    maxLongEdge: null,
+    maxMegapixels: null,
+    targetAspectRatio: null,
+    skipReencodeBelowBytes: null,
+    notes: [
+      "Keep admin inbox attachments simple: images or files without forcing a separate media pipeline.",
+      "Validation stays strict while preserving exact uploaded evidence for support triage.",
     ],
   },
   files: {

@@ -15,15 +15,18 @@ describe("upload presign rules", () => {
   it("normalizes upload scopes and falls back to files", () => {
     expect(normalizeUploadScope("cover")).toBe("covers");
     expect(normalizeUploadScope("comment-images")).toBe("comment_images");
+    expect(normalizeUploadScope("admin-report-attachments")).toBe("admin_report_attachments");
     expect(normalizeUploadScope("unknown-scope")).toBe("files");
   });
 
   it("enforces content-type guardrails and size caps per scope", () => {
     expect(normalizeUploadContentType("cover.png", "")).toBe("image/png");
     expect(isAllowedUploadContentType("covers", "image/jpeg")).toBe(true);
+    expect(isAllowedUploadContentType("admin_report_attachments", "application/pdf")).toBe(true);
     expect(isAllowedUploadContentType("comment_gifs", "image/png")).toBe(false);
     expect(maxBytesForUploadScope("comment_gifs")).toBe(5 * 1024 * 1024);
     expect(maxBytesForUploadScope("covers")).toBe(getUploadProfile("covers").maxBytes);
+    expect(maxBytesForUploadScope("admin_report_attachments")).toBe(getUploadProfile("admin_report_attachments").maxBytes);
     expect(maxBytesForUploadScope("comment_images")).toBe(getUploadProfile("comment_images").maxBytes);
   });
 

@@ -25,7 +25,7 @@ export type PresignResponse = {
 };
 
 export async function presignUpload(params: {
-  scope: "covers" | "pages" | "files";
+  scope: "covers" | "pages" | "files" | "admin_report_attachments";
   filename: string;
   contentType?: string;
   size?: number; // bytes (for server-side guardrails)
@@ -88,7 +88,7 @@ export function buildOptimizationMeta(prepared: PreparedUploadFile | undefined, 
 }
 
 export async function presignAndUpload(params: {
-  scope: "covers" | "pages" | "files";
+  scope: "covers" | "pages" | "files" | "admin_report_attachments";
   file: File;
   preparedFile?: PreparedUploadFile;
   workId?: string;

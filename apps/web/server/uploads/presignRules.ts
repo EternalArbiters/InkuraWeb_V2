@@ -20,6 +20,9 @@ export function normalizeUploadScope(v: unknown): UploadScope {
   const s = String(v || "files").toLowerCase().replace(/\s+/g, "");
   if (s === "covers" || s === "cover") return "covers";
   if (s === "pages" || s === "page") return "pages";
+  if (s === "admin_report_attachments" || s === "adminreportattachments" || s === "admin-report-attachments" || s === "adminreportattachment" || s === "admin-report-attachment") {
+    return "admin_report_attachments";
+  }
   if (s === "comment_images" || s === "commentimage" || s === "commentimages" || s === "comment-image" || s === "comment-images") {
     return "comment_images";
   }

@@ -826,8 +826,32 @@ model AdminInboxReport {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  attachments AdminInboxReportAttachment[]
+
   @@index([status, createdAt])
   @@index([reporterId, createdAt])
+}
+
+enum AdminInboxReportAttachmentKind {
+  IMAGE
+  FILE
+}
+
+model AdminInboxReportAttachment {
+  id          String                         @id @default(cuid())
+  reportId    String
+  filename    String
+  key         String
+  url         String
+  contentType String
+  sizeBytes   Int
+  kind        AdminInboxReportAttachmentKind
+  createdAt   DateTime                       @default(now())
+
+  report      AdminInboxReport               @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+  @@index([kind, createdAt])
 }
 
 // NOVEL content

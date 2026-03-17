@@ -324,6 +324,21 @@ Latest 100
 Link (optional)
 No reports yet.
 Send a report to the admin
+Add attachment
+Attachments
+Clear attachments
+Failed to load reports
+Message
+Message is required.
+Refresh
+Refreshing...
+Remove attachment
+Send
+Sending...
+Sent!
+Title
+Title is required.
+You can attach up to 4 files.
 
 Sweep app/admin/analytics/AdminAnalyticsActions.tsx
 
