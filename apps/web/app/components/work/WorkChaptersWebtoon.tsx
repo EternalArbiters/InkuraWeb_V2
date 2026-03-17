@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 import { ArrowDownUp } from "lucide-react";
 import { getChapterDisplayLabel, getChapterSecondaryTitle } from "@/lib/chapterLabel";
+import { ChapterLite, formatChapterDateLabel, getContinueChapterHref, getNovelChapterTitle, resolveChapterThumb } from "@/lib/workChapters";
 
 const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
 
@@ -22,32 +23,6 @@ function loadRememberedReadChapters(slug: string): string[] {
   }
 }
 
-type ChapterLite = {
-  id: string;
-  number: number;
-  title: string;
-  label?: string | null;
-  status?: string | null;
-  publishedAt?: string | null;
-  createdAt?: string | null;
-  isMature?: boolean | null;
-  thumbnailUrl?: string | null;
-  thumbnailImage?: string | null;
-  thumbnailKey?: string | null;
-  thumbnailFocusX?: number | null;
-  thumbnailFocusY?: number | null;
-  thumbnailZoom?: number | null;
-  pages?: { imageUrl: string }[];
-};
-
-function stablePick(chapterId: string, candidates: string[]) {
-  if (!candidates.length) return null;
-  let h = 0;
-  for (let i = 0; i < chapterId.length; i++) h = (h * 31 + chapterId.charCodeAt(i)) >>> 0;
-  const idx = h % candidates.length;
-  return candidates[idx];
-}
-
 function isWithin24h(dt?: string | null) {
   if (!dt) return false;
   const t = +new Date(dt);
@@ -64,12 +39,14 @@ function clamp(n: unknown, def: number, min: number, max: number) {
 export default function WorkChaptersWebtoon({
   slug,
   chapters,
+  workType,
   lastReadChapterId,
   limit = 5,
   showAllHref,
 }: {
   slug: string;
   chapters: ChapterLite[];
+  workType?: "NOVEL" | "COMIC" | string | null;
   lastReadChapterId?: string | null;
   limit?: number | null;
   showAllHref?: string | null;
@@ -107,6 +84,7 @@ export default function WorkChaptersWebtoon({
   }, [slug, lastReadChapterId]);
 
   const readChapterIds = React.useMemo(() => new Set(rememberedReadChapterIds), [rememberedReadChapterIds]);
+  const isNovel = workType === "NOVEL";
 
   const sorted = React.useMemo(() => {
     const arr = [...(chapters || [])];
@@ -120,6 +98,10 @@ export default function WorkChaptersWebtoon({
   const effectiveLimit = typeof limit === "number" ? limit : visibleCount;
   const visibleChapters = sorted.slice(0, effectiveLimit);
   const hasMoreChapters = sorted.length > effectiveLimit;
+  const continueHref = React.useMemo(
+    () => getContinueChapterHref(slug, chapters || [], lastReadChapterId),
+    [slug, chapters, lastReadChapterId],
+  );
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
@@ -143,11 +125,50 @@ export default function WorkChaptersWebtoon({
       <div className="mt-4 grid gap-3">
         {visibleChapters.length === 0 ? (
           <div className="text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
+        ) : isNovel ? (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950/20">
+            {visibleChapters.map((chapter, index) => {
+              const read = readChapterIds.has(String(chapter.id));
+              const up = isWithin24h(chapter.publishedAt || chapter.createdAt || null);
+              const dateLabel = formatChapterDateLabel(chapter.publishedAt || chapter.createdAt || null);
+
+              return (
+                <Link
+                  key={chapter.id}
+                  href={`/w/${slug}/read/${chapter.id}`}
+                  className={
+                    "flex items-start justify-between gap-4 px-4 py-4 transition hover:bg-gray-50 dark:hover:bg-gray-900 " +
+                    (index > 0 ? "border-t border-gray-200 dark:border-gray-800 " : "") +
+                    (read ? "opacity-65" : "")
+                  }
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="break-words text-base font-semibold leading-relaxed text-gray-900 dark:text-white sm:text-lg">
+                      {getNovelChapterTitle(chapter)}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                      {up ? (
+                        <span className="shrink-0 rounded-full bg-emerald-600/90 px-2 py-1 text-[10px] font-extrabold text-white">
+                          UP
+                        </span>
+                      ) : null}
+                      {chapter.isMature ? <span className="shrink-0 rounded-full bg-black/70 px-2 py-1 text-white">18+</span> : null}
+                      {chapter.status && chapter.status !== "PUBLISHED" ? (
+                        <span className="shrink-0 rounded-full border border-gray-200 px-2 py-1 dark:border-gray-800">Draft</span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {dateLabel ? (
+                    <div className="shrink-0 pt-1 text-right text-sm text-gray-500 dark:text-gray-400">{dateLabel}</div>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
         ) : (
           visibleChapters.map((c) => {
-            const candidates = (c.pages || []).map((p) => p.imageUrl).filter(Boolean);
-            const thumb = c.thumbnailUrl || c.thumbnailImage || stablePick(String(c.id), candidates) || null;
-
+            const thumb = resolveChapterThumb(c);
             const focusX = clamp(c.thumbnailFocusX, 50, 0, 100);
             const focusY = clamp(c.thumbnailFocusY, 50, 0, 100);
             const zoom = clamp(c.thumbnailZoom, 1, 1, 2.5);
@@ -212,6 +233,17 @@ export default function WorkChaptersWebtoon({
           })
         )}
       </div>
+
+      {isNovel && continueHref ? (
+        <div className="mt-4">
+          <Link
+            href={continueHref}
+            className="inline-flex w-full items-center justify-center rounded-full bg-gray-950 px-5 py-4 text-base font-extrabold text-white transition hover:bg-black dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100"
+          >
+            {lastReadChapterId ? "Continue reading" : "Start reading"}
+          </Link>
+        </div>
+      ) : null}
 
       {hasMoreChapters ? (
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">

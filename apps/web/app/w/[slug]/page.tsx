@@ -357,6 +357,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                     <WorkChaptersWebtoon
                       slug={work.slug}
                       chapters={Array.isArray(work.chapters) ? work.chapters : []}
+                      workType={work.type}
                       lastReadChapterId={typeof progress?.lastReadChapterId === "string" ? progress.lastReadChapterId : null}
                       limit={5}
                       showAllHref={Array.isArray(work.chapters) && work.chapters.length > 5 ? `/w/${work.slug}/chapters` : null}

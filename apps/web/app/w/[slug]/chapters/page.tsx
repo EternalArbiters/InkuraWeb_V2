@@ -30,6 +30,7 @@ export default async function WorkAllChaptersPage({ params: paramsPromise }: { p
         <WorkChaptersWebtoon
           slug={work.slug}
           chapters={Array.isArray(work.chapters) ? work.chapters : []}
+          workType={work.type}
           lastReadChapterId={typeof progress?.lastReadChapterId === "string" ? progress.lastReadChapterId : null}
           limit={null}
           showAllHref={null}
