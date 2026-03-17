@@ -100,40 +100,13 @@ function splitTextIntoHtmlChunks(text: string, maxChunkLength: number) {
   return chunks;
 }
 
-function hasMeaningfulElementContent(el: HTMLElement) {
-  const text = normalizeWhitespace(el.textContent || "");
-  if (text) return true;
-  return !!el.querySelector("img,video,audio,iframe,table,hr");
-}
-
-function stripEmptyReaderBlocks(html: string) {
-  if (typeof window === "undefined") return html;
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(`<div id="inkura-clean-root">${html}</div>`, "text/html");
-  const root = doc.getElementById("inkura-clean-root");
-  if (!root) return html;
-
-  for (const node of Array.from(root.childNodes)) {
-    if (node.nodeType !== Node.ELEMENT_NODE) continue;
-    const el = node as HTMLElement;
-    const tag = el.tagName.toLowerCase();
-    if (!["p", "div", "blockquote", "li", "figure"].includes(tag)) continue;
-    if (hasMeaningfulElementContent(el)) continue;
-    el.remove();
-  }
-
-  return root.innerHTML;
-}
-
 function extractBlocks(html: string): HtmlBlock[] {
   if (typeof window === "undefined") {
     return [{ html, text: normalizeWhitespace(html.replace(/<[^>]+>/g, " ")), tag: "div" }];
   }
 
-  const cleanedHtml = stripEmptyReaderBlocks(html);
   const parser = new DOMParser();
-  const doc = parser.parseFromString(`<div id="inkura-root">${cleanedHtml}</div>`, "text/html");
+  const doc = parser.parseFromString(`<div id="inkura-root">${html}</div>`, "text/html");
   const root = doc.getElementById("inkura-root");
   if (!root) return [];
 
@@ -151,7 +124,6 @@ function extractBlocks(html: string): HtmlBlock[] {
     const text = normalizeWhitespace(el.textContent || "");
     const htmlValue = el.outerHTML || "";
     if (!htmlValue.trim()) continue;
-    if (!text && !hasMeaningfulElementContent(el)) continue;
     blocks.push({ html: htmlValue, text, tag: el.tagName.toLowerCase() || "div" });
   }
 
@@ -197,7 +169,8 @@ function buildPages(html: string, width: number, height: number, fontScale: numb
   let currentBudget = 0;
 
   for (const block of blocks) {
-    const cost = Math.max(80, Math.min(block.text.length || 80, budget));
+    const baseCost = block.text.length > 0 ? block.text.length : 24;
+    const cost = Math.max(24, Math.min(baseCost, budget));
     if (currentHtml.length > 0 && currentBudget + cost > budget) {
       pages.push(currentHtml.join(""));
       currentHtml = [block.html];
@@ -303,17 +276,16 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
   const touchStartX = React.useRef<number | null>(null);
   const touchStartY = React.useRef<number | null>(null);
 
-  const sanitizedHtml = React.useMemo(() => stripEmptyReaderBlocks(html), [html]);
   const pages = React.useMemo(
-    () => buildPages(sanitizedHtml, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
-    [preferences.fontScale, preferences.lineSpacing, sanitizedHtml, viewport.height, viewport.width]
+    () => buildPages(html, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
+    [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width]
   );
   const isMobileViewport = viewport.width > 0 ? viewport.width < 1024 : true;
   const showSlideEndingPage = preferences.mode === "slide" && isMobileViewport && !!slideEndingContent;
   const totalPages = pages.length + (showSlideEndingPage ? 1 : 0);
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, totalPages - 1));
   const isEndingPage = showSlideEndingPage && clampedPageIndex === pages.length;
-  const currentPage = isEndingPage ? "" : pages[Math.min(clampedPageIndex, Math.max(0, pages.length - 1))] || sanitizedHtml;
+  const currentPage = isEndingPage ? "" : pages[Math.min(clampedPageIndex, Math.max(0, pages.length - 1))] || html;
   const lineHeight = lineHeightValue(preferences.lineSpacing);
   const fontSize = `${preferences.fontScale}rem`;
   const fontFamily = getNovelReaderFontFamilyValue(preferences.fontFamily);
@@ -539,12 +511,12 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
           line-height: ${lineHeight};
           font-family: ${fontFamily};
         }
-        .novel-reader-surface p, .novel-reader-surface div { margin: 0 0 1rem; }
+        .novel-reader-surface p, .novel-reader-surface div { margin: 0; }
         .novel-reader-surface h1, .novel-reader-surface h2, .novel-reader-surface h3, .novel-reader-surface h4 { margin: 1.4rem 0 .8rem; font-weight: 700; line-height: 1.25; }
         .novel-reader-surface h1 { font-size: 1.75rem; }
         .novel-reader-surface h2 { font-size: 1.45rem; }
         .novel-reader-surface h3 { font-size: 1.2rem; }
-        .novel-reader-surface ul, .novel-reader-surface ol { margin: 0 0 1rem 1.4rem; }
+        .novel-reader-surface ul, .novel-reader-surface ol { margin: 0 0 0 1.4rem; }
         .novel-reader-surface li { margin: .25rem 0; }
         .novel-reader-surface blockquote { margin: 1.2rem 0; border-left: 3px solid rgba(168,85,247,.75); padding-left: 1rem; opacity: .95; }
         .novel-reader-surface img { display: block; max-width: min(100%, 760px); height: auto; margin: 1.2rem auto; border-radius: 1rem; }
@@ -552,6 +524,11 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
         .novel-reader-surface table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
         .novel-reader-surface td, .novel-reader-surface th { border: 1px solid rgba(148,163,184,.25); padding: .55rem .7rem; }
         .novel-reader-surface pre, .novel-reader-surface code { white-space: pre-wrap; }
+        .reader-ending-surface {
+          font-size: 1rem;
+          line-height: 1.5;
+          font-family: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
+        }
         .novel-slide-ending {
           --ending-card-bg: ${endingSurfacePalette.cardBg};
           --ending-card-border: ${endingSurfacePalette.cardBorder};
@@ -563,9 +540,6 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
         }
         .novel-slide-ending :where(section, article, .rounded-2xl, .rounded-xl) {
           border-color: var(--ending-card-border) !important;
-        }
-        .novel-slide-ending :where(section, article) {
-          background: transparent !important;
         }
         .novel-slide-ending :where(.bg-black\/20, .bg-white, .bg-white\/70, .dark\:bg-gray-900\/50, .dark\:bg-gray-950, .hover\:bg-gray-50:hover, .dark\:hover\:bg-gray-900:hover) {
           background: var(--ending-card-bg) !important;
@@ -593,6 +567,18 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
         .novel-slide-ending :where(.bg-gradient-to-r, .from-blue-500, .to-purple-600, .from-fuchsia-500, .to-violet-600) {
           color: #ffffff !important;
         }
+        .novel-slide-ending [data-reader-uploader-card] {
+          color: var(--ending-text) !important;
+        }
+        .novel-slide-ending [data-reader-uploader-label],
+        .novel-slide-ending [data-reader-uploader-meta] {
+          color: var(--ending-muted) !important;
+        }
+        .novel-slide-ending [data-reader-uploader-name],
+        .novel-slide-ending [data-reader-uploader-name] :where(a, span),
+        .novel-slide-ending [data-reader-uploader-link] {
+          color: var(--ending-text) !important;
+        }
       `}</style>
 
       {preferences.mode === "scroll" ? (
@@ -605,7 +591,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
             WebkitTapHighlightColor: "transparent",
           }}
         >
-          <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+          <div dangerouslySetInnerHTML={{ __html: html }} />
         </article>
       ) : (
         <div
@@ -629,11 +615,11 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
           >
             {isEndingPage ? (
               <article
-                className={`novel-reader-surface h-full overflow-y-auto px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
+                className={`reader-ending-surface h-full overflow-y-auto px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
                   pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
                 }`}
               >
-                <div className="novel-slide-ending mx-auto max-w-3xl">{slideEndingContent}</div>
+                <div className="novel-slide-ending mx-auto max-w-3xl" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)" }}>{slideEndingContent}</div>
               </article>
             ) : (
               <article

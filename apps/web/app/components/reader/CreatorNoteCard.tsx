@@ -40,7 +40,10 @@ export default function CreatorNoteCard({
         : t("Uploaded by");
 
   return (
-    <section className={compact ? "rounded-2xl border border-white/10 bg-black/20 p-4" : "rounded-2xl border border-white/10 bg-black/20 p-4"}>
+    <section
+      data-reader-uploader-card
+      className={compact ? "rounded-2xl border border-white/10 bg-black/20 p-4" : "rounded-2xl border border-white/10 bg-black/20 p-4"}
+    >
       <div className="flex items-center gap-3">
         {uploader.image ? (
           <img src={uploader.image} alt={uName} className="h-11 w-11 rounded-full object-cover" />
@@ -51,20 +54,24 @@ export default function CreatorNoteCard({
         )}
 
         <div className="min-w-0 flex-1">
-          <div className="text-xs text-white/60">{roleLabel}</div>
-          <PublicUserLink
-            user={uploader}
-            className="block truncate font-semibold text-white hover:text-purple-200"
-          >
-            {uName}
-          </PublicUserLink>
+          <div data-reader-uploader-label className="text-xs text-white/60">{roleLabel}</div>
+          <div data-reader-uploader-name>
+            <PublicUserLink
+              user={uploader}
+              className="block truncate font-semibold text-white hover:text-purple-200"
+            >
+              {uName}
+            </PublicUserLink>
+          </div>
 
           {tName ? (
-            <div className="mt-0.5 text-xs text-white/60">
+            <div data-reader-uploader-meta className="mt-0.5 text-xs text-white/60">
               {t("Translator")}:{" "}
-              <PublicUserLink user={translator} className="text-white/80 hover:text-purple-200">
-                {tName}
-              </PublicUserLink>
+              <span data-reader-uploader-link>
+                <PublicUserLink user={translator} className="text-white/80 hover:text-purple-200">
+                  {tName}
+                </PublicUserLink>
+              </span>
             </div>
           ) : null}
         </div>
