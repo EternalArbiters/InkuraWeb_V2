@@ -19,6 +19,10 @@ import {
 
 const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
 
+const FONT_SCALE_STEP = 0.05;
+const MIN_FONT_SCALE = 0.9;
+const MAX_FONT_SCALE = 1.3;
+
 function getReadChaptersStorageKey(workSlug: string) {
   return `${READ_CHAPTERS_STORAGE_PREFIX}${workSlug}`;
 }
@@ -46,20 +50,25 @@ function SettingChip({
   active,
   label,
   onClick,
+  disabled = false,
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={
         "inline-flex min-h-11 items-center justify-center rounded-2xl border px-3 text-sm font-semibold transition " +
-        (active
-          ? "border-purple-500 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(168,85,247,0.9)]"
-          : "border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10")
+        (disabled
+          ? "cursor-not-allowed border-white/5 bg-white/[0.03] text-slate-500"
+          : active
+            ? "border-purple-500 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(168,85,247,0.9)]"
+            : "border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10")
       }
     >
       {label}
@@ -213,6 +222,14 @@ export default function ReaderChrome({
     setReaderMode(next.mode);
   }, []);
 
+  const decreaseFontScale = useCallback(() => {
+    updatePreferences({ fontScale: novelPreferences.fontScale - FONT_SCALE_STEP });
+  }, [novelPreferences.fontScale, updatePreferences]);
+
+  const increaseFontScale = useCallback(() => {
+    updatePreferences({ fontScale: novelPreferences.fontScale + FONT_SCALE_STEP });
+  }, [novelPreferences.fontScale, updatePreferences]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const root = document.documentElement;
@@ -316,14 +333,16 @@ export default function ReaderChrome({
                       <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Font size")}</div>
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <SettingChip
-                          active={novelPreferences.fontScale <= 1}
+                          active={false}
+                          disabled={novelPreferences.fontScale <= MIN_FONT_SCALE}
                           label="Aa-"
-                          onClick={() => updatePreferences({ fontScale: 0.94 })}
+                          onClick={decreaseFontScale}
                         />
                         <SettingChip
-                          active={novelPreferences.fontScale > 1}
+                          active={false}
+                          disabled={novelPreferences.fontScale >= MAX_FONT_SCALE}
                           label="Aa+"
-                          onClick={() => updatePreferences({ fontScale: 1.1 })}
+                          onClick={increaseFontScale}
                         />
                       </div>
                     </section>
