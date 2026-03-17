@@ -1,6 +1,17 @@
 export type NovelReaderMode = "scroll" | "slide";
 export type NovelReaderTheme = "paper" | "midnight" | "sepia" | "mist" | "forest" | "rose";
-export type NovelReaderFontFamily = "serif" | "sans" | "book" | "classic" | "script" | "mono";
+export type NovelReaderFontFamily =
+  | "serif"
+  | "sansSerif"
+  | "monospace"
+  | "comic"
+  | "typewriter"
+  | "didot"
+  | "bodoni"
+  | "baskerville"
+  | "garamond"
+  | "dancingScript"
+  | "itcLubalinGraph";
 export type NovelReaderLineSpacing = "comfortable" | "airy";
 
 export type NovelReaderPreferences = {
@@ -39,14 +50,21 @@ function normalizePreferences(input: Partial<NovelReaderPreferences> | null | un
     input?.theme === "rose"
       ? input.theme
       : DEFAULT_NOVEL_READER_PREFERENCES.theme;
+
   const fontFamily =
-    input?.fontFamily === "sans" ||
-    input?.fontFamily === "book" ||
-    input?.fontFamily === "classic" ||
-    input?.fontFamily === "script" ||
-    input?.fontFamily === "mono"
+    input?.fontFamily === "sansSerif" ||
+    input?.fontFamily === "monospace" ||
+    input?.fontFamily === "comic" ||
+    input?.fontFamily === "typewriter" ||
+    input?.fontFamily === "didot" ||
+    input?.fontFamily === "bodoni" ||
+    input?.fontFamily === "baskerville" ||
+    input?.fontFamily === "garamond" ||
+    input?.fontFamily === "dancingScript" ||
+    input?.fontFamily === "itcLubalinGraph"
       ? input.fontFamily
       : "serif";
+
   const lineSpacing = input?.lineSpacing === "airy" ? "airy" : "comfortable";
 
   return {

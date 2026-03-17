@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import {
   DEFAULT_NOVEL_READER_PREFERENCES,
   NOVEL_READER_PREFERENCES_EVENT,
@@ -50,7 +50,7 @@ function escapeHtml(value: string) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -59,10 +59,13 @@ function normalizeWhitespace(value: string) {
 }
 
 function splitTextIntoHtmlChunks(text: string, maxChunkLength: number) {
-  const normalized = String(text || "").replace(/\r\n?/g, "\n").trim();
+  const normalized = String(text || "").replace(/
+?/g, "
+").trim();
   if (!normalized) return [] as string[];
   if (normalized.length <= maxChunkLength) {
-    return [`<p>${escapeHtml(normalized).replace(/\n/g, "<br>")}</p>`];
+    return [`<p>${escapeHtml(normalized).replace(/
+/g, "<br>")}</p>`];
   }
 
   const words = normalized.split(/\s+/).filter(Boolean);
@@ -208,28 +211,34 @@ function getReaderHintClasses(theme: NovelReaderTheme) {
 
 function getFontFamilyValue(fontFamily: NovelReaderPreferences["fontFamily"]) {
   switch (fontFamily) {
-    case "sans":
-      return "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)";
-    case "book":
-      return '"Comic Sans MS", "Segoe Print", "Marker Felt", cursive';
-    case "classic":
-      return 'Baskerville, "Times New Roman", Georgia, serif';
-    case "script":
-      return '"Snell Roundhand", "Brush Script MT", "Segoe Script", cursive';
-    case "mono":
+    case "sansSerif":
+      return 'var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)';
+    case "monospace":
       return '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace';
+    case "comic":
+      return '"Comic Sans MS", "Comic Neue", "Chalkboard SE", cursive';
+    case "typewriter":
+      return '"American Typewriter", "Courier Prime", "Courier New", monospace';
+    case "didot":
+      return 'Didot, "Bodoni 72", "Times New Roman", serif';
+    case "bodoni":
+      return '"Bodoni 72", Didot, "Times New Roman", serif';
+    case "baskerville":
+      return 'Baskerville, "Times New Roman", Georgia, serif';
+    case "garamond":
+      return 'Garamond, "EB Garamond", Georgia, serif';
+    case "dancingScript":
+      return '"Dancing Script", "Snell Roundhand", "Brush Script MT", cursive';
+    case "itcLubalinGraph":
+      return '"ITC Lubalin Graph", "Lubalin Graph Std", Rockwell, Georgia, serif';
     case "serif":
     default:
       return "Georgia, Cambria, 'Times New Roman', Times, serif";
   }
 }
 
-function pickLanguage(language: string, en: string, id: string) {
-  return language === "ID" ? id : en;
-}
-
 export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
-  const { language } = useUILanguage();
+  const t = useUILanguageText("Page Reader");
   const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageDirection, setPageDirection] = React.useState<"next" | "prev" | null>(null);
@@ -249,17 +258,6 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   const fontFamily = getFontFamilyValue(preferences.fontFamily);
   const surfaceClassName = getReaderSurfaceClasses(preferences.theme);
   const hintClassName = getReaderHintClasses(preferences.theme);
-
-  const text = React.useMemo(
-    () => ({
-      novelReader: pickLanguage(language, "Novel reader content", "Konten pembaca novel"),
-      previousPage: pickLanguage(language, "Previous page", "Halaman sebelumnya"),
-      nextPage: pickLanguage(language, "Next page", "Halaman berikutnya"),
-      pageCounter: pickLanguage(language, "Page", "Halaman"),
-      swipeHint: pickLanguage(language, "swipe left or right", "geser ke kiri atau kanan"),
-    }),
-    [language]
-  );
 
   React.useEffect(() => {
     const options = { capture: true } as AddEventListenerOptions;
@@ -408,7 +406,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       onContextMenu={preventReactDefault}
       onDragStart={preventReactDefault}
       onKeyDown={handleReactKeyDown}
-      aria-label={text.novelReader}
+      aria-label={t("Novel reader content")}
     >
       <style jsx>{`
         @keyframes novelPageNext {
@@ -485,10 +483,10 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
               onClick={goPrev}
               disabled={clampedPageIndex <= 0}
             >
-              {text.previousPage}
+              {t("Previous page")}
             </button>
             <div className={`text-center text-xs font-medium ${hintClassName}`}>
-              {text.pageCounter} {clampedPageIndex + 1} / {pages.length} · {text.swipeHint}
+              {t("Page")} {clampedPageIndex + 1} / {pages.length} · {t("Swipe left or right")}
             </div>
             <button
               type="button"
@@ -496,7 +494,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
               onClick={goNext}
               disabled={clampedPageIndex >= pages.length - 1}
             >
-              {text.nextPage}
+              {t("Next page")}
             </button>
           </div>
         </div>

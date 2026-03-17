@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { BookOpen, ChevronLeft, ChevronRight, LayoutGrid, MessageCircle, Settings2, Smartphone } from "lucide-react";
-import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import ChapterLikeButton from "@/app/components/work/ChapterLikeButton";
 import {
   DEFAULT_NOVEL_READER_PREFERENCES,
@@ -16,6 +16,110 @@ import {
 } from "@/app/components/reader/novelReaderPreferences";
 
 const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
+
+type ThemeOption = {
+  value: NovelReaderPreferences["theme"];
+  label: string;
+  swatchClassName: string;
+};
+
+type FontOption = {
+  value: NovelReaderPreferences["fontFamily"];
+  label: string;
+  previewStyle: CSSProperties;
+  previewClassName?: string;
+};
+
+const themeOptions: ThemeOption[] = [
+  {
+    value: "paper",
+    label: "Paper",
+    swatchClassName: "border-slate-200 bg-[#f7f5ef]",
+  },
+  {
+    value: "midnight",
+    label: "Midnight",
+    swatchClassName: "border-[#17243d] bg-[#030917]",
+  },
+  {
+    value: "sepia",
+    label: "Sepia",
+    swatchClassName: "border-[#d9c7a3] bg-[#efe3cb]",
+  },
+  {
+    value: "mist",
+    label: "Mist",
+    swatchClassName: "border-[#bfd0e7] bg-[#e7edf5]",
+  },
+  {
+    value: "forest",
+    label: "Forest",
+    swatchClassName: "border-[#26433a] bg-[#0f1a16]",
+  },
+  {
+    value: "rose",
+    label: "Rose",
+    swatchClassName: "border-[#d9b9c7] bg-[#f5e8e8]",
+  },
+];
+
+const fontOptions: FontOption[] = [
+  {
+    value: "serif",
+    label: "Serif",
+    previewStyle: { fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' },
+  },
+  {
+    value: "sansSerif",
+    label: "Sans",
+    previewStyle: { fontFamily: 'var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)' },
+  },
+  {
+    value: "monospace",
+    label: "Mono",
+    previewStyle: { fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace', fontSize: '1.15rem' },
+  },
+  {
+    value: "comic",
+    label: "Comic",
+    previewStyle: { fontFamily: '"Comic Sans MS", "Comic Neue", "Chalkboard SE", cursive' },
+  },
+  {
+    value: "typewriter",
+    label: "Type",
+    previewStyle: { fontFamily: '"American Typewriter", "Courier Prime", "Courier New", monospace', fontSize: '1.18rem' },
+  },
+  {
+    value: "didot",
+    label: "Didot",
+    previewStyle: { fontFamily: 'Didot, "Bodoni 72", "Times New Roman", serif' },
+  },
+  {
+    value: "bodoni",
+    label: "Bodoni",
+    previewStyle: { fontFamily: '"Bodoni 72", Didot, "Times New Roman", serif' },
+  },
+  {
+    value: "baskerville",
+    label: "Basker",
+    previewStyle: { fontFamily: 'Baskerville, "Times New Roman", Georgia, serif' },
+  },
+  {
+    value: "garamond",
+    label: "Garam",
+    previewStyle: { fontFamily: 'Garamond, "EB Garamond", Georgia, serif' },
+  },
+  {
+    value: "dancingScript",
+    label: "Dance",
+    previewStyle: { fontFamily: '"Dancing Script", "Snell Roundhand", "Brush Script MT", cursive', fontSize: '1.45rem' },
+  },
+  {
+    value: "itcLubalinGraph",
+    label: "ITC",
+    previewStyle: { fontFamily: '"ITC Lubalin Graph", "Lubalin Graph Std", Rockwell, Georgia, serif' },
+  },
+];
 
 function getReadChaptersStorageKey(workSlug: string) {
   return `${READ_CHAPTERS_STORAGE_PREFIX}${workSlug}`;
@@ -39,91 +143,6 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
   if (!el) return false;
   return !!el.closest("a,button,input,textarea,select,label,summary,[role='button']");
 }
-
-function pickLanguage(language: string, en: string, id: string) {
-  return language === "ID" ? id : en;
-}
-
-const themeOptions: Array<{
-  value: NovelReaderPreferences["theme"];
-  swatchClassName: string;
-  labels: { EN: string; ID: string };
-}> = [
-  {
-    value: "paper",
-    labels: { EN: "Paper", ID: "Kertas" },
-    swatchClassName: "border-slate-200 bg-[#f7f5ef]",
-  },
-  {
-    value: "midnight",
-    labels: { EN: "Midnight", ID: "Malam" },
-    swatchClassName: "border-[#17243d] bg-[#030917]",
-  },
-  {
-    value: "sepia",
-    labels: { EN: "Sepia", ID: "Sepia" },
-    swatchClassName: "border-[#d9c7a3] bg-[#efe3cb]",
-  },
-  {
-    value: "mist",
-    labels: { EN: "Mist", ID: "Kabut" },
-    swatchClassName: "border-[#bfd0e7] bg-[#e7edf5]",
-  },
-  {
-    value: "forest",
-    labels: { EN: "Forest", ID: "Hutan" },
-    swatchClassName: "border-[#26433a] bg-[#0f1a16]",
-  },
-  {
-    value: "rose",
-    labels: { EN: "Rose", ID: "Mawar" },
-    swatchClassName: "border-[#d9b9c7] bg-[#f5e8e8]",
-  },
-];
-
-const fontOptions: Array<{
-  value: NovelReaderPreferences["fontFamily"];
-  ariaLabel: { EN: string; ID: string };
-  previewText: string;
-  previewClassName: string;
-}> = [
-  {
-    value: "serif",
-    ariaLabel: { EN: "Serif font", ID: "Font serif" },
-    previewText: "Inkura",
-    previewClassName: "font-serif tracking-[0.01em]",
-  },
-  {
-    value: "sans",
-    ariaLabel: { EN: "Sans font", ID: "Font sans" },
-    previewText: "Inkura",
-    previewClassName: "font-sans",
-  },
-  {
-    value: "book",
-    ariaLabel: { EN: "Round handwriting font", ID: "Font tulisan tangan bulat" },
-    previewText: "Inkura",
-    previewClassName: '[font-family:"Comic_Sans_MS","Segoe_Print","Marker_Felt",cursive] tracking-[0.01em]',
-  },
-  {
-    value: "classic",
-    ariaLabel: { EN: "Classic serif font", ID: "Font klasik" },
-    previewText: "Inkura",
-    previewClassName: '[font-family:Baskerville,"Times_New_Roman",Georgia,serif] tracking-[0.02em]',
-  },
-  {
-    value: "script",
-    ariaLabel: { EN: "Aesthetic handwriting font", ID: "Font tulisan tangan estetik" },
-    previewText: "Inkura",
-    previewClassName: '[font-family:"Snell_Roundhand","Brush_Script_MT","Segoe_Script",cursive] text-[1.65rem]',
-  },
-  {
-    value: "mono",
-    ariaLabel: { EN: "Monospace font", ID: "Font mono" },
-    previewText: "Inkura",
-    previewClassName: "font-mono text-[1.2rem]",
-  },
-];
 
 function SettingChip({
   active,
@@ -154,17 +173,17 @@ function RailOption({
   active,
   ariaLabel,
   previewText,
+  previewStyle,
   previewClassName,
   swatchClassName,
-  showCaption = false,
   onClick,
 }: {
   active: boolean;
   ariaLabel: string;
   previewText?: string;
+  previewStyle?: CSSProperties;
   previewClassName?: string;
   swatchClassName?: string;
-  showCaption?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -183,11 +202,12 @@ function RailOption({
       {swatchClassName ? (
         <div className={`h-20 rounded-[1.1rem] border ${swatchClassName}`} />
       ) : (
-        <div className="flex h-24 items-center justify-center rounded-[1.1rem] border border-white/10 bg-[#0b1427] px-3 text-center text-[1.5rem] text-white/92">
-          <span className={previewClassName}>{previewText}</span>
+        <div className="flex h-24 items-center justify-center rounded-[1.1rem] border border-white/10 bg-[#0b1427] px-3 text-center text-[1.32rem] text-white/92">
+          <span className={previewClassName} style={previewStyle}>
+            {previewText}
+          </span>
         </div>
       )}
-      {showCaption ? <span className="mt-2 text-xs font-semibold text-white">{ariaLabel}</span> : null}
     </button>
   );
 }
@@ -217,31 +237,11 @@ export default function ReaderChrome({
   readerType?: "NOVEL" | "COMIC";
   children: ReactNode;
 }) {
-  const { language } = useUILanguage();
+  const t = useUILanguageText("Page Reader");
   const [visible, setVisible] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [novelPreferences, setNovelPreferences] = useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
   const showNovelControls = readerType === "NOVEL";
-
-  const text = useMemo(
-    () => ({
-      scrollMode: pickLanguage(language, "Scroll mode", "Mode gulir"),
-      slideMode: pickLanguage(language, "Slide mode", "Mode slide"),
-      readerSettings: pickLanguage(language, "Reader settings", "Pengaturan baca"),
-      readerAppearance: pickLanguage(language, "Reader appearance", "Tampilan baca"),
-      pageColor: pickLanguage(language, "Page color", "Warna halaman"),
-      fontSize: pickLanguage(language, "Font size", "Ukuran font"),
-      spacing: pickLanguage(language, "Spacing", "Jarak"),
-      font: pickLanguage(language, "Font", "Font"),
-      previous: pickLanguage(language, "Previous", "Sebelumnya"),
-      next: pickLanguage(language, "Next", "Berikutnya"),
-      menu: pickLanguage(language, "Menu", "Menu"),
-      comments: pickLanguage(language, "Comments", "Komentar"),
-      cozy: pickLanguage(language, "Cozy", "Rapat"),
-      airy: pickLanguage(language, "Airy", "Lega"),
-    }),
-    [language]
-  );
 
   useEffect(() => {
     if (!workId || !chapterId) return;
@@ -282,7 +282,7 @@ export default function ReaderChrome({
   const toggle = useCallback((e: ReactMouseEvent) => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
     if (isInteractiveTarget(e.target)) return;
-    setVisible((v) => !v);
+    setVisible((current) => !current);
   }, []);
 
   const updatePreferences = useCallback((patch: Partial<NovelReaderPreferences>) => {
@@ -305,12 +305,12 @@ export default function ReaderChrome({
     <div className="relative" onClick={toggle}>
       <div
         className={`fixed inset-x-0 top-0 z-50 lg:hidden transition-all duration-200 ${
-          visible ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+          visible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
         }`}
       >
-        <div className="border-b border-white/10 bg-[#030917]/90 text-white backdrop-blur-xl">
+        <div className="border-b border-white/10 bg-[#091223]/90 backdrop-blur">
           <div className="px-4 py-3">
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-xs font-semibold text-slate-300">{workTitle}</div>
                 <div className="truncate text-sm font-extrabold tracking-tight text-white">{chapterTitle}</div>
@@ -327,8 +327,8 @@ export default function ReaderChrome({
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "scroll" })}
-                    aria-label={text.scrollMode}
-                    title={text.scrollMode}
+                    aria-label={t("Scroll mode")}
+                    title={t("Scroll mode")}
                   >
                     <Smartphone className="h-4 w-4" />
                   </button>
@@ -341,8 +341,8 @@ export default function ReaderChrome({
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "slide" })}
-                    aria-label={text.slideMode}
-                    title={text.slideMode}
+                    aria-label={t("Slide mode")}
+                    title={t("Slide mode")}
                   >
                     <BookOpen className="h-4 w-4" />
                   </button>
@@ -355,8 +355,8 @@ export default function ReaderChrome({
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => setSettingsOpen((current) => !current)}
-                    aria-label={text.readerSettings}
-                    title={text.readerSettings}
+                    aria-label={t("Reader settings")}
+                    title={t("Reader settings")}
                   >
                     <Settings2 className="h-4 w-4" />
                   </button>
@@ -368,31 +368,28 @@ export default function ReaderChrome({
           {showNovelControls && settingsOpen ? (
             <div className="border-t border-white/10 px-4 pb-4 pt-3" onClick={(e) => e.stopPropagation()}>
               <div className="max-h-[68svh] overflow-y-auto rounded-[28px] border border-white/10 bg-[#091223]/95 p-4 shadow-[0_28px_80px_-48px_rgba(2,8,23,0.95)]">
-                <div className="text-sm font-semibold text-white">{text.readerAppearance}</div>
+                <div className="text-sm font-semibold text-white">{t("Reader appearance")}</div>
 
                 <div className="mt-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.pageColor}</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Page color")}</div>
                   <div className="-mx-1 mt-3 overflow-x-auto pb-1">
                     <div className="flex snap-x gap-3 px-1">
-                      {themeOptions.map((option) => {
-                        const active = novelPreferences.theme === option.value;
-                        return (
-                          <RailOption
-                            key={option.value}
-                            active={active}
-                            ariaLabel={option.labels[language as "EN" | "ID"] ?? option.labels.EN}
-                            swatchClassName={option.swatchClassName}
-                            onClick={() => updatePreferences({ theme: option.value })}
-                          />
-                        );
-                      })}
+                      {themeOptions.map((option) => (
+                        <RailOption
+                          key={option.value}
+                          active={novelPreferences.theme === option.value}
+                          ariaLabel={t(option.label)}
+                          swatchClassName={option.swatchClassName}
+                          onClick={() => updatePreferences({ theme: option.value })}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.fontSize}</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Font size")}</div>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <SettingChip
                         label="Aa-"
@@ -408,15 +405,15 @@ export default function ReaderChrome({
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.spacing}</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Spacing")}</div>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <SettingChip
-                        label={text.cozy}
+                        label={t("Cozy")}
                         active={novelPreferences.lineSpacing === "comfortable"}
                         onClick={() => updatePreferences({ lineSpacing: "comfortable" })}
                       />
                       <SettingChip
-                        label={text.airy}
+                        label={t("Airy")}
                         active={novelPreferences.lineSpacing === "airy"}
                         onClick={() => updatePreferences({ lineSpacing: "airy" })}
                       />
@@ -425,15 +422,16 @@ export default function ReaderChrome({
                 </div>
 
                 <div className="mt-5">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.font}</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Font")}</div>
                   <div className="-mx-1 mt-3 overflow-x-auto pb-1">
                     <div className="flex snap-x gap-3 px-1">
                       {fontOptions.map((option) => (
                         <RailOption
                           key={option.value}
                           active={novelPreferences.fontFamily === option.value}
-                          ariaLabel={option.ariaLabel[language as "EN" | "ID"] ?? option.ariaLabel.EN}
-                          previewText={option.previewText}
+                          ariaLabel={t(option.label)}
+                          previewText={t(option.label)}
+                          previewStyle={option.previewStyle}
                           previewClassName={option.previewClassName}
                           onClick={() => updatePreferences({ fontFamily: option.value })}
                         />
@@ -460,7 +458,7 @@ export default function ReaderChrome({
                   href={hrefPrev}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={text.previous}
+                  aria-label={t("Previous")}
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Link>
@@ -474,7 +472,7 @@ export default function ReaderChrome({
                 href={hrefMenu}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
-                aria-label={text.menu}
+                aria-label={t("Menu")}
               >
                 <LayoutGrid className="h-5 w-5" />
               </Link>
@@ -484,7 +482,7 @@ export default function ReaderChrome({
                   href={hrefNext}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={text.next}
+                  aria-label={t("Next")}
                 >
                   <ChevronRight className="h-5 w-5" />
                 </Link>
@@ -502,7 +500,7 @@ export default function ReaderChrome({
                 href={hrefComments}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
-                aria-label={text.comments}
+                aria-label={t("Comments")}
               >
                 <MessageCircle className="h-5 w-5" />
               </Link>
