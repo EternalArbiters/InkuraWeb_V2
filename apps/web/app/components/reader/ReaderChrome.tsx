@@ -83,14 +83,46 @@ const themeOptions: Array<{
 
 const fontOptions: Array<{
   value: NovelReaderPreferences["fontFamily"];
-  label: string;
+  ariaLabel: { EN: string; ID: string };
+  previewText: string;
   previewClassName: string;
 }> = [
-  { value: "serif", label: "Serif", previewClassName: "font-serif" },
-  { value: "sans", label: "Sans", previewClassName: "font-sans" },
-  { value: "book", label: "Book", previewClassName: "font-serif italic" },
-  { value: "classic", label: "Classic", previewClassName: "font-serif tracking-[0.02em]" },
-  { value: "mono", label: "Mono", previewClassName: "font-mono" },
+  {
+    value: "serif",
+    ariaLabel: { EN: "Serif font", ID: "Font serif" },
+    previewText: "Inkura",
+    previewClassName: "font-serif tracking-[0.01em]",
+  },
+  {
+    value: "sans",
+    ariaLabel: { EN: "Sans font", ID: "Font sans" },
+    previewText: "Inkura",
+    previewClassName: "font-sans",
+  },
+  {
+    value: "book",
+    ariaLabel: { EN: "Round handwriting font", ID: "Font tulisan tangan bulat" },
+    previewText: "Inkura",
+    previewClassName: '[font-family:"Comic_Sans_MS","Segoe_Print","Marker_Felt",cursive] tracking-[0.01em]',
+  },
+  {
+    value: "classic",
+    ariaLabel: { EN: "Classic serif font", ID: "Font klasik" },
+    previewText: "Inkura",
+    previewClassName: '[font-family:Baskerville,"Times_New_Roman",Georgia,serif] tracking-[0.02em]',
+  },
+  {
+    value: "script",
+    ariaLabel: { EN: "Aesthetic handwriting font", ID: "Font tulisan tangan estetik" },
+    previewText: "Inkura",
+    previewClassName: '[font-family:"Snell_Roundhand","Brush_Script_MT","Segoe_Script",cursive] text-[1.65rem]',
+  },
+  {
+    value: "mono",
+    ariaLabel: { EN: "Monospace font", ID: "Font mono" },
+    previewText: "Inkura",
+    previewClassName: "font-mono text-[1.2rem]",
+  },
 ];
 
 function SettingChip({
@@ -120,21 +152,27 @@ function SettingChip({
 
 function RailOption({
   active,
-  label,
-  preview,
+  ariaLabel,
+  previewText,
+  previewClassName,
   swatchClassName,
+  showCaption = false,
   onClick,
 }: {
   active: boolean;
-  label: string;
-  preview?: string;
+  ariaLabel: string;
+  previewText?: string;
+  previewClassName?: string;
   swatchClassName?: string;
+  showCaption?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={ariaLabel}
+      title={ariaLabel}
       className={
         "flex min-w-[112px] snap-start flex-col rounded-2xl border p-2.5 text-left transition " +
         (active
@@ -143,13 +181,13 @@ function RailOption({
       }
     >
       {swatchClassName ? (
-        <div className={`h-14 rounded-xl border ${swatchClassName}`} />
+        <div className={`h-20 rounded-[1.1rem] border ${swatchClassName}`} />
       ) : (
-        <div className="flex h-14 items-center justify-center rounded-xl border border-white/10 bg-[#0b1427] px-3 text-center text-lg text-white/90">
-          <span className={preview}>{label}</span>
+        <div className="flex h-24 items-center justify-center rounded-[1.1rem] border border-white/10 bg-[#0b1427] px-3 text-center text-[1.5rem] text-white/92">
+          <span className={previewClassName}>{previewText}</span>
         </div>
       )}
-      <span className="mt-2 text-xs font-semibold text-white">{label}</span>
+      {showCaption ? <span className="mt-2 text-xs font-semibold text-white">{ariaLabel}</span> : null}
     </button>
   );
 }
@@ -342,7 +380,7 @@ export default function ReaderChrome({
                           <RailOption
                             key={option.value}
                             active={active}
-                            label={option.labels[language as "EN" | "ID"] ?? option.labels.EN}
+                            ariaLabel={option.labels[language as "EN" | "ID"] ?? option.labels.EN}
                             swatchClassName={option.swatchClassName}
                             onClick={() => updatePreferences({ theme: option.value })}
                           />
@@ -394,8 +432,9 @@ export default function ReaderChrome({
                         <RailOption
                           key={option.value}
                           active={novelPreferences.fontFamily === option.value}
-                          label={option.label}
-                          preview={option.previewClassName}
+                          ariaLabel={option.ariaLabel[language as "EN" | "ID"] ?? option.ariaLabel.EN}
+                          previewText={option.previewText}
+                          previewClassName={option.previewClassName}
                           onClick={() => updatePreferences({ fontFamily: option.value })}
                         />
                       ))}

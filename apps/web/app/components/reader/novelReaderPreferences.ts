@@ -1,6 +1,6 @@
 export type NovelReaderMode = "scroll" | "slide";
 export type NovelReaderTheme = "paper" | "midnight" | "sepia" | "mist" | "forest" | "rose";
-export type NovelReaderFontFamily = "serif" | "sans" | "book" | "classic" | "mono";
+export type NovelReaderFontFamily = "serif" | "sans" | "book" | "classic" | "script" | "mono";
 export type NovelReaderLineSpacing = "comfortable" | "airy";
 
 export type NovelReaderPreferences = {
@@ -43,6 +43,7 @@ function normalizePreferences(input: Partial<NovelReaderPreferences> | null | un
     input?.fontFamily === "sans" ||
     input?.fontFamily === "book" ||
     input?.fontFamily === "classic" ||
+    input?.fontFamily === "script" ||
     input?.fontFamily === "mono"
       ? input.fontFamily
       : "serif";

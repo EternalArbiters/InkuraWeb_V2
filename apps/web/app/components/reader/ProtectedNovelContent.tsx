@@ -211,9 +211,11 @@ function getFontFamilyValue(fontFamily: NovelReaderPreferences["fontFamily"]) {
     case "sans":
       return "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)";
     case "book":
-      return '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif';
+      return '"Comic Sans MS", "Segoe Print", "Marker Felt", cursive';
     case "classic":
       return 'Baskerville, "Times New Roman", Georgia, serif';
+    case "script":
+      return '"Snell Roundhand", "Brush Script MT", "Segoe Script", cursive';
     case "mono":
       return '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace';
     case "serif":
