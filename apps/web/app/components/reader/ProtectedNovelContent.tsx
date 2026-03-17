@@ -189,24 +189,6 @@ function getReaderSurfaceClasses(theme: NovelReaderTheme) {
   }
 }
 
-function getReaderHintClasses(theme: NovelReaderTheme) {
-  switch (theme) {
-    case "paper":
-      return "text-slate-500";
-    case "sepia":
-      return "text-[#6f5739]";
-    case "mist":
-      return "text-[#4c627f]";
-    case "forest":
-      return "text-[#8fb0a1]";
-    case "rose":
-      return "text-[#8b6677]";
-    case "midnight":
-    default:
-      return "text-slate-400";
-  }
-}
-
 export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
   const t = useUILanguageText("Page Reader");
   const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
@@ -227,7 +209,6 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   const fontSize = `${preferences.fontScale}rem`;
   const fontFamily = getNovelReaderFontFamilyValue(preferences.fontFamily);
   const surfaceClassName = getReaderSurfaceClasses(preferences.theme);
-  const hintClassName = getReaderHintClasses(preferences.theme);
 
   React.useEffect(() => {
     const options = { capture: true } as AddEventListenerOptions;
@@ -367,6 +348,25 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
     [goNext, goPrev, viewport.width]
   );
 
+  const onSlideClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (preferences.mode !== "slide") return;
+      const bounds = event.currentTarget.getBoundingClientRect();
+      const clickX = event.clientX - bounds.left;
+      const leftZone = bounds.width * 0.32;
+      const rightZone = bounds.width * 0.68;
+
+      if (clickX <= leftZone) {
+        goPrev();
+        return;
+      }
+      if (clickX >= rightZone) {
+        goNext();
+      }
+    },
+    [goNext, goPrev, preferences.mode]
+  );
+
   return (
     <div
       ref={wrapperRef}
@@ -424,7 +424,10 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
           <div dangerouslySetInnerHTML={{ __html: html }} />
         </article>
       ) : (
-        <div className="space-y-4">
+        <div
+          className="relative"
+          aria-label={`${t("Page")} ${clampedPageIndex + 1} / ${pages.length}`}
+        >
           <div
             className={`relative overflow-hidden ${surfaceClassName}`}
             style={{
@@ -436,6 +439,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             }}
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
+            onClick={onSlideClick}
           >
             <article
               className={`novel-reader-surface h-full overflow-hidden px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
@@ -444,28 +448,6 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             >
               <div dangerouslySetInnerHTML={{ __html: currentPage }} />
             </article>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 px-4 pb-2 lg:px-0">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-900"
-              onClick={goPrev}
-              disabled={clampedPageIndex <= 0}
-            >
-              {t("Previous page")}
-            </button>
-            <div className={`text-center text-xs font-medium ${hintClassName}`}>
-              {t("Page")} {clampedPageIndex + 1} / {pages.length} · {t("Swipe left or right")}
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-900"
-              onClick={goNext}
-              disabled={clampedPageIndex >= pages.length - 1}
-            >
-              {t("Next page")}
-            </button>
           </div>
         </div>
       )}
