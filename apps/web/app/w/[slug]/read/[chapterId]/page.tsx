@@ -173,6 +173,7 @@ export default async function ReadChapterPage({
                   nextId={next ? next.id : null}
                   initialLiked={!!(chapter as any).viewerLiked}
                   initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
+                  readerType={isComic ? "COMIC" : "NOVEL"}
                 >
                   {isComic ? (
                     Array.isArray(chapter.pages) && chapter.pages.length > 0 ? (

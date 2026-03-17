@@ -1,19 +1,26 @@
 "use client";
 
 import * as React from "react";
+import {
+  DEFAULT_NOVEL_READER_PREFERENCES,
+  NOVEL_READER_PREFERENCES_EVENT,
+  NOVEL_READER_PREFERENCES_KEY,
+  NovelReaderLineSpacing,
+  NovelReaderPreferences,
+  NovelReaderTheme,
+  loadNovelReaderPreferences,
+} from "@/app/components/reader/novelReaderPreferences";
 
 type ProtectedNovelContentProps = {
   html: string;
 };
 
-type ReaderMode = "scroll" | "slide";
 type HtmlBlock = {
   html: string;
   text: string;
   tag: string;
 };
 
-const READER_MODE_KEY = "inkura:novel-reader-mode";
 const MIN_SWIPE_PX = 140;
 const SWIPE_WIDTH_RATIO = 0.22;
 
@@ -110,14 +117,21 @@ function extractBlocks(html: string): HtmlBlock[] {
   return blocks;
 }
 
-function pageBudgetFromViewport(width: number, height: number) {
-  const safeWidth = Math.max(width, 320);
-  const safeHeight = Math.max(height, 360);
-  return Math.max(450, Math.floor((safeWidth / 9) * (safeHeight / 30)));
+function lineHeightValue(lineSpacing: NovelReaderLineSpacing) {
+  return lineSpacing === "airy" ? 2.15 : 1.95;
 }
 
-function buildPages(html: string, width: number, height: number) {
-  const budget = pageBudgetFromViewport(width, height);
+function pageBudgetFromViewport(width: number, height: number, fontScale: number, lineSpacing: NovelReaderLineSpacing) {
+  const safeWidth = Math.max(width, 320);
+  const safeHeight = Math.max(height, 360);
+  const baseBudget = Math.max(450, Math.floor((safeWidth / 9) * (safeHeight / 30)));
+  const fontPenalty = 1 / Math.max(fontScale, 0.9);
+  const linePenalty = lineSpacing === "airy" ? 0.9 : 1;
+  return Math.max(340, Math.floor(baseBudget * fontPenalty * linePenalty));
+}
+
+function buildPages(html: string, width: number, height: number, fontScale: number, lineSpacing: NovelReaderLineSpacing) {
+  const budget = pageBudgetFromViewport(width, height, fontScale, lineSpacing);
   const blocks = extractBlocks(html).flatMap((block) => {
     const textLength = block.text.length;
     const splittable = block.tag === "p" || block.tag === "div" || block.tag === "blockquote" || block.tag === "li";
@@ -155,8 +169,34 @@ function buildPages(html: string, width: number, height: number) {
   return pages;
 }
 
+function getReaderSurfaceClasses(theme: NovelReaderTheme, mode: "scroll" | "slide") {
+  const base = mode === "scroll" ? "rounded-[28px] border shadow-[0_28px_80px_-48px_rgba(15,23,42,0.6)]" : "border shadow-[0_24px_80px_-40px_rgba(15,23,42,0.65)]";
+
+  switch (theme) {
+    case "paper":
+      return `${base} border-slate-200 bg-white/95 text-slate-900`;
+    case "sepia":
+      return `${base} border-[#d9c7a3] bg-[#efe3cb]/95 text-[#37291b]`;
+    case "midnight":
+    default:
+      return `${base} border-[#17243d] bg-[#050b17]/95 text-slate-100`;
+  }
+}
+
+function getReaderHintClasses(theme: NovelReaderTheme) {
+  switch (theme) {
+    case "paper":
+      return "text-slate-500";
+    case "sepia":
+      return "text-[#6f5739]";
+    case "midnight":
+    default:
+      return "text-slate-400";
+  }
+}
+
 export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
-  const [mode, setMode] = React.useState<ReaderMode>("scroll");
+  const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageDirection, setPageDirection] = React.useState<"next" | "prev" | null>(null);
   const [viewport, setViewport] = React.useState({ width: 0, height: 0 });
@@ -164,8 +204,17 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   const touchStartX = React.useRef<number | null>(null);
   const touchStartY = React.useRef<number | null>(null);
 
-  const pages = React.useMemo(() => buildPages(html, viewport.width, viewport.height), [html, viewport.height, viewport.width]);
+  const pages = React.useMemo(
+    () => buildPages(html, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
+    [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width],
+  );
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, pages.length - 1));
+  const currentPage = pages[clampedPageIndex] || html;
+  const lineHeight = lineHeightValue(preferences.lineSpacing);
+  const fontSize = `${preferences.fontScale}rem`;
+  const fontFamily = preferences.fontFamily === "sans" ? "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)" : "Georgia, Cambria, 'Times New Roman', Times, serif";
+  const surfaceClassName = getReaderSurfaceClasses(preferences.theme, preferences.mode);
+  const hintClassName = getReaderHintClasses(preferences.theme);
 
   React.useEffect(() => {
     const options = { capture: true } as AddEventListenerOptions;
@@ -176,7 +225,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
         return;
       }
 
-      if (mode !== "slide") return;
+      if (preferences.mode !== "slide") return;
       if (event.key === "ArrowRight") {
         event.preventDefault();
         setPageDirection("next");
@@ -204,20 +253,24 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       document.removeEventListener("selectstart", preventDefault, options);
       document.removeEventListener("keydown", handleKeyDown, options);
     };
-  }, [mode, pages.length]);
+  }, [pages.length, preferences.mode]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-    const saved = window.localStorage.getItem(READER_MODE_KEY);
-    if (saved === "scroll" || saved === "slide") {
-      setMode(saved);
-    }
+    setPreferences(loadNovelReaderPreferences());
+
+    const syncPreferences = () => setPreferences(loadNovelReaderPreferences());
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === NOVEL_READER_PREFERENCES_KEY) syncPreferences();
+    };
+
+    window.addEventListener(NOVEL_READER_PREFERENCES_EVENT, syncPreferences as EventListener);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(NOVEL_READER_PREFERENCES_EVENT, syncPreferences as EventListener);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(READER_MODE_KEY, mode);
-  }, [mode]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -243,7 +296,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
   React.useEffect(() => {
     setPageIndex(0);
-  }, [html]);
+  }, [html, preferences.mode]);
 
   React.useEffect(() => {
     if (!pageDirection) return;
@@ -298,8 +351,6 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
     goPrev();
   }, [goNext, goPrev, viewport.width]);
 
-  const currentPage = pages[clampedPageIndex] || html;
-
   return (
     <div
       ref={wrapperRef}
@@ -325,8 +376,9 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
         .novel-page-next { animation: novelPageNext 360ms cubic-bezier(.22,.8,.2,1); }
         .novel-page-prev { animation: novelPagePrev 360ms cubic-bezier(.22,.8,.2,1); }
         .novel-reader-surface {
-          font-size: 1rem;
-          line-height: 2rem;
+          font-size: ${fontSize};
+          line-height: ${lineHeight};
+          font-family: ${fontFamily};
         }
         .novel-reader-surface p, .novel-reader-surface div { margin: 0 0 1rem; }
         .novel-reader-surface h1, .novel-reader-surface h2, .novel-reader-surface h3, .novel-reader-surface h4 { margin: 1.4rem 0 .8rem; font-weight: 700; line-height: 1.25; }
@@ -343,34 +395,9 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
         .novel-reader-surface pre, .novel-reader-surface code { white-space: pre-wrap; }
       `}</style>
 
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="inline-flex rounded-full border border-gray-200 bg-white/80 p-1 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-300">
-          <button
-            type="button"
-            className={`rounded-full px-3 py-1.5 transition ${mode === "scroll" ? "bg-purple-600 text-white shadow" : "hover:text-gray-900 dark:hover:text-white"}`}
-            onClick={() => setMode("scroll")}
-          >
-            Scroll
-          </button>
-          <button
-            type="button"
-            className={`rounded-full px-3 py-1.5 transition ${mode === "slide" ? "bg-purple-600 text-white shadow" : "hover:text-gray-900 dark:hover:text-white"}`}
-            onClick={() => setMode("slide")}
-          >
-            Slide
-          </button>
-        </div>
-
-        {mode === "slide" ? (
-          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-            Page {clampedPageIndex + 1} / {pages.length}
-          </div>
-        ) : null}
-      </div>
-
-      {mode === "scroll" ? (
+      {preferences.mode === "scroll" ? (
         <article
-          className="novel-reader-surface max-w-none select-none text-gray-900 dark:text-gray-100 [&_*]:select-none"
+          className={`novel-reader-surface max-w-none select-none px-5 py-6 sm:px-6 sm:py-7 [&_*]:select-none ${surfaceClassName}`}
           style={{
             WebkitTouchCallout: "none",
             WebkitUserSelect: "none",
@@ -383,7 +410,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       ) : (
         <div className="space-y-4">
           <div
-            className="relative overflow-hidden border border-gray-200 bg-white/85 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.65)] backdrop-blur dark:border-gray-800 dark:bg-gray-900/70"
+            className={`relative overflow-hidden backdrop-blur ${surfaceClassName}`}
             style={{
               minHeight: viewport.height ? `${viewport.height}px` : "70svh",
               WebkitTouchCallout: "none",
@@ -395,7 +422,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             onTouchEnd={onTouchEnd}
           >
             <article
-              className={`novel-reader-surface max-w-none h-full overflow-hidden px-5 py-6 text-gray-900 select-none dark:text-gray-100 lg:px-8 lg:py-8 [&_*]:select-none ${pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""}`}
+              className={`novel-reader-surface h-full overflow-hidden px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""}`}
             >
               <div dangerouslySetInnerHTML={{ __html: currentPage }} />
             </article>
@@ -410,7 +437,9 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             >
               Previous page
             </button>
-            <div className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">Long-swipe left/right to turn the page</div>
+            <div className={`text-center text-xs font-medium ${hintClassName}`}>
+              Page {clampedPageIndex + 1} / {pages.length} · swipe left or right
+            </div>
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-900"
