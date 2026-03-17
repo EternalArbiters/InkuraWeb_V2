@@ -134,22 +134,22 @@ export default function WorkChaptersWebtoon({
                 key={chapter.id}
                 href={`/w/${slug}/read/${chapter.id}`}
                 className={
-                  "flex min-h-[106px] items-stretch gap-3 rounded-xl border border-gray-200 bg-white p-4 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900 sm:min-h-[112px] " +
+                  "flex min-h-[92px] items-stretch gap-3 rounded-xl border border-gray-200 bg-white p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900 sm:min-h-[96px] " +
                   (read ? "opacity-60" : "")
                 }
               >
-                <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 py-0.5">
+                <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-0.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 text-base font-extrabold leading-tight text-gray-900 dark:text-white">
                       {displayLabel}
                     </div>
                     {dateLabel ? (
-                      <div className="shrink-0 pt-0.5 text-right text-sm text-gray-500 dark:text-gray-400">{dateLabel}</div>
+                      <div className="shrink-0 pt-0.5 text-right text-xs text-gray-500 dark:text-gray-400">{dateLabel}</div>
                     ) : null}
                   </div>
 
                   {secondaryTitle ? (
-                    <div className="line-clamp-2 text-sm leading-tight text-gray-800 dark:text-gray-100">{secondaryTitle}</div>
+                    <div className="line-clamp-2 text-xs leading-tight text-gray-800 dark:text-gray-100">{secondaryTitle}</div>
                   ) : null}
 
                   {up || chapter.isMature || (chapter.status && chapter.status !== "PUBLISHED") ? (
