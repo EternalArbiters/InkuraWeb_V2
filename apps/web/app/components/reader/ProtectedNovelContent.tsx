@@ -6,6 +6,7 @@ import {
   DEFAULT_NOVEL_READER_PREFERENCES,
   NOVEL_READER_PREFERENCES_EVENT,
   NOVEL_READER_PREFERENCES_KEY,
+  getNovelReaderFontFamilyValue,
   type NovelReaderLineSpacing,
   type NovelReaderPreferences,
   type NovelReaderTheme,
@@ -59,13 +60,10 @@ function normalizeWhitespace(value: string) {
 }
 
 function splitTextIntoHtmlChunks(text: string, maxChunkLength: number) {
-  const normalized = String(text || "").replace(/
-?/g, "
-").trim();
+  const normalized = String(text || "").replace(/\r\n?/g, "\n").trim();
   if (!normalized) return [] as string[];
   if (normalized.length <= maxChunkLength) {
-    return [`<p>${escapeHtml(normalized).replace(/
-/g, "<br>")}</p>`];
+    return [`<p>${escapeHtml(normalized).replace(/\n/g, "<br>")}</p>`];
   }
 
   const words = normalized.split(/\s+/).filter(Boolean);
@@ -209,34 +207,6 @@ function getReaderHintClasses(theme: NovelReaderTheme) {
   }
 }
 
-function getFontFamilyValue(fontFamily: NovelReaderPreferences["fontFamily"]) {
-  switch (fontFamily) {
-    case "sansSerif":
-      return 'var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)';
-    case "monospace":
-      return '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace';
-    case "comic":
-      return '"Comic Sans MS", "Comic Neue", "Chalkboard SE", cursive';
-    case "typewriter":
-      return '"American Typewriter", "Courier Prime", "Courier New", monospace';
-    case "didot":
-      return 'Didot, "Bodoni 72", "Times New Roman", serif';
-    case "bodoni":
-      return '"Bodoni 72", Didot, "Times New Roman", serif';
-    case "baskerville":
-      return 'Baskerville, "Times New Roman", Georgia, serif';
-    case "garamond":
-      return 'Garamond, "EB Garamond", Georgia, serif';
-    case "dancingScript":
-      return '"Dancing Script", "Snell Roundhand", "Brush Script MT", cursive';
-    case "itcLubalinGraph":
-      return '"ITC Lubalin Graph", "Lubalin Graph Std", Rockwell, Georgia, serif';
-    case "serif":
-    default:
-      return "Georgia, Cambria, 'Times New Roman', Times, serif";
-  }
-}
-
 export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
   const t = useUILanguageText("Page Reader");
   const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
@@ -255,7 +225,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   const currentPage = pages[clampedPageIndex] || html;
   const lineHeight = lineHeightValue(preferences.lineSpacing);
   const fontSize = `${preferences.fontScale}rem`;
-  const fontFamily = getFontFamilyValue(preferences.fontFamily);
+  const fontFamily = getNovelReaderFontFamilyValue(preferences.fontFamily);
   const surfaceClassName = getReaderSurfaceClasses(preferences.theme);
   const hintClassName = getReaderHintClasses(preferences.theme);
 

@@ -336,20 +336,26 @@ No pages yet = Belum ada halaman
 This chapter has no pages yet. (Creators can upload them via Studio.) = Chapter ini belum punya halaman. (Creator bisa mengunggahnya lewat Studio.)
 No text yet = Belum ada teks
 This chapter has no text yet. = Chapter ini belum punya teks.
+
+Reader appearance = Tampilan baca
+Reader settings = Pengaturan baca
+Novel reader content = Konten pembaca novel
 Scroll mode = Mode gulir
 Slide mode = Mode slide
-Reader settings = Pengaturan baca
-Reader appearance = Tampilan baca
 Page color = Warna halaman
 Font size = Ukuran font
 Spacing = Jarak
 Font = Font
-Cozy = Rapat
-Airy = Lega
-Novel reader content = Konten pembaca novel
+Previous = Sebelumnya
+Next = Berikutnya
+Menu = Menu
+Comments = Komentar
 Previous page = Halaman sebelumnya
 Next page = Halaman berikutnya
-Swipe left or right = geser ke kiri atau kanan
+Page = Halaman
+Swipe left or right = Geser ke kiri atau kanan
+Cozy = Rapat
+Airy = Lega
 Paper = Kertas
 Midnight = Malam
 Sepia = Sepia
@@ -357,16 +363,17 @@ Mist = Kabut
 Forest = Hutan
 Rose = Mawar
 Serif = Serif
-Sans = Sans
-Mono = Mono
+Sans Serif = Sans Serif
+Monospace = Monospace
 Comic = Comic
-Type = Type
+Typewriter = Typewriter
 Didot = Didot
 Bodoni = Bodoni
-Basker = Basker
-Garam = Garam
-Dance = Dance
-ITC = ITC
+Baskerville = Baskerville
+Garamond = Garamond
+Dancing Script = Dancing Script
+ITC Lubalin Graph = ITC Lubalin Graph
+
 
 ==========
 Page Reader Comments

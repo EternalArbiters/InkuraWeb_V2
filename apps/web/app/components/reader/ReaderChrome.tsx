@@ -2,124 +2,22 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { BookOpen, ChevronLeft, ChevronRight, LayoutGrid, MessageCircle, Settings2, Smartphone } from "lucide-react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import ChapterLikeButton from "@/app/components/work/ChapterLikeButton";
 import {
   DEFAULT_NOVEL_READER_PREFERENCES,
+  NOVEL_READER_FONT_OPTIONS,
   NOVEL_READER_PREFERENCES_EVENT,
   NOVEL_READER_PREFERENCES_KEY,
+  NOVEL_READER_THEME_OPTIONS,
   type NovelReaderPreferences,
   loadNovelReaderPreferences,
   updateNovelReaderPreferences,
 } from "@/app/components/reader/novelReaderPreferences";
 
 const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
-
-type ThemeOption = {
-  value: NovelReaderPreferences["theme"];
-  label: string;
-  swatchClassName: string;
-};
-
-type FontOption = {
-  value: NovelReaderPreferences["fontFamily"];
-  label: string;
-  previewStyle: CSSProperties;
-  previewClassName?: string;
-};
-
-const themeOptions: ThemeOption[] = [
-  {
-    value: "paper",
-    label: "Paper",
-    swatchClassName: "border-slate-200 bg-[#f7f5ef]",
-  },
-  {
-    value: "midnight",
-    label: "Midnight",
-    swatchClassName: "border-[#17243d] bg-[#030917]",
-  },
-  {
-    value: "sepia",
-    label: "Sepia",
-    swatchClassName: "border-[#d9c7a3] bg-[#efe3cb]",
-  },
-  {
-    value: "mist",
-    label: "Mist",
-    swatchClassName: "border-[#bfd0e7] bg-[#e7edf5]",
-  },
-  {
-    value: "forest",
-    label: "Forest",
-    swatchClassName: "border-[#26433a] bg-[#0f1a16]",
-  },
-  {
-    value: "rose",
-    label: "Rose",
-    swatchClassName: "border-[#d9b9c7] bg-[#f5e8e8]",
-  },
-];
-
-const fontOptions: FontOption[] = [
-  {
-    value: "serif",
-    label: "Serif",
-    previewStyle: { fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' },
-  },
-  {
-    value: "sansSerif",
-    label: "Sans",
-    previewStyle: { fontFamily: 'var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)' },
-  },
-  {
-    value: "monospace",
-    label: "Mono",
-    previewStyle: { fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace', fontSize: '1.15rem' },
-  },
-  {
-    value: "comic",
-    label: "Comic",
-    previewStyle: { fontFamily: '"Comic Sans MS", "Comic Neue", "Chalkboard SE", cursive' },
-  },
-  {
-    value: "typewriter",
-    label: "Type",
-    previewStyle: { fontFamily: '"American Typewriter", "Courier Prime", "Courier New", monospace', fontSize: '1.18rem' },
-  },
-  {
-    value: "didot",
-    label: "Didot",
-    previewStyle: { fontFamily: 'Didot, "Bodoni 72", "Times New Roman", serif' },
-  },
-  {
-    value: "bodoni",
-    label: "Bodoni",
-    previewStyle: { fontFamily: '"Bodoni 72", Didot, "Times New Roman", serif' },
-  },
-  {
-    value: "baskerville",
-    label: "Basker",
-    previewStyle: { fontFamily: 'Baskerville, "Times New Roman", Georgia, serif' },
-  },
-  {
-    value: "garamond",
-    label: "Garam",
-    previewStyle: { fontFamily: 'Garamond, "EB Garamond", Georgia, serif' },
-  },
-  {
-    value: "dancingScript",
-    label: "Dance",
-    previewStyle: { fontFamily: '"Dancing Script", "Snell Roundhand", "Brush Script MT", cursive', fontSize: '1.45rem' },
-  },
-  {
-    value: "itcLubalinGraph",
-    label: "ITC",
-    previewStyle: { fontFamily: '"ITC Lubalin Graph", "Lubalin Graph Std", Rockwell, Georgia, serif' },
-  },
-];
 
 function getReadChaptersStorageKey(workSlug: string) {
   return `${READ_CHAPTERS_STORAGE_PREFIX}${workSlug}`;
@@ -173,7 +71,6 @@ function RailOption({
   active,
   ariaLabel,
   previewText,
-  previewStyle,
   previewClassName,
   swatchClassName,
   onClick,
@@ -181,7 +78,6 @@ function RailOption({
   active: boolean;
   ariaLabel: string;
   previewText?: string;
-  previewStyle?: CSSProperties;
   previewClassName?: string;
   swatchClassName?: string;
   onClick: () => void;
@@ -202,10 +98,8 @@ function RailOption({
       {swatchClassName ? (
         <div className={`h-20 rounded-[1.1rem] border ${swatchClassName}`} />
       ) : (
-        <div className="flex h-24 items-center justify-center rounded-[1.1rem] border border-white/10 bg-[#0b1427] px-3 text-center text-[1.32rem] text-white/92">
-          <span className={previewClassName} style={previewStyle}>
-            {previewText}
-          </span>
+        <div className="flex h-24 items-center justify-center rounded-[1.1rem] border border-white/10 bg-[#0b1427] px-3 text-center text-white/92">
+          <span className={previewClassName}>{previewText}</span>
         </div>
       )}
     </button>
@@ -305,12 +199,12 @@ export default function ReaderChrome({
     <div className="relative" onClick={toggle}>
       <div
         className={`fixed inset-x-0 top-0 z-50 lg:hidden transition-all duration-200 ${
-          visible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+          visible ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
         }`}
       >
-        <div className="border-b border-white/10 bg-[#091223]/90 backdrop-blur">
+        <div className="border-b border-white/10 bg-[#030917]/90 text-white backdrop-blur-xl">
           <div className="px-4 py-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-xs font-semibold text-slate-300">{workTitle}</div>
                 <div className="truncate text-sm font-extrabold tracking-tight text-white">{chapterTitle}</div>
@@ -351,7 +245,7 @@ export default function ReaderChrome({
                     className={
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (settingsOpen
-                        ? "border-purple-400 bg-white/12 text-white"
+                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => setSettingsOpen((current) => !current)}
@@ -367,77 +261,78 @@ export default function ReaderChrome({
 
           {showNovelControls && settingsOpen ? (
             <div className="border-t border-white/10 px-4 pb-4 pt-3" onClick={(e) => e.stopPropagation()}>
-              <div className="max-h-[68svh] overflow-y-auto rounded-[28px] border border-white/10 bg-[#091223]/95 p-4 shadow-[0_28px_80px_-48px_rgba(2,8,23,0.95)]">
-                <div className="text-sm font-semibold text-white">{t("Reader appearance")}</div>
+              <div className="rounded-[2rem] border border-white/10 bg-[#081126]/96 p-4 shadow-2xl">
+                <h2 className="text-xl font-extrabold tracking-tight text-white">{t("Reader appearance")}</h2>
 
-                <div className="mt-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Page color")}</div>
-                  <div className="-mx-1 mt-3 overflow-x-auto pb-1">
-                    <div className="flex snap-x gap-3 px-1">
-                      {themeOptions.map((option) => (
-                        <RailOption
-                          key={option.value}
-                          active={novelPreferences.theme === option.value}
-                          ariaLabel={t(option.label)}
-                          swatchClassName={option.swatchClassName}
-                          onClick={() => updatePreferences({ theme: option.value })}
+                <div className="mt-6 space-y-6">
+                  <section>
+                    <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Page color")}</div>
+                    <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <div className="flex w-max gap-3">
+                        {NOVEL_READER_THEME_OPTIONS.map((option) => (
+                          <RailOption
+                            key={option.value}
+                            active={novelPreferences.theme === option.value}
+                            ariaLabel={t(option.labelKey)}
+                            swatchClassName={option.swatchClassName}
+                            onClick={() => updatePreferences({ theme: option.value })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <section>
+                      <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Font size")}</div>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <SettingChip
+                          active={novelPreferences.fontScale <= 1}
+                          label="Aa-"
+                          onClick={() => updatePreferences({ fontScale: 0.94 })}
                         />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Font size")}</div>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <SettingChip
-                        label="Aa-"
-                        active={novelPreferences.fontScale <= 0.96}
-                        onClick={() => updatePreferences({ fontScale: Math.max(0.9, Number((novelPreferences.fontScale - 0.08).toFixed(2))) })}
-                      />
-                      <SettingChip
-                        label="Aa+"
-                        active={novelPreferences.fontScale >= 1.08}
-                        onClick={() => updatePreferences({ fontScale: Math.min(1.3, Number((novelPreferences.fontScale + 0.08).toFixed(2))) })}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Spacing")}</div>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <SettingChip
-                        label={t("Cozy")}
-                        active={novelPreferences.lineSpacing === "comfortable"}
-                        onClick={() => updatePreferences({ lineSpacing: "comfortable" })}
-                      />
-                      <SettingChip
-                        label={t("Airy")}
-                        active={novelPreferences.lineSpacing === "airy"}
-                        onClick={() => updatePreferences({ lineSpacing: "airy" })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{t("Font")}</div>
-                  <div className="-mx-1 mt-3 overflow-x-auto pb-1">
-                    <div className="flex snap-x gap-3 px-1">
-                      {fontOptions.map((option) => (
-                        <RailOption
-                          key={option.value}
-                          active={novelPreferences.fontFamily === option.value}
-                          ariaLabel={t(option.label)}
-                          previewText={t(option.label)}
-                          previewStyle={option.previewStyle}
-                          previewClassName={option.previewClassName}
-                          onClick={() => updatePreferences({ fontFamily: option.value })}
+                        <SettingChip
+                          active={novelPreferences.fontScale > 1}
+                          label="Aa+"
+                          onClick={() => updatePreferences({ fontScale: 1.1 })}
                         />
-                      ))}
-                    </div>
+                      </div>
+                    </section>
+
+                    <section>
+                      <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Spacing")}</div>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <SettingChip
+                          active={novelPreferences.lineSpacing === "comfortable"}
+                          label={t("Cozy")}
+                          onClick={() => updatePreferences({ lineSpacing: "comfortable" })}
+                        />
+                        <SettingChip
+                          active={novelPreferences.lineSpacing === "airy"}
+                          label={t("Airy")}
+                          onClick={() => updatePreferences({ lineSpacing: "airy" })}
+                        />
+                      </div>
+                    </section>
                   </div>
+
+                  <section>
+                    <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Font")}</div>
+                    <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <div className="flex w-max gap-3">
+                        {NOVEL_READER_FONT_OPTIONS.map((option) => (
+                          <RailOption
+                            key={option.value}
+                            active={novelPreferences.fontFamily === option.value}
+                            ariaLabel={t(option.labelKey)}
+                            previewText={option.previewText}
+                            previewClassName={option.previewClassName}
+                            onClick={() => updatePreferences({ fontFamily: option.value })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </section>
                 </div>
               </div>
             </div>
@@ -447,48 +342,48 @@ export default function ReaderChrome({
 
       <div
         className={`fixed inset-x-0 bottom-0 z-50 lg:hidden transition-all duration-200 ${
-          visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
         }`}
       >
-        <div className="border-t border-gray-200 bg-white/85 backdrop-blur dark:border-gray-800 dark:bg-gray-950/75">
+        <div className="bg-white/85 dark:bg-gray-950/75 backdrop-blur border-t border-gray-200 dark:border-gray-800">
           <div className="px-4 py-2">
             <div className="flex items-center justify-between gap-2">
               {hrefPrev ? (
                 <Link
                   href={hrefPrev}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
                   onClick={(e) => e.stopPropagation()}
                   aria-label={t("Previous")}
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="w-5 h-5" />
                 </Link>
               ) : (
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 opacity-40 dark:border-gray-800">
-                  <ChevronLeft className="h-5 w-5" />
+                <span className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-gray-200 dark:border-gray-800 opacity-40">
+                  <ChevronLeft className="w-5 h-5" />
                 </span>
               )}
 
               <Link
                 href={hrefMenu}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={t("Menu")}
               >
-                <LayoutGrid className="h-5 w-5" />
+                <LayoutGrid className="w-5 h-5" />
               </Link>
 
               {hrefNext ? (
                 <Link
                   href={hrefNext}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
                   onClick={(e) => e.stopPropagation()}
                   aria-label={t("Next")}
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="w-5 h-5" />
                 </Link>
               ) : (
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 opacity-40 dark:border-gray-800">
-                  <ChevronRight className="h-5 w-5" />
+                <span className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-gray-200 dark:border-gray-800 opacity-40">
+                  <ChevronRight className="w-5 h-5" />
                 </span>
               )}
 
@@ -498,11 +393,11 @@ export default function ReaderChrome({
 
               <Link
                 href={hrefComments}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={t("Comments")}
               >
-                <MessageCircle className="h-5 w-5" />
+                <MessageCircle className="w-5 h-5" />
               </Link>
             </div>
           </div>
