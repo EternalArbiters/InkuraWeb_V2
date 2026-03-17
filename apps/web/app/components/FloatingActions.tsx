@@ -129,6 +129,7 @@ export default function FloatingActions() {
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(0);
   const [readerChromeVisible, setReaderChromeVisible] = useState(false);
+  const [readerMode, setReaderMode] = useState<string | null>(null);
 
   useEffect(() => {
     if (!chapterId) return;
@@ -171,11 +172,13 @@ export default function FloatingActions() {
   useEffect(() => {
     if (!isReader || typeof window === "undefined") {
       setReaderChromeVisible(false);
+      setReaderMode(null);
       return;
     }
 
     const syncFromDom = () => {
       setReaderChromeVisible(document.documentElement.dataset.readerChromeVisible === "1");
+      setReaderMode(document.documentElement.dataset.readerMode || null);
     };
 
     const onVisibilityChange = (event: Event) => {
@@ -183,10 +186,17 @@ export default function FloatingActions() {
       setReaderChromeVisible(!!custom.detail?.visible);
     };
 
+    const onReaderModeChange = (event: Event) => {
+      const custom = event as CustomEvent<{ mode?: string | null }>;
+      setReaderMode(custom.detail?.mode || null);
+    };
+
     syncFromDom();
     window.addEventListener("inkura:reader-chrome-visibility", onVisibilityChange as EventListener);
+    window.addEventListener("inkura:reader-mode-change", onReaderModeChange as EventListener);
     return () => {
       window.removeEventListener("inkura:reader-chrome-visibility", onVisibilityChange as EventListener);
+      window.removeEventListener("inkura:reader-mode-change", onReaderModeChange as EventListener);
     };
   }, [isReader, pathname]);
 
@@ -208,7 +218,7 @@ export default function FloatingActions() {
     });
   };
 
-  const shouldHideScrollTop = hideScrollTop || (isReader && readerChromeVisible);
+  const shouldHideScrollTop = hideScrollTop || (isReader && (readerChromeVisible || readerMode === "slide"));
   const opacityClass = isReader ? "opacity-50 hover:opacity-85" : "opacity-95 hover:opacity-100";
   const containerClass = isReader
     ? "fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3 md:bottom-24"

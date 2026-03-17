@@ -15,6 +15,7 @@ import {
 
 type ProtectedNovelContentProps = {
   html: string;
+  slideEndingContent?: React.ReactNode;
 };
 
 type HtmlBlock = {
@@ -44,6 +45,12 @@ function handleReactKeyDown(event: React.KeyboardEvent<HTMLElement>) {
   if (shouldBlockShortcut(event)) {
     event.preventDefault();
   }
+}
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return !!el.closest("a,button,input,textarea,select,label,summary,[role='button']");
 }
 
 function escapeHtml(value: string) {
@@ -189,7 +196,7 @@ function getReaderSurfaceClasses(theme: NovelReaderTheme) {
   }
 }
 
-export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
+export default function ProtectedNovelContent({ html, slideEndingContent }: ProtectedNovelContentProps) {
   const t = useUILanguageText("Page Reader");
   const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -203,8 +210,12 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
     () => buildPages(html, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
     [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width]
   );
-  const clampedPageIndex = Math.min(pageIndex, Math.max(0, pages.length - 1));
-  const currentPage = pages[clampedPageIndex] || html;
+  const isMobileViewport = viewport.width > 0 ? viewport.width < 1024 : true;
+  const showSlideEndingPage = preferences.mode === "slide" && isMobileViewport && !!slideEndingContent;
+  const totalPages = pages.length + (showSlideEndingPage ? 1 : 0);
+  const clampedPageIndex = Math.min(pageIndex, Math.max(0, totalPages - 1));
+  const isEndingPage = showSlideEndingPage && clampedPageIndex === pages.length;
+  const currentPage = isEndingPage ? "" : pages[Math.min(clampedPageIndex, Math.max(0, pages.length - 1))] || html;
   const lineHeight = lineHeightValue(preferences.lineSpacing);
   const fontSize = `${preferences.fontScale}rem`;
   const fontFamily = getNovelReaderFontFamilyValue(preferences.fontFamily);
@@ -223,7 +234,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       if (event.key === "ArrowRight") {
         event.preventDefault();
         setPageDirection("next");
-        setPageIndex((current) => Math.min(pages.length - 1, current + 1));
+        setPageIndex((current) => Math.min(totalPages - 1, current + 1));
       }
       if (event.key === "ArrowLeft") {
         event.preventDefault();
@@ -247,7 +258,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       document.removeEventListener("selectstart", preventDefault, options);
       document.removeEventListener("keydown", handleKeyDown, options);
     };
-  }, [pages.length, preferences.mode]);
+  }, [preferences.mode, totalPages]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -285,8 +296,8 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   }, []);
 
   React.useEffect(() => {
-    setPageIndex((current) => Math.min(current, Math.max(0, pages.length - 1)));
-  }, [pages.length]);
+    setPageIndex((current) => Math.min(current, Math.max(0, totalPages - 1)));
+  }, [totalPages]);
 
   React.useEffect(() => {
     setPageIndex(0);
@@ -314,8 +325,8 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
   const goNext = React.useCallback(() => {
     setPageDirection("next");
-    setPageIndex((current) => Math.min(pages.length - 1, current + 1));
-  }, [pages.length]);
+    setPageIndex((current) => Math.min(totalPages - 1, current + 1));
+  }, [totalPages]);
 
   const onTouchStart = React.useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = event.changedTouches[0]?.clientX ?? null;
@@ -351,16 +362,19 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
   const onSlideClick = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (preferences.mode !== "slide") return;
+      if (isInteractiveTarget(event.target)) return;
       const bounds = event.currentTarget.getBoundingClientRect();
       const clickX = event.clientX - bounds.left;
       const leftZone = bounds.width * 0.32;
       const rightZone = bounds.width * 0.68;
 
       if (clickX <= leftZone) {
+        event.stopPropagation();
         goPrev();
         return;
       }
       if (clickX >= rightZone) {
+        event.stopPropagation();
         goNext();
       }
     },
@@ -426,7 +440,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       ) : (
         <div
           className="relative"
-          aria-label={`${t("Page")} ${clampedPageIndex + 1} / ${pages.length}`}
+          aria-label={`${t("Page")} ${clampedPageIndex + 1} / ${totalPages}`}
         >
           <div
             className={`relative overflow-hidden ${surfaceClassName}`}
@@ -441,13 +455,23 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             onTouchEnd={onTouchEnd}
             onClick={onSlideClick}
           >
-            <article
-              className={`novel-reader-surface h-full overflow-hidden px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
-                pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
-              }`}
-            >
-              <div dangerouslySetInnerHTML={{ __html: currentPage }} />
-            </article>
+            {isEndingPage ? (
+              <article
+                className={`novel-reader-surface h-full overflow-y-auto px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
+                  pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
+                }`}
+              >
+                <div className="mx-auto max-w-3xl">{slideEndingContent}</div>
+              </article>
+            ) : (
+              <article
+                className={`novel-reader-surface h-full overflow-hidden px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
+                  pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
+                }`}
+              >
+                <div dangerouslySetInnerHTML={{ __html: currentPage }} />
+              </article>
+            )}
           </div>
         </div>
       )}

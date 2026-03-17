@@ -112,6 +112,58 @@ export default async function ReadChapterPage({
 
   const isComic = work.type === "COMIC";
   const novelHtml = isComic ? "" : getNovelReaderHtml(chapter.text?.content);
+  const [commentsTitle, seeAllCommentsLabel, backToNovelLabel] = await Promise.all([
+    getActiveUILanguageText("Comments", { section: "Page Reader Comments" }),
+    getActiveUILanguageText("See all comments", { section: "Page Reader" }),
+    getActiveUILanguageText("Back to novel", { section: "Page Reader" }),
+  ]);
+
+  const mobileReaderFooter = (
+    <>
+      <div className="mt-6">
+        <CreatorNoteCard
+          uploader={(work as any).author || { username: null, name: null, image: null }}
+          translator={(work as any).translator || null}
+          publishType={(work as any).publishType || null}
+          note={(chapter as any).authorNote || null}
+        />
+      </div>
+
+      <CommentSection
+        targetType="CHAPTER"
+        targetId={chapter.id}
+        title={commentsTitle}
+        take={5}
+        showComposer={true}
+        sort="top"
+        variant="compact"
+        initialComments={initialComments as any}
+        initialCanModerate={initialCanModerate}
+      />
+      <div className="mt-3 flex items-center justify-center">
+        <Link
+          href={`/w/${work.slug}/read/${chapter.id}/comments`}
+          className="w-full text-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+        >
+          {seeAllCommentsLabel}
+        </Link>
+      </div>
+    </>
+  );
+
+  const mobileSlideEndingContent = !isComic ? (
+    <div className="space-y-5 pb-6">
+      {mobileReaderFooter}
+      <div className="flex items-center justify-center pt-2">
+        <Link
+          href={`/w/${work.slug}`}
+          className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-[0_18px_40px_-24px_rgba(168,85,247,0.9)]"
+        >
+          {backToNovelLabel}
+        </Link>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
@@ -173,7 +225,7 @@ export default async function ReadChapterPage({
                   nextId={next ? next.id : null}
                   initialLiked={!!(chapter as any).viewerLiked}
                   initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
-                  readerType={work.type === "NOVEL" ? "NOVEL" : "COMIC"}
+                  readerType={isComic ? "COMIC" : "NOVEL"}
                 >
                   {isComic ? (
                     Array.isArray(chapter.pages) && chapter.pages.length > 0 ? (
@@ -188,7 +240,7 @@ export default async function ReadChapterPage({
                     )
                   ) : (
                     novelHtml ? (
-                      <ProtectedNovelContent html={novelHtml} />
+                      <ProtectedNovelContent html={novelHtml} slideEndingContent={mobileSlideEndingContent} />
                     ) : (
                       <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 mx-4 lg:mx-0">
                         <div className="text-lg font-bold">{await getActiveUILanguageText("No text yet", { section: "Page Reader" })}</div>
@@ -200,36 +252,17 @@ export default async function ReadChapterPage({
               </ContentWarningsGate>
             </div>
 
-            {/* Mobile: preview only (top 5) */}
-            <div className="lg:hidden px-4">
-              <div className="mt-6">
-                <CreatorNoteCard
-                  uploader={(work as any).author || { username: null, name: null, image: null }}
-                  translator={(work as any).translator || null}
-                  publishType={(work as any).publishType || null}
-                  note={(chapter as any).authorNote || null}
-                />
-              </div>
+            <style jsx global>{`
+              @media (max-width: 1023px) {
+                html[data-reader-mode="slide"] [data-mobile-reader-footer="chapter-reader"] {
+                  display: none !important;
+                }
+              }
+            `}</style>
 
-              <CommentSection
-                targetType="CHAPTER"
-                targetId={chapter.id}
-                title="Comments"
-                take={5}
-                showComposer={true}
-                sort="top"
-                variant="compact"
-                initialComments={initialComments as any}
-                initialCanModerate={initialCanModerate}
-              />
-              <div className="mt-3 flex items-center justify-center">
-                <Link
-                  href={`/w/${work.slug}/read/${chapter.id}/comments`}
-                  className="w-full text-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                >
-                  See all comments
-                </Link>
-              </div>
+            {/* Mobile: preview only (top 5) */}
+            <div data-mobile-reader-footer="chapter-reader" className="lg:hidden px-4">
+              {mobileReaderFooter}
             </div>
           </div>
 
@@ -248,7 +281,7 @@ export default async function ReadChapterPage({
               <CommentSection
                 targetType="CHAPTER"
                 targetId={chapter.id}
-                title="Comments"
+                title={commentsTitle}
                 take={5}
                 showComposer={true}
                 sort="top"
@@ -261,7 +294,7 @@ export default async function ReadChapterPage({
                   href={`/w/${work.slug}/read/${chapter.id}/comments`}
                   className="w-full text-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
                 >
-                  See all comments
+                  {seeAllCommentsLabel}
                 </Link>
               </div>
             </div>

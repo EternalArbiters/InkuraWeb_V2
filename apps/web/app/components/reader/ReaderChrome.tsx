@@ -135,6 +135,7 @@ export default function ReaderChrome({
   const [visible, setVisible] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [novelPreferences, setNovelPreferences] = useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
+  const [readerMode, setReaderMode] = useState<NovelReaderPreferences["mode"]>(DEFAULT_NOVEL_READER_PREFERENCES.mode);
   const showNovelControls = readerType === "NOVEL";
 
   useEffect(() => {
@@ -149,9 +150,15 @@ export default function ReaderChrome({
 
   useEffect(() => {
     if (!showNovelControls || typeof window === "undefined") return;
-    setNovelPreferences(loadNovelReaderPreferences());
+    const initialPreferences = loadNovelReaderPreferences();
+    setNovelPreferences(initialPreferences);
+    setReaderMode(initialPreferences.mode);
 
-    const syncPreferences = () => setNovelPreferences(loadNovelReaderPreferences());
+    const syncPreferences = () => {
+      const next = loadNovelReaderPreferences();
+      setNovelPreferences(next);
+      setReaderMode(next.mode);
+    };
     const handleStorage = (event: StorageEvent) => {
       if (!event.key || event.key === NOVEL_READER_PREFERENCES_KEY) syncPreferences();
     };
@@ -168,6 +175,27 @@ export default function ReaderChrome({
     if (!visible) setSettingsOpen(false);
   }, [visible]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+
+    if (!showNovelControls) {
+      delete root.dataset.readerMode;
+      window.dispatchEvent(new CustomEvent("inkura:reader-mode-change", { detail: { mode: null } }));
+      return () => {
+        delete root.dataset.readerMode;
+        window.dispatchEvent(new CustomEvent("inkura:reader-mode-change", { detail: { mode: null } }));
+      };
+    }
+
+    root.dataset.readerMode = readerMode;
+    window.dispatchEvent(new CustomEvent("inkura:reader-mode-change", { detail: { mode: readerMode } }));
+    return () => {
+      delete root.dataset.readerMode;
+      window.dispatchEvent(new CustomEvent("inkura:reader-mode-change", { detail: { mode: null } }));
+    };
+  }, [readerMode, showNovelControls]);
+
   const hrefPrev = useMemo(() => (prevId ? `/w/${workSlug}/read/${prevId}` : null), [prevId, workSlug]);
   const hrefNext = useMemo(() => (nextId ? `/w/${workSlug}/read/${nextId}` : null), [nextId, workSlug]);
   const hrefMenu = useMemo(() => `/w/${workSlug}`, [workSlug]);
@@ -182,6 +210,7 @@ export default function ReaderChrome({
   const updatePreferences = useCallback((patch: Partial<NovelReaderPreferences>) => {
     const next = updateNovelReaderPreferences(patch);
     setNovelPreferences(next);
+    setReaderMode(next.mode);
   }, []);
 
   useEffect(() => {
