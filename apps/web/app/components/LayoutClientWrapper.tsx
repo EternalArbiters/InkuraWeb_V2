@@ -12,6 +12,10 @@ function shouldShowNavbar(pathname: string) {
   return pathname !== "/" && !pathname.startsWith("/auth");
 }
 
+function isReaderRoute(pathname: string) {
+  return /^\/w\/[^/]+\/read\/[^/]+(?:\/|$)/.test(pathname);
+}
+
 function canBypassOnboarding(pathname: string) {
   return pathname === "/onboarding" || pathname.startsWith("/auth") || pathname.startsWith("/api");
 }
@@ -25,6 +29,7 @@ export default function LayoutClientWrapper({
   const router = useRouter();
   const { status, data: session } = useSession();
   const showNavbar = shouldShowNavbar(pathname);
+  const hideMobileNavbarInReader = isReaderRoute(pathname);
   const { language } = useUILanguage();
 
   useEffect(() => {
@@ -54,12 +59,16 @@ export default function LayoutClientWrapper({
 
   return (
     <>
-      {showNavbar && <DashboardNavbar />}
+      {showNavbar && (
+        hideMobileNavbarInReader ? <div className="hidden md:block"><DashboardNavbar /></div> : <DashboardNavbar />
+      )}
       {showNavbar && <FloatingActions />}
       <div
         className={
           showNavbar
-            ? "pt-24 min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white"
+            ? hideMobileNavbarInReader
+              ? "min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white md:pt-24"
+              : "pt-24 min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white"
             : ""
         }
       >
