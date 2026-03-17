@@ -252,7 +252,7 @@ export default async function ReadChapterPage({
               </ContentWarningsGate>
             </div>
 
-            <style jsx global>{`
+            <style>{`
               @media (max-width: 1023px) {
                 html[data-reader-mode="slide"] [data-mobile-reader-footer="chapter-reader"] {
                   display: none !important;
