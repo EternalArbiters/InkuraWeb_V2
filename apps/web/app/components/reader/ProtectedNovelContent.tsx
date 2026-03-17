@@ -24,6 +24,15 @@ type HtmlBlock = {
   tag: string;
 };
 
+type EndingSurfacePalette = {
+  cardBg: string;
+  cardBorder: string;
+  chipBg: string;
+  inputBg: string;
+  text: string;
+  muted: string;
+};
+
 const MIN_SWIPE_PX = 140;
 const SWIPE_WIDTH_RATIO = 0.22;
 
@@ -91,13 +100,40 @@ function splitTextIntoHtmlChunks(text: string, maxChunkLength: number) {
   return chunks;
 }
 
+function hasMeaningfulElementContent(el: HTMLElement) {
+  const text = normalizeWhitespace(el.textContent || "");
+  if (text) return true;
+  return !!el.querySelector("img,video,audio,iframe,table,hr");
+}
+
+function stripEmptyReaderBlocks(html: string) {
+  if (typeof window === "undefined") return html;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div id="inkura-clean-root">${html}</div>`, "text/html");
+  const root = doc.getElementById("inkura-clean-root");
+  if (!root) return html;
+
+  for (const node of Array.from(root.childNodes)) {
+    if (node.nodeType !== Node.ELEMENT_NODE) continue;
+    const el = node as HTMLElement;
+    const tag = el.tagName.toLowerCase();
+    if (!["p", "div", "blockquote", "li", "figure"].includes(tag)) continue;
+    if (hasMeaningfulElementContent(el)) continue;
+    el.remove();
+  }
+
+  return root.innerHTML;
+}
+
 function extractBlocks(html: string): HtmlBlock[] {
   if (typeof window === "undefined") {
     return [{ html, text: normalizeWhitespace(html.replace(/<[^>]+>/g, " ")), tag: "div" }];
   }
 
+  const cleanedHtml = stripEmptyReaderBlocks(html);
   const parser = new DOMParser();
-  const doc = parser.parseFromString(`<div id="inkura-root">${html}</div>`, "text/html");
+  const doc = parser.parseFromString(`<div id="inkura-root">${cleanedHtml}</div>`, "text/html");
   const root = doc.getElementById("inkura-root");
   if (!root) return [];
 
@@ -115,6 +151,7 @@ function extractBlocks(html: string): HtmlBlock[] {
     const text = normalizeWhitespace(el.textContent || "");
     const htmlValue = el.outerHTML || "";
     if (!htmlValue.trim()) continue;
+    if (!text && !hasMeaningfulElementContent(el)) continue;
     blocks.push({ html: htmlValue, text, tag: el.tagName.toLowerCase() || "div" });
   }
 
@@ -196,6 +233,66 @@ function getReaderSurfaceClasses(theme: NovelReaderTheme) {
   }
 }
 
+function getEndingSurfacePalette(theme: NovelReaderTheme): EndingSurfacePalette {
+  switch (theme) {
+    case "paper":
+      return {
+        cardBg: "rgba(15, 23, 42, 0.06)",
+        cardBorder: "rgba(15, 23, 42, 0.14)",
+        chipBg: "rgba(15, 23, 42, 0.08)",
+        inputBg: "rgba(255, 255, 255, 0.48)",
+        text: "#0f172a",
+        muted: "#475569",
+      };
+    case "sepia":
+      return {
+        cardBg: "rgba(55, 41, 27, 0.08)",
+        cardBorder: "rgba(55, 41, 27, 0.18)",
+        chipBg: "rgba(55, 41, 27, 0.10)",
+        inputBg: "rgba(255, 248, 238, 0.40)",
+        text: "#37291b",
+        muted: "#6b5641",
+      };
+    case "mist":
+      return {
+        cardBg: "rgba(20, 32, 51, 0.07)",
+        cardBorder: "rgba(20, 32, 51, 0.16)",
+        chipBg: "rgba(20, 32, 51, 0.09)",
+        inputBg: "rgba(255, 255, 255, 0.42)",
+        text: "#142033",
+        muted: "#4b5563",
+      };
+    case "forest":
+      return {
+        cardBg: "rgba(228, 239, 232, 0.08)",
+        cardBorder: "rgba(228, 239, 232, 0.18)",
+        chipBg: "rgba(228, 239, 232, 0.10)",
+        inputBg: "rgba(228, 239, 232, 0.06)",
+        text: "#e4efe8",
+        muted: "#b7c9be",
+      };
+    case "rose":
+      return {
+        cardBg: "rgba(44, 31, 38, 0.07)",
+        cardBorder: "rgba(44, 31, 38, 0.14)",
+        chipBg: "rgba(44, 31, 38, 0.10)",
+        inputBg: "rgba(255, 255, 255, 0.36)",
+        text: "#2c1f26",
+        muted: "#6b4f5f",
+      };
+    case "midnight":
+    default:
+      return {
+        cardBg: "rgba(255, 255, 255, 0.06)",
+        cardBorder: "rgba(255, 255, 255, 0.12)",
+        chipBg: "rgba(255, 255, 255, 0.08)",
+        inputBg: "rgba(255, 255, 255, 0.04)",
+        text: "#f8fafc",
+        muted: "#cbd5e1",
+      };
+  }
+}
+
 export default function ProtectedNovelContent({ html, slideEndingContent }: ProtectedNovelContentProps) {
   const t = useUILanguageText("Page Reader");
   const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
@@ -206,20 +303,22 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
   const touchStartX = React.useRef<number | null>(null);
   const touchStartY = React.useRef<number | null>(null);
 
+  const sanitizedHtml = React.useMemo(() => stripEmptyReaderBlocks(html), [html]);
   const pages = React.useMemo(
-    () => buildPages(html, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
-    [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width]
+    () => buildPages(sanitizedHtml, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
+    [preferences.fontScale, preferences.lineSpacing, sanitizedHtml, viewport.height, viewport.width]
   );
   const isMobileViewport = viewport.width > 0 ? viewport.width < 1024 : true;
   const showSlideEndingPage = preferences.mode === "slide" && isMobileViewport && !!slideEndingContent;
   const totalPages = pages.length + (showSlideEndingPage ? 1 : 0);
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, totalPages - 1));
   const isEndingPage = showSlideEndingPage && clampedPageIndex === pages.length;
-  const currentPage = isEndingPage ? "" : pages[Math.min(clampedPageIndex, Math.max(0, pages.length - 1))] || html;
+  const currentPage = isEndingPage ? "" : pages[Math.min(clampedPageIndex, Math.max(0, pages.length - 1))] || sanitizedHtml;
   const lineHeight = lineHeightValue(preferences.lineSpacing);
   const fontSize = `${preferences.fontScale}rem`;
   const fontFamily = getNovelReaderFontFamilyValue(preferences.fontFamily);
   const surfaceClassName = getReaderSurfaceClasses(preferences.theme);
+  const endingSurfacePalette = React.useMemo(() => getEndingSurfacePalette(preferences.theme), [preferences.theme]);
 
   React.useEffect(() => {
     const options = { capture: true } as AddEventListenerOptions;
@@ -453,6 +552,47 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
         .novel-reader-surface table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
         .novel-reader-surface td, .novel-reader-surface th { border: 1px solid rgba(148,163,184,.25); padding: .55rem .7rem; }
         .novel-reader-surface pre, .novel-reader-surface code { white-space: pre-wrap; }
+        .novel-slide-ending {
+          --ending-card-bg: ${endingSurfacePalette.cardBg};
+          --ending-card-border: ${endingSurfacePalette.cardBorder};
+          --ending-chip-bg: ${endingSurfacePalette.chipBg};
+          --ending-input-bg: ${endingSurfacePalette.inputBg};
+          --ending-text: ${endingSurfacePalette.text};
+          --ending-muted: ${endingSurfacePalette.muted};
+          color: var(--ending-text);
+        }
+        .novel-slide-ending :where(section, article, .rounded-2xl, .rounded-xl) {
+          border-color: var(--ending-card-border) !important;
+        }
+        .novel-slide-ending :where(section, article) {
+          background: transparent !important;
+        }
+        .novel-slide-ending :where(.bg-black\/20, .bg-white, .bg-white\/70, .dark\:bg-gray-900\/50, .dark\:bg-gray-950, .hover\:bg-gray-50:hover, .dark\:hover\:bg-gray-900:hover) {
+          background: var(--ending-card-bg) !important;
+        }
+        .novel-slide-ending :where(.bg-white\/10) {
+          background: var(--ending-chip-bg) !important;
+        }
+        .novel-slide-ending :where(textarea, input, select) {
+          background: var(--ending-input-bg) !important;
+          border-color: var(--ending-card-border) !important;
+          color: var(--ending-text) !important;
+        }
+        .novel-slide-ending :where(textarea)::placeholder {
+          color: var(--ending-muted) !important;
+        }
+        .novel-slide-ending :where(.text-white, .text-white\/80, .text-white\/85, .text-gray-800, .dark\:text-white) {
+          color: var(--ending-text) !important;
+        }
+        .novel-slide-ending :where(.text-white\/60, .text-gray-600, .dark\:text-gray-300, .text-\[11px\]) {
+          color: var(--ending-muted) !important;
+        }
+        .novel-slide-ending :where(.border-white\/10, .border-gray-200, .border-gray-300, .dark\:border-gray-700, .dark\:border-gray-800) {
+          border-color: var(--ending-card-border) !important;
+        }
+        .novel-slide-ending :where(.bg-gradient-to-r, .from-blue-500, .to-purple-600, .from-fuchsia-500, .to-violet-600) {
+          color: #ffffff !important;
+        }
       `}</style>
 
       {preferences.mode === "scroll" ? (
@@ -465,7 +605,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
             WebkitTapHighlightColor: "transparent",
           }}
         >
-          <div dangerouslySetInnerHTML={{ __html: html }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
         </article>
       ) : (
         <div
@@ -493,7 +633,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
                   pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
                 }`}
               >
-                <div className="mx-auto max-w-3xl">{slideEndingContent}</div>
+                <div className="novel-slide-ending mx-auto max-w-3xl">{slideEndingContent}</div>
               </article>
             ) : (
               <article
