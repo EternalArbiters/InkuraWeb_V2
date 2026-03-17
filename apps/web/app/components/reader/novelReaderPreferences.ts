@@ -4,7 +4,6 @@ import {
   Dancing_Script,
   EB_Garamond,
   GFS_Didot,
-  Libre_Baskerville,
   Roboto_Slab,
   Special_Elite,
 } from "next/font/google";
@@ -13,7 +12,6 @@ const comicNeue = Comic_Neue({ subsets: ["latin"], weight: ["400", "700"], displ
 const specialElite = Special_Elite({ subsets: ["latin"], weight: "400", display: "swap" });
 const gfsDidot = GFS_Didot({ subsets: ["latin"], weight: "400", display: "swap" });
 const bodoniModa = Bodoni_Moda({ subsets: ["latin"], weight: ["400", "600", "700"], display: "swap" });
-const libreBaskerville = Libre_Baskerville({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
 const ebGaramond = EB_Garamond({ subsets: ["latin"], weight: ["400", "500", "700"], display: "swap" });
 const dancingScript = Dancing_Script({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" });
 const robotoSlab = Roboto_Slab({ subsets: ["latin"], weight: ["400", "500", "700"], display: "swap" });
@@ -28,7 +26,6 @@ export type NovelReaderFontFamily =
   | "typewriter"
   | "didot"
   | "bodoni"
-  | "baskerville"
   | "garamond"
   | "dancingScript"
   | "itcLubalinGraph";
@@ -104,67 +101,61 @@ export const NOVEL_READER_FONT_OPTIONS: NovelReaderFontOption[] = [
     value: "serif",
     labelKey: "Serif",
     previewText: "Serif",
-    previewClassName: "font-serif text-[1.55rem] tracking-[0.01em]",
+    previewClassName: "font-serif text-[1.3rem] tracking-[0.01em]",
   },
   {
     value: "sansSerif",
     labelKey: "Sans Serif",
     previewText: "Sans",
-    previewClassName: "font-sans text-[1.46rem]",
+    previewClassName: "font-sans text-[1.18rem]",
   },
   {
     value: "monospace",
     labelKey: "Monospace",
     previewText: "Mono",
-    previewClassName: "font-mono text-[1.18rem] tracking-[0.02em]",
+    previewClassName: "font-mono text-[0.98rem] tracking-[0.02em]",
   },
   {
     value: "comic",
     labelKey: "Comic",
     previewText: "Comic",
-    previewClassName: `${comicNeue.className} text-[1.42rem]`,
+    previewClassName: `${comicNeue.className} text-[1.12rem]`,
   },
   {
     value: "typewriter",
     labelKey: "Typewriter",
     previewText: "Type",
-    previewClassName: `${specialElite.className} text-[1.12rem] tracking-[0.02em]`,
+    previewClassName: `${specialElite.className} text-[0.94rem] tracking-[0.02em]`,
   },
   {
     value: "didot",
     labelKey: "Didot",
     previewText: "Didot",
-    previewClassName: `${gfsDidot.className} text-[1.62rem]`,
+    previewClassName: `${gfsDidot.className} text-[1.28rem]`,
   },
   {
     value: "bodoni",
     labelKey: "Bodoni",
     previewText: "Bodo",
-    previewClassName: `${bodoniModa.className} text-[1.5rem] tracking-[0.015em]`,
-  },
-  {
-    value: "baskerville",
-    labelKey: "Baskerville",
-    previewText: "Bask",
-    previewClassName: `${libreBaskerville.className} text-[1.24rem]`,
+    previewClassName: `${bodoniModa.className} text-[1.2rem] tracking-[0.015em]`,
   },
   {
     value: "garamond",
     labelKey: "Garamond",
     previewText: "Gara",
-    previewClassName: `${ebGaramond.className} text-[1.38rem]`,
+    previewClassName: `${ebGaramond.className} text-[1.08rem]`,
   },
   {
     value: "dancingScript",
     labelKey: "Dancing Script",
     previewText: "Dance",
-    previewClassName: `${dancingScript.className} text-[1.72rem]`,
+    previewClassName: `${dancingScript.className} text-[1.3rem]`,
   },
   {
     value: "itcLubalinGraph",
     labelKey: "ITC Lubalin Graph",
     previewText: "ITC",
-    previewClassName: `${robotoSlab.className} text-[1.18rem] font-semibold leading-tight`,
+    previewClassName: `${robotoSlab.className} text-[0.95rem] font-semibold leading-tight`,
   },
 ];
 
@@ -193,7 +184,7 @@ function normalizeFontFamily(value: unknown): NovelReaderFontFamily {
       return "bodoni";
     case "baskerville":
     case "classic":
-      return "baskerville";
+      return "serif";
     case "garamond":
       return "garamond";
     case "dancingScript":
@@ -244,8 +235,6 @@ export function getNovelReaderFontFamilyValue(fontFamily: NovelReaderPreferences
       return `Didot, ${gfsDidot.style.fontFamily}, serif`;
     case "bodoni":
       return `"Bodoni 72", ${bodoniModa.style.fontFamily}, serif`;
-    case "baskerville":
-      return `Baskerville, ${libreBaskerville.style.fontFamily}, serif`;
     case "garamond":
       return `Garamond, ${ebGaramond.style.fontFamily}, serif`;
     case "dancingScript":

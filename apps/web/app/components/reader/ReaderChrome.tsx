@@ -89,16 +89,16 @@ function RailOption({
       aria-label={ariaLabel}
       title={ariaLabel}
       className={
-        "flex min-w-[112px] snap-start flex-col rounded-2xl border p-2.5 text-left transition " +
+        "flex min-w-[124px] snap-start flex-col rounded-2xl border p-2 text-left transition " +
         (active
           ? "border-purple-400 bg-purple-500/10"
           : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]")
       }
     >
       {swatchClassName ? (
-        <div className={`h-20 rounded-[1.1rem] border ${swatchClassName}`} />
+        <div className={`h-14 rounded-[1rem] border ${swatchClassName}`} />
       ) : (
-        <div className="flex h-24 items-center justify-center rounded-[1.1rem] border border-white/10 bg-[#0b1427] px-3 text-center text-white/92">
+        <div className="flex h-16 items-center justify-center rounded-[1rem] border border-white/10 bg-[#0b1427] px-2.5 text-center text-white/92">
           <span className={previewClassName}>{previewText}</span>
         </div>
       )}
@@ -268,7 +268,7 @@ export default function ReaderChrome({
                   <section>
                     <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Page color")}</div>
                     <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      <div className="flex w-max gap-3">
+                      <div className="flex w-max gap-2.5">
                         {NOVEL_READER_THEME_OPTIONS.map((option) => (
                           <RailOption
                             key={option.value}
@@ -319,7 +319,7 @@ export default function ReaderChrome({
                   <section>
                     <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Font")}</div>
                     <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      <div className="flex w-max gap-3">
+                      <div className="flex w-max gap-2.5">
                         {NOVEL_READER_FONT_OPTIONS.map((option) => (
                           <RailOption
                             key={option.value}
