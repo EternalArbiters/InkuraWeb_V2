@@ -82,7 +82,6 @@ function ComicPageItem({
       ref={containerRef}
       className="relative isolate overflow-hidden bg-gray-200 dark:bg-gray-900 select-none"
       style={{
-        minHeight: "42vh",
         aspectRatio,
         WebkitTouchCallout: "none",
         WebkitUserSelect: "none",
