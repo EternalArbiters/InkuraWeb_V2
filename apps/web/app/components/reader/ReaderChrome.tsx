@@ -65,10 +65,10 @@ function SettingChip({
       className={
         "inline-flex min-h-11 items-center justify-center rounded-2xl border px-3 text-sm font-semibold transition " +
         (disabled
-          ? "cursor-not-allowed border-white/5 bg-white/[0.03] text-slate-500"
+          ? "cursor-not-allowed border-gray-200 bg-gray-100 text-slate-400 dark:border-white/5 dark:bg-white/[0.03] dark:text-slate-500"
           : active
             ? "border-purple-500 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(168,85,247,0.9)]"
-            : "border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10")
+            : "border-gray-200 bg-white text-slate-700 hover:border-gray-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-white/10")
       }
     >
       {label}
@@ -101,13 +101,13 @@ function RailOption({
         "flex min-w-[124px] snap-start flex-col rounded-2xl border p-2 text-left transition " +
         (active
           ? "border-purple-400 bg-purple-500/10"
-          : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]")
+          : "border-gray-200 bg-white hover:border-gray-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/20 dark:hover:bg-white/[0.06]")
       }
     >
       {swatchClassName ? (
         <div className={`h-14 rounded-[1rem] border ${swatchClassName}`} />
       ) : (
-        <div className="flex h-16 items-center justify-center rounded-[1rem] border border-white/10 bg-[#0b1427] px-2.5 text-center text-white/92">
+        <div className="flex h-16 items-center justify-center rounded-[1rem] border border-gray-200 bg-slate-50 px-2.5 text-center text-slate-900 dark:border-white/10 dark:bg-[#0b1427] dark:text-white/92">
           <span className={previewClassName}>{previewText}</span>
         </div>
       )}
@@ -248,12 +248,12 @@ export default function ReaderChrome({
           visible ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
         }`}
       >
-        <div className="border-b border-white/10 bg-[#030917]/90 text-white backdrop-blur-xl">
+        <div className="border-b border-gray-200 bg-white/92 text-slate-900 backdrop-blur-xl dark:border-white/10 dark:bg-[#030917]/90 dark:text-white">
           <div className="px-4 py-3">
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
-                <div className="truncate text-xs font-semibold text-slate-300">{workTitle}</div>
-                <div className="truncate text-sm font-extrabold tracking-tight text-white">{chapterTitle}</div>
+                <div className="truncate text-xs font-semibold text-slate-500 dark:text-slate-300">{workTitle}</div>
+                <div className="truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">{chapterTitle}</div>
               </div>
 
               {showNovelControls ? (
@@ -264,7 +264,7 @@ export default function ReaderChrome({
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (novelPreferences.mode === "scroll"
                         ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
-                        : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
+                        : "border-gray-200 bg-white/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "scroll" })}
                     aria-label={t("Scroll mode")}
@@ -278,7 +278,7 @@ export default function ReaderChrome({
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (novelPreferences.mode === "slide"
                         ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
-                        : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
+                        : "border-gray-200 bg-white/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "slide" })}
                     aria-label={t("Slide mode")}
@@ -292,7 +292,7 @@ export default function ReaderChrome({
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (settingsOpen
                         ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
-                        : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
+                        : "border-gray-200 bg-white/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10")
                     }
                     onClick={() => setSettingsOpen((current) => !current)}
                     aria-label={t("Reader settings")}
@@ -306,13 +306,13 @@ export default function ReaderChrome({
           </div>
 
           {showNovelControls && settingsOpen ? (
-            <div className="border-t border-white/10 px-4 pb-4 pt-3" onClick={(e) => e.stopPropagation()}>
-              <div className="rounded-[2rem] border border-white/10 bg-[#081126]/96 p-4 shadow-2xl">
-                <h2 className="text-xl font-extrabold tracking-tight text-white">{t("Reader appearance")}</h2>
+            <div className="border-t border-gray-200 px-4 pb-4 pt-3 dark:border-white/10" onClick={(e) => e.stopPropagation()}>
+              <div className="rounded-[2rem] border border-gray-200 bg-white/96 p-4 shadow-2xl dark:border-white/10 dark:bg-[#081126]/96">
+                <h2 className="text-xl font-extrabold tracking-tight text-slate-950 dark:text-white">{t("Reader appearance")}</h2>
 
                 <div className="mt-6 space-y-6">
                   <section>
-                    <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Page color")}</div>
+                    <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-500 dark:text-slate-300">{t("Page color")}</div>
                     <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                       <div className="flex w-max gap-2.5">
                         {NOVEL_READER_THEME_OPTIONS.map((option) => (
@@ -330,7 +330,7 @@ export default function ReaderChrome({
 
                   <div className="grid grid-cols-2 gap-4">
                     <section>
-                      <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Font size")}</div>
+                      <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-500 dark:text-slate-300">{t("Font size")}</div>
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <SettingChip
                           active={false}
@@ -348,7 +348,7 @@ export default function ReaderChrome({
                     </section>
 
                     <section>
-                      <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Spacing")}</div>
+                      <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-500 dark:text-slate-300">{t("Spacing")}</div>
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <SettingChip
                           active={novelPreferences.lineSpacing === "comfortable"}
@@ -365,7 +365,7 @@ export default function ReaderChrome({
                   </div>
 
                   <section>
-                    <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-300">{t("Font")}</div>
+                    <div className="text-xs font-bold uppercase tracking-[0.38em] text-slate-500 dark:text-slate-300">{t("Font")}</div>
                     <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                       <div className="flex w-max gap-2.5">
                         {NOVEL_READER_FONT_OPTIONS.map((option) => (

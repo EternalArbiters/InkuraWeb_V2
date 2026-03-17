@@ -567,6 +567,9 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
         .novel-slide-ending :where(.bg-gradient-to-r, .from-blue-500, .to-purple-600, .from-fuchsia-500, .to-violet-600) {
           color: #ffffff !important;
         }
+        .novel-slide-ending :where(a, button).w-full.bg-gradient-to-r {
+          display: none !important;
+        }
         .novel-slide-ending [data-reader-uploader-card] {
           color: var(--ending-text) !important;
         }
@@ -589,6 +592,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
             WebkitUserSelect: "none",
             userSelect: "none",
             WebkitTapHighlightColor: "transparent",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
           }}
         >
           <div dangerouslySetInnerHTML={{ __html: html }} />
@@ -619,7 +623,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
                   pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
                 }`}
               >
-                <div className="novel-slide-ending mx-auto max-w-3xl" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)" }}>{slideEndingContent}</div>
+                <div className="novel-slide-ending mx-auto max-w-3xl" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 4rem)" }}>{slideEndingContent}</div>
               </article>
             ) : (
               <article
