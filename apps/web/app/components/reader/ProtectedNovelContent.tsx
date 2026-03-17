@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
 import {
   DEFAULT_NOVEL_READER_PREFERENCES,
   NOVEL_READER_PREFERENCES_EVENT,
   NOVEL_READER_PREFERENCES_KEY,
-  NovelReaderLineSpacing,
-  NovelReaderPreferences,
-  NovelReaderTheme,
+  type NovelReaderLineSpacing,
+  type NovelReaderPreferences,
+  type NovelReaderTheme,
   loadNovelReaderPreferences,
 } from "@/app/components/reader/novelReaderPreferences";
 
@@ -169,17 +170,21 @@ function buildPages(html: string, width: number, height: number, fontScale: numb
   return pages;
 }
 
-function getReaderSurfaceClasses(theme: NovelReaderTheme, mode: "scroll" | "slide") {
-  const base = mode === "scroll" ? "rounded-[28px] border shadow-[0_28px_80px_-48px_rgba(15,23,42,0.6)]" : "border shadow-[0_24px_80px_-40px_rgba(15,23,42,0.65)]";
-
+function getReaderSurfaceClasses(theme: NovelReaderTheme) {
   switch (theme) {
     case "paper":
-      return `${base} border-slate-200 bg-white/95 text-slate-900`;
+      return "bg-[#f7f5ef] text-slate-900";
     case "sepia":
-      return `${base} border-[#d9c7a3] bg-[#efe3cb]/95 text-[#37291b]`;
+      return "bg-[#efe3cb] text-[#37291b]";
+    case "mist":
+      return "bg-[#e7edf5] text-[#142033]";
+    case "forest":
+      return "bg-[#0f1a16] text-[#e4efe8]";
+    case "rose":
+      return "bg-[#f5e8e8] text-[#2c1f26]";
     case "midnight":
     default:
-      return `${base} border-[#17243d] bg-[#050b17]/95 text-slate-100`;
+      return "bg-[#030917] text-slate-100";
   }
 }
 
@@ -189,13 +194,40 @@ function getReaderHintClasses(theme: NovelReaderTheme) {
       return "text-slate-500";
     case "sepia":
       return "text-[#6f5739]";
+    case "mist":
+      return "text-[#4c627f]";
+    case "forest":
+      return "text-[#8fb0a1]";
+    case "rose":
+      return "text-[#8b6677]";
     case "midnight":
     default:
       return "text-slate-400";
   }
 }
 
+function getFontFamilyValue(fontFamily: NovelReaderPreferences["fontFamily"]) {
+  switch (fontFamily) {
+    case "sans":
+      return "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)";
+    case "book":
+      return '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif';
+    case "classic":
+      return 'Baskerville, "Times New Roman", Georgia, serif';
+    case "mono":
+      return '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace';
+    case "serif":
+    default:
+      return "Georgia, Cambria, 'Times New Roman', Times, serif";
+  }
+}
+
+function pickLanguage(language: string, en: string, id: string) {
+  return language === "ID" ? id : en;
+}
+
 export default function ProtectedNovelContent({ html }: ProtectedNovelContentProps) {
+  const { language } = useUILanguage();
   const [preferences, setPreferences] = React.useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageDirection, setPageDirection] = React.useState<"next" | "prev" | null>(null);
@@ -206,15 +238,26 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
   const pages = React.useMemo(
     () => buildPages(html, viewport.width, viewport.height, preferences.fontScale, preferences.lineSpacing),
-    [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width],
+    [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width]
   );
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, pages.length - 1));
   const currentPage = pages[clampedPageIndex] || html;
   const lineHeight = lineHeightValue(preferences.lineSpacing);
   const fontSize = `${preferences.fontScale}rem`;
-  const fontFamily = preferences.fontFamily === "sans" ? "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)" : "Georgia, Cambria, 'Times New Roman', Times, serif";
-  const surfaceClassName = getReaderSurfaceClasses(preferences.theme, preferences.mode);
+  const fontFamily = getFontFamilyValue(preferences.fontFamily);
+  const surfaceClassName = getReaderSurfaceClasses(preferences.theme);
   const hintClassName = getReaderHintClasses(preferences.theme);
+
+  const text = React.useMemo(
+    () => ({
+      novelReader: pickLanguage(language, "Novel reader content", "Konten pembaca novel"),
+      previousPage: pickLanguage(language, "Previous page", "Halaman sebelumnya"),
+      nextPage: pickLanguage(language, "Next page", "Halaman berikutnya"),
+      pageCounter: pickLanguage(language, "Page", "Halaman"),
+      swipeHint: pickLanguage(language, "swipe left or right", "geser ke kiri atau kanan"),
+    }),
+    [language]
+  );
 
   React.useEffect(() => {
     const options = { capture: true } as AddEventListenerOptions;
@@ -328,39 +371,42 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
     touchStartY.current = event.changedTouches[0]?.clientY ?? null;
   }, []);
 
-  const onTouchEnd = React.useCallback((event: React.TouchEvent<HTMLDivElement>) => {
-    const endX = event.changedTouches[0]?.clientX ?? null;
-    const endY = event.changedTouches[0]?.clientY ?? null;
-    const startX = touchStartX.current;
-    const startY = touchStartY.current;
-    touchStartX.current = null;
-    touchStartY.current = null;
+  const onTouchEnd = React.useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      const endX = event.changedTouches[0]?.clientX ?? null;
+      const endY = event.changedTouches[0]?.clientY ?? null;
+      const startX = touchStartX.current;
+      const startY = touchStartY.current;
+      touchStartX.current = null;
+      touchStartY.current = null;
 
-    if (startX == null || startY == null || endX == null || endY == null) return;
-    const deltaX = endX - startX;
-    const deltaY = endY - startY;
-    const requiredSwipe = Math.max(MIN_SWIPE_PX, Math.floor(viewport.width * SWIPE_WIDTH_RATIO));
+      if (startX == null || startY == null || endX == null || endY == null) return;
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+      const requiredSwipe = Math.max(MIN_SWIPE_PX, Math.floor(viewport.width * SWIPE_WIDTH_RATIO));
 
-    if (Math.abs(deltaX) < requiredSwipe) return;
-    if (Math.abs(deltaX) < Math.abs(deltaY) * 1.6) return;
+      if (Math.abs(deltaX) < requiredSwipe) return;
+      if (Math.abs(deltaX) < Math.abs(deltaY) * 1.6) return;
 
-    if (deltaX < 0) {
-      goNext();
-      return;
-    }
-    goPrev();
-  }, [goNext, goPrev, viewport.width]);
+      if (deltaX < 0) {
+        goNext();
+        return;
+      }
+      goPrev();
+    },
+    [goNext, goPrev, viewport.width]
+  );
 
   return (
     <div
       ref={wrapperRef}
-      className="px-4 lg:px-0"
+      className="px-0"
       onCopy={preventReactDefault}
       onCut={preventReactDefault}
       onContextMenu={preventReactDefault}
       onDragStart={preventReactDefault}
       onKeyDown={handleReactKeyDown}
-      aria-label="Novel reader content"
+      aria-label={text.novelReader}
     >
       <style jsx>{`
         @keyframes novelPageNext {
@@ -397,7 +443,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
 
       {preferences.mode === "scroll" ? (
         <article
-          className={`novel-reader-surface max-w-none select-none px-5 py-6 sm:px-6 sm:py-7 [&_*]:select-none ${surfaceClassName}`}
+          className={`novel-reader-surface min-h-[calc(100svh-180px)] max-w-none select-none px-5 py-6 sm:px-6 sm:py-7 lg:px-8 lg:py-8 [&_*]:select-none ${surfaceClassName}`}
           style={{
             WebkitTouchCallout: "none",
             WebkitUserSelect: "none",
@@ -410,7 +456,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
       ) : (
         <div className="space-y-4">
           <div
-            className={`relative overflow-hidden backdrop-blur ${surfaceClassName}`}
+            className={`relative overflow-hidden ${surfaceClassName}`}
             style={{
               minHeight: viewport.height ? `${viewport.height}px` : "70svh",
               WebkitTouchCallout: "none",
@@ -422,23 +468,25 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
             onTouchEnd={onTouchEnd}
           >
             <article
-              className={`novel-reader-surface h-full overflow-hidden px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""}`}
+              className={`novel-reader-surface h-full overflow-hidden px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
+                pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
+              }`}
             >
               <div dangerouslySetInnerHTML={{ __html: currentPage }} />
             </article>
           </div>
 
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 px-4 pb-2 lg:px-0">
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-900"
               onClick={goPrev}
               disabled={clampedPageIndex <= 0}
             >
-              Previous page
+              {text.previousPage}
             </button>
             <div className={`text-center text-xs font-medium ${hintClassName}`}>
-              Page {clampedPageIndex + 1} / {pages.length} · swipe left or right
+              {text.pageCounter} {clampedPageIndex + 1} / {pages.length} · {text.swipeHint}
             </div>
             <button
               type="button"
@@ -446,7 +494,7 @@ export default function ProtectedNovelContent({ html }: ProtectedNovelContentPro
               onClick={goNext}
               disabled={clampedPageIndex >= pages.length - 1}
             >
-              Next page
+              {text.nextPage}
             </button>
           </div>
         </div>

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { BookOpen, ChevronLeft, ChevronRight, LayoutGrid, MessageCircle, Settings2, Smartphone } from "lucide-react";
+import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
 import ChapterLikeButton from "@/app/components/work/ChapterLikeButton";
 import {
   DEFAULT_NOVEL_READER_PREFERENCES,
   NOVEL_READER_PREFERENCES_EVENT,
   NOVEL_READER_PREFERENCES_KEY,
-  NovelReaderPreferences,
+  type NovelReaderPreferences,
   loadNovelReaderPreferences,
   updateNovelReaderPreferences,
 } from "@/app/components/reader/novelReaderPreferences";
@@ -39,30 +40,57 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
   return !!el.closest("a,button,input,textarea,select,label,summary,[role='button']");
 }
 
+function pickLanguage(language: string, en: string, id: string) {
+  return language === "ID" ? id : en;
+}
+
 const themeOptions: Array<{
   value: NovelReaderPreferences["theme"];
-  label: string;
-  helper: string;
   swatchClassName: string;
+  labels: { EN: string; ID: string };
 }> = [
   {
     value: "paper",
-    label: "Paper",
-    helper: "Bright and clean",
-    swatchClassName: "border-slate-200 bg-white",
+    labels: { EN: "Paper", ID: "Kertas" },
+    swatchClassName: "border-slate-200 bg-[#f7f5ef]",
   },
   {
     value: "midnight",
-    label: "Midnight",
-    helper: "Easy on the eyes",
-    swatchClassName: "border-[#17243d] bg-[#050b17]",
+    labels: { EN: "Midnight", ID: "Malam" },
+    swatchClassName: "border-[#17243d] bg-[#030917]",
   },
   {
     value: "sepia",
-    label: "Sepia",
-    helper: "Warm book tone",
+    labels: { EN: "Sepia", ID: "Sepia" },
     swatchClassName: "border-[#d9c7a3] bg-[#efe3cb]",
   },
+  {
+    value: "mist",
+    labels: { EN: "Mist", ID: "Kabut" },
+    swatchClassName: "border-[#bfd0e7] bg-[#e7edf5]",
+  },
+  {
+    value: "forest",
+    labels: { EN: "Forest", ID: "Hutan" },
+    swatchClassName: "border-[#26433a] bg-[#0f1a16]",
+  },
+  {
+    value: "rose",
+    labels: { EN: "Rose", ID: "Mawar" },
+    swatchClassName: "border-[#d9b9c7] bg-[#f5e8e8]",
+  },
+];
+
+const fontOptions: Array<{
+  value: NovelReaderPreferences["fontFamily"];
+  label: string;
+  previewClassName: string;
+}> = [
+  { value: "serif", label: "Serif", previewClassName: "font-serif" },
+  { value: "sans", label: "Sans", previewClassName: "font-sans" },
+  { value: "book", label: "Book", previewClassName: "font-serif italic" },
+  { value: "classic", label: "Classic", previewClassName: "font-serif tracking-[0.02em]" },
+  { value: "mono", label: "Mono", previewClassName: "font-mono" },
 ];
 
 function SettingChip({
@@ -86,6 +114,42 @@ function SettingChip({
       }
     >
       {label}
+    </button>
+  );
+}
+
+function RailOption({
+  active,
+  label,
+  preview,
+  swatchClassName,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  preview?: string;
+  swatchClassName?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "flex min-w-[112px] snap-start flex-col rounded-2xl border p-2.5 text-left transition " +
+        (active
+          ? "border-purple-400 bg-purple-500/10"
+          : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]")
+      }
+    >
+      {swatchClassName ? (
+        <div className={`h-14 rounded-xl border ${swatchClassName}`} />
+      ) : (
+        <div className="flex h-14 items-center justify-center rounded-xl border border-white/10 bg-[#0b1427] px-3 text-center text-lg text-white/90">
+          <span className={preview}>{label}</span>
+        </div>
+      )}
+      <span className="mt-2 text-xs font-semibold text-white">{label}</span>
     </button>
   );
 }
@@ -115,16 +179,35 @@ export default function ReaderChrome({
   readerType?: "NOVEL" | "COMIC";
   children: ReactNode;
 }) {
+  const { language } = useUILanguage();
   const [visible, setVisible] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [novelPreferences, setNovelPreferences] = useState<NovelReaderPreferences>(DEFAULT_NOVEL_READER_PREFERENCES);
   const showNovelControls = readerType === "NOVEL";
 
-  // Reading history / progress
+  const text = useMemo(
+    () => ({
+      scrollMode: pickLanguage(language, "Scroll mode", "Mode gulir"),
+      slideMode: pickLanguage(language, "Slide mode", "Mode slide"),
+      readerSettings: pickLanguage(language, "Reader settings", "Pengaturan baca"),
+      readerAppearance: pickLanguage(language, "Reader appearance", "Tampilan baca"),
+      pageColor: pickLanguage(language, "Page color", "Warna halaman"),
+      fontSize: pickLanguage(language, "Font size", "Ukuran font"),
+      spacing: pickLanguage(language, "Spacing", "Jarak"),
+      font: pickLanguage(language, "Font", "Font"),
+      previous: pickLanguage(language, "Previous", "Sebelumnya"),
+      next: pickLanguage(language, "Next", "Berikutnya"),
+      menu: pickLanguage(language, "Menu", "Menu"),
+      comments: pickLanguage(language, "Comments", "Komentar"),
+      cozy: pickLanguage(language, "Cozy", "Rapat"),
+      airy: pickLanguage(language, "Airy", "Lega"),
+    }),
+    [language]
+  );
+
   useEffect(() => {
     if (!workId || !chapterId) return;
     rememberReadChapter(workSlug, chapterId);
-    // Best-effort; ignore errors (401 for guests).
     fetch(`/api/progress`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -158,8 +241,7 @@ export default function ReaderChrome({
   const hrefMenu = useMemo(() => `/w/${workSlug}`, [workSlug]);
   const hrefComments = useMemo(() => `/w/${workSlug}/read/${chapterId}/comments`, [workSlug, chapterId]);
 
-  const toggle = useCallback((e: React.MouseEvent) => {
-    // Desktop: no tap-to-toggle chrome.
+  const toggle = useCallback((e: ReactMouseEvent) => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
     if (isInteractiveTarget(e.target)) return;
     setVisible((v) => !v);
@@ -183,7 +265,6 @@ export default function ReaderChrome({
 
   return (
     <div className="relative" onClick={toggle}>
-      {/* Mobile-only chrome (tap-to-toggle) */}
       <div
         className={`fixed inset-x-0 top-0 z-50 lg:hidden transition-all duration-200 ${
           visible ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
@@ -208,8 +289,8 @@ export default function ReaderChrome({
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "scroll" })}
-                    aria-label="Scroll mode"
-                    title="Scroll mode"
+                    aria-label={text.scrollMode}
+                    title={text.scrollMode}
                   >
                     <Smartphone className="h-4 w-4" />
                   </button>
@@ -222,8 +303,8 @@ export default function ReaderChrome({
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "slide" })}
-                    aria-label="Slide mode"
-                    title="Slide mode"
+                    aria-label={text.slideMode}
+                    title={text.slideMode}
                   >
                     <BookOpen className="h-4 w-4" />
                   </button>
@@ -236,8 +317,8 @@ export default function ReaderChrome({
                         : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10")
                     }
                     onClick={() => setSettingsOpen((current) => !current)}
-                    aria-label="Reader settings"
-                    title="Reader settings"
+                    aria-label={text.readerSettings}
+                    title={text.readerSettings}
                   >
                     <Settings2 className="h-4 w-4" />
                   </button>
@@ -249,38 +330,31 @@ export default function ReaderChrome({
           {showNovelControls && settingsOpen ? (
             <div className="border-t border-white/10 px-4 pb-4 pt-3" onClick={(e) => e.stopPropagation()}>
               <div className="max-h-[68svh] overflow-y-auto rounded-[28px] border border-white/10 bg-[#091223]/95 p-4 shadow-[0_28px_80px_-48px_rgba(2,8,23,0.95)]">
-                <div>
-                  <div className="text-sm font-semibold text-white">Reader appearance</div>
-                  <div className="mt-1 text-xs text-slate-400">Pick a mood that fits the chapter without leaving the page.</div>
-                </div>
+                <div className="text-sm font-semibold text-white">{text.readerAppearance}</div>
 
                 <div className="mt-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Page color</div>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {themeOptions.map((option) => {
-                      const active = novelPreferences.theme === option.value;
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => updatePreferences({ theme: option.value })}
-                          className={
-                            "rounded-2xl border p-2 text-left transition " +
-                            (active ? "border-purple-400 bg-purple-500/10" : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]")
-                          }
-                        >
-                          <div className={`h-14 rounded-xl border ${option.swatchClassName}`} />
-                          <div className="mt-2 text-xs font-semibold text-white">{option.label}</div>
-                          <div className="text-[11px] text-slate-400">{option.helper}</div>
-                        </button>
-                      );
-                    })}
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.pageColor}</div>
+                  <div className="-mx-1 mt-3 overflow-x-auto pb-1">
+                    <div className="flex snap-x gap-3 px-1">
+                      {themeOptions.map((option) => {
+                        const active = novelPreferences.theme === option.value;
+                        return (
+                          <RailOption
+                            key={option.value}
+                            active={active}
+                            label={option.labels[language as "EN" | "ID"] ?? option.labels.EN}
+                            swatchClassName={option.swatchClassName}
+                            onClick={() => updatePreferences({ theme: option.value })}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Font size</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.fontSize}</div>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <SettingChip
                         label="Aa-"
@@ -296,15 +370,15 @@ export default function ReaderChrome({
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Spacing</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.spacing}</div>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <SettingChip
-                        label="Cozy"
+                        label={text.cozy}
                         active={novelPreferences.lineSpacing === "comfortable"}
                         onClick={() => updatePreferences({ lineSpacing: "comfortable" })}
                       />
                       <SettingChip
-                        label="Airy"
+                        label={text.airy}
                         active={novelPreferences.lineSpacing === "airy"}
                         onClick={() => updatePreferences({ lineSpacing: "airy" })}
                       />
@@ -313,18 +387,19 @@ export default function ReaderChrome({
                 </div>
 
                 <div className="mt-5">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Font style</div>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <SettingChip
-                      label="Serif"
-                      active={novelPreferences.fontFamily === "serif"}
-                      onClick={() => updatePreferences({ fontFamily: "serif" })}
-                    />
-                    <SettingChip
-                      label="Sans"
-                      active={novelPreferences.fontFamily === "sans"}
-                      onClick={() => updatePreferences({ fontFamily: "sans" })}
-                    />
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{text.font}</div>
+                  <div className="-mx-1 mt-3 overflow-x-auto pb-1">
+                    <div className="flex snap-x gap-3 px-1">
+                      {fontOptions.map((option) => (
+                        <RailOption
+                          key={option.value}
+                          active={novelPreferences.fontFamily === option.value}
+                          label={option.label}
+                          preview={option.previewClassName}
+                          onClick={() => updatePreferences({ fontFamily: option.value })}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -335,10 +410,10 @@ export default function ReaderChrome({
 
       <div
         className={`fixed inset-x-0 bottom-0 z-50 lg:hidden transition-all duration-200 ${
-          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+          visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
         }`}
       >
-        <div className="bg-white/85 backdrop-blur border-t border-gray-200 dark:border-gray-800 dark:bg-gray-950/75">
+        <div className="border-t border-gray-200 bg-white/85 backdrop-blur dark:border-gray-800 dark:bg-gray-950/75">
           <div className="px-4 py-2">
             <div className="flex items-center justify-between gap-2">
               {hrefPrev ? (
@@ -346,7 +421,7 @@ export default function ReaderChrome({
                   href={hrefPrev}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                   onClick={(e) => e.stopPropagation()}
-                  aria-label="Previous"
+                  aria-label={text.previous}
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Link>
@@ -360,7 +435,7 @@ export default function ReaderChrome({
                 href={hrefMenu}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
-                aria-label="Menu"
+                aria-label={text.menu}
               >
                 <LayoutGrid className="h-5 w-5" />
               </Link>
@@ -370,7 +445,7 @@ export default function ReaderChrome({
                   href={hrefNext}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                   onClick={(e) => e.stopPropagation()}
-                  aria-label="Next"
+                  aria-label={text.next}
                 >
                   <ChevronRight className="h-5 w-5" />
                 </Link>
@@ -388,7 +463,7 @@ export default function ReaderChrome({
                 href={hrefComments}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
-                aria-label="Comments"
+                aria-label={text.comments}
               >
                 <MessageCircle className="h-5 w-5" />
               </Link>
@@ -397,7 +472,6 @@ export default function ReaderChrome({
         </div>
       </div>
 
-      {/* Reader content */}
       <div className="relative">{children}</div>
     </div>
   );

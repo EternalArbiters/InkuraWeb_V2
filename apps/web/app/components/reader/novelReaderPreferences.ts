@@ -1,6 +1,6 @@
 export type NovelReaderMode = "scroll" | "slide";
-export type NovelReaderTheme = "paper" | "midnight" | "sepia";
-export type NovelReaderFontFamily = "serif" | "sans";
+export type NovelReaderTheme = "paper" | "midnight" | "sepia" | "mist" | "forest" | "rose";
+export type NovelReaderFontFamily = "serif" | "sans" | "book" | "classic" | "mono";
 export type NovelReaderLineSpacing = "comfortable" | "airy";
 
 export type NovelReaderPreferences = {
@@ -30,10 +30,22 @@ function clampFontScale(value: unknown) {
 
 function normalizePreferences(input: Partial<NovelReaderPreferences> | null | undefined): NovelReaderPreferences {
   const mode = input?.mode === "slide" ? "slide" : "scroll";
-  const theme = input?.theme === "paper" || input?.theme === "sepia" || input?.theme === "midnight"
-    ? input.theme
-    : DEFAULT_NOVEL_READER_PREFERENCES.theme;
-  const fontFamily = input?.fontFamily === "sans" ? "sans" : "serif";
+  const theme =
+    input?.theme === "paper" ||
+    input?.theme === "sepia" ||
+    input?.theme === "midnight" ||
+    input?.theme === "mist" ||
+    input?.theme === "forest" ||
+    input?.theme === "rose"
+      ? input.theme
+      : DEFAULT_NOVEL_READER_PREFERENCES.theme;
+  const fontFamily =
+    input?.fontFamily === "sans" ||
+    input?.fontFamily === "book" ||
+    input?.fontFamily === "classic" ||
+    input?.fontFamily === "mono"
+      ? input.fontFamily
+      : "serif";
   const lineSpacing = input?.lineSpacing === "airy" ? "airy" : "comfortable";
 
   return {
