@@ -60,7 +60,7 @@ export default async function ReadChapterPage({
       getActiveUILanguageText("Back to work", { section: "Page Reader" }),
     ]);
     return (
-      <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <main data-chapter-reader="1" className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
             <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
@@ -166,7 +166,7 @@ export default async function ReadChapterPage({
   ) : null;
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <main data-chapter-reader="1" className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <AnalyticsEventTracker
         eventType="CHAPTER_VIEW"
         payload={{
@@ -193,7 +193,7 @@ export default async function ReadChapterPage({
         initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
       />
 
-      <div className="mx-auto max-w-6xl px-0 sm:px-4 py-0 lg:py-8 pb-24">
+      <div data-chapter-reader-shell="1" className="mx-auto max-w-6xl px-0 sm:px-4 py-0 lg:py-8 pb-24">
         <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
           <div>
             {/* keep for accessibility/SEO only */}
@@ -256,6 +256,10 @@ export default async function ReadChapterPage({
               @media (max-width: 1023px) {
                 html[data-reader-mode="slide"] [data-mobile-reader-footer="chapter-reader"] {
                   display: none !important;
+                }
+
+                html[data-reader-mode="slide"] [data-chapter-reader-shell="1"] {
+                  padding-bottom: 0 !important;
                 }
               }
             `}</style>

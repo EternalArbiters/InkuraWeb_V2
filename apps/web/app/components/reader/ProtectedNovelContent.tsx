@@ -318,6 +318,36 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
     return () => node.removeEventListener("selectstart", handleSelectStart);
   }, []);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const shouldLockViewport = preferences.mode === "slide" && isMobileViewport;
+    if (!shouldLockViewport) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlOverflow: html.style.overflow,
+      htmlOverscrollBehavior: html.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+      bodyOverscrollBehavior: body.style.overscrollBehavior,
+      bodyTouchAction: body.style.touchAction,
+    };
+
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    body.style.touchAction = "pan-x pinch-zoom";
+
+    return () => {
+      html.style.overflow = previous.htmlOverflow;
+      html.style.overscrollBehavior = previous.htmlOverscrollBehavior;
+      body.style.overflow = previous.bodyOverflow;
+      body.style.overscrollBehavior = previous.bodyOverscrollBehavior;
+      body.style.touchAction = previous.bodyTouchAction;
+    };
+  }, [isMobileViewport, preferences.mode]);
+
   const goPrev = React.useCallback(() => {
     setPageDirection("prev");
     setPageIndex((current) => Math.max(0, current - 1));
@@ -392,7 +422,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
       onKeyDown={handleReactKeyDown}
       aria-label={t("Novel reader content")}
     >
-      <style jsx>{`
+      <style>{`
         @keyframes novelPageNext {
           0% { opacity: 0.2; transform: perspective(1600px) rotateY(-18deg) translateX(32px) scale(0.985); filter: brightness(0.9); }
           60% { opacity: 1; transform: perspective(1600px) rotateY(4deg) translateX(-6px) scale(1); }
@@ -450,6 +480,8 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
               WebkitUserSelect: "none",
               userSelect: "none",
               WebkitTapHighlightColor: "transparent",
+              touchAction: isMobileViewport ? "pan-x pinch-zoom" : "auto",
+              overscrollBehavior: isMobileViewport ? "none" : "auto",
             }}
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
