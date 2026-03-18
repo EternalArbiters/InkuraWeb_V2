@@ -7,8 +7,8 @@ import { fetchComments } from "@/server/services/comments/fetchComments";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderChrome from "@/app/components/reader/ReaderChrome";
+import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
-import DesktopReaderSidebar from "@/app/components/reader/DesktopReaderSidebar";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import ProtectedNovelContent from "@/app/components/reader/ProtectedNovelContent";
 import { getNovelReaderHtml } from "@/lib/novelContent";
@@ -139,8 +139,8 @@ export default async function ReadChapterPage({
         variant="compact"
         initialComments={initialComments as any}
         initialCanModerate={initialCanModerate}
-        workAuthorId={work.authorId}
-        workPublishType={work.publishType}
+        workAuthorId={(work as any).authorId || null}
+        workPublishType={(work as any).publishType || null}
       />
       <div className="mt-3 flex items-center justify-center">
         <Link
@@ -187,6 +187,8 @@ export default async function ReadChapterPage({
           genreIds: Array.isArray(work.genres) ? work.genres.map((genre: any) => genre.id).filter(Boolean) : [],
         }}
       />
+      {/* Desktop dock (Pre / All / Next) */}
+      <DesktopReaderDock workSlug={work.slug} prevId={prev ? prev.id : null} nextId={next ? next.id : null} />
       <ReaderFloatingSeed
         chapterId={chapter.id}
         initialLiked={!!(chapter as any).viewerLiked}
@@ -273,46 +275,36 @@ export default async function ReadChapterPage({
           {/* Desktop: side comments */}
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <DesktopReaderSidebar
-                workSlug={work.slug}
-                chapterId={chapter.id}
-                prevId={prev ? prev.id : null}
-                nextId={next ? next.id : null}
-                initialLiked={!!(chapter as any).viewerLiked}
-                initialLikeCount={typeof (chapter as any).likeCount === "number" ? (chapter as any).likeCount : 0}
-                readerType={isComic ? "COMIC" : "NOVEL"}
-              >
+              <div className="mb-4">
                 <CreatorNoteCard
                   uploader={(work as any).author || { username: null, name: null, image: null }}
                   translator={(work as any).translator || null}
                   publishType={(work as any).publishType || null}
                   note={(chapter as any).authorNote || null}
                 />
+              </div>
 
-                <div id="reader-comments-panel">
-                  <CommentSection
-                    targetType="CHAPTER"
-                    targetId={chapter.id}
-                    title={commentsTitle}
-                    take={5}
-                    showComposer={true}
-                    sort="top"
-                    variant="compact"
-                    initialComments={initialComments as any}
-                    initialCanModerate={initialCanModerate}
-                    workAuthorId={work.authorId}
-                    workPublishType={work.publishType}
-                  />
-                  <div className="mt-3 flex items-center justify-center">
-                    <Link
-                      href={`/w/${work.slug}/read/${chapter.id}/comments`}
-                      className="w-full text-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-                    >
-                      {seeAllCommentsLabel}
-                    </Link>
-                  </div>
-                </div>
-              </DesktopReaderSidebar>
+              <CommentSection
+                targetType="CHAPTER"
+                targetId={chapter.id}
+                title={commentsTitle}
+                take={5}
+                showComposer={true}
+                sort="top"
+                variant="compact"
+                initialComments={initialComments as any}
+                initialCanModerate={initialCanModerate}
+                workAuthorId={(work as any).authorId || null}
+                workPublishType={(work as any).publishType || null}
+              />
+              <div className="mt-3 flex items-center justify-center">
+                <Link
+                  href={`/w/${work.slug}/read/${chapter.id}/comments`}
+                  className="w-full text-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                >
+                  {seeAllCommentsLabel}
+                </Link>
+              </div>
             </div>
           </aside>
         </div>

@@ -23,6 +23,10 @@ type ToolbarButtonProps = {
   active?: boolean;
 };
 
+const ALIGNABLE_BLOCK_SELECTOR = "p, div, blockquote, li, h1, h2, h3, h4, figure, figcaption";
+
+type Alignment = "left" | "center" | "right";
+
 function ToolbarButton({ title, onPress, children, disabled, active = false }: ToolbarButtonProps) {
   return (
     <button
@@ -49,6 +53,26 @@ function ToolbarRow({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
+}
+
+function getClosestEditableBlock(editor: HTMLDivElement, node: Node | null) {
+  const baseElement = node instanceof Element ? node : node?.parentElement ?? null;
+  return baseElement?.closest(ALIGNABLE_BLOCK_SELECTOR) as HTMLElement | null;
+}
+
+function getSelectedEditableBlocks(editor: HTMLDivElement, range: Range) {
+  const blocks = Array.from(editor.querySelectorAll<HTMLElement>(ALIGNABLE_BLOCK_SELECTOR)).filter((element) => {
+    try {
+      return range.intersectsNode(element);
+    } catch {
+      return false;
+    }
+  });
+
+  if (blocks.length) return blocks;
+
+  const fallbackBlock = getClosestEditableBlock(editor, range.commonAncestorContainer);
+  return fallbackBlock ? [fallbackBlock] : [];
 }
 
 export default function NovelRichTextEditor({ value, onChange, placeholder = "Write the chapter content...", workId, chapterId }: Props) {
@@ -109,42 +133,34 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
     }
   }, []);
 
+  const clearActiveFormats = React.useCallback(() => {
+    setActiveFormats({
+      bold: false,
+      italic: false,
+      underline: false,
+      strikeThrough: false,
+      h2: false,
+      h3: false,
+      bullet: false,
+      ordered: false,
+      quote: false,
+      alignLeft: false,
+      alignCenter: false,
+      alignRight: false,
+    });
+  }, []);
+
   const updateToolbarState = React.useCallback(() => {
     const editor = editorRef.current;
     const selection = window.getSelection();
     if (!editor || !selection || selection.rangeCount === 0) {
-      setActiveFormats({
-        bold: false,
-        italic: false,
-        underline: false,
-        strikeThrough: false,
-        h2: false,
-        h3: false,
-        bullet: false,
-        ordered: false,
-        quote: false,
-        alignLeft: false,
-        alignCenter: false,
-        alignRight: false,
-      });
+      clearActiveFormats();
       return;
     }
+
     const range = selection.getRangeAt(0);
     if (!editor.contains(range.commonAncestorContainer)) {
-      setActiveFormats({
-        bold: false,
-        italic: false,
-        underline: false,
-        strikeThrough: false,
-        h2: false,
-        h3: false,
-        bullet: false,
-        ordered: false,
-        quote: false,
-        alignLeft: false,
-        alignCenter: false,
-        alignRight: false,
-      });
+      clearActiveFormats();
       return;
     }
 
@@ -153,14 +169,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       .trim()
       .toLowerCase();
 
-    const selectedBlock = selection.anchorNode instanceof Element
-      ? selection.anchorNode
-      : selection.anchorNode?.parentElement ?? null;
-
-    const textAlignValue = String(document.queryCommandValue("justifyCenter") || "").trim().toLowerCase();
-    const computedTextAlign = selectedBlock
-      ? window.getComputedStyle(selectedBlock.closest("p, h1, h2, h3, h4, blockquote, li, div") ?? selectedBlock).textAlign.toLowerCase()
-      : "";
+    const selectedBlock = getClosestEditableBlock(editor, selection.anchorNode) ?? getClosestEditableBlock(editor, range.commonAncestorContainer);
+    const computedTextAlignRaw = selectedBlock ? window.getComputedStyle(selectedBlock).textAlign.toLowerCase() : "";
+    const computedTextAlign = computedTextAlignRaw === "start" ? "left" : computedTextAlignRaw === "end" ? "right" : computedTextAlignRaw;
 
     setActiveFormats({
       bold: document.queryCommandState("bold"),
@@ -172,11 +183,11 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       bullet: document.queryCommandState("insertUnorderedList"),
       ordered: document.queryCommandState("insertOrderedList"),
       quote: formatBlockValue === "blockquote",
-      alignLeft: computedTextAlign === "left" || computedTextAlign === "start" || (!computedTextAlign && textAlignValue !== "true"),
-      alignCenter: textAlignValue === "true" || computedTextAlign === "center",
-      alignRight: computedTextAlign === "right" || computedTextAlign === "end",
+      alignLeft: !computedTextAlign || computedTextAlign === "left" || computedTextAlign === "justify",
+      alignCenter: computedTextAlign === "center",
+      alignRight: computedTextAlign === "right",
     });
-  }, []);
+  }, [clearActiveFormats]);
 
   React.useEffect(() => {
     const handleSelectionChange = () => {
@@ -205,28 +216,19 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       updateToolbarState();
       return;
     }
-    setActiveFormats({
-      bold: false,
-      italic: false,
-      underline: false,
-      strikeThrough: false,
-      h2: false,
-      h3: false,
-      bullet: false,
-      ordered: false,
-      quote: false,
-      alignLeft: false,
-      alignCenter: false,
-      alignRight: false,
-    });
-  }, [updateToolbarState]);
+    clearActiveFormats();
+  }, [clearActiveFormats, updateToolbarState]);
 
   const restoreSelection = React.useCallback(() => {
     const selection = window.getSelection();
     const range = selectionRef.current;
     const editor = editorRef.current;
     if (!selection || !range || !editor) return;
-    editor.focus();
+    try {
+      editor.focus({ preventScroll: true });
+    } catch {
+      editor.focus();
+    }
     selection.removeAllRanges();
     selection.addRange(range);
   }, []);
@@ -236,8 +238,34 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       const editor = editorRef.current;
       if (!editor) return;
       restoreSelection();
-      editor.focus();
+      try {
+        document.execCommand("styleWithCSS", false, true);
+      } catch {
+        // ignore
+      }
       document.execCommand(command, false, commandValue);
+      saveSelection();
+      updateToolbarState();
+      syncRawFromDom();
+    },
+    [restoreSelection, saveSelection, syncRawFromDom, updateToolbarState]
+  );
+
+  const applyTextAlignment = React.useCallback(
+    (alignment: Alignment) => {
+      const editor = editorRef.current;
+      if (!editor) return;
+      restoreSelection();
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      const blocks = getSelectedEditableBlocks(editor, range);
+      if (!blocks.length) return;
+
+      blocks.forEach((block) => {
+        block.style.textAlign = alignment;
+      });
+
       saveSelection();
       updateToolbarState();
       syncRawFromDom();
@@ -252,7 +280,6 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       restoreSelection();
       const inserted = document.execCommand("insertHTML", false, html);
       if (!inserted) {
-        editor.focus();
         editor.innerHTML = `${editor.innerHTML}${html}`;
       }
       saveSelection();
@@ -289,7 +316,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         window.setTimeout(() => setHelperText(null), 2200);
       }
     },
-    [chapterId, insertHtmlAtCaret, workId]
+    [chapterId, insertHtmlAtCaret, t, workId]
   );
 
   const handleImagePick = React.useCallback(async (fileList: FileList | null) => {
@@ -343,13 +370,13 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         <ToolbarButton title="Quote" active={activeFormats.quote} onPress={() => runCommand("formatBlock", "<blockquote>")}>
           <Quote className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Align left" active={activeFormats.alignLeft} onPress={() => runCommand("justifyLeft")}>
+        <ToolbarButton title="Align left" active={activeFormats.alignLeft} onPress={() => applyTextAlignment("left")}>
           <AlignLeft className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Align center" active={activeFormats.alignCenter} onPress={() => runCommand("justifyCenter")}>
+        <ToolbarButton title="Align center" active={activeFormats.alignCenter} onPress={() => applyTextAlignment("center")}>
           <AlignCenter className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Align right" active={activeFormats.alignRight} onPress={() => runCommand("justifyRight")}>
+        <ToolbarButton title="Align right" active={activeFormats.alignRight} onPress={() => applyTextAlignment("right")}>
           <AlignRight className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton title="Horizontal line" onPress={() => runCommand("insertHorizontalRule")}>

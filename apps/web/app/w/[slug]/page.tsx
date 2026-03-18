@@ -386,7 +386,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 initialComments={initialComments as any}
                 initialCanModerate={initialCanModerate}
                 workAuthorId={work.authorId}
-                workPublishType={work.publishType}
+                workPublishType={(work as any).publishType || null}
               />
             </div>
           </div>

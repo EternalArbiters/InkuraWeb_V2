@@ -1,4 +1,5 @@
 const BLOCK_TAG_RE = /<\/?[a-z][\s\S]*>/i;
+const TEXT_ALIGN_TAGS = new Set(["p", "div", "blockquote", "li", "h1", "h2", "h3", "h4", "figure", "figcaption"]);
 
 function escapeHtml(value: string) {
   return value
@@ -39,6 +40,31 @@ function sanitizeUrl(raw: string, kind: "href" | "src") {
   return "";
 }
 
+function normalizeTextAlign(raw: string) {
+  const value = String(raw || "").trim().toLowerCase();
+  if (!value) return "";
+  if (value === "start") return "left";
+  if (value === "end") return "right";
+  return ["left", "center", "right", "justify"].includes(value) ? value : "";
+}
+
+function sanitizeTagTextAlign(tag: string, rawAttrs: string) {
+  if (!TEXT_ALIGN_TAGS.has(tag)) return "";
+
+  const alignMatch = rawAttrs.match(/\s+align\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i);
+  const styleMatch = rawAttrs.match(/\s+style\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i);
+
+  let nextAlign = normalizeTextAlign(decodeBasicEntities(stripWrappingQuotes(alignMatch?.[1] || "")));
+
+  if (!nextAlign && styleMatch?.[1]) {
+    const styleValue = decodeBasicEntities(stripWrappingQuotes(styleMatch[1]));
+    const textAlignMatch = styleValue.match(/(?:^|;)\s*text-align\s*:\s*([^;]+)/i);
+    nextAlign = normalizeTextAlign(textAlignMatch?.[1] || "");
+  }
+
+  return nextAlign ? `text-align:${nextAlign}` : "";
+}
+
 export function isNovelHtml(value: string | null | undefined) {
   return BLOCK_TAG_RE.test(String(value || ""));
 }
@@ -73,7 +99,6 @@ export function sanitizeNovelHtml(value: string | null | undefined) {
 
   html = html.replace(/\s+on[a-z-]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
   html = html.replace(/\s+(?:class|id|data-[\w-]+|aria-[\w-]+|role)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
-  html = html.replace(/\s+style\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
 
   html = html.replace(/\s+href\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, (_match, rawValue) => {
     const safe = sanitizeUrl(rawValue, "href");
@@ -85,7 +110,7 @@ export function sanitizeNovelHtml(value: string | null | undefined) {
     return safe ? ` src="${escapeAttribute(safe)}"` : "";
   });
 
-  html = html.replace(/<a\b([^>]*)>/gi, (full, attrs) => {
+  html = html.replace(/<a\b([^>]*)>/gi, (_full, attrs) => {
     if (!/\bhref\s*=/.test(attrs)) return "<span>";
     return `<a${attrs} target="_blank" rel="noopener noreferrer nofollow">`;
   });
@@ -135,14 +160,18 @@ export function sanitizeNovelHtml(value: string | null | undefined) {
     "th",
   ]);
 
-  html = html.replace(/<\/?([a-z0-9-]+)\b[^>]*>/gi, (full, rawTag) => {
+  html = html.replace(/<\/?([a-z0-9-]+)\b([^>]*)>/gi, (full, rawTag, rawAttrs) => {
     const tag = String(rawTag || "").toLowerCase();
     if (!allowedTags.has(tag)) return "";
     if (tag === "img") return full;
     if (tag === "a") return full;
     if (tag === "br" || tag === "hr") return full.startsWith("</") ? "" : `<${tag}>`;
+
     const isClosing = full.startsWith("</");
-    return isClosing ? `</${tag}>` : `<${tag}>`;
+    if (isClosing) return `</${tag}>`;
+
+    const safeTextAlign = sanitizeTagTextAlign(tag, rawAttrs || "");
+    return safeTextAlign ? `<${tag} style="${escapeAttribute(safeTextAlign)}">` : `<${tag}>`;
   });
 
   html = html.replace(/<(p|div|blockquote|li|h1|h2|h3|h4|figcaption|td|th)>\s*<\/(p|div|blockquote|li|h1|h2|h3|h4|figcaption|td|th)>/gi, "");

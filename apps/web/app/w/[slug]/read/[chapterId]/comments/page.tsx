@@ -129,8 +129,8 @@ export default async function ChapterCommentsPage({
           variant="plain"
           initialComments={initialComments as any}
           initialCanModerate={initialCanModerate}
-          workAuthorId={work.authorId}
-          workPublishType={work.publishType}
+          workAuthorId={(work as any).authorId || null}
+          workPublishType={(work as any).publishType || null}
         />
       </div>
     </main>
