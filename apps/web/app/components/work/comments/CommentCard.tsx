@@ -20,6 +20,7 @@ import {
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { DecoratedComment, ReplyTarget, TargetType } from "./types";
 import CommentBody from "./CommentBody";
+import CommunityBadgeChips from "@/app/components/user/CommunityBadgeChips";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 export type CommentCardProps = {
@@ -131,6 +132,10 @@ export default function CommentCard(props: CommentCardProps) {
   const isMine = !!viewerId && c.user?.id === viewerId;
   const isAdminComment = String(c.user?.role || "").toUpperCase() === "ADMIN";
   const isWorkOwnerComment = !!workAuthorId && !!workOwnerBadgeLabel && c.user?.id === workAuthorId;
+  const communityBadges = Array.isArray(c.user?.badges) ? c.user.badges : [];
+  const workOwnerBadge = isWorkOwnerComment
+    ? [{ kind: "ROLE", label: workOwnerBadgeLabel as string, tone: "GRAY" as const }]
+    : [];
 
   const isPinned = depth === 0 && !!(c as any).isPinned;
   const isFocused = focusedId === c.id;
@@ -192,7 +197,7 @@ export default function CommentCard(props: CommentCardProps) {
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {c.user?.username ? (
               <Link href={`/u/${c.user.username}`} className="min-w-0 truncate text-sm font-semibold hover:text-purple-400">
                 {c.displayName}
@@ -200,16 +205,8 @@ export default function CommentCard(props: CommentCardProps) {
             ) : (
               <div className="min-w-0 truncate text-sm font-semibold">{c.displayName}</div>
             )}
-            {isAdminComment ? (
-              <span className="shrink-0 rounded-full border border-emerald-300/60 bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-950/25 dark:text-emerald-300">
-                Admin
-              </span>
-            ) : null}
-            {isWorkOwnerComment ? (
-              <span className="shrink-0 rounded-full border border-violet-300/60 bg-violet-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-violet-700 dark:border-violet-500/40 dark:bg-violet-950/25 dark:text-violet-300">
-                {workOwnerBadgeLabel}
-              </span>
-            ) : null}
+            <CommunityBadgeChips badges={communityBadges} compact />
+            {!isAdminComment && workOwnerBadge.length ? <CommunityBadgeChips badges={workOwnerBadge} compact /> : null}
           </div>
           {ratingStars}
         </div>

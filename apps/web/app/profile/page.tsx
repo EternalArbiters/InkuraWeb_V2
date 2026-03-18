@@ -5,6 +5,7 @@ import WorkCardSquare from "@/app/home/WorkCardSquare";
 import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import ProfileCommentCard from "@/app/components/user/ProfileCommentCard";
+import CommunityBadgeChips from "@/app/components/user/CommunityBadgeChips";
 import ProfileReviewCard from "@/app/components/user/ProfileReviewCard";
 import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
 import ProfileShareButton from "@/app/components/user/ProfileShareButton";
@@ -13,6 +14,7 @@ import { getSession } from "@/server/auth/session";
 import prisma from "@/server/db/prisma";
 import { getViewerComments, getViewerReviews } from "@/server/services/profile/viewerActivity";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
+import { getCommunityUserIdentity } from "@/server/services/community/identity";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +90,7 @@ export default async function ProfilePage() {
 
   const userId = session.user.id;
 
-  const [profile, publishedWorksCount, followersCount, followingCount, reviewsCount, commentsCount, reviewFeed, commentFeed] = await Promise.all([
+  const [profile, publishedWorksCount, followersCount, followingCount, reviewsCount, commentsCount, reviewFeed, commentFeed, communityIdentity] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -164,6 +166,7 @@ export default async function ProfilePage() {
     prisma.comment.count({ where: { userId } }),
     getViewerReviews(userId, { sort: "newest", take: 3 }),
     getViewerComments(userId, { sort: "newest", take: 3 }),
+    getCommunityUserIdentity(userId),
   ]);
 
   if (!profile) {
@@ -240,6 +243,7 @@ export default async function ProfilePage() {
                   {profile.username ? `@${profile.username}` : profile.email}
                 </div>
                 <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">{profile.email}</div>
+                {communityIdentity?.badges.length ? <CommunityBadgeChips badges={communityIdentity.badges} className="mt-3" /> : null}
                 {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{profile.bio}</p> : null}
                 {profileLinks.length ? (
                   <div className="mt-3">

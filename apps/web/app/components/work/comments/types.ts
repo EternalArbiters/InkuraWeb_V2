@@ -1,3 +1,5 @@
+import type { CommunityIdentityBadge } from "@/lib/communityBadges";
+
 export type TargetType = "WORK" | "CHAPTER";
 
 export type ScopeMode = "target" | "workChapters";
@@ -10,6 +12,7 @@ export type CommentUser = {
   name: string | null;
   image: string | null;
   role?: string | null;
+  badges?: CommunityIdentityBadge[];
 };
 
 export type CommentMedia = {

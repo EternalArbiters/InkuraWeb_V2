@@ -80,6 +80,12 @@ model User {
   // v15: admin audit logs
   adminAuditLogs AdminAuditLog[]
 
+  // Community ranking
+  donationsReceived    DonationEntry[]        @relation("DonationRecipient")
+  donationsRecorded    DonationEntry[]        @relation("DonationRecordedByAdmin")
+  leaderboardSnapshots LeaderboardSnapshot[]
+  specialBadgeSnapshots SpecialBadgeSnapshot[]
+
   // Preference blocks
   blockedGenres    Genre[]      @relation("UserBlockedGenres")
   blockedWarnings  WarningTag[] @relation("UserBlockedWarnings")
@@ -111,6 +117,28 @@ enum UserGender {
 enum InkuraLanguage {
   EN
   ID
+}
+
+enum LeaderboardCategory {
+  BEST_AUTHOR
+  BEST_TRANSLATOR
+  BEST_READER
+  BEST_USER
+  BEST_DONOR
+}
+
+enum LeaderboardPeriod {
+  ALL_TIME
+}
+
+enum SpecialBadgeKey {
+  PRIDE
+  ENVY
+  WRATH
+  SLOTH
+  GREED
+  GLUTTONY
+  LUST
 }
 
 enum AnalyticsDeviceType {
@@ -1126,6 +1154,60 @@ model MediaObject {
   @@index([contentType, createdAt])
 }
 
+
+// v27: manual donation ledger for admin-entered donor totals.
+model DonationEntry {
+  id               String   @id @default(cuid())
+  userId           String
+  createdByAdminId String
+  amount           Decimal  @db.Decimal(18, 2)
+  currency         String   @default("IDR") @db.VarChar(8)
+  note             String?  @db.VarChar(500)
+  donatedAt        DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation("DonationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  createdByAdmin   User     @relation("DonationRecordedByAdmin", fields: [createdByAdminId], references: [id], onDelete: Restrict)
+
+  @@index([userId, donatedAt])
+  @@index([createdByAdminId, createdAt])
+  @@index([currency, donatedAt])
+}
+
+model LeaderboardSnapshot {
+  id         String              @id @default(cuid())
+  category   LeaderboardCategory
+  period     LeaderboardPeriod   @default(ALL_TIME)
+  userId     String
+  rank       Int
+  score      Decimal             @default(0) @db.Decimal(18, 2)
+  metadata   Json?
+  snapshotAt DateTime            @default(now())
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([category, period, userId])
+  @@unique([category, period, rank])
+  @@index([userId, period, category])
+}
+
+model SpecialBadgeSnapshot {
+  id         String           @id @default(cuid())
+  badgeKey   SpecialBadgeKey  @unique
+  userId     String
+  score      Decimal          @default(0) @db.Decimal(18, 2)
+  metadata   Json?
+  snapshotAt DateTime         @default(now())
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
 
 // For "Forgot password" flow (Credentials users).
 model PasswordResetToken {

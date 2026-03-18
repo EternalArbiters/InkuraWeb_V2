@@ -52,6 +52,7 @@ export default function DesktopActions({
   handleLogout: () => void;
 }) {
   const t = useUILanguageText("Navigation");
+  const tCommunity = useUILanguageText("Navigation Community");
 
   return (
     <div className="flex items-center gap-0 pl-6 h-10">
@@ -75,7 +76,31 @@ export default function DesktopActions({
           </div>
         )}
       </div>
-      <IconButton icon={<Users size={22} />} label={t("Community")} href="/community" />
+      <div className="relative">
+        <IconButton icon={<Users size={22} />} label={t("Community")} onClick={() => toggleDropdown("community")} />
+        {dropdown === "community" && (
+          <div className="absolute mt-2 right-0 z-50 w-48 rounded border bg-white shadow-lg dark:bg-gray-800">
+            <Link
+              href="/community"
+              className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
+            >
+              {t("Community")}
+            </Link>
+            <Link
+              href="/community/ranking"
+              className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
+            >
+              {tCommunity("Ranking")}
+            </Link>
+            <Link
+              href="/community/title"
+              className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
+            >
+              {tCommunity("Title")}
+            </Link>
+          </div>
+        )}
+      </div>
       <div className="relative">
         <IconButton
           icon={

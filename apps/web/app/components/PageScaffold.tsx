@@ -1,19 +1,29 @@
 import Link from "next/link";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
+type PageScaffoldLookupOptions = {
+  section?: string;
+};
+
 export default async function PageScaffold({
   title,
+  titleLookupOptions,
   description,
+  descriptionLookupOptions,
   crumbs,
   children,
 }: {
   title: string;
+  titleLookupOptions?: PageScaffoldLookupOptions;
   description?: string;
+  descriptionLookupOptions?: PageScaffoldLookupOptions;
   crumbs?: Array<{ label: string; href: string }>;
   children?: React.ReactNode;
 }) {
-  const translatedTitle = await getActiveUILanguageText(title);
-  const translatedDescription = description ? await getActiveUILanguageText(description) : undefined;
+  const translatedTitle = await getActiveUILanguageText(title, titleLookupOptions);
+  const translatedDescription = description
+    ? await getActiveUILanguageText(description, descriptionLookupOptions)
+    : undefined;
   const translatedCrumbs = crumbs?.length
     ? await Promise.all(
         crumbs.map(async (crumb) => ({

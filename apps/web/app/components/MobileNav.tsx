@@ -1,12 +1,10 @@
 "use client";
 
-import NavCountBadge from "./NavCountBadge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import NavCountBadge from "@/app/components/NavCountBadge";
 import {
-  Moon,
-  Sun,
   Search,
   LayoutGrid,
   BookText,
@@ -27,6 +25,10 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Trophy,
+  Award,
+  Sun,
+  Moon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
@@ -91,6 +93,7 @@ export default function MobileNav({
 }: MobileNavProps) {
   const pathname = usePathname();
   const t = useUILanguageText("Navigation");
+  const tCommunity = useUILanguageText("Navigation Community");
   const [showDropdown, setShowDropdown] = useState(false);
 
   if (!isOpen) return null;
@@ -109,6 +112,8 @@ export default function MobileNav({
     { label: t("Notifications"), href: "/notifications", Icon: Bell },
     { label: t("Upload"), href: "/studio", Icon: Upload },
     { label: t("Community"), href: "/community", Icon: Users },
+    { label: tCommunity("Ranking"), href: "/community/ranking", Icon: Trophy },
+    { label: tCommunity("Title"), href: "/community/title", Icon: Award },
 
     { label: t("Account"), href: "/settings/account", Icon: User },
     ...(isAuthed ? [{ label: t("Admin Report"), href: "/admin-report", Icon: ShieldAlert }] : []),

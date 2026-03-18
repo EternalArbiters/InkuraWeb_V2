@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import WorksGrid from "@/app/components/WorksGrid";
 import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
+import CommunityBadgeChips from "@/app/components/user/CommunityBadgeChips";
 import FollowToggleButton from "@/app/components/user/FollowToggleButton";
 import PublicProfileActionsMenu from "@/app/components/user/PublicProfileActionsMenu";
 import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
@@ -10,6 +11,7 @@ import HorizontalRail from "@/app/home/HorizontalRail";
 import { parseProfileLinks } from "@/lib/profileUrls";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
+import { getCommunityUserIdentity } from "@/server/services/community/identity";
 import { getProfilePageData } from "@/server/services/profile/publicProfilePage";
 
 export const dynamic = "force-dynamic";
@@ -96,6 +98,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     }
 
     const { user, viewer, viewerFollowingUser, viewerBlockedUser, visibleWorks, visibleLists, visibleReviews } = data;
+    const communityIdentity = await getCommunityUserIdentity(user.id);
     const [
       tJoined, tPublishedWorks, tCollections, tRecentReviews,
       tNoCollections, tNoPublicReviews, tShareProfile, tWorks, tFollowers, tFollowing,
@@ -146,6 +149,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                 <div className="min-w-0">
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight break-words">{displayName}</h1>
                   <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">@{user.username}</div>
+                  {communityIdentity?.badges.length ? <CommunityBadgeChips badges={communityIdentity.badges} className="mt-3" /> : null}
                   {user.bio ? <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{user.bio}</p> : null}
                   {profileLinks.length ? (
                     <div className="mt-3">

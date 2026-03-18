@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { chapterListItemSelect, commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
+import { getCommunityUserIdentityMap } from "@/server/services/community/identity";
 import { canModerateForTarget, CommentTargetTypeString } from "./moderation";
 import { buildCommentTree, safeCommentSort, sortRootComments } from "./tree";
 
@@ -25,6 +26,59 @@ function attachChapterContextToTree(nodes: any[], byId: Map<string, any>): any[]
       ? (byId.get(String(node?.targetId || "")) ?? null)
       : (node?.chapter ?? null),
     replies: Array.isArray(node?.replies) ? attachChapterContextToTree(node.replies, byId) : [],
+  }));
+}
+
+async function enrichCommentRows(rows: any[], viewerUserId?: string | null, options?: { includeUserRating?: boolean; workIdForRating?: string | null }) {
+  if (!rows.length) return rows;
+
+  let enriched: any[] = rows as any[];
+
+  if (viewerUserId) {
+    const ids = rows.map((c) => c.id);
+    const [likes, dislikes] = await Promise.all([
+      prisma.commentLike.findMany({
+        where: { userId: viewerUserId, commentId: { in: ids } },
+        select: { commentId: true },
+      }),
+      prisma.commentDislike.findMany({
+        where: { userId: viewerUserId, commentId: { in: ids } },
+        select: { commentId: true },
+      }),
+    ]);
+    const likedSet = new Set(likes.map((x) => x.commentId));
+    const dislikedSet = new Set(dislikes.map((x) => x.commentId));
+    enriched = enriched.map((c: any) => ({
+      ...c,
+      viewerLiked: likedSet.has(c.id),
+      viewerDisliked: dislikedSet.has(c.id),
+    }));
+  }
+
+  if (options?.includeUserRating && options.workIdForRating) {
+    const userIds = Array.from(new Set(rows.map((c: any) => String(c.userId || "")).filter(Boolean)));
+    if (userIds.length) {
+      const ratings = await prisma.workRating.findMany({
+        where: { workId: options.workIdForRating, userId: { in: userIds } },
+        select: { userId: true, value: true },
+      });
+      const map = new Map(ratings.map((r) => [String(r.userId), r.value]));
+      enriched = enriched.map((c: any) => ({ ...c, userRating: map.get(String(c.userId)) ?? null }));
+    }
+  }
+
+  const identityMap = await getCommunityUserIdentityMap(
+    Array.from(new Set(rows.map((c: any) => String(c.userId || "")).filter(Boolean)))
+  );
+
+  return enriched.map((row: any) => ({
+    ...row,
+    user: row.user
+      ? {
+          ...row.user,
+          badges: identityMap.get(String(row.userId || ""))?.badges || [],
+        }
+      : row.user,
   }));
 }
 
@@ -90,29 +144,7 @@ export async function fetchComments(options: FetchCommentsOptions) {
       include: commentListInclude,
     });
 
-    let enriched: any[] = rows as any;
-
-    if (session?.user?.id && rows.length) {
-      const ids = rows.map((c) => c.id);
-      const [likes, dislikes] = await Promise.all([
-        prisma.commentLike.findMany({
-          where: { userId: session.user.id, commentId: { in: ids } },
-          select: { commentId: true },
-        }),
-        prisma.commentDislike.findMany({
-          where: { userId: session.user.id, commentId: { in: ids } },
-          select: { commentId: true },
-        }),
-      ]);
-      const likedSet = new Set(likes.map((x) => x.commentId));
-      const dislikedSet = new Set(dislikes.map((x) => x.commentId));
-      enriched = rows.map((c: any) => ({
-        ...c,
-        viewerLiked: likedSet.has(c.id),
-        viewerDisliked: dislikedSet.has(c.id),
-      }));
-    }
-
+    const enriched = await enrichCommentRows(rows, session?.user?.id || null);
     const chapterMap = new Map(chapterRows.map((chapter) => [String(chapter.id), chapter]));
     const roots = attachChapterContextToTree(
       sortRootComments(sort, buildCommentTree(enriched)).slice(0, take),
@@ -144,38 +176,10 @@ export async function fetchComments(options: FetchCommentsOptions) {
     include: commentListInclude,
   });
 
-  let enriched: any[] = rows as any;
-
-  if (session?.user?.id && rows.length) {
-    const ids = rows.map((c) => c.id);
-    const [likes, dislikes] = await Promise.all([
-      prisma.commentLike.findMany({
-        where: { userId: session.user.id, commentId: { in: ids } },
-        select: { commentId: true },
-      }),
-      prisma.commentDislike.findMany({
-        where: { userId: session.user.id, commentId: { in: ids } },
-        select: { commentId: true },
-      }),
-    ]);
-    const likedSet = new Set(likes.map((x) => x.commentId));
-    const dislikedSet = new Set(dislikes.map((x) => x.commentId));
-    enriched = rows.map((c: any) => ({
-      ...c,
-      viewerLiked: likedSet.has(c.id),
-      viewerDisliked: dislikedSet.has(c.id),
-    }));
-  }
-
-  if (includeUserRating && targetType === "WORK" && rows.length) {
-    const userIds = Array.from(new Set(rows.map((c: any) => String(c.userId))));
-    const ratings = await prisma.workRating.findMany({
-      where: { workId: targetId, userId: { in: userIds } },
-      select: { userId: true, value: true },
-    });
-    const map = new Map(ratings.map((r) => [String(r.userId), r.value]));
-    enriched = enriched.map((c: any) => ({ ...c, userRating: map.get(String(c.userId)) ?? null }));
-  }
+  const enriched = await enrichCommentRows(rows, session?.user?.id || null, {
+    includeUserRating: includeUserRating && targetType === "WORK",
+    workIdForRating: targetType === "WORK" ? targetId : null,
+  });
 
   const roots = sortRootComments(sort, buildCommentTree(enriched)).slice(0, take);
   return { status: 200, body: { ok: true, canModerate, comments: roots } };

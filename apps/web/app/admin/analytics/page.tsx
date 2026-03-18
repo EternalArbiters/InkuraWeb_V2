@@ -75,6 +75,12 @@ export default async function AdminAnalyticsPage({ searchParams: searchParamsPro
               >
                 Notify user
               </Link>
+              <Link
+                href="/admin/community"
+                className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+              >
+                Community
+              </Link>
               <BackButton href="/home" />
             </div>
 

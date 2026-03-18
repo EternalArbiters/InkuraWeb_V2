@@ -2247,3 +2247,90 @@ Empty collection = Koleksi masih kosong
 No works yet. = Belum ada karya.
 Previous Arc = Arc Sebelumnya
 Next Arc = Arc Selanjutnya
+
+==========
+Navigation Community
+==========
+
+Ranking = Peringkat
+Title = Gelar
+
+==========
+Page Community Ranking
+==========
+
+Top 7 = Top 7
+No ranked users yet. = Belum ada pengguna yang masuk papan peringkat.
+points = poin
+Best Author = Penulis Terbaik
+Best Translator = Penerjemah Terbaik
+Best Reader = Pembaca Terbaik
+Best User = Pengguna Terbaik
+Best Donor = Donatur Terbaik
+Donatur = Donatur
+
+==========
+Page Community Title
+==========
+
+My Standing = Peringkatku
+Sign in to see your standing. = Masuk untuk melihat peringkatmu.
+Community ranking is not available for admins. = Peringkat komunitas tidak tersedia untuk admin.
+Current Title = Gelar Saat Ini
+Current Special Badge = Badge Spesial Saat Ini
+Current Donor Badge = Badge Donatur Saat Ini
+No active title = Belum ada gelar aktif.
+No active badge = Belum ada badge aktif.
+Unranked = Belum Masuk
+points = poin
+Creator Titles = Gelar Kreator
+Top creator titles for Best Author and Best Translator. = Gelar kreator tertinggi untuk Penulis Terbaik dan Penerjemah Terbaik.
+Reader & User Titles = Gelar Pembaca & Pengguna
+Top noble titles for Best Reader and Best User. = Gelar bangsawan tertinggi untuk Pembaca Terbaik dan Pengguna Terbaik.
+Special Badges = Badge Spesial
+Unique gold badges with only one active holder each. = Badge emas unik yang hanya punya satu pemegang aktif.
+Current holder = Pemegang saat ini
+No holder yet. = Belum ada pemegang.
+Rank color = Warna rank
+Default / Male = Default / Pria
+How titles combine = Cara gelar digabung
+Best creator title + best reader title create one main title. = Gelar kreator terbaik + gelar pembaca terbaik akan menjadi satu gelar utama.
+Donatur stays separate as a gold badge. = Donatur tetap terpisah sebagai badge emas.
+Guide = Panduan
+Best Author = Penulis Terbaik
+Best Translator = Penerjemah Terbaik
+Best Reader = Pembaca Terbaik
+Best User = Pengguna Terbaik
+Best Donor = Donatur Terbaik
+Donatur = Donatur
+Pride = Pride
+Most loyal user across account age and active months. = Pengguna paling setia berdasarkan usia akun dan bulan aktif.
+Envy = Envy
+Reads the widest range of deviant love signals. = Membaca ragam sinyal deviant love paling luas.
+Wrath = Wrath
+Writes the most comments. = Menulis komentar paling banyak.
+Sloth = Sloth
+Reads a lot without interacting or uploading. = Banyak membaca tanpa berinteraksi atau mengunggah.
+Greed = Greed
+Donates the most to Inkura. = Berdonasi paling banyak ke Inkura.
+Gluttony = Gluttony
+Reads the widest range of genres. = Membaca ragam genre paling luas.
+Lust = Lust
+Reads or uploads the most adult or deviant works. = Paling banyak membaca atau mengunggah karya dewasa atau deviant.
+
+
+==========
+Page Community Badge Chips
+==========
+
+Admin = Admin
+Author = Penulis
+Reuploader = Pengunggah Ulang
+Donatur = Donatur
+Pride = Pride
+Envy = Envy
+Wrath = Wrath
+Sloth = Sloth
+Greed = Greed
+Gluttony = Gluttony
+Lust = Lust
