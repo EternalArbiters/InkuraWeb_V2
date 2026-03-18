@@ -15,6 +15,13 @@ import { useComments } from "./comments/useComments";
 import type { DecoratedComment, ReplyTarget, ScopeMode, SortMode, TargetType } from "./comments/types";
 import { decorateTree, normalizeSort, removeFromTree, updateTree } from "./comments/utils";
 
+function getWorkOwnerBadgeLabel(publishType: string | null | undefined) {
+  const normalized = String(publishType || "").trim().toUpperCase();
+  if (normalized === "TRANSLATION") return "Translator";
+  if (normalized === "REUPLOAD") return "Reuploader";
+  return "Author";
+}
+
 export default function CommentSection({
   targetType,
   targetId,
@@ -32,6 +39,8 @@ export default function CommentSection({
   showChapterContext,
   initialComments,
   initialCanModerate,
+  workAuthorId,
+  workPublishType,
 }: {
   targetType: TargetType;
   targetId: string;
@@ -49,6 +58,8 @@ export default function CommentSection({
   showChapterContext?: boolean;
   initialComments?: import("./comments/types").CommentItem[];
   initialCanModerate?: boolean;
+  workAuthorId?: string | null;
+  workPublishType?: string | null;
 }) {
   const router = useRouter();
   const t = useUILanguageText("Page Comments");
@@ -85,6 +96,10 @@ export default function CommentSection({
       : variant !== "compact" && !headerRight;
 
   const useSectionCard = variant === "full";
+  const workOwnerBadgeLabel = useMemo(
+    () => (workAuthorId ? getWorkOwnerBadgeLabel(workPublishType) : null),
+    [workAuthorId, workPublishType],
+  );
 
   const [sortMode, setSortMode] = useState<SortMode>(() => normalizeSort(sort));
   useEffect(() => {

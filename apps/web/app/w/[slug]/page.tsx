@@ -385,6 +385,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 showChapterContext
                 initialComments={initialComments as any}
                 initialCanModerate={initialCanModerate}
+                workAuthorId={work.authorId}
+                workPublishType={work.publishType}
               />
             </div>
           </div>

@@ -139,6 +139,8 @@ export default async function ReadChapterPage({
         variant="compact"
         initialComments={initialComments as any}
         initialCanModerate={initialCanModerate}
+        workAuthorId={work.authorId}
+        workPublishType={work.publishType}
       />
       <div className="mt-3 flex items-center justify-center">
         <Link
@@ -298,6 +300,8 @@ export default async function ReadChapterPage({
                     variant="compact"
                     initialComments={initialComments as any}
                     initialCanModerate={initialCanModerate}
+                    workAuthorId={work.authorId}
+                    workPublishType={work.publishType}
                   />
                   <div className="mt-3 flex items-center justify-center">
                     <Link

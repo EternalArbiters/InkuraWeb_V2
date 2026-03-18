@@ -67,6 +67,8 @@ export type CommentCardProps = {
   onToggleDislike: (commentId: string) => void;
   onTogglePin: (commentId: string, pin: boolean) => void;
   onToggleHide: (commentId: string, hide: boolean) => void;
+  workAuthorId?: string | null;
+  workOwnerBadgeLabel?: string | null;
   variant?: "full" | "compact" | "plain";
 };
 
@@ -111,6 +113,8 @@ export default function CommentCard(props: CommentCardProps) {
     onToggleDislike,
     onTogglePin,
     onToggleHide,
+    workAuthorId,
+    workOwnerBadgeLabel,
     variant = "full",
   } = props;
 
@@ -126,6 +130,7 @@ export default function CommentCard(props: CommentCardProps) {
   const viewerDisliked = !!c.viewerDisliked;
   const isMine = !!viewerId && c.user?.id === viewerId;
   const isAdminComment = String(c.user?.role || "").toUpperCase() === "ADMIN";
+  const isWorkOwnerComment = !!workAuthorId && !!workOwnerBadgeLabel && c.user?.id === workAuthorId;
 
   const isPinned = depth === 0 && !!(c as any).isPinned;
   const isFocused = focusedId === c.id;
@@ -198,6 +203,11 @@ export default function CommentCard(props: CommentCardProps) {
             {isAdminComment ? (
               <span className="shrink-0 rounded-full border border-emerald-300/60 bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-950/25 dark:text-emerald-300">
                 Admin
+              </span>
+            ) : null}
+            {isWorkOwnerComment ? (
+              <span className="shrink-0 rounded-full border border-violet-300/60 bg-violet-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-violet-700 dark:border-violet-500/40 dark:bg-violet-950/25 dark:text-violet-300">
+                {workOwnerBadgeLabel}
               </span>
             ) : null}
           </div>
