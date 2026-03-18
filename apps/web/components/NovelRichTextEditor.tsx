@@ -170,8 +170,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       .toLowerCase();
 
     const selectedBlock = getClosestEditableBlock(editor, selection.anchorNode) ?? getClosestEditableBlock(editor, range.commonAncestorContainer);
-    const computedTextAlignRaw = selectedBlock ? window.getComputedStyle(selectedBlock).textAlign.toLowerCase() : "";
-    const computedTextAlign = computedTextAlignRaw === "start" ? "left" : computedTextAlignRaw === "end" ? "right" : computedTextAlignRaw;
+    const explicitTextAlignRaw = selectedBlock?.style.textAlign || selectedBlock?.getAttribute("align") || "";
+    const explicitTextAlign = String(explicitTextAlignRaw || "").trim().toLowerCase();
+    const normalizedTextAlign = explicitTextAlign === "start" ? "left" : explicitTextAlign === "end" ? "right" : explicitTextAlign;
 
     setActiveFormats({
       bold: document.queryCommandState("bold"),
@@ -183,9 +184,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       bullet: document.queryCommandState("insertUnorderedList"),
       ordered: document.queryCommandState("insertOrderedList"),
       quote: formatBlockValue === "blockquote",
-      alignLeft: !computedTextAlign || computedTextAlign === "left" || computedTextAlign === "justify",
-      alignCenter: computedTextAlign === "center",
-      alignRight: computedTextAlign === "right",
+      alignLeft: normalizedTextAlign === "left",
+      alignCenter: normalizedTextAlign === "center",
+      alignRight: normalizedTextAlign === "right",
     });
   }, [clearActiveFormats]);
 
@@ -239,7 +240,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       if (!editor) return;
       restoreSelection();
       try {
-        document.execCommand("styleWithCSS", false, true);
+        document.execCommand("styleWithCSS", false, "true");
       } catch {
         // ignore
       }
@@ -249,6 +250,18 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       syncRawFromDom();
     },
     [restoreSelection, saveSelection, syncRawFromDom, updateToolbarState]
+  );
+
+
+  const toggleBlockFormat = React.useCallback(
+    (tag: "h2" | "h3" | "blockquote") => {
+      const isActive =
+        (tag === "h2" && activeFormats.h2) ||
+        (tag === "h3" && activeFormats.h3) ||
+        (tag === "blockquote" && activeFormats.quote);
+      runCommand("formatBlock", isActive ? "<p>" : `<${tag}>`);
+    },
+    [activeFormats.h2, activeFormats.h3, activeFormats.quote, runCommand]
   );
 
   const applyTextAlignment = React.useCallback(
@@ -262,8 +275,24 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       const blocks = getSelectedEditableBlocks(editor, range);
       if (!blocks.length) return;
 
+      const allAlreadyAligned = blocks.every((block) => {
+        const rawValue = block.style.textAlign || block.getAttribute("align") || "";
+        const currentAlignment = String(rawValue || "").trim().toLowerCase();
+        const normalized = currentAlignment === "start" ? "left" : currentAlignment === "end" ? "right" : currentAlignment;
+        return normalized === alignment;
+      });
+
       blocks.forEach((block) => {
+        if (allAlreadyAligned) {
+          block.style.textAlign = "";
+          block.removeAttribute("align");
+          if (!block.getAttribute("style")?.trim()) {
+            block.removeAttribute("style");
+          }
+          return;
+        }
         block.style.textAlign = alignment;
+        block.removeAttribute("align");
       });
 
       saveSelection();
@@ -355,10 +384,10 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         <ToolbarButton title="Strikethrough" active={activeFormats.strikeThrough} onPress={() => runCommand("strikeThrough")}>
           <Strikethrough className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Heading 2" active={activeFormats.h2} onPress={() => runCommand("formatBlock", "<h2>")}>
+        <ToolbarButton title="Heading 2" active={activeFormats.h2} onPress={() => toggleBlockFormat("h2")}>
           <Heading2 className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Heading 3" active={activeFormats.h3} onPress={() => runCommand("formatBlock", "<h3>")}>
+        <ToolbarButton title="Heading 3" active={activeFormats.h3} onPress={() => toggleBlockFormat("h3")}>
           <Heading3 className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton title="Bullet list" active={activeFormats.bullet} onPress={() => runCommand("insertUnorderedList")}>
@@ -367,7 +396,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         <ToolbarButton title="Numbered list" active={activeFormats.ordered} onPress={() => runCommand("insertOrderedList")}>
           <ListOrdered className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Quote" active={activeFormats.quote} onPress={() => runCommand("formatBlock", "<blockquote>")}>
+        <ToolbarButton title="Quote" active={activeFormats.quote} onPress={() => toggleBlockFormat("blockquote")}>
           <Quote className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton title="Align left" active={activeFormats.alignLeft} onPress={() => applyTextAlignment("left")}>

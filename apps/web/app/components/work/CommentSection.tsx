@@ -549,6 +549,8 @@ export default function CommentSection({
             onToggleDislike={toggleDislikeComment}
             onTogglePin={togglePin}
             onToggleHide={toggleHide}
+            workAuthorId={workAuthorId}
+            workOwnerBadgeLabel={workOwnerBadgeLabel}
             variant={variant}
           />
         )}
