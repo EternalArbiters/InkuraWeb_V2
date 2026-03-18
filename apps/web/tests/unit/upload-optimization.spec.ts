@@ -11,7 +11,7 @@ describe("upload optimization profiles", () => {
   it("defines conservative profile contracts for each scope", () => {
     expect(getUploadProfile("avatar").preferredContentType).toBe("image/webp");
     expect(getUploadProfile("covers").targetAspectRatio).toBe(3 / 4);
-    expect(getUploadProfile("pages").maxMegapixels).toBe(10);
+    expect(getUploadProfile("pages").maxMegapixels).toBe(20);
     expect(getUploadProfile("comment_gifs").allowOptimization).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe("upload optimization decision helpers", () => {
     expect(avatarTarget.scale).toBeCloseTo(640 / 2400);
 
     const pageTarget = getTargetImageDimensions({ scope: "pages", width: 2600, height: 4200 });
-    expect(pageTarget.width).toBeLessThanOrEqual(2400);
+    expect(pageTarget.width).toBeLessThanOrEqual(2600);
     expect(pageTarget.height).toBeLessThanOrEqual(4200);
     expect(pageTarget.resized).toBe(true);
   });

@@ -110,7 +110,7 @@ export function useComicPagesManager({
           preparedFile: prepared,
           workId,
           chapterId,
-          optimizationVersion: "pr3-comic-page-opt-v1",
+          optimizationVersion: "pr6-comic-page-opt-v2",
         });
         uploaded.push({ url: up.url, key: up.key, order: startOrder + i + 1 });
       }

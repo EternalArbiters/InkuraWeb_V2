@@ -160,7 +160,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             preparedFile: prepared,
             workId,
             chapterId,
-            optimizationVersion: "pr3-comic-page-opt-v1",
+            optimizationVersion: "pr6-comic-page-opt-v2",
           });
           uploads.push({ url: up.url, key: up.key, order: i + 1 });
         }

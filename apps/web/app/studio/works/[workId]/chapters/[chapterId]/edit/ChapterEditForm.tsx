@@ -102,7 +102,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         preparedFile: prepared,
         workId,
         chapterId: chapter.id,
-        optimizationVersion: "pr5-upload-guardrails-v1",
+        optimizationVersion: "pr6-comic-page-opt-v2",
       });
       setThumbPrepared((current) => {
         if (current?.previewUrl) URL.revokeObjectURL(current.previewUrl);

@@ -241,7 +241,7 @@ export async function prepareUploadFile(params: {
     const sameContentType = contentType === originalContentType;
     const minimalSavingsRatio =
       scope === "pages" && sameDimensions && sameContentType && (originalContentType === "image/jpeg" || originalContentType === "image/webp")
-        ? 0.1
+        ? 0.18
         : 0.02;
 
     if (blob.size >= file.size * (1 - minimalSavingsRatio) && sameDimensions && sameContentType) {
