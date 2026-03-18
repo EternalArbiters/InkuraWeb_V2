@@ -1,7 +1,9 @@
 import Link from "next/link";
 
 import PageScaffold from "@/app/components/PageScaffold";
+import AdminDonorPanel from "@/app/community/title/AdminDonorPanel";
 import { getSession } from "@/server/auth/session";
+import { getAdminCommunityPageData } from "@/server/services/admin/community";
 import {
   getCommunityStandingSummary,
   type CommunityStandingItem,
@@ -128,11 +130,13 @@ function WinnerAvatar({ entry }: { entry: CommunitySpecialBadgeEntry }) {
 export default async function CommunityTitlePage() {
   const session = await getSession();
   const userId = session?.user?.id ?? null;
+  const isAdmin = String(session?.user?.role || "").toUpperCase() === "ADMIN";
 
-  const [standingSummary, specialSummary, specialWinners] = await Promise.all([
+  const [standingSummary, specialSummary, specialWinners, adminCommunityData] = await Promise.all([
     userId ? getCommunityStandingSummary(userId) : Promise.resolve(null),
     userId ? getCommunityUserSpecialBadgeSummary(userId) : Promise.resolve(null),
     getCommunitySpecialBadgeWinners(),
+    isAdmin ? getAdminCommunityPageData() : Promise.resolve(null),
   ]);
 
   const textSources = [
@@ -167,6 +171,33 @@ export default async function CommunityTitlePage() {
     "Best User",
     "Best Donor",
     "Donatur",
+    "Admin Donor Tools",
+    "Only admins can record manual donor data here.",
+    "Open manual input",
+    "Close manual input",
+    "Target (@username or email)",
+    "Amount",
+    "Currency",
+    "Donation date",
+    "Note (optional)",
+    "Save donor entry",
+    "Saving...",
+    "Rebuild community snapshots",
+    "Rebuilding...",
+    "Overall Donor Table",
+    "Top 7 from this table become Best Donor, and #1 becomes Greed.",
+    "Rank",
+    "Donor",
+    "Total",
+    "Entries",
+    "Latest donation",
+    "No donor data yet.",
+    "No date",
+    "Greed",
+    "Open full donor ledger",
+    "Donor entry saved and leaderboard rebuilt.",
+    "Failed to create donation entry",
+    "Failed to rebuild community snapshots",
     ...SPECIAL_BADGE_GUIDE.flatMap((item) => [item.label, item.description]),
   ];
 
@@ -287,6 +318,42 @@ export default async function CommunityTitlePage() {
             </>
           ) : null}
         </section>
+
+        {isAdmin && adminCommunityData ? (
+          <AdminDonorPanel
+            initial={{ donorTotals: adminCommunityData.donorTotals }}
+            labels={{
+              adminDonorTools: t("Admin Donor Tools"),
+              adminDonorToolsHint: t("Only admins can record manual donor data here."),
+              openManualInput: t("Open manual input"),
+              closeManualInput: t("Close manual input"),
+              usernameOrEmail: t("Target (@username or email)"),
+              amount: t("Amount"),
+              currency: t("Currency"),
+              donationDate: t("Donation date"),
+              noteOptional: t("Note (optional)"),
+              saveDonorEntry: t("Save donor entry"),
+              saving: t("Saving..."),
+              rebuildCommunitySnapshots: t("Rebuild community snapshots"),
+              rebuilding: t("Rebuilding..."),
+              donorTotals: t("Overall Donor Table"),
+              donorTotalsHint: t("Top 7 from this table become Best Donor, and #1 becomes Greed."),
+              rank: t("Rank"),
+              donor: t("Donor"),
+              total: t("Total"),
+              entries: t("Entries"),
+              latestDonation: t("Latest donation"),
+              noDonorDataYet: t("No donor data yet."),
+              noDate: t("No date"),
+              top7Rule: t("Top 7 from this table become Best Donor, and #1 becomes Greed."),
+              greedLabel: t("Greed"),
+              openFullDonorLedger: t("Open full donor ledger"),
+              donorEntrySavedAndRebuilt: t("Donor entry saved and leaderboard rebuilt."),
+              failedToCreateDonationEntry: t("Failed to create donation entry"),
+              failedToRebuildCommunitySnapshots: t("Failed to rebuild community snapshots"),
+            }}
+          />
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_1.15fr_0.7fr]">
           <section className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]">
