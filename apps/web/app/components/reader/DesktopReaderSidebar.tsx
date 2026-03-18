@@ -279,8 +279,8 @@ export default function DesktopReaderSidebar({
   }, []);
 
   return (
-    <div className="relative pr-[4.5rem]">
-      <div className="absolute right-0 top-0 flex flex-col items-center gap-3">
+    <div className="relative">
+      <div className="fixed right-4 top-24 z-40 flex flex-col items-center gap-3">
         <ReaderRailButton ariaLabel={tFloating("Scroll to top")} title={tFloating("Scroll to top")} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <ArrowUp className="h-5 w-5" />
         </ReaderRailButton>
