@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getPublishedChapterReaderData } from "@/server/services/chapters/readChapter";
+import { getChapterReaderData } from "@/server/services/chapters/readChapter";
 import { fetchComments } from "@/server/services/comments/fetchComments";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import LockLabel from "@/app/components/LockLabel";
@@ -28,7 +28,7 @@ export default async function ChapterCommentsPage({
   const searchParams = (await searchParamsPromise) || {};
   const sort = safeSort((searchParams as any)?.sort);
 
-  const data = await getPublishedChapterReaderData(params.chapterId);
+  const data = await getChapterReaderData(params.chapterId);
   if (!data.ok) return notFound();
 
   const { gated, chapter, work } = data;

@@ -2,7 +2,7 @@ import Link from "next/link";
 import ComicPageStack from "@/app/components/reader/ComicPageStack";
 import { notFound, redirect } from "next/navigation";
 import ContentWarningsGate from "@/components/ContentWarningsGate";
-import { getPublishedChapterReaderData } from "@/server/services/chapters/readChapter";
+import { getChapterReaderData } from "@/server/services/chapters/readChapter";
 import { fetchComments } from "@/server/services/comments/fetchComments";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
@@ -37,7 +37,7 @@ export default async function ReadChapterPage({
     slug = params.slug;
     chapterId = params.chapterId;
 
-    const data = await getPublishedChapterReaderData(params.chapterId);
+    const data = await getChapterReaderData(params.chapterId);
   if (!data.ok) return notFound();
 
   const { gated, chapter, work } = data;

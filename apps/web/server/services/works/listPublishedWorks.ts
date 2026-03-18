@@ -55,6 +55,7 @@ export type ListPublishedWorksOptions = {
   viewer?: ViewerWithPrefs | null;
   includeViewerInteractions?: boolean;
   viewerWorkInteractions?: ViewerWorkInteractions | null;
+  forcePublishedOnly?: boolean;
 };
 
 function withViewerSummary(viewer: ViewerWithPrefs | null, canViewMature: boolean, canViewDeviantLove: boolean) {
@@ -159,7 +160,7 @@ export async function listPublishedWorksFromSearchParams(
   const effectiveExcludeDeviant = excludeDeviant.filter((d) => !includeDeviantSet.has(d));
 
   const isAdmin = !!viewer && viewer.role === "ADMIN";
-  const where: any = isAdmin ? {} : { status: "PUBLISHED" };
+  const where: any = options?.forcePublishedOnly ? { status: "PUBLISHED" } : isAdmin ? {} : { status: "PUBLISHED" };
 
   if (type === "NOVEL" || type === "COMIC") where.type = type;
 

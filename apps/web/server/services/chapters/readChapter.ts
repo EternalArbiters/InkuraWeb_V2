@@ -22,6 +22,41 @@ export type ReadChapterResult =
       chapter: any;
     };
 
+function mapChapterReaderPayload(chapter: any) {
+  return {
+    ok: true as const,
+    chapter: {
+      id: chapter.id,
+      title: chapter.title,
+      number: chapter.number,
+      label: chapter.label,
+      warningTags: chapter.warningTags,
+      text: chapter.text,
+      pages: chapter.pages,
+      isMature: chapter.isMature,
+      likeCount: chapter.likeCount,
+      authorNote: chapter.authorNote ?? null,
+      status: chapter.status,
+    },
+    work: {
+      id: chapter.work.id,
+      slug: chapter.work.slug,
+      title: chapter.work.title,
+      type: chapter.work.type,
+      isMature: chapter.work.isMature,
+      publishType: chapter.work.publishType,
+      authorId: chapter.work.authorId,
+      author: chapter.work.author,
+      translator: chapter.work.translator,
+      warningTags: chapter.work.warningTags,
+      deviantLoveTags: chapter.work.deviantLoveTags,
+      genres: chapter.work.genres,
+      chapters: chapter.work.chapters,
+      status: chapter.work.status,
+    },
+  };
+}
+
 async function loadPublicChapterReaderData(chapterId: string) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
@@ -67,36 +102,54 @@ async function loadPublicChapterReaderData(chapterId: string) {
     return { ok: false as const, status: 404 as const, error: "Not found" as const };
   }
 
-  return {
-    ok: true as const,
-    chapter: {
-      id: chapter.id,
-      title: chapter.title,
-      number: chapter.number,
-      label: chapter.label,
-      warningTags: chapter.warningTags,
-      text: chapter.text,
-      pages: chapter.pages,
-      isMature: chapter.isMature,
-      likeCount: chapter.likeCount,
-      authorNote: chapter.authorNote ?? null,
+  return mapChapterReaderPayload(chapter);
+}
+
+async function loadAdminChapterReaderData(chapterId: string) {
+  const chapter = await prisma.chapter.findUnique({
+    where: { id: chapterId },
+    select: {
+      id: true,
+      workId: true,
+      title: true,
+      number: true,
+      label: true,
+      status: true,
+      isMature: true,
+      likeCount: true,
+      authorNote: true,
+      warningTags: { select: nameSlugSelect },
+      text: { select: { content: true } },
+      pages: { orderBy: { order: "asc" }, select: comicPageSelect },
+      work: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          status: true,
+          type: true,
+          publishType: true,
+          isMature: true,
+          authorId: true,
+          author: { select: userPublicSelect },
+          translator: { select: userPublicSelect },
+          warningTags: { select: nameSlugSelect },
+          deviantLoveTags: { select: nameSlugSelect },
+          genres: { select: { slug: true } },
+          chapters: {
+            orderBy: [{ number: "asc" }, { createdAt: "asc" }],
+            select: chapterListItemSelect,
+          },
+        },
+      },
     },
-    work: {
-      id: chapter.work.id,
-      slug: chapter.work.slug,
-      title: chapter.work.title,
-      type: chapter.work.type,
-      isMature: chapter.work.isMature,
-      publishType: (chapter.work as any).publishType,
-      authorId: chapter.work.authorId,
-      author: (chapter.work as any).author,
-      translator: (chapter.work as any).translator,
-      warningTags: chapter.work.warningTags,
-      deviantLoveTags: chapter.work.deviantLoveTags,
-      genres: (chapter.work as any).genres,
-      chapters: chapter.work.chapters,
-    },
-  };
+  });
+
+  if (!chapter) {
+    return { ok: false as const, status: 404 as const, error: "Not found" as const };
+  }
+
+  return mapChapterReaderPayload(chapter);
 }
 
 export async function getPublicChapterReaderData(chapterId: string) {
@@ -150,6 +203,7 @@ export async function getViewerChapterReaderPayload(chapterId: string, work: any
         publishType: work.publishType,
         author: work.author,
         translator: work.translator,
+        status: work.status,
       },
       chapter: {
         id: chapter.id,
@@ -160,6 +214,7 @@ export async function getViewerChapterReaderPayload(chapterId: string, work: any
         likeCount: chapter.likeCount,
         viewerLiked,
         authorNote: chapter.authorNote,
+        status: chapter.status,
       },
     };
   }
@@ -175,8 +230,9 @@ export async function getViewerChapterReaderPayload(chapterId: string, work: any
   };
 }
 
-export async function getPublishedChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
-  const base = await getPublicChapterReaderData(chapterId);
+export async function getChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
+  const viewer = await getViewerBasic();
+  const base = viewer?.role === "ADMIN" ? await loadAdminChapterReaderData(chapterId) : await getPublicChapterReaderData(chapterId);
   if (!base.ok) return base;
 
   const viewerPayload = await getViewerChapterReaderPayload(chapterId, base.work, base.chapter);
@@ -198,4 +254,9 @@ export async function getPublishedChapterReaderData(chapterId: string): Promise<
     chapter: viewerPayload.chapter,
     work: viewerPayload.work,
   };
+}
+
+
+export async function getPublishedChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
+  return getChapterReaderData(chapterId);
 }

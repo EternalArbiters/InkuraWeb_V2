@@ -129,6 +129,8 @@ export default function WorkChaptersWebtoon({
             const displayLabel = getChapterDisplayLabel(chapter.number, chapter.label);
             const secondaryTitle = getChapterSecondaryTitle(chapter.number, chapter.title, chapter.label);
 
+            const isDraftChapter = !!chapter.status && chapter.status !== "PUBLISHED";
+
             return (
               <Link
                 key={chapter.id}
@@ -140,20 +142,20 @@ export default function WorkChaptersWebtoon({
               >
                 <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 overflow-hidden py-0.5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 max-w-full flex-1 truncate text-base font-extrabold leading-tight text-gray-900 dark:text-white">
+                    <div className={`min-w-0 max-w-full flex-1 truncate text-base font-extrabold leading-tight ${isDraftChapter ? "text-amber-700 dark:text-amber-300" : "text-gray-900 dark:text-white"}`}>
                       {displayLabel}
                     </div>
                     {dateLabel ? (
-                      <div className="shrink-0 pt-0.5 text-right text-xs text-gray-500 dark:text-gray-400">{dateLabel}</div>
+                      <div className={`shrink-0 pt-0.5 text-right text-xs ${isDraftChapter ? "text-amber-600 dark:text-amber-300" : "text-gray-500 dark:text-gray-400"}`}>{dateLabel}</div>
                     ) : null}
                   </div>
 
                   {secondaryTitle ? (
-                    <div className="max-w-full line-clamp-2 text-xs leading-tight text-gray-800 dark:text-gray-100">{secondaryTitle}</div>
+                    <div className={`max-w-full line-clamp-2 text-xs leading-tight ${isDraftChapter ? "text-amber-700 dark:text-amber-200" : "text-gray-800 dark:text-gray-100"}`}>{secondaryTitle}</div>
                   ) : null}
 
                   {up || chapter.isMature || (chapter.status && chapter.status !== "PUBLISHED") ? (
-                    <div className="flex min-w-0 max-w-full items-center gap-2 overflow-hidden text-xs text-gray-600 dark:text-gray-300">
+                    <div className={`flex min-w-0 max-w-full items-center gap-2 overflow-hidden text-xs ${isDraftChapter ? "text-amber-700 dark:text-amber-300" : "text-gray-600 dark:text-gray-300"}`}>
                       {up ? (
                         <span className="shrink-0 rounded-full bg-emerald-600/90 px-2 py-1 text-[10px] font-extrabold text-white">
                           UP
@@ -171,6 +173,7 @@ export default function WorkChaptersWebtoon({
           })
         ) : (
           visibleChapters.map((c) => {
+            const isDraftChapter = !!c.status && c.status !== "PUBLISHED";
             const thumb = resolveChapterThumb(c);
             const focusX = clamp(c.thumbnailFocusX, 50, 0, 100);
             const focusY = clamp(c.thumbnailFocusY, 50, 0, 100);
@@ -217,13 +220,13 @@ export default function WorkChaptersWebtoon({
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 overflow-hidden py-0.5">
-                  <div className="max-w-full truncate text-base font-extrabold leading-tight">{displayLabel}</div>
+                  <div className={`max-w-full truncate text-base font-extrabold leading-tight ${isDraftChapter ? "text-amber-700 dark:text-amber-300" : "text-gray-900 dark:text-white"}`}>{displayLabel}</div>
                   {secondaryTitle ? (
-                    <div className="max-w-full truncate text-sm leading-tight text-gray-800 dark:text-gray-100">
+                    <div className={`max-w-full truncate text-sm leading-tight ${isDraftChapter ? "text-amber-700 dark:text-amber-200" : "text-gray-800 dark:text-gray-100"}`}>
                       {secondaryTitle}
                     </div>
                   ) : null}
-                  <div className="flex min-w-0 max-w-full items-center gap-2 overflow-hidden text-xs text-gray-600 dark:text-gray-300">
+                  <div className={`flex min-w-0 max-w-full items-center gap-2 overflow-hidden text-xs ${isDraftChapter ? "text-amber-700 dark:text-amber-300" : "text-gray-600 dark:text-gray-300"}`}>
                     {c.isMature ? <span className="shrink-0 rounded-full bg-black/70 px-2 py-1 text-white">18+</span> : null}
                     {c.publishedAt ? <span className="truncate">{new Date(c.publishedAt).toLocaleDateString()}</span> : null}
                     {c.status && c.status !== "PUBLISHED" ? (

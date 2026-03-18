@@ -55,7 +55,7 @@ export default async function HomePage() {
           <WorkRail title={translationsLabel} href="/browse/latest-translations" works={translations} />
           <WorkRail title={recentLabel} href="/browse/recent-updates" works={recent} />
           {draftWorks && draftWorks.length > 0 ? (
-            <WorkRail title={draftLabel} href="/studio" works={draftWorks} />
+            <WorkRail title={draftLabel} href="/browse/still-drafts" works={draftWorks} />
           ) : null}
 
           <footer className="pt-6 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-300">

@@ -68,6 +68,8 @@ export const workCardSelect = {
   slug: true,
   title: true,
   coverImage: true,
+  status: true,
+  createdAt: true,
   updatedAt: true,
   lastChapterPublishedAt: true,
   type: true,

@@ -7,6 +7,7 @@ export default async function RecentUpdatesPage() {
       qs={new URLSearchParams({ take: "80", sort: "newest" }).toString()}
       showBookmarkButton
       showUpdatedSubtitle
+      publishedOnly
     />
   );
 }

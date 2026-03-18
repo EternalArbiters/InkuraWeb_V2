@@ -14,8 +14,7 @@ import {
   getViewerWorkInteractions,
 } from "@/server/services/works/viewerInteractions";
 import { profileHotspot } from "@/server/observability/profiling";
-import prisma from "@/server/db/prisma";
-import { workCardSelect } from "@/server/db/selectors";
+import { listDraftWorksForAdmin } from "@/server/services/works/listDraftWorks";
 
 function sortByRecentActivity(works: any[]): any[] {
   return works.slice().sort((a, b) => {
@@ -69,15 +68,6 @@ export async function getPublicHomePageData() {
   );
 }
 
-// Fetch draft works for admin — never cached, always fresh
-async function getAdminDraftWorks(): Promise<any[]> {
-  return prisma.work.findMany({
-    where: { status: "DRAFT" },
-    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-    take: 20,
-    select: workCardSelect,
-  });
-}
 
 export async function getViewerHomePagePayload(workIds: string[]) {
   const viewer = await getViewerWithPrefs();
@@ -109,7 +99,7 @@ export async function getHomePageData() {
   const { viewer, interactions } = await getViewerHomePagePayload(allWorkIds);
 
   // Fetch draft works only for admin — not cached, always fresh
-  const draftWorks = viewer?.role === "ADMIN" ? await getAdminDraftWorks() : [];
+  const draftWorks = viewer?.role === "ADMIN" ? await listDraftWorksForAdmin({ take: 20 }) : [];
 
   if (!viewer?.id) {
     return { ...base, draftWorks: [] };

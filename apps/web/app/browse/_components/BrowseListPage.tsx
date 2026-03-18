@@ -8,6 +8,7 @@ type Props = {
   emptyText?: string;
   showBookmarkButton?: boolean;
   showUpdatedSubtitle?: boolean;
+  publishedOnly?: boolean;
 };
 
 export default async function BrowseListPage({
@@ -16,11 +17,12 @@ export default async function BrowseListPage({
   emptyText,
   showBookmarkButton = false,
   showUpdatedSubtitle = false,
+  publishedOnly = false,
 }: Props) {
   let works: any[] = [];
 
   try {
-    works = (await listPublishedWorksFromSearchParams(new URLSearchParams(qs))).works;
+    works = (await listPublishedWorksFromSearchParams(new URLSearchParams(qs), { forcePublishedOnly: publishedOnly })).works;
   } catch {
     works = [];
   }
