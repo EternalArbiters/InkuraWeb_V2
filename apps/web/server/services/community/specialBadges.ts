@@ -12,7 +12,7 @@ import {
   type UserGenderValue,
   isCommunityRankingEligibleUser,
 } from "@/server/services/community/ranking";
-import { rankCommunityScoreRows, type CommunityMetadata, type CommunityScoreRow } from "@/server/services/community/leaderboards";
+import { rankCommunityScoreRows, type CommunityMetadata, type CommunityScoreRow, type RankedCommunityScoreRow } from "@/server/services/community/leaderboards";
 
 export async function getLatestCommunitySpecialBadgeSnapshotAt() {
   const result = await prisma.specialBadgeSnapshot.aggregate({ _max: { snapshotAt: true } });
@@ -591,7 +591,7 @@ export async function rebuildCommunitySpecialBadges() {
   const winners = SPECIAL_BADGE_KEY_VALUES.map((badgeKey) => {
     const winner = selectWinner(candidates[badgeKey]);
     return winner ? { badgeKey, row: winner } : null;
-  }).filter((value): value is { badgeKey: SpecialBadgeKeyValue; row: CommunityScoreRow } => value !== null);
+  }).filter((value): value is { badgeKey: SpecialBadgeKeyValue; row: RankedCommunityScoreRow } => value !== null);
 
   await persistSpecialBadgeSnapshots(winners);
 
