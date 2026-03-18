@@ -42,33 +42,40 @@ export default function CreatorNoteCard({
   return (
     <section
       data-reader-uploader-card
-      className={compact ? "rounded-2xl border border-white/10 bg-black/20 p-4" : "rounded-2xl border border-white/10 bg-black/20 p-4"}
+      className={
+        compact
+          ? "rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-gray-900 shadow-sm dark:border-white/10 dark:bg-black/20 dark:text-white"
+          : "rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-gray-900 shadow-sm dark:border-white/10 dark:bg-black/20 dark:text-white"
+      }
     >
       <div className="flex items-center gap-3">
         {uploader.image ? (
           <img src={uploader.image} alt={uName} className="h-11 w-11 rounded-full object-cover" />
         ) : (
-          <div className="h-11 w-11 rounded-full bg-white/10 flex items-center justify-center font-bold text-white/80">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-700 dark:bg-white/10 dark:text-white/80">
             {avatarFallback(uploader)}
           </div>
         )}
 
         <div className="min-w-0 flex-1">
-          <div data-reader-uploader-label className="text-xs text-white/60">{roleLabel}</div>
+          <div data-reader-uploader-label className="text-xs text-gray-500 dark:text-white/60">{roleLabel}</div>
           <div data-reader-uploader-name>
             <PublicUserLink
               user={uploader}
-              className="block truncate font-semibold text-white hover:text-purple-200"
+              className="block truncate font-semibold text-gray-900 hover:text-violet-700 dark:text-white dark:hover:text-purple-200"
             >
               {uName}
             </PublicUserLink>
           </div>
 
           {tName ? (
-            <div data-reader-uploader-meta className="mt-0.5 text-xs text-white/60">
+            <div data-reader-uploader-meta className="mt-0.5 text-xs text-gray-600 dark:text-white/60">
               {t("Translator")}:{" "}
               <span data-reader-uploader-link>
-                <PublicUserLink user={translator} className="text-white/80 hover:text-purple-200">
+                <PublicUserLink
+                  user={translator}
+                  className="text-gray-800 hover:text-violet-700 dark:text-white/80 dark:hover:text-purple-200"
+                >
                   {tName}
                 </PublicUserLink>
               </span>
@@ -77,7 +84,7 @@ export default function CreatorNoteCard({
         </div>
       </div>
 
-      {note && note.trim() ? <div className="mt-3 whitespace-pre-wrap text-sm text-white/85">{note}</div> : null}
+      {note && note.trim() ? <div className="mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-white/85">{note}</div> : null}
     </section>
   );
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
-import { Bold, Italic, Underline, Strikethrough, Heading2, Heading3, List, ListOrdered, Quote, Link2, Undo2, Redo2, Eraser, ImagePlus, Minus } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, Heading2, Heading3, List, ListOrdered, Quote, Undo2, Redo2, Eraser, ImagePlus, Minus, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { presignAndUpload } from "@/lib/r2UploadClient";
 import { prepareUploadFile } from "@/lib/uploadOptimization";
 import { normalizeNovelContentForStorage, novelContentHasMeaningfulContent } from "@/lib/novelContent";
@@ -70,7 +70,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
     bullet: false,
     ordered: false,
     quote: false,
-    link: false,
+    alignLeft: false,
+    alignCenter: false,
+    alignRight: false,
   });
 
   const syncRawFromDom = React.useCallback(() => {
@@ -121,7 +123,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         bullet: false,
         ordered: false,
         quote: false,
-        link: false,
+        alignLeft: false,
+        alignCenter: false,
+        alignRight: false,
       });
       return;
     }
@@ -137,7 +141,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         bullet: false,
         ordered: false,
         quote: false,
-        link: false,
+        alignLeft: false,
+        alignCenter: false,
+        alignRight: false,
       });
       return;
     }
@@ -147,9 +153,14 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       .trim()
       .toLowerCase();
 
-    const anchorNode = selection.anchorNode instanceof Element
+    const selectedBlock = selection.anchorNode instanceof Element
       ? selection.anchorNode
       : selection.anchorNode?.parentElement ?? null;
+
+    const textAlignValue = String(document.queryCommandValue("justifyCenter") || "").trim().toLowerCase();
+    const computedTextAlign = selectedBlock
+      ? window.getComputedStyle(selectedBlock.closest("p, h1, h2, h3, h4, blockquote, li, div") ?? selectedBlock).textAlign.toLowerCase()
+      : "";
 
     setActiveFormats({
       bold: document.queryCommandState("bold"),
@@ -161,7 +172,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       bullet: document.queryCommandState("insertUnorderedList"),
       ordered: document.queryCommandState("insertOrderedList"),
       quote: formatBlockValue === "blockquote",
-      link: Boolean(anchorNode?.closest("a")),
+      alignLeft: computedTextAlign === "left" || computedTextAlign === "start" || (!computedTextAlign && textAlignValue !== "true"),
+      alignCenter: textAlignValue === "true" || computedTextAlign === "center",
+      alignRight: computedTextAlign === "right" || computedTextAlign === "end",
     });
   }, []);
 
@@ -202,7 +215,9 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       bullet: false,
       ordered: false,
       quote: false,
-      link: false,
+      alignLeft: false,
+      alignCenter: false,
+      alignRight: false,
     });
   }, [updateToolbarState]);
 
@@ -328,16 +343,14 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         <ToolbarButton title="Quote" active={activeFormats.quote} onPress={() => runCommand("formatBlock", "<blockquote>")}>
           <Quote className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton
-          title="Link"
-          active={activeFormats.link}
-          onPress={() => {
-            const url = window.prompt(t("Enter link URL"));
-            if (!url) return;
-            runCommand("createLink", url);
-          }}
-        >
-          <Link2 className="h-4 w-4" />
+        <ToolbarButton title="Align left" active={activeFormats.alignLeft} onPress={() => runCommand("justifyLeft")}>
+          <AlignLeft className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton title="Align center" active={activeFormats.alignCenter} onPress={() => runCommand("justifyCenter")}>
+          <AlignCenter className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton title="Align right" active={activeFormats.alignRight} onPress={() => runCommand("justifyRight")}>
+          <AlignRight className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton title="Horizontal line" onPress={() => runCommand("insertHorizontalRule")}>
           <Minus className="h-4 w-4" />

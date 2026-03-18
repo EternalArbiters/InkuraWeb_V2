@@ -227,7 +227,7 @@ export default function FloatingActions() {
   return (
     <div className={containerClass}>
       {!shouldHideScrollTop ? (
-        <CircleButton ariaLabel={t("Scroll to top")} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={opacityClass}>
+        <CircleButton ariaLabel={t("Scroll to top")} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={`${opacityClass} ${isReader ? "lg:hidden" : ""}`}>
           <ArrowUpIcon />
         </CircleButton>
       ) : null}
@@ -241,7 +241,7 @@ export default function FloatingActions() {
       ) : null}
 
       {isReader && chapterId ? (
-        <div className="hidden md:block">
+        <div className={`hidden md:block ${isReader ? "lg:hidden" : ""}`}>
           <CircleButton
             ariaLabel={liked ? `${t("Liked")} (${count})` : `${t("Like chapter")} (${count})`}
             onClick={toggleChapterLike}
