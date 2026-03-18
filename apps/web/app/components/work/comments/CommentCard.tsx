@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { DecoratedComment, ReplyTarget, TargetType } from "./types";
+import type { CommunityIdentityBadge } from "@/lib/communityBadges";
 import CommentBody from "./CommentBody";
 import CommunityBadgeChips from "@/app/components/user/CommunityBadgeChips";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
@@ -133,8 +134,8 @@ export default function CommentCard(props: CommentCardProps) {
   const isAdminComment = String(c.user?.role || "").toUpperCase() === "ADMIN";
   const isWorkOwnerComment = !!workAuthorId && !!workOwnerBadgeLabel && c.user?.id === workAuthorId;
   const communityBadges = Array.isArray(c.user?.badges) ? c.user.badges : [];
-  const workOwnerBadge = isWorkOwnerComment
-    ? [{ kind: "ROLE", label: workOwnerBadgeLabel as string, tone: "GRAY" as const }]
+  const workOwnerBadge: CommunityIdentityBadge[] = isWorkOwnerComment
+    ? [{ kind: "ROLE", label: workOwnerBadgeLabel as string, tone: "GRAY" }]
     : [];
 
   const isPinned = depth === 0 && !!(c as any).isPinned;
