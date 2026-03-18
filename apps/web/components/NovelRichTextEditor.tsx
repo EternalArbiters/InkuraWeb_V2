@@ -20,19 +20,21 @@ type ToolbarButtonProps = {
   onPress: () => void;
   children?: React.ReactNode;
   disabled?: boolean;
+  active?: boolean;
 };
 
-function ToolbarButton({ title, onPress, children, disabled }: ToolbarButtonProps) {
+function ToolbarButton({ title, onPress, children, disabled, active = false }: ToolbarButtonProps) {
   return (
     <button
       type="button"
       title={title}
       disabled={disabled}
-      onMouseDown={(event) => {
+      onPointerDown={(event) => {
         event.preventDefault();
         if (!disabled) onPress();
       }}
-      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white/80 text-gray-900 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-100"
+      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition disabled:cursor-not-allowed disabled:opacity-50 ${active ? "border-gray-400 bg-gray-200/95 text-gray-950 dark:border-gray-500 dark:bg-gray-100/15 dark:text-white" : "border-gray-200 bg-white/80 text-gray-900 hover:brightness-110 dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-100"}`}
+      aria-pressed={active}
     >
       {children}
     </button>
@@ -58,6 +60,18 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
   const [isEmpty, setIsEmpty] = React.useState(!novelContentHasMeaningfulContent(value));
   const [uploadingImage, setUploadingImage] = React.useState(false);
   const [helperText, setHelperText] = React.useState<string | null>(null);
+  const [activeFormats, setActiveFormats] = React.useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strikeThrough: false,
+    h2: false,
+    h3: false,
+    bullet: false,
+    ordered: false,
+    quote: false,
+    link: false,
+  });
 
   const syncRawFromDom = React.useCallback(() => {
     const editor = editorRef.current;
@@ -93,6 +107,80 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
     }
   }, []);
 
+  const updateToolbarState = React.useCallback(() => {
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection || selection.rangeCount === 0) {
+      setActiveFormats({
+        bold: false,
+        italic: false,
+        underline: false,
+        strikeThrough: false,
+        h2: false,
+        h3: false,
+        bullet: false,
+        ordered: false,
+        quote: false,
+        link: false,
+      });
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.commonAncestorContainer)) {
+      setActiveFormats({
+        bold: false,
+        italic: false,
+        underline: false,
+        strikeThrough: false,
+        h2: false,
+        h3: false,
+        bullet: false,
+        ordered: false,
+        quote: false,
+        link: false,
+      });
+      return;
+    }
+
+    const formatBlockValue = String(document.queryCommandValue("formatBlock") || "")
+      .replace(/[<>]/g, "")
+      .trim()
+      .toLowerCase();
+
+    const anchorNode = selection.anchorNode instanceof Element
+      ? selection.anchorNode
+      : selection.anchorNode?.parentElement ?? null;
+
+    setActiveFormats({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline"),
+      strikeThrough: document.queryCommandState("strikeThrough"),
+      h2: formatBlockValue === "h2",
+      h3: formatBlockValue === "h3",
+      bullet: document.queryCommandState("insertUnorderedList"),
+      ordered: document.queryCommandState("insertOrderedList"),
+      quote: formatBlockValue === "blockquote",
+      link: Boolean(anchorNode?.closest("a")),
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const handleSelectionChange = () => {
+      const editor = editorRef.current;
+      const selection = window.getSelection();
+      if (!editor || !selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      if (editor.contains(range.commonAncestorContainer)) {
+        selectionRef.current = range.cloneRange();
+        updateToolbarState();
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => document.removeEventListener("selectionchange", handleSelectionChange);
+  }, [updateToolbarState]);
+
   const saveSelection = React.useCallback(() => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -101,8 +189,22 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
     const range = selection.getRangeAt(0);
     if (editor.contains(range.commonAncestorContainer)) {
       selectionRef.current = range.cloneRange();
+      updateToolbarState();
+      return;
     }
-  }, []);
+    setActiveFormats({
+      bold: false,
+      italic: false,
+      underline: false,
+      strikeThrough: false,
+      h2: false,
+      h3: false,
+      bullet: false,
+      ordered: false,
+      quote: false,
+      link: false,
+    });
+  }, [updateToolbarState]);
 
   const restoreSelection = React.useCallback(() => {
     const selection = window.getSelection();
@@ -122,9 +224,10 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
       editor.focus();
       document.execCommand(command, false, commandValue);
       saveSelection();
+      updateToolbarState();
       syncRawFromDom();
     },
-    [restoreSelection, saveSelection, syncRawFromDom]
+    [restoreSelection, saveSelection, syncRawFromDom, updateToolbarState]
   );
 
   const insertHtmlAtCaret = React.useCallback(
@@ -138,9 +241,10 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         editor.innerHTML = `${editor.innerHTML}${html}`;
       }
       saveSelection();
+      updateToolbarState();
       syncRawFromDom();
     },
-    [restoreSelection, saveSelection, syncRawFromDom]
+    [restoreSelection, saveSelection, syncRawFromDom, updateToolbarState]
   );
 
   const uploadAndInsertImages = React.useCallback(
@@ -197,35 +301,36 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         .novel-editor-surface pre, .novel-editor-surface code { white-space: pre-wrap; }
       `}</style>
       <ToolbarRow>
-        <ToolbarButton title="Bold" onPress={() => runCommand("bold")}>
+        <ToolbarButton title="Bold" active={activeFormats.bold} onPress={() => runCommand("bold")}>
           <Bold className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Italic" onPress={() => runCommand("italic")}>
+        <ToolbarButton title="Italic" active={activeFormats.italic} onPress={() => runCommand("italic")}>
           <Italic className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Underline" onPress={() => runCommand("underline")}>
+        <ToolbarButton title="Underline" active={activeFormats.underline} onPress={() => runCommand("underline")}>
           <Underline className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Strikethrough" onPress={() => runCommand("strikeThrough")}>
+        <ToolbarButton title="Strikethrough" active={activeFormats.strikeThrough} onPress={() => runCommand("strikeThrough")}>
           <Strikethrough className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Heading 2" onPress={() => runCommand("formatBlock", "<h2>")}>
+        <ToolbarButton title="Heading 2" active={activeFormats.h2} onPress={() => runCommand("formatBlock", "<h2>")}>
           <Heading2 className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Heading 3" onPress={() => runCommand("formatBlock", "<h3>")}>
+        <ToolbarButton title="Heading 3" active={activeFormats.h3} onPress={() => runCommand("formatBlock", "<h3>")}>
           <Heading3 className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Bullet list" onPress={() => runCommand("insertUnorderedList")}>
+        <ToolbarButton title="Bullet list" active={activeFormats.bullet} onPress={() => runCommand("insertUnorderedList")}>
           <List className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Numbered list" onPress={() => runCommand("insertOrderedList")}>
+        <ToolbarButton title="Numbered list" active={activeFormats.ordered} onPress={() => runCommand("insertOrderedList")}>
           <ListOrdered className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton title="Quote" onPress={() => runCommand("formatBlock", "<blockquote>")}>
+        <ToolbarButton title="Quote" active={activeFormats.quote} onPress={() => runCommand("formatBlock", "<blockquote>")}>
           <Quote className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
           title="Link"
+          active={activeFormats.link}
           onPress={() => {
             const url = window.prompt(t("Enter link URL"));
             if (!url) return;
@@ -275,6 +380,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
             }}
             onKeyUp={saveSelection}
             onMouseUp={saveSelection}
+            onTouchEnd={saveSelection}
             onPaste={(event) => {
               const imageFiles = Array.from(event.clipboardData?.files || []).filter((file): file is File => String((file as File).type || "").startsWith("image/"));
               if (imageFiles.length) {
