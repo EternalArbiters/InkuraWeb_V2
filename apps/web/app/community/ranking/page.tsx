@@ -123,14 +123,14 @@ export default async function CommunityRankingPage() {
     getActiveUILanguageText("Donatur", { section: "Page Community Ranking" }),
   ]);
 
-  const translatedSectionLabels = new Map(
-    await Promise.all(
-      sections.map(async (section) => [
-        section.category,
-        await getActiveUILanguageText(section.label, { section: "Page Community Ranking" }),
-      ])
-    )
+  const translatedSectionLabelEntries = await Promise.all(
+    sections.map(async (section): Promise<readonly [string, string]> => [
+      section.category,
+      await getActiveUILanguageText(section.label, { section: "Page Community Ranking" }),
+    ])
   );
+
+  const translatedSectionLabels = new Map<string, string>(translatedSectionLabelEntries);
 
   return (
     <PageScaffold title="Ranking" titleLookupOptions={{ section: "Navigation Community" }}>

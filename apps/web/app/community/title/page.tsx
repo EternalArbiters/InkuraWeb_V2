@@ -170,14 +170,14 @@ export default async function CommunityTitlePage() {
     ...SPECIAL_BADGE_GUIDE.flatMap((item) => [item.label, item.description]),
   ];
 
-  const textMap = new Map(
-    await Promise.all(
-      Array.from(new Set(textSources)).map(async (source) => [
-        source,
-        await getActiveUILanguageText(source, { section: "Page Community Title" }),
-      ])
-    )
+  const textEntries = await Promise.all(
+    Array.from(new Set(textSources)).map(async (source): Promise<readonly [string, string]> => [
+      source,
+      await getActiveUILanguageText(source, { section: "Page Community Title" }),
+    ])
   );
+
+  const textMap = new Map<string, string>(textEntries);
   const t = (source: string) => textMap.get(source) || source;
 
   const creatorGuide = Array.from({ length: 7 }, (_, index) => {
