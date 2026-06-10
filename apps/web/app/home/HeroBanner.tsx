@@ -62,8 +62,7 @@ export default function HeroBanner({ works }: { works: BannerWork[] }) {
 
   return (
     <section
-      className="relative w-full overflow-hidden rounded-2xl bg-gray-900"
-      style={{ aspectRatio: "21/9" }}
+      className="relative w-full overflow-hidden rounded-2xl bg-gray-900 aspect-square md:aspect-[21/9]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
