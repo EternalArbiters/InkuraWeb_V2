@@ -1,7 +1,9 @@
 import Link from "next/link";
 import WorkRail from "./WorkRail";
 import WelcomePopup from "./WelcomePopup";
+import HeroBanner from "./HeroBanner";
 import { getHomePageData } from "@/server/services/home/getHomePageData";
+import { getBannerWorks } from "@/server/services/home/getBannerWorks";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 
@@ -11,7 +13,8 @@ export default async function HomePage() {
   const startedAt = Date.now();
 
   try {
-    const { trendingComics, trendingNovels, recent, originals, translations, draftWorks } = await getHomePageData();
+    const [{ trendingComics, trendingNovels, recent, originals, translations, draftWorks }, bannerWorks] =
+      await Promise.all([getHomePageData(), getBannerWorks()]);
     const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel] =
       await Promise.all([
         getActiveUILanguageText("Home", { section: "Page Home" }),
@@ -28,7 +31,8 @@ export default async function HomePage() {
     return (
       <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <WelcomePopup />
-        <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+        <div className="max-w-7xl mx-auto px-4 pt-6 pb-8 space-y-10">
+          {bannerWorks.length > 0 && <HeroBanner works={bannerWorks} />}
           <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{homeTitle}</h1>

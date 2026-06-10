@@ -300,6 +300,10 @@ model Work {
   // v13 (R2): store object key for deletes / audit
   coverKey    String?
 
+  // v28: optional wide banner image for hero carousel
+  bannerImage String?
+  bannerKey   String?
+
   // Taxonomy
   genres      Genre[]      @relation("WorkGenres")
   tags        Tag[]        @relation("WorkTags")

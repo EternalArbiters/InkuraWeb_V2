@@ -72,6 +72,8 @@ export async function getStudioWorkById(workId: string) {
       type: true,
       comicType: true,
       coverImage: true,
+      bannerImage: true,
+      bannerKey: true,
       language: true,
       origin: true,
       completion: true,
@@ -129,6 +131,8 @@ export async function patchStudioWorkById(req: Request, workId: string) {
       slug: true,
       coverImage: true,
       coverKey: true,
+      bannerImage: true,
+      bannerKey: true,
       status: true,
       publishType: true,
       originalAuthorCredit: true,
@@ -293,7 +297,6 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   if (nextCoverImage !== undefined) {
     const oldKeyOrUrl = existing.coverKey || existing.coverImage;
     if (oldKeyOrUrl) {
-      // best-effort: don't delete if it's exactly the same key/url
       if (nextCoverKey && oldKeyOrUrl === nextCoverKey) {
         // no-op
       } else if (nextCoverImage && oldKeyOrUrl === nextCoverImage) {
@@ -301,6 +304,30 @@ export async function patchStudioWorkById(req: Request, workId: string) {
       } else {
         await deletePublicUpload(oldKeyOrUrl);
       }
+    }
+  }
+
+  // Banner image (optional, wide 16:9 for hero carousel)
+  const removeBanner = String(fd.get("removeBanner") || "").toLowerCase() === "true";
+  const bannerUrl = String(fd.get("bannerUrl") || "").trim();
+  const bannerKeyInput = String(fd.get("bannerKey") || "").trim();
+
+  let nextBannerImage: string | null | undefined = undefined;
+  let nextBannerKey: string | null | undefined = undefined;
+
+  if (bannerUrl) {
+    nextBannerImage = bannerUrl;
+    nextBannerKey = bannerKeyInput || null;
+  }
+  if (removeBanner) {
+    nextBannerImage = null;
+    nextBannerKey = null;
+  }
+
+  if (nextBannerImage !== undefined) {
+    const oldBannerKeyOrUrl = existing.bannerKey || existing.bannerImage;
+    if (oldBannerKeyOrUrl && oldBannerKeyOrUrl !== (nextBannerKey || nextBannerImage)) {
+      await deletePublicUpload(oldBannerKeyOrUrl);
     }
   }
 
@@ -320,6 +347,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
           : {}),
 
       ...(nextCoverImage !== undefined ? { coverImage: nextCoverImage, coverKey: nextCoverKey } : {}),
+      ...(nextBannerImage !== undefined ? { bannerImage: nextBannerImage, bannerKey: nextBannerKey } : {}),
 
       ...(language ? { language } : {}),
       ...(origin ? { origin: origin as any } : {}),
@@ -437,6 +465,7 @@ export async function deleteStudioWorkById(workId: string) {
   // Best-effort delete R2 objects (cover + pages + thumbnails)
   const toDelete: string[] = [];
   if (work.coverKey || work.coverImage) toDelete.push(String(work.coverKey || work.coverImage));
+  if ((work as any).bannerKey || (work as any).bannerImage) toDelete.push(String((work as any).bannerKey || (work as any).bannerImage));
 
   for (const ch of work.chapters || []) {
     if (ch.thumbnailKey) toDelete.push(String(ch.thumbnailKey));

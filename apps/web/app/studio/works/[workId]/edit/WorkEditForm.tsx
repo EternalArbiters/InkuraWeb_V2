@@ -11,6 +11,7 @@ import CreditsSourceFields from "./components/CreditsSourceFields";
 import SubmitRow from "./components/SubmitRow";
 import WorkArcFields from "./components/WorkArcFields";
 import WorkBasicsFields from "./components/WorkBasicsFields";
+import WorkBannerCard from "./components/WorkBannerCard";
 import WorkCoverCard from "./components/WorkCoverCard";
 import WorkPublishTypeCard from "./components/WorkPublishTypeCard";
 import WorkSummaryField from "./components/WorkSummaryField";
@@ -28,6 +29,8 @@ type Work = {
   type: "NOVEL" | "COMIC";
   comicType?: string;
   coverImage: string | null;
+  bannerImage?: string | null;
+  bannerKey?: string | null;
   language: string;
   origin: string;
   completion: string;
@@ -120,6 +123,10 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [coverPreparing, setCoverPreparing] = React.useState(false);
   const [removeCover, setRemoveCover] = React.useState(false);
 
+  const [bannerPrepared, setBannerPrepared] = React.useState<PreparedUploadFile | null>(null);
+  const [bannerPreparing, setBannerPreparing] = React.useState(false);
+  const [removeBanner, setRemoveBanner] = React.useState(false);
+
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -128,6 +135,12 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       if (coverPrepared?.previewUrl) URL.revokeObjectURL(coverPrepared.previewUrl);
     };
   }, [coverPrepared?.previewUrl]);
+
+  React.useEffect(() => {
+    return () => {
+      if (bannerPrepared?.previewUrl) URL.revokeObjectURL(bannerPrepared.previewUrl);
+    };
+  }, [bannerPrepared?.previewUrl]);
 
   React.useEffect(() => {
     if (!isMature && warningIds.length) setWarningIds([]);
@@ -151,6 +164,27 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       setError("Failed to process cover");
     } finally {
       setCoverPreparing(false);
+    }
+  }
+
+  async function onPickBanner(file: File | null) {
+    if (bannerPrepared?.previewUrl) URL.revokeObjectURL(bannerPrepared.previewUrl);
+    if (!file) {
+      setBannerPrepared(null);
+      setBannerPreparing(false);
+      return;
+    }
+    setBannerPreparing(true);
+    setError(null);
+    setRemoveBanner(false);
+    try {
+      const prepared = await prepareUploadFile({ scope: "covers", file, makePreviewUrl: true });
+      setBannerPrepared(prepared);
+    } catch {
+      setBannerPrepared(null);
+      setError("Failed to process banner");
+    } finally {
+      setBannerPreparing(false);
     }
   }
 
@@ -183,6 +217,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       fd.append("deviantLoveTagIds", JSON.stringify(isDeviantLove ? deviantLoveTagIds : []));
       fd.append("tags", JSON.stringify(tags));
       fd.append("removeCover", String(removeCover));
+      fd.append("removeBanner", String(removeBanner));
 
       fd.append("publishType", publishType);
       if (needsSource) {
@@ -210,6 +245,18 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         });
         fd.append("coverUrl", up.url);
         fd.append("coverKey", up.key);
+      }
+
+      if (bannerPrepared && !removeBanner) {
+        const up = await presignAndUpload({
+          scope: "covers",
+          file: bannerPrepared.originalFile,
+          preparedFile: bannerPrepared,
+          workId: work.id,
+          optimizationVersion: "pr4-banner-opt-v1",
+        });
+        fd.append("bannerUrl", up.url);
+        fd.append("bannerKey", up.key);
       }
 
       const res = await fetch(`/api/studio/works/${work.id}`, { method: "PATCH", body: fd });
@@ -285,6 +332,17 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         coverBytes={coverPrepared?.optimizedBytes ?? null}
         coverOptimizationSummary={buildOptimizationSummary(coverPrepared)}
         coverPreparing={coverPreparing}
+      />
+
+      <WorkBannerCard
+        bannerImage={removeBanner ? null : (bannerPrepared?.previewUrl || work.bannerImage || null)}
+        removeBanner={removeBanner}
+        setRemoveBanner={setRemoveBanner}
+        onPickBanner={onPickBanner}
+        bannerName={bannerPrepared?.originalFile.name || null}
+        bannerBytes={bannerPrepared?.optimizedBytes ?? null}
+        bannerOptimizationSummary={buildOptimizationSummary(bannerPrepared)}
+        bannerPreparing={bannerPreparing}
       />
 
       <WorkTaxonomyFields
