@@ -16,7 +16,7 @@ export type BannerWork = {
   coverImage: string | null;
   bannerImage: string | null;
   type: string;
-  author: { username: string };
+  author: { username: string | null };
 };
 
 function shuffle<T>(arr: T[]): T[] {

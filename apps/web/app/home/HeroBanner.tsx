@@ -49,7 +49,9 @@ export default function HeroBanner({ works }: { works: BannerWork[] }) {
   function onTouchEnd(e: React.TouchEvent) {
     if (touchStartX.current === null) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next(); else prev();
+    }
     touchStartX.current = null;
   }
 
@@ -97,7 +99,7 @@ export default function HeroBanner({ works }: { works: BannerWork[] }) {
         tabIndex={index !== index ? -1 : 0}
       >
         <p className="text-[11px] uppercase tracking-widest text-white/60 mb-1">
-          {work.type === "COMIC" ? "Comic" : "Novel"} · {work.author.username}
+          {work.type === "COMIC" ? "Comic" : "Novel"}{work.author.username ? ` · ${work.author.username}` : ""}
         </p>
         <h2 className="text-lg md:text-2xl font-extrabold text-white leading-tight line-clamp-2 group-hover:underline">
           {work.title}
