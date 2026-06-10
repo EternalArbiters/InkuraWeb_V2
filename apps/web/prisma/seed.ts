@@ -22,7 +22,9 @@ function slugify(input: string) {
 }
 
 async function main() {
-  const hashedPassword = await bcrypt.hash("admin123", 10);
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword) throw new Error("SEED_ADMIN_PASSWORD env var is required to run seed");
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const admin = await prisma.user.upsert({
     // v14: single admin email

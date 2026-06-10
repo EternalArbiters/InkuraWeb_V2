@@ -25,8 +25,8 @@ export const POST = apiRoute(async (req: Request) => {
       return json({ error: "username, email, and password are required" }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    if (password.length < 8) {
+      return json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
     const existing = await prisma.user.findFirst({

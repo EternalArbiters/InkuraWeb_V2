@@ -19,8 +19,8 @@ export const POST = apiRoute(async (req: Request) => {
     if (!token || !password) {
       return json({ error: "token and password are required" }, { status: 400 });
     }
-    if (password.length < 6) {
-      return json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    if (password.length < 8) {
+      return json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
     const rec = await prisma.passwordResetToken.findUnique({

@@ -94,7 +94,7 @@ export default function SignUpPage() {
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder={t("Password (min 6)")}
+            placeholder={t("Password (min 8)")}
             autoComplete="new-password"
           />
           <input

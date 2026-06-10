@@ -56,7 +56,7 @@ Loading...
 An error occurred. Please try again.
 Error
 Token is missing.
-Password must be at least 6 characters.
+Password must be at least 8 characters.
 Failed to reset password
 Login failed.
 Incorrect email/username or password.
@@ -141,7 +141,7 @@ Sign up for Inkura
 Display name (optional)
 Username
 Email
-Password (min 6)
+Password (min 8)
 Confirm password
 Already have an account?
 
@@ -716,7 +716,7 @@ All Reviews
 
 Sweep app/reset-password/page.tsx
 
-Minimum 6 characters
+Minimum 8 characters
 Repeat password
 Reset Password
 Token is missing from the URL.
@@ -1614,4 +1614,13 @@ Open full donor ledger
 Donor entry saved and leaderboard rebuilt.
 Failed to create donation entry
 Failed to rebuild community snapshots
+
+==========
+Welcome Popup
+==========
+
+Welcome to Inkura! Just so you know, you're in a safe zone! Don't worry, everything here is safe to read! It's best not to open the door to the forbidden zone, okay ^^
+Hello, creators on Inkura! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders!
+Don't show again
+Inkura Mascot
 

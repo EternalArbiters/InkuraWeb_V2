@@ -33,7 +33,7 @@ Minimal siapkan 2 akun:
 
 1) **Admin (seed default)**
 - Email: `noelephgoddess.game@gmail.com`
-- Password: `admin123`
+- Password: dari env var `SEED_ADMIN_PASSWORD`
 
 2) **User regular**
 - Register through UI (email + password).

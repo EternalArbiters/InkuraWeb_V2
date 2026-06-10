@@ -155,12 +155,13 @@ npm run test:e2e:install
 Seed default make admin default following:
 
 - Email: `noelephgoddess.game@gmail.com`
-- Password: `admin123`
+- Password: diset via env var `SEED_ADMIN_PASSWORD` di `.env.local`
 
 Important note:
 
 - Role admin in repo this in-*enforce* berdasarkan email that
 - Do not use kredensial this apa aandya for environment public
+- Seed will fail if `SEED_ADMIN_PASSWORD` tidak diset
 
 ## Perintah work that most often used
 

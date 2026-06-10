@@ -53,7 +53,7 @@ export const POST = apiRoute(async (req: Request) => {
     const resetUrl = `${baseUrl()}/reset-password?token=${encodeURIComponent(token)}`;
     await sendPasswordResetEmail({ to: user.email, resetUrl });
 
-    const expose = process.env.SHOW_RESET_TOKEN === "1" || process.env.NODE_ENV !== "production";
+    const expose = process.env.SHOW_RESET_TOKEN === "1";
     return json({
       ok: true,
       ...(expose ? { resetToken: token, expiresAt, resetUrl } : {}),

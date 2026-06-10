@@ -335,7 +335,8 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
             chapterId,
             optimizationVersion: "pr14-novel-editor-inline-image-v1",
           });
-          insertHtmlAtCaret(`<figure><img src="${upload.url}" alt="${file.name.replace(/\"/g, "")}"></figure><p><br></p>`);
+          const safeAlt = file.name.replace(/[<>"'&]/g, "");
+          insertHtmlAtCaret(`<figure><img src="${upload.url}" alt="${safeAlt}"></figure><p><br></p>`);
         }
         setHelperText(t("Image inserted into the chapter content."));
       } catch (error) {

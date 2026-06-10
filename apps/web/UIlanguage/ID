@@ -61,7 +61,7 @@ Loading... = Memuat...
 An error occurred. Please try again. = Terjadi kesalahan. Silakan coba lagi.
 Error = Kesalahan
 Token is missing. = Token tidak ada.
-Password must be at least 6 characters. = Kata sandi harus minimal 6 karakter.
+Password must be at least 8 characters. = Kata sandi harus minimal 8 karakter.
 Failed to reset password = Gagal mengatur ulang kata sandi
 Login failed. = Gagal masuk.
 Incorrect email/username or password. = Email/nama pengguna atau kata sandi salah.
@@ -160,7 +160,7 @@ Sign up for Inkura = Daftar ke Inkura
 Display name (optional) = Nama tampilan (opsional)
 Username = Nama pengguna
 Email = Email
-Password (min 6) = Kata sandi (min 6)
+Password (min 8) = Kata sandi (min 8)
 Confirm password = Konfirmasi kata sandi
 Already have an account? = Sudah punya akun?
 Processing... = Memproses...
@@ -921,7 +921,7 @@ Sweep app/reset-password/page.tsx
 ==========
 
 Failed to reset password. = Gagal mengatur ulang kata sandi.
-Minimum 6 characters = Minimal 6 karakter
+Minimum 8 characters = Minimal 8 karakter
 Repeat password = Ulangi kata sandi
 Reset Password = Atur Ulang Kata Sandi
 Token is missing from the URL. = Token tidak ada di URL.
@@ -2138,7 +2138,7 @@ Token is missing from the URL. = Token tidak ada di URL.
 Reset Password = Atur Ulang Kata Sandi
 Enter your new password. Reset links are only valid for a limited time. = Masukkan kata sandi barumu. Tautan reset hanya berlaku untuk waktu terbatas.
 New password = Kata sandi baru
-Minimum 6 characters = Minimal 6 karakter
+Minimum 8 characters = Minimal 8 karakter
 Confirm password = Konfirmasi kata sandi
 Repeat password = Ulangi kata sandi
 Processing... = Memproses...
@@ -2285,4 +2285,13 @@ Open full donor ledger = Buka ledger donatur lengkap
 Donor entry saved and leaderboard rebuilt. = Data donatur tersimpan dan leaderboard dibangun ulang.
 Failed to create donation entry = Gagal membuat data donatur
 Failed to rebuild community snapshots = Gagal membangun ulang snapshot komunitas
+
+==========
+Welcome Popup
+==========
+
+Welcome to Inkura! Just so you know, you're in a safe zone! Don't worry, everything here is safe to read! It's best not to open the door to the forbidden zone, okay ^^ = Selamat datang di Inkura! Sebagai informasi, kamu sedang berada di wilayah aman! Jangan khawatir, semua bacaanmu disini aman dibaca! Sebaiknya jangan melewati pintu untuk ke zona terlarang, ya ^^
+Hello, creators on Inkura! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders! = Halo para kreator di Inkura! Silahkan upload apapun yang kamu mau. Tapi tetap patuhi aturannya, ya! Kalau kamu translator, ya atur karya jadi hasil translate. Karya original itu untuk para author dan pencipta langsung! Jangan salah, ya. Begitu pun kalian yang re-upload!
+Don't show again = Jangan tampilkan lagi
+Inkura Mascot = Maskot Inkura
 

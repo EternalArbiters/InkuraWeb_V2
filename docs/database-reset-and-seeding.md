@@ -91,7 +91,7 @@ Diuse to verify connection DB and the presence of important schema sections afte
 Seed default make akun admin following:
 
 - Email: `noelephgoddess.game@gmail.com`
-- Password: `admin123`
+- Password: diset via env var `SEED_ADMIN_PASSWORD` di `.env.local`
 
 Role admin in repo this dikaitkan with email that. For public environments, should data this adjusted through proses seed/ops that safer.
 
