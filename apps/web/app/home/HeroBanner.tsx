@@ -93,7 +93,7 @@ export default function HeroBanner({ works }: { works: BannerWork[] }) {
 
       {/* text overlay */}
       <Link
-        href={`/works/${work.slug}`}
+        href={`/w/${work.slug}`}
         className="absolute bottom-0 left-0 right-0 p-4 md:p-6 z-10 group"
         tabIndex={index !== index ? -1 : 0}
       >
