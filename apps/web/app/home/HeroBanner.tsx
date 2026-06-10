@@ -103,11 +103,6 @@ export default function HeroBanner({ works }: { works: BannerWork[] }) {
         <h2 className="text-lg md:text-2xl font-extrabold text-white leading-tight line-clamp-2 group-hover:underline">
           {work.title}
         </h2>
-        {work.description ? (
-          <p className="mt-1 text-xs md:text-sm text-white/70 line-clamp-2 hidden sm:block">
-            {work.description}
-          </p>
-        ) : null}
       </Link>
 
       {/* prev/next arrows */}
