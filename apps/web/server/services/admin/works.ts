@@ -121,7 +121,7 @@ export async function createAdminWorkOnBehalf(input: CreateAdminWorkInput): Prom
   const suffix = Math.random().toString(36).slice(2, 8);
   const slug = `${base}-${suffix}`;
 
-  const authorId = publishType === "TRANSLATION" ? adminUserId : creatorUserId;
+  const authorId = creatorUserId;
   const translatorId = publishType === "TRANSLATION" ? creatorUserId : null;
 
   const normalizedSubtitles = normalizeWorkSubtitles(subtitles);
