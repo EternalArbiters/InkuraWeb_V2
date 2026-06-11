@@ -119,6 +119,7 @@ export const studioWorkRowSelect = {
   updatedAt: true,
   publishType: true,
   authorId: true,
+  translatorId: true,
   coverImage: true,
   seriesId: true,
   seriesOrder: true,

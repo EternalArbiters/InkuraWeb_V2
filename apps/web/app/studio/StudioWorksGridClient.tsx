@@ -17,9 +17,11 @@ type WorkLite = {
   type?: string | null;
   publishType?: string | null;
   updatedAt?: string | null;
+  authorId?: string | null;
+  translatorId?: string | null;
 };
 
-export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) {
+export default function StudioWorksGridClient({ works, viewerUserId }: { works: WorkLite[]; viewerUserId?: string | null }) {
   const t = useUILanguageText("Page Studio");
   const tg = useUILanguageText();
   const [items, setItems] = React.useState<WorkLite[]>(works);
@@ -60,6 +62,7 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
         {items.map((work) => {
           const workTitle = work.title?.trim() || tg("Untitled work");
           const viewPublicPageLabel = formatUILanguageTemplate(tg("View public page for {title}"), { title: workTitle });
+          const canDelete = !viewerUserId || !work.authorId || work.authorId === viewerUserId;
           return (
             <div key={work.id} className="overflow-hidden rounded-[10px] border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
               <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gray-100 dark:bg-gray-800">
@@ -85,16 +88,18 @@ export default function StudioWorksGridClient({ works }: { works: WorkLite[] }) 
                   >
                     <Pencil className="h-4 w-4" />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => del(work.id)}
-                    disabled={deletingId === work.id}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70 disabled:opacity-60"
-                    title={tg("Delete")}
-                    aria-label={tg("Delete")}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={() => del(work.id)}
+                      disabled={deletingId === work.id}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70 disabled:opacity-60"
+                      title={tg("Delete")}
+                      aria-label={tg("Delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 

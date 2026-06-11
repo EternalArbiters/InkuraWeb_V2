@@ -46,7 +46,9 @@ export async function listStudioWorksForViewer(input?: { all?: boolean }) {
 
   const works = await profileHotspot("studioWorks.list", { scope: role === "ADMIN" && all ? "all" : "mine", isAdmin: role === "ADMIN" }, () =>
     prisma.work.findMany({
-      where: role === "ADMIN" && all ? {} : { authorId: userId },
+      where: role === "ADMIN" && all
+        ? {}
+        : { OR: [{ authorId: userId }, { translatorId: userId }] },
       orderBy: { updatedAt: "desc" },
       select: studioWorkRowSelect,
     })

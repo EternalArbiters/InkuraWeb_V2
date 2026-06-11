@@ -56,6 +56,10 @@ async function ensureUniqueSlug(base: string, workId: string) {
   }
 }
 
+function canEditWork(role: string, userId: string, authorId: string, translatorId: string | null) {
+  return role === "ADMIN" || userId === authorId || userId === translatorId;
+}
+
 export async function getStudioWorkById(workId: string) {
   const { userId, role } = await requireCreatorSession();
 
@@ -64,6 +68,7 @@ export async function getStudioWorkById(workId: string) {
     select: {
       id: true,
       authorId: true,
+      translatorId: true,
       slug: true,
       title: true,
       subtitle: true,
@@ -115,7 +120,7 @@ export async function getStudioWorkById(workId: string) {
   });
 
   if (!work) throw new ApiError(404, "Not found");
-  if (!isOwnerOrAdmin(role, userId, work.authorId)) throw new ApiError(403, "Forbidden");
+  if (!canEditWork(role, userId, work.authorId, work.translatorId ?? null)) throw new ApiError(403, "Forbidden");
 
   return { work };
 }
@@ -150,7 +155,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   });
 
   if (!existing) throw new ApiError(404, "Not found");
-  if (!isOwnerOrAdmin(role, userId, existing.authorId)) throw new ApiError(403, "Forbidden");
+  if (!canEditWork(role, userId, existing.authorId, existing.translatorId ?? null)) throw new ApiError(403, "Forbidden");
 
   const contentType = req.headers.get("content-type") || "";
 

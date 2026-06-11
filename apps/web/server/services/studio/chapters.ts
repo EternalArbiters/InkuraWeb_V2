@@ -52,9 +52,9 @@ async function recomputePublishedChapterCount(workId: string) {
 
 async function canEditWork(userId: string, role: string, workId: string) {
   if (role === "ADMIN") return true;
-  const w = await prisma.work.findUnique({ where: { id: workId }, select: { authorId: true } });
+  const w = await prisma.work.findUnique({ where: { id: workId }, select: { authorId: true, translatorId: true } });
   if (!w) return false;
-  return w.authorId === userId;
+  return w.authorId === userId || w.translatorId === userId;
 }
 
 type PageMeta = { url: string; key?: string | null; order?: number | null };
@@ -219,7 +219,7 @@ async function loadChapterForEdit(userId: string, role: string, chapterId: strin
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
     include: {
-      work: { select: { id: true, slug: true, title: true, type: true, authorId: true } },
+      work: { select: { id: true, slug: true, title: true, type: true, authorId: true, translatorId: true } },
       text: true,
       warningTags: true,
       pages: { orderBy: { order: "asc" } },
@@ -227,7 +227,7 @@ async function loadChapterForEdit(userId: string, role: string, chapterId: strin
   });
 
   if (!chapter) return { kind: "not_found" as const };
-  if (role !== "ADMIN" && chapter.work.authorId !== userId) return { kind: "forbidden" as const };
+  if (role !== "ADMIN" && chapter.work.authorId !== userId && chapter.work.translatorId !== userId) return { kind: "forbidden" as const };
   return { kind: "ok" as const, chapter };
 }
 

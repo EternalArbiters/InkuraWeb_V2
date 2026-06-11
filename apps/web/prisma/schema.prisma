@@ -40,6 +40,7 @@ model User {
   // Content
   works      Work[]
   translatedWorks Work[] @relation("WorkTranslator")
+  adminUploadedWorks Work[] @relation("WorkUploadedByAdmin")
   workSeries WorkSeries[]
   likes      WorkLike[]
   chapterLikes ChapterLike[]
@@ -287,6 +288,10 @@ model Work {
 
   translatorId String?
   translator   User? @relation("WorkTranslator", fields: [translatorId], references: [id])
+
+  // v29: admin uploaded on behalf of a user
+  uploadedByAdminId String?
+  uploadedByAdmin   User? @relation("WorkUploadedByAdmin", fields: [uploadedByAdminId], references: [id])
 
   // Cached counters (updated by API routes)
   likeCount   Int        @default(0)

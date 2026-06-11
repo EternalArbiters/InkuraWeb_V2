@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
+import { slugify } from "@/lib/slugify";
 
 export type AdminWorkItem = {
   id: string;
@@ -45,6 +46,73 @@ export async function searchAdminWorks({ query, take = 60 }: { query?: string; t
   });
 
   return works.map((w) => ({ ...w, createdAt: w.createdAt.toISOString() }));
+}
+
+export type AdminUserSearchItem = {
+  id: string;
+  username: string | null;
+  name: string | null;
+  image: string | null;
+};
+
+export async function searchAdminUsers({ query, take = 20 }: { query?: string; take?: number }): Promise<AdminUserSearchItem[]> {
+  if (!query || query.trim().length < 2) return [];
+  const q = query.trim();
+  return prisma.user.findMany({
+    where: {
+      OR: [
+        { username: { contains: q, mode: "insensitive" } },
+        { name: { contains: q, mode: "insensitive" } },
+        { email: { contains: q, mode: "insensitive" } },
+      ],
+    },
+    take,
+    select: { id: true, username: true, name: true, image: true },
+    orderBy: { username: "asc" },
+  });
+}
+
+export type CreateAdminWorkInput = {
+  title: string;
+  type: "COMIC" | "NOVEL";
+  publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
+  language: string;
+  creatorUserId: string;
+  adminUserId: string;
+  description?: string;
+};
+
+export async function createAdminWorkOnBehalf(input: CreateAdminWorkInput): Promise<{ ok: boolean; workId: string; slug: string }> {
+  const { title, type, publishType, language, creatorUserId, adminUserId, description } = input;
+
+  const creator = await prisma.user.findUnique({ where: { id: creatorUserId }, select: { id: true } });
+  if (!creator) throw new Error("Creator user not found");
+
+  // Generate unique slug: slugify title + short random suffix
+  const base = slugify(title).slice(0, 60) || "work";
+  const suffix = Math.random().toString(36).slice(2, 7);
+  const slug = `${base}-${suffix}`;
+
+  const authorId = publishType === "TRANSLATION" ? adminUserId : creatorUserId;
+  const translatorId = publishType === "TRANSLATION" ? creatorUserId : null;
+
+  const work = await prisma.work.create({
+    data: {
+      title: title.trim(),
+      slug,
+      type,
+      publishType,
+      language: language || "unknown",
+      description: description?.trim() || null,
+      authorId,
+      translatorId,
+      uploadedByAdminId: adminUserId,
+      status: "DRAFT",
+    },
+    select: { id: true, slug: true },
+  });
+
+  return { ok: true, workId: work.id, slug: work.slug };
 }
 
 export async function patchAdminWorkPublishType(workId: string, publishType: string): Promise<{ ok: boolean }> {

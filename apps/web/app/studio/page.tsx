@@ -7,7 +7,7 @@ import { listStudioWorksForViewer } from "@/server/services/studio/works";
 export const dynamic = "force-dynamic";
 
 export default async function StudioPage() {
-  await requirePageUserId("/studio");
+  const viewerUserId = await requirePageUserId("/studio");
   const { works } = await listStudioWorksForViewer();
 
   const [tCreateNew, tManageSeries, tSettings, tNoWorks] = await Promise.all([
@@ -51,7 +51,7 @@ export default async function StudioPage() {
               {tNoWorks}
             </div>
           ) : (
-            <StudioWorksGridClient works={works as any} />
+            <StudioWorksGridClient works={works as any} viewerUserId={viewerUserId} />
           )}
         </div>
       </div>

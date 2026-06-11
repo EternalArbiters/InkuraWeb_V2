@@ -34,11 +34,11 @@ export async function uploadOrReplaceChapterPages(req: Request, chapterId: strin
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
-    include: { work: { select: { id: true, slug: true, authorId: true } } },
+    include: { work: { select: { id: true, slug: true, authorId: true, translatorId: true } } },
   });
 
   if (!chapter) return { status: 404, body: { error: "Not found" } };
-  if (!isOwnerOrAdmin(role, userId, chapter.work.authorId)) {
+  if (!isOwnerOrAdmin(role, userId, chapter.work.authorId) && chapter.work.translatorId !== userId) {
     return { status: 403, body: { error: "Forbidden" } };
   }
 
