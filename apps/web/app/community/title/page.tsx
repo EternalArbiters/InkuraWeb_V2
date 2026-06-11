@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import PageScaffold from "@/app/components/PageScaffold";
+import GemRankIcon from "@/app/components/user/GemRankIcons";
 import AdminDonorPanel from "@/app/community/title/AdminDonorPanel";
 import { getSession } from "@/server/auth/session";
 import { getAdminCommunityPageData } from "@/server/services/admin/community";
@@ -376,17 +377,33 @@ export default async function CommunityTitlePage() {
           <section className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]">
             <h2 className="text-lg font-extrabold tracking-tight md:text-xl">{t("Creator Titles")}</h2>
             <div className="mt-4 space-y-2">
-              {creatorGuide.map((item) => (
-                <div key={item.rank} className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200 px-4 py-3 dark:border-gray-800">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-sm font-extrabold text-white dark:bg-white dark:text-gray-900">
-                      #{item.rank}
+              {creatorGuide.map((item) => {
+                const cfg = RIBBON_TONE_CONFIG[item.tone || ""];
+                return (
+                  <div key={item.rank} className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200 px-4 py-3 dark:border-gray-800">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-sm font-extrabold text-white dark:bg-white dark:text-gray-900">
+                        #{item.rank}
+                      </div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</div>
+                    {cfg ? (
+                      <span style={{ filter: cfg.dropShadow, display: "inline-flex" }}>
+                        <span style={{
+                          background: cfg.gradient,
+                          clipPath: `polygon(${cfg.notch}px 0%,calc(100% - ${cfg.notch}px) 0%,100% 50%,calc(100% - ${cfg.notch}px) 100%,${cfg.notch}px 100%,0% 50%)`,
+                          padding: `5px ${cfg.notch + 10}px`,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          color: "#fff",
+                        }}>
+                          <GemRankIcon tone={item.tone} size={16} />
+                        </span>
+                      </span>
+                    ) : null}
                   </div>
-                  <BadgePill label={t("Rank color")} tone={item.tone} />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
