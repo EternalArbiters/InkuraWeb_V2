@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import PageScaffold from "@/app/components/PageScaffold";
+import GemRankIcon from "@/app/components/user/GemRankIcons";
 import {
   getCommunityLeaderboardPageData,
   type CommunityLeaderboardEntry,
@@ -9,17 +10,18 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 export const dynamic = "force-dynamic";
 
-const BADGE_TONE_CLASSES: Record<string, string> = {
-  PURPLE: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-200",
-  INDIGO: "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-200",
-  BLUE: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200",
-  GREEN: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200",
-  YELLOW: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200",
-  ORANGE: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/40 dark:text-orange-200",
-  RED: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200",
-  GOLD: "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900/60 dark:bg-yellow-950/40 dark:text-yellow-200",
-  PLATINUM: "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200",
-  GRAY: "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200",
+const CREATOR_CATEGORIES = new Set(["BEST_AUTHOR", "BEST_TRANSLATOR"]);
+
+const RIBBON_CONFIG: Record<string, { gradient: string; dropShadow: string; notch: number }> = {
+  PURPLE: { gradient: "linear-gradient(160deg,#c4b5fd 0%,#7c3aed 50%,#4c1d95 100%)", dropShadow: "drop-shadow(0 0 6px rgba(139,92,246,.7)) drop-shadow(0 4px 8px rgba(76,29,149,.55)) drop-shadow(0 1px 2px rgba(0,0,0,.4))", notch: 11 },
+  INDIGO: { gradient: "linear-gradient(160deg,#a5b4fc 0%,#4338ca 50%,#1e1b4b 100%)", dropShadow: "drop-shadow(0 0 4px rgba(99,102,241,.55)) drop-shadow(0 3px 7px rgba(30,27,75,.5)) drop-shadow(0 1px 2px rgba(0,0,0,.35))", notch: 10 },
+  BLUE:   { gradient: "linear-gradient(160deg,#93c5fd 0%,#2563eb 50%,#1e3a8a 100%)", dropShadow: "drop-shadow(0 0 3px rgba(59,130,246,.5)) drop-shadow(0 3px 6px rgba(30,58,138,.45)) drop-shadow(0 1px 2px rgba(0,0,0,.3))", notch: 9 },
+  GREEN:  { gradient: "linear-gradient(160deg,#6ee7b7 0%,#059669 50%,#064e3b 100%)", dropShadow: "drop-shadow(0 2px 6px rgba(5,150,105,.45)) drop-shadow(0 1px 2px rgba(0,0,0,.3))", notch: 9 },
+  YELLOW: { gradient: "linear-gradient(160deg,#fde68a 0%,#d97706 50%,#78350f 100%)", dropShadow: "drop-shadow(0 2px 5px rgba(217,119,6,.45)) drop-shadow(0 1px 2px rgba(0,0,0,.25))", notch: 8 },
+  ORANGE: { gradient: "linear-gradient(160deg,#fdba74 0%,#ea580c 50%,#7c2d12 100%)", dropShadow: "drop-shadow(0 2px 5px rgba(234,88,12,.4)) drop-shadow(0 1px 2px rgba(0,0,0,.25))", notch: 8 },
+  RED:    { gradient: "linear-gradient(160deg,#fca5a5 0%,#dc2626 50%,#7f1d1d 100%)", dropShadow: "drop-shadow(0 2px 4px rgba(220,38,38,.4)) drop-shadow(0 1px 2px rgba(0,0,0,.2))", notch: 8 },
+  GOLD:     { gradient: "linear-gradient(160deg,#fef08a 0%,#eab308 35%,#ca8a04 65%,#78350f 100%)", dropShadow: "drop-shadow(0 0 6px rgba(234,179,8,.65)) drop-shadow(0 3px 8px rgba(120,53,15,.5)) drop-shadow(0 1px 2px rgba(0,0,0,.35))", notch: 10 },
+  PLATINUM: { gradient: "linear-gradient(160deg,#f1f5f9 0%,#94a3b8 50%,#334155 100%)", dropShadow: "drop-shadow(0 0 4px rgba(148,163,184,.5)) drop-shadow(0 3px 6px rgba(51,65,85,.4)) drop-shadow(0 1px 2px rgba(0,0,0,.3))", notch: 10 },
 };
 
 function displayName(entry: Pick<CommunityLeaderboardEntry, "name" | "username">) {
@@ -46,9 +48,36 @@ function formatEntryValue(entry: CommunityLeaderboardEntry, pointsLabel: string)
   return `${formatNumber(entry.score)} ${pointsLabel}`;
 }
 
-function toneClasses(tone: string | null | undefined) {
-  if (!tone) return BADGE_TONE_CLASSES.GRAY;
-  return BADGE_TONE_CLASSES[tone] || BADGE_TONE_CLASSES.GRAY;
+function TitleBadge({ title, tone, isCreator }: { title: string; tone: string | null | undefined; isCreator: boolean }) {
+  const cfg = RIBBON_CONFIG[tone || ""];
+  if (!cfg) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-gray-300 dark:border-gray-600 px-2.5 py-1 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
+        {title}
+      </span>
+    );
+  }
+  return (
+    <span style={{ filter: cfg.dropShadow, display: "inline-flex" }}>
+      <span style={{
+        background: cfg.gradient,
+        clipPath: `polygon(${cfg.notch}px 0%,calc(100% - ${cfg.notch}px) 0%,100% 50%,calc(100% - ${cfg.notch}px) 100%,${cfg.notch}px 100%,0% 50%)`,
+        padding: `4px ${cfg.notch + 10}px`,
+        fontSize: "11px",
+        fontWeight: 700,
+        letterSpacing: "0.03em",
+        color: "#fff",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: isCreator ? "5px" : undefined,
+        whiteSpace: "nowrap",
+        lineHeight: 1.4,
+      }}>
+        {isCreator && <GemRankIcon tone={tone!} size={11} />}
+        {title}
+      </span>
+    </span>
+  );
 }
 
 function Avatar({ entry }: { entry: CommunityLeaderboardEntry }) {
@@ -91,9 +120,11 @@ function EntryRow({
 
       <div className="ml-3 flex shrink-0 items-center gap-2">
         {title ? (
-          <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${toneClasses(entry.badgeTone)}`}>
-            {title}
-          </span>
+          <TitleBadge
+            title={title}
+            tone={entry.badgeTone}
+            isCreator={CREATOR_CATEGORIES.has(entry.category)}
+          />
         ) : null}
         <div className="text-right text-xs font-semibold text-gray-600 dark:text-gray-300">{formatEntryValue(entry, pointsLabel)}</div>
       </div>

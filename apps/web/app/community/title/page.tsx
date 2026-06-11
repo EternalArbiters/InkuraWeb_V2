@@ -397,7 +397,7 @@ export default async function CommunityTitlePage() {
                           alignItems: "center",
                           color: "#fff",
                         }}>
-                          <GemRankIcon tone={item.tone} size={16} />
+                          <GemRankIcon tone={item.tone!} size={16} />
                         </span>
                       </span>
                     ) : null}
