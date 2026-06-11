@@ -20,6 +20,7 @@ export default async function ComicPage({
   const qs = new URLSearchParams();
   qs.set("take", "48");
   qs.set("type", "COMIC");
+  qs.set("ignoreLang", "1");
   if (sort && sort !== "newest") qs.set("sort", sort);
   if (publishType === "ORIGINAL" || publishType === "TRANSLATION" || publishType === "REUPLOAD") qs.set("publishType", publishType);
   if (author) qs.set("author", author);

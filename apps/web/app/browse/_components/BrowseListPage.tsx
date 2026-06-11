@@ -22,7 +22,9 @@ export default async function BrowseListPage({
   let works: any[] = [];
 
   try {
-    works = (await listPublishedWorksFromSearchParams(new URLSearchParams(qs), { forcePublishedOnly: publishedOnly })).works;
+    const params = new URLSearchParams(qs);
+    params.set("ignoreLang", "1");
+    works = (await listPublishedWorksFromSearchParams(params, { forcePublishedOnly: publishedOnly })).works;
   } catch {
     works = [];
   }

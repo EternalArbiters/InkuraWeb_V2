@@ -32,6 +32,7 @@ export default async function AdminTaxonomyLayout({ children }: { children: Reac
           <NavLink href="/admin/taxonomy/warnings" label="Warnings" />
           <NavLink href="/admin/taxonomy/deviant-love" label="Deviant Love" />
           <NavLink href="/admin/taxonomy/tags" label="Tags" />
+          <NavLink href="/admin/taxonomy/work-category" label="Work Category" />
         </div>
       </div>
       {children}

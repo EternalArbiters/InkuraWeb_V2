@@ -89,7 +89,7 @@ export default function AdminWorksClient() {
   }
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="space-y-6">
       {error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50/70 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
           {error}
@@ -101,38 +101,35 @@ export default function AdminWorksClient() {
         </div>
       ) : null}
 
-      <section className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]">
-        <h2 className="text-lg font-extrabold tracking-tight md:text-xl">Search works</h2>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+      <div>
+        <p className="mb-3 text-sm text-neutral-500">
           Search by work title or author username. Leave blank to show the 60 most recently updated works.
         </p>
-        <form onSubmit={doSearch} className="mt-4 flex gap-3">
+        <form onSubmit={doSearch} className="flex gap-3">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Title or @username..."
-            className="flex-1 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900"
+            className="flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm dark:border-neutral-800 dark:bg-neutral-900"
           />
           <button
             type="submit"
             disabled={loading}
-            className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            className="rounded-xl border border-neutral-200 px-5 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-700 dark:hover:bg-neutral-800"
           >
             {loading ? "Searching..." : "Search"}
           </button>
         </form>
-      </section>
+      </div>
 
       {searched ? (
-        <section className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-extrabold tracking-tight md:text-xl">Results ({works.length})</h2>
-          </div>
+        <div>
+          <p className="mb-3 text-sm text-neutral-500">{works.length} result{works.length !== 1 ? "s" : ""}</p>
 
           {works.length === 0 ? (
-            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">No works found.</p>
+            <p className="text-sm text-neutral-400">No works found.</p>
           ) : (
-            <div className="mt-4 space-y-3">
+            <div className="space-y-2">
               {works.map((work) => {
                 const draft = drafts[work.id];
                 const changed = draft && draft !== work.publishType;
@@ -141,19 +138,19 @@ export default function AdminWorksClient() {
                 return (
                   <div
                     key={work.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-gray-200 px-4 py-3 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-xl border border-neutral-200 px-4 py-3 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-gray-900 dark:text-white">{work.title}</span>
-                        <span className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                        <span className="font-semibold">{work.title}</span>
+                        <span className="rounded-full border border-neutral-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:border-neutral-700">
                           {work.type}
                         </span>
                         <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${publishTypeBadgeClass(work.publishType)}`}>
                           {publishTypeLabel(work.publishType)}
                         </span>
                       </div>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 text-xs text-neutral-400">
                         by {work.author.name || work.author.username || work.author.id}
                         {work.author.username ? ` (@${work.author.username})` : ""}
                         {" · "}
@@ -168,7 +165,7 @@ export default function AdminWorksClient() {
                         value={draft ?? work.publishType}
                         onChange={(e) => setDrafts((prev) => ({ ...prev, [work.id]: e.target.value }))}
                         disabled={isSaving}
-                        className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-900"
+                        className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900"
                       >
                         {PUBLISH_TYPE_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value}>
@@ -180,7 +177,7 @@ export default function AdminWorksClient() {
                         type="button"
                         onClick={() => savePublishType(work.id)}
                         disabled={!changed || isSaving}
-                        className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+                        className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"
                       >
                         {isSaving ? "Saving..." : "Save"}
                       </button>
@@ -190,7 +187,7 @@ export default function AdminWorksClient() {
               })}
             </div>
           )}
-        </section>
+        </div>
       ) : null}
     </div>
   );
