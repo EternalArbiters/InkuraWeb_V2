@@ -11,6 +11,7 @@ import {
   type CommunityLeaderboardEntry,
   type CommunityScoreRow,
 } from "@/server/services/community/leaderboards";
+import { LEADERBOARD_CATEGORY_VALUES, type LeaderboardCategoryValue } from "@/server/services/community/ranking";
 import {
   getCommunitySpecialBadgeWinners,
   getLatestCommunitySpecialBadgeSnapshotAt,
@@ -417,6 +418,14 @@ export async function deleteDonationEntry(entryId: string) {
   if (!existing) throw new Error("Donation entry not found");
   await prisma.donationEntry.delete({ where: { id: entryId } });
   return { ok: true, entryId };
+}
+
+export async function clearLeaderboardCategory(category: string) {
+  if (!(LEADERBOARD_CATEGORY_VALUES as readonly string[]).includes(category)) throw new Error("Invalid category");
+  const result = await prisma.leaderboardSnapshot.deleteMany({
+    where: { category: category as LeaderboardCategoryValue },
+  });
+  return { ok: true, deleted: result.count };
 }
 
 export async function rebuildCommunitySnapshots() {

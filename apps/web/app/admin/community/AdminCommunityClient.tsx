@@ -220,6 +220,29 @@ export default function AdminCommunityClient({ initial }: { initial: AdminCommun
     }
   }
 
+  async function clearCategory(category: string) {
+    if (!window.confirm(`Clear ALL ${category} ranking data? This cannot be undone.`)) return;
+    setBusy(`clear:${category}`);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/admin/community/clear-snapshot", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ category }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.error || "Failed to clear ranking");
+      setMessage(`${category} ranking cleared (${data.deleted ?? 0} rows deleted). Rebuild snapshots to refresh.`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to clear ranking");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const donationCount = initial.donationEntries.length;
   const topDonor = initial.topDonors[0] || null;
 
@@ -256,6 +279,34 @@ export default function AdminCommunityClient({ initial }: { initial: AdminCommun
         </div>
       </div>
 
+      <section className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]">
+        <h2 className="text-lg font-extrabold tracking-tight md:text-xl">Ranking management</h2>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+          Rebuild snapshots to recalculate all rankings. Clear a category to wipe its data first (e.g. if fake authors inflated BEST_AUTHOR).
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={rebuildSnapshots}
+            disabled={!!busy}
+            className="rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200 dark:hover:bg-blue-950/60"
+          >
+            {busy === "rebuild" ? "Rebuilding..." : "Rebuild all snapshots"}
+          </button>
+          {(["BEST_AUTHOR", "BEST_TRANSLATOR", "BEST_READER", "BEST_USER"] as const).map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => clearCategory(cat)}
+              disabled={!!busy}
+              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200 dark:hover:bg-red-950/60"
+            >
+              {busy === `clear:${cat}` ? "Clearing..." : `Clear ${cat.replace("BEST_", "")}`}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -263,14 +314,6 @@ export default function AdminCommunityClient({ initial }: { initial: AdminCommun
               <h2 className="text-lg font-extrabold tracking-tight md:text-xl">Add donor entry</h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Use exact @username or email. Admin accounts stay excluded from donor rankings.</p>
             </div>
-            <button
-              type="button"
-              onClick={rebuildSnapshots}
-              disabled={busy === "rebuild"}
-              className="rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200 dark:hover:bg-blue-950/60"
-            >
-              {busy === "rebuild" ? "Rebuilding..." : "Rebuild community snapshots"}
-            </button>
           </div>
 
           <form onSubmit={submitCreate} className="mt-6 grid gap-4 md:grid-cols-2">
