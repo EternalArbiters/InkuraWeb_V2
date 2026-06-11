@@ -49,7 +49,10 @@ export async function listStudioWorksForViewer(input?: { all?: boolean; asUserId
     ? { OR: [{ authorId: asUserId }, { translatorId: asUserId }] }
     : role === "ADMIN" && all
       ? {}
-      : { OR: [{ authorId: userId }, { translatorId: userId }] };
+      // Admin's own studio: exclude works uploaded on behalf of others
+      : role === "ADMIN"
+        ? { OR: [{ authorId: userId }, { translatorId: userId }], uploadedByAdminId: null }
+        : { OR: [{ authorId: userId }, { translatorId: userId }] };
 
   const scope = asUserId ? "as_user" : role === "ADMIN" && all ? "all" : "mine";
 
