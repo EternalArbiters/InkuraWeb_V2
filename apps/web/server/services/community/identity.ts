@@ -209,10 +209,7 @@ export function buildCommunityUserIdentityFromSnapshots(input: IdentitySnapshotI
       kind: "MAIN",
       label: mainTitle.mainTitle,
       tone: mainTitle.badgeTone,
-      creatorTitle: mainTitle.creatorTitle ?? null,
-      nobleTitle: mainTitle.nobleTitle ?? null,
       creatorTone: mainTitle.creatorRank != null ? resolveRankBadgeTone(mainTitle.creatorRank) : null,
-      nobleTone: mainTitle.nobleRank != null ? resolveRankBadgeTone(mainTitle.nobleRank) : null,
     });
   }
 

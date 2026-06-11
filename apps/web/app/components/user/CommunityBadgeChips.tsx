@@ -68,17 +68,6 @@ const TONE_CONFIG: Record<string, ToneConfig> = {
   },
 };
 
-// Mid-tone border color per rank (for gem pill outline)
-const GEM_BORDER: Record<string, string> = {
-  PURPLE: "rgba(139,92,246,0.55)",
-  INDIGO: "rgba(99,102,241,0.55)",
-  BLUE:   "rgba(59,130,246,0.55)",
-  GREEN:  "rgba(5,150,105,0.55)",
-  YELLOW: "rgba(217,119,6,0.55)",
-  ORANGE: "rgba(234,88,12,0.55)",
-  RED:    "rgba(220,38,38,0.55)",
-};
-
 function ribbonClipPath(notch: number) {
   return `polygon(${notch}px 0%, calc(100% - ${notch}px) 0%, 100% 50%, calc(100% - ${notch}px) 100%, ${notch}px 100%, 0% 50%)`;
 }
@@ -110,15 +99,14 @@ export default function CommunityBadgeChips({
       {normalized.map((badge, index) => {
         const key = `${badge.kind}-${badge.badgeKey || badge.label}-${index}`;
         const isGray = !badge.tone || badge.tone === "GRAY";
-        const isMain = badge.kind === "MAIN";
         const config = TONE_CONFIG[badge.tone || ""];
 
-        const vertPad = compact ? "2px" : isMain ? "4px" : "3px";
-        const fontSize = compact ? "10px" : isMain ? "11px" : "10px";
+        const vertPad = compact ? "2px" : badge.kind === "MAIN" ? "4px" : "3px";
+        const fontSize = compact ? "10px" : badge.kind === "MAIN" ? "11px" : "10px";
         const horizPad = config ? `${config.notch + 10}px` : "10px";
-        const fontWeight = isMain ? "800" : "700";
-        const letterSpacing = isMain ? "0.03em" : "0.02em";
-        const gemSize = compact ? 12 : 14;
+        const fontWeight = badge.kind === "MAIN" ? "800" : "700";
+        const letterSpacing = badge.kind === "MAIN" ? "0.03em" : "0.02em";
+        const gemSize = compact ? 10 : 11;
 
         if (isGray) {
           return (
@@ -132,114 +120,36 @@ export default function CommunityBadgeChips({
           );
         }
 
-        // MAIN badge with both creator + noble parts → gem icon + ribbon side by side
-        if (
-          isMain &&
-          badge.creatorTitle &&
-          badge.nobleTitle &&
-          badge.creatorTone &&
-          badge.nobleTone
-        ) {
-          const creatorConfig = TONE_CONFIG[badge.creatorTone];
-          const nobleConfig = TONE_CONFIG[badge.nobleTone];
-          const gemBorder = GEM_BORDER[badge.creatorTone] ?? "rgba(255,255,255,0.3)";
+        // MAIN badge with creator rank: prepend gem outline icon inside the ribbon
+        const showGem = badge.kind === "MAIN" && !!badge.creatorTone;
+        const leftPad = showGem
+          ? `${(config?.notch ?? 8) + 6}px`
+          : horizPad;
 
-          return (
-            <span key={key} className="inline-flex items-center gap-1.5">
-              {/* Creator part — gem icon + name in a soft pill */}
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: `${vertPad} 8px ${vertPad} 6px`,
-                  fontSize,
-                  fontWeight,
-                  letterSpacing,
-                  color: "#fff",
-                  background: creatorConfig?.gradient,
-                  border: `1px solid ${gemBorder}`,
-                  borderRadius: "999px",
-                  whiteSpace: "nowrap",
-                  lineHeight: 1.4,
-                  filter: creatorConfig?.dropShadow,
-                }}
-              >
-                <GemRankIcon tone={badge.creatorTone} size={gemSize} />
-                {badge.creatorTitle}
-              </span>
-              {/* Noble part — ribbon */}
-              <span style={{ filter: nobleConfig?.dropShadow, display: "inline-flex" }}>
-                <span
-                  style={{
-                    background: nobleConfig?.gradient,
-                    clipPath: ribbonClipPath(nobleConfig?.notch ?? 8),
-                    padding: `${vertPad} ${`${(nobleConfig?.notch ?? 8) + 10}px`}`,
-                    fontSize,
-                    fontWeight,
-                    letterSpacing,
-                    color: "#fff",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    whiteSpace: "nowrap",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {badge.nobleTitle}
-                </span>
-              </span>
-            </span>
-          );
-        }
-
-        // MAIN badge with creator only → gem icon + name (pill)
-        if (isMain && badge.creatorTitle && badge.creatorTone && !badge.nobleTitle) {
-          const creatorConfig = TONE_CONFIG[badge.creatorTone];
-          const gemBorder = GEM_BORDER[badge.creatorTone] ?? "rgba(255,255,255,0.3)";
-          return (
-            <span
-              key={key}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-                padding: `${vertPad} 8px ${vertPad} 6px`,
-                fontSize,
-                fontWeight,
-                letterSpacing,
-                color: "#fff",
-                border: `1px solid ${gemBorder}`,
-                borderRadius: "999px",
-                whiteSpace: "nowrap",
-                lineHeight: 1.4,
-                filter: creatorConfig?.dropShadow,
-              }}
-            >
-              <GemRankIcon tone={badge.creatorTone} size={gemSize} />
-              {badge.creatorTitle}
-            </span>
-          );
-        }
-
-        // MAIN badge with noble only → ribbon as normal (fallthrough)
-        // All other colored badges → ribbon
         return (
           <span key={key} style={{ filter: config?.dropShadow, display: "inline-flex" }}>
             <span
               style={{
                 background: config?.gradient,
                 clipPath: ribbonClipPath(config?.notch ?? 8),
-                padding: `${vertPad} ${horizPad}`,
+                paddingTop: vertPad,
+                paddingBottom: vertPad,
+                paddingLeft: leftPad,
+                paddingRight: horizPad,
                 fontSize,
                 fontWeight,
                 letterSpacing,
                 color: "#fff",
                 display: "inline-flex",
                 alignItems: "center",
+                gap: showGem ? "5px" : undefined,
                 whiteSpace: "nowrap",
                 lineHeight: 1.4,
               }}
             >
+              {showGem && (
+                <GemRankIcon tone={badge.creatorTone!} size={gemSize} />
+              )}
               {badge.translatedLabel}
             </span>
           </span>

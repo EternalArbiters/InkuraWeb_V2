@@ -4,210 +4,82 @@ import type { FC } from "react";
 
 type Props = { size?: number; className?: string };
 
-// #1 PURPLE — Diamond cut (elongated, pointed top & bottom)
-export function DiamondGem({ size = 14, className }: Props) {
+// All gems are stroke-only (currentColor, no fill) — looks clean on any colored background.
+
+export function DiamondGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={Math.round(size * 0.75)}
-      height={size}
-      viewBox="0 0 12 16"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="gr-purple" x1="0" y1="0" x2="12" y2="16" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#c4b5fd" />
-          <stop offset="50%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#4c1d95" />
-        </linearGradient>
-      </defs>
-      {/* crown + pavilion */}
-      <path d="M6,0 L11,5 L12,8 L6,16 L0,8 L1,5Z" fill="url(#gr-purple)" />
-      {/* top facet glint */}
-      <path d="M6,0 L1,5 L6,3.5Z" fill="white" fillOpacity={0.3} />
+    <svg width={Math.round(size * 0.75)} height={size} viewBox="0 0 9 12" fill="none" aria-hidden="true" className={className}>
+      <path d="M4.5,0.5 L8.5,4 L4.5,11.5 L0.5,4Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+      <line x1="0.5" y1="4" x2="8.5" y2="4" stroke="currentColor" strokeWidth="0.75" />
     </svg>
   );
 }
 
-// #2 INDIGO — Round brilliant (circle, radial gradient)
-export function RubyGem({ size = 14, className }: Props) {
+export function RubyGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 12 12"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <radialGradient id="gr-indigo" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#a5b4fc" />
-          <stop offset="55%" stopColor="#4338ca" />
-          <stop offset="100%" stopColor="#1e1b4b" />
-        </radialGradient>
-      </defs>
-      <circle cx="6" cy="6" r="6" fill="url(#gr-indigo)" />
-      {/* highlight ellipse */}
-      <ellipse
-        cx="4.2"
-        cy="3.8"
-        rx="2"
-        ry="1.2"
-        fill="white"
-        fillOpacity={0.3}
-        transform="rotate(-25 4.2 3.8)"
-      />
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true" className={className}>
+      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1" />
+      <path d="M3,4 L6,2 L9,4 L9,8 L6,10 L3,8Z" stroke="currentColor" strokeWidth="0.7" strokeLinejoin="round" />
     </svg>
   );
 }
 
-// #3 BLUE — Octagon (sapphire cut)
-export function SapphireGem({ size = 14, className }: Props) {
+export function SapphireGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 12 12"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="gr-blue" x1="0" y1="0" x2="12" y2="12" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#93c5fd" />
-          <stop offset="50%" stopColor="#2563eb" />
-          <stop offset="100%" stopColor="#1e3a8a" />
-        </linearGradient>
-      </defs>
-      <path d="M4,0 L8,0 L12,4 L12,8 L8,12 L4,12 L0,8 L0,4Z" fill="url(#gr-blue)" />
-      <path d="M4,0 L8,0 L6,3Z" fill="white" fillOpacity={0.28} />
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true" className={className}>
+      <path d="M4,0.5 L8,0.5 L11.5,4 L11.5,8 L8,11.5 L4,11.5 L0.5,8 L0.5,4Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+      <line x1="0.5" y1="4" x2="11.5" y2="4" stroke="currentColor" strokeWidth="0.7" />
     </svg>
   );
 }
 
-// #4 GREEN — Emerald cut (wide horizontal rectangle with cut corners)
-export function EmeraldGem({ size = 14, className }: Props) {
+export function EmeraldGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={size}
-      height={Math.round(size * 0.71)}
-      viewBox="0 0 14 10"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="gr-green" x1="0" y1="0" x2="14" y2="10" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#6ee7b7" />
-          <stop offset="50%" stopColor="#059669" />
-          <stop offset="100%" stopColor="#064e3b" />
-        </linearGradient>
-      </defs>
-      <path d="M3,0 L11,0 L14,3 L14,7 L11,10 L3,10 L0,7 L0,3Z" fill="url(#gr-green)" />
-      <path d="M3,0 L11,0 L10,2 L4,2Z" fill="white" fillOpacity={0.25} />
+    <svg width={Math.round(size * 1.4)} height={size} viewBox="0 0 16 11" fill="none" aria-hidden="true" className={className}>
+      <path d="M4,0.5 L12,0.5 L15.5,3.5 L15.5,7.5 L12,10.5 L4,10.5 L0.5,7.5 L0.5,3.5Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+      <line x1="0.5" y1="3.5" x2="15.5" y2="3.5" stroke="currentColor" strokeWidth="0.7" />
     </svg>
   );
 }
 
-// #5 YELLOW — Cushion cut (rounded square)
-export function PearlGem({ size = 14, className }: Props) {
+export function PearlGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 12 12"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="gr-yellow" x1="0" y1="0" x2="12" y2="12" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fde68a" />
-          <stop offset="50%" stopColor="#d97706" />
-          <stop offset="100%" stopColor="#78350f" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="12" height="12" rx="3.5" fill="url(#gr-yellow)" />
-      <path d="M1.5,1.5 L5,1.5 L3,4Z" fill="white" fillOpacity={0.3} />
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true" className={className}>
+      <rect x="0.5" y="0.5" width="11" height="11" rx="3" stroke="currentColor" strokeWidth="1" />
+      <line x1="0.5" y1="4" x2="11.5" y2="4" stroke="currentColor" strokeWidth="0.7" />
     </svg>
   );
 }
 
-// #6 ORANGE — Hexagon (citrine/flat-top cut)
-export function CitrineGem({ size = 14, className }: Props) {
+export function CitrineGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={size}
-      height={Math.round(size * 0.87)}
-      viewBox="0 0 12 10.4"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="gr-orange" x1="0" y1="0" x2="12" y2="10.4" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fdba74" />
-          <stop offset="50%" stopColor="#ea580c" />
-          <stop offset="100%" stopColor="#7c2d12" />
-        </linearGradient>
-      </defs>
-      <path d="M3,0 L9,0 L12,5.2 L9,10.4 L3,10.4 L0,5.2Z" fill="url(#gr-orange)" />
-      <path d="M3,0 L9,0 L8,2.5 L4,2.5Z" fill="white" fillOpacity={0.25} />
+    <svg width={size} height={Math.round(size * 0.87)} viewBox="0 0 12 10.4" fill="none" aria-hidden="true" className={className}>
+      <path d="M3,0.5 L9,0.5 L11.5,5.2 L9,9.9 L3,9.9 L0.5,5.2Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+      <line x1="0.5" y1="3.2" x2="11.5" y2="3.2" stroke="currentColor" strokeWidth="0.7" />
     </svg>
   );
 }
 
-// #7 RED — Pear/teardrop cut (rounded top, pointed bottom)
-export function GarnetGem({ size = 14, className }: Props) {
+export function GarnetGem({ size = 12, className }: Props) {
   return (
-    <svg
-      width={Math.round(size * 0.75)}
-      height={size}
-      viewBox="0 0 12 16"
-      className={className}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="gr-red" x1="0" y1="0" x2="12" y2="16" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fca5a5" />
-          <stop offset="50%" stopColor="#dc2626" />
-          <stop offset="100%" stopColor="#7f1d1d" />
-        </linearGradient>
-      </defs>
-      {/* pear: rounded top, pointed bottom */}
-      <path
-        d="M6,16 L1,9 C-0.5,4 2,0 6,0 C10,0 12.5,4 11,9Z"
-        fill="url(#gr-red)"
-      />
-      <ellipse cx="6" cy="4.5" rx="2.5" ry="1.5" fill="white" fillOpacity={0.25} />
+    <svg width={Math.round(size * 0.75)} height={size} viewBox="0 0 9 12" fill="none" aria-hidden="true" className={className}>
+      <path d="M4.5,11.5 C4.5,11.5 0.5,7 0.5,4.5 C0.5,2.3 2.3,0.5 4.5,0.5 C6.7,0.5 8.5,2.3 8.5,4.5 C8.5,7 4.5,11.5 4.5,11.5Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+      <line x1="0.6" y1="3.5" x2="8.4" y2="3.5" stroke="currentColor" strokeWidth="0.7" />
     </svg>
   );
 }
-
-// ─── Lookup map ────────────────────────────────────────────────────────────────
 
 const GEM_MAP: Record<string, FC<Props>> = {
   PURPLE: DiamondGem,
   INDIGO: RubyGem,
-  BLUE: SapphireGem,
-  GREEN: EmeraldGem,
+  BLUE:   SapphireGem,
+  GREEN:  EmeraldGem,
   YELLOW: PearlGem,
   ORANGE: CitrineGem,
-  RED: GarnetGem,
+  RED:    GarnetGem,
 };
 
-export default function GemRankIcon({
-  tone,
-  size = 14,
-  className,
-}: {
-  tone: string;
-  size?: number;
-  className?: string;
-}) {
+export default function GemRankIcon({ tone, size = 12, className }: { tone: string; size?: number; className?: string }) {
   const Icon = GEM_MAP[tone];
   if (!Icon) return null;
   return <Icon size={size} className={className} />;

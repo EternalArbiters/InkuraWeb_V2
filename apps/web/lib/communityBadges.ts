@@ -17,9 +17,6 @@ export type CommunityIdentityBadge = {
   label: string;
   tone: CommunityBadgeTone;
   badgeKey?: string | null;
-  // MAIN badge only: split parts for gem-icon (creator) + ribbon (noble) rendering
-  creatorTitle?: string | null;
-  nobleTitle?: string | null;
+  // MAIN badge only: creator rank tone, used to pick the gem outline icon shown inside the ribbon
   creatorTone?: CommunityBadgeTone | null;
-  nobleTone?: CommunityBadgeTone | null;
 };
