@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export default function HeroSection({ next, onLogin, onSignup }: Props) {
+  const router = useRouter();
   return (
     <motion.section
       className="relative bg-white dark:bg-gray-950 overflow-hidden py-40"
@@ -86,7 +88,7 @@ export default function HeroSection({ next, onLogin, onSignup }: Props) {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <button
-              onClick={() => onSignup(null)}
+              onClick={() => router.push("/home")}
               className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition"
             >
               Start Adventure
@@ -96,7 +98,7 @@ export default function HeroSection({ next, onLogin, onSignup }: Props) {
               onClick={() => onLogin(null)}
               className="border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-700 dark:text-white"
             >
-              Home
+              I&apos;m Back
             </button>
           </motion.div>
         </motion.div>

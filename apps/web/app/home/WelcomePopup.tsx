@@ -2,30 +2,51 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 const STORAGE_KEY = "inkura_welcome_v1";
-const TOTAL_SLIDES = 2;
+const SEEN_KEY = "inkura_welcome_seen_v1";
+const TOTAL_SLIDES = 3;
 
 export default function WelcomePopup() {
   const t = useUILanguageText("Welcome Popup");
   const [visible, setVisible] = useState(false);
+  const [hasSeen, setHasSeen] = useState(false);
   const [slide, setSlide] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      setVisible(true);
+      setHasSeen(!!localStorage.getItem(SEEN_KEY));
+    }
   }, []);
 
   if (!visible) return null;
 
+  const isLoggedIn = !!session?.user;
+  // Show dismiss button only if user has seen the popup before OR is logged in
+  const showDismissButton = isLoggedIn || hasSeen;
+
   function close() {
+    localStorage.setItem(SEEN_KEY, "1");
+    setHasSeen(true);
     setVisible(false);
   }
 
   function neverShow() {
-    localStorage.setItem(STORAGE_KEY, "1");
-    setVisible(false);
+    if (isLoggedIn) {
+      localStorage.setItem(STORAGE_KEY, "1");
+      setVisible(false);
+    } else {
+      localStorage.setItem(SEEN_KEY, "1");
+      setVisible(false);
+      router.push("/auth/signin?callbackUrl=/home");
+    }
   }
 
   function next() {
@@ -49,7 +70,8 @@ export default function WelcomePopup() {
   }
 
   const slideTexts = [
-    t("Welcome to Inkura! Just so you know, you're in a safe zone! Don't worry, everything here is safe to read! It's best not to open the door to the forbidden zone, okay ^^"),
+    t("Welcome to Inkura! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^"),
+    t("Just so you know, content containing adult or deviant elements will be hidden and not advertised for everyone's comfort. Adjust your settings if you want to read them. We must protect minors from reading what they shouldn't ^^"),
     t("Hello, creators on Inkura! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders!"),
   ];
 
@@ -96,9 +118,7 @@ export default function WelcomePopup() {
               key={i}
               onClick={() => setSlide(i)}
               className={`w-2 h-2 rounded-full transition-colors ${
-                i === slide
-                  ? "bg-purple-500"
-                  : "bg-gray-300 dark:bg-gray-600"
+                i === slide ? "bg-purple-500" : "bg-gray-300 dark:bg-gray-600"
               }`}
               aria-label={`Slide ${i + 1}`}
             />
@@ -115,12 +135,14 @@ export default function WelcomePopup() {
             {t("Previous")}
           </button>
           {isLastSlide ? (
-            <button
-              onClick={neverShow}
-              className="px-4 py-2 text-sm rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition"
-            >
-              {t("Don't show again")}
-            </button>
+            showDismissButton ? (
+              <button
+                onClick={neverShow}
+                className="px-4 py-2 text-sm rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition"
+              >
+                {t("Don't show again")}
+              </button>
+            ) : null
           ) : (
             <button
               onClick={next}
@@ -131,15 +153,17 @@ export default function WelcomePopup() {
           )}
         </div>
 
-        {/* Don't show again link (always visible) */}
-        <div className="text-center pb-5">
-          <button
-            onClick={neverShow}
-            className="text-xs text-gray-400 dark:text-gray-500 hover:underline"
-          >
-            {t("Don't show again")}
-          </button>
-        </div>
+        {/* Don't show again link — only for returning/logged-in users */}
+        {showDismissButton && (
+          <div className="text-center pb-5">
+            <button
+              onClick={neverShow}
+              className="text-xs text-gray-400 dark:text-gray-500 hover:underline"
+            >
+              {t("Don't show again")}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

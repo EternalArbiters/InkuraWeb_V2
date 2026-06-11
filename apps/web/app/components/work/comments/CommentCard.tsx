@@ -134,9 +134,12 @@ export default function CommentCard(props: CommentCardProps) {
   const isAdminComment = String(c.user?.role || "").toUpperCase() === "ADMIN";
   const isWorkOwnerComment = !!workAuthorId && !!workOwnerBadgeLabel && c.user?.id === workAuthorId;
   const communityBadges = Array.isArray(c.user?.badges) ? c.user.badges : [];
-  const workOwnerBadge: CommunityIdentityBadge[] = isWorkOwnerComment
+  const workOwnerBadgeRaw: CommunityIdentityBadge[] = isWorkOwnerComment
     ? [{ kind: "ROLE", label: workOwnerBadgeLabel as string, tone: "GRAY" }]
     : [];
+  const workOwnerBadge = workOwnerBadgeRaw.filter(
+    (wb) => !communityBadges.some((cb: any) => cb.label === wb.label)
+  );
 
   const isPinned = depth === 0 && !!(c as any).isPinned;
   const isFocused = focusedId === c.id;
