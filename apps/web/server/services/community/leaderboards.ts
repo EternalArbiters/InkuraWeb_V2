@@ -359,6 +359,7 @@ async function buildCreatorCategoryRows(mode: CreatorTrackMode, usersById: Map<s
       mode === "author"
         ? {
             status: "PUBLISHED",
+            publishType: "ORIGINAL",
             authorId: { in: eligibleUserIds },
           }
         : {

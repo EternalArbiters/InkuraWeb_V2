@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/rebuild-community",
+      "schedule": "0 0 * * 1"
+    }
+  ]
+}
