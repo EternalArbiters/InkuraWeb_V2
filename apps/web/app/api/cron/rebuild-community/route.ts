@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
   try {
     const result = await rebuildCommunitySnapshots();
-    return Response.json({ ok: true, ...result });
+    return Response.json({ ok: true, data: result });
   } catch (err: any) {
     console.error("[cron:rebuild-community]", err);
     return Response.json({ ok: false, error: err?.message || "Unknown error" }, { status: 500 });
