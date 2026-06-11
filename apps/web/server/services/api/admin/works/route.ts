@@ -2,10 +2,28 @@ import "server-only";
 
 import { requireAdminSession } from "@/server/http/auth";
 import { apiRoute, json, badRequest } from "@/server/http";
-import { readJsonObject } from "@/server/http/request";
 import { searchAdminWorks, createAdminWorkOnBehalf } from "@/server/services/admin/works";
 
 export const runtime = "nodejs";
+
+function toStringArray(v: FormDataEntryValue | null): string[] {
+  if (!v) return [];
+  const raw = String(v).trim();
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.map(String).map((s) => s.trim()).filter(Boolean);
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+function safeBool(v: FormDataEntryValue | null) {
+  if (!v) return false;
+  const s = String(v).toLowerCase().trim();
+  return s === "1" || s === "true" || s === "yes" || s === "on";
+}
 
 export const GET = apiRoute(async (req: Request) => {
   await requireAdminSession();
@@ -18,23 +36,95 @@ export const GET = apiRoute(async (req: Request) => {
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await requireAdminSession();
-  const body = await readJsonObject(req);
-  const { title, type, publishType, language, creatorUserId, description } = body;
 
-  if (!title || typeof title !== "string" || !title.trim()) return badRequest("title is required");
-  if (!["COMIC", "NOVEL"].includes(type)) return badRequest("type must be COMIC or NOVEL");
-  if (!["ORIGINAL", "TRANSLATION", "REUPLOAD"].includes(publishType)) return badRequest("invalid publishType");
-  if (!creatorUserId || typeof creatorUserId !== "string") return badRequest("creatorUserId is required");
+  const ct = req.headers.get("content-type") || "";
+  if (!ct.includes("multipart/form-data")) {
+    return badRequest("Use multipart/form-data");
+  }
+
+  const fd = await req.formData();
+
+  const creatorUserId = String(fd.get("creatorUserId") || "").trim();
+  if (!creatorUserId) return badRequest("creatorUserId is required");
+
+  const title = String(fd.get("title") || "").trim();
+  if (!title) return badRequest("Title is required");
+
+  const typeRaw = String(fd.get("type") || "NOVEL").toUpperCase().trim();
+  const type: "NOVEL" | "COMIC" = typeRaw === "COMIC" ? "COMIC" : "NOVEL";
+
+  const comicTypeRaw = String(fd.get("comicType") || "UNKNOWN").toUpperCase().trim();
+  const COMIC_TYPES = ["MANGA", "MANHWA", "MANHUA", "WEBTOON", "WESTERN", "OTHER"] as const;
+  const comicType = (COMIC_TYPES as readonly string[]).includes(comicTypeRaw)
+    ? (comicTypeRaw as typeof COMIC_TYPES[number])
+    : "UNKNOWN";
+
+  const language = String(fd.get("language") || "other").toLowerCase().trim() || "other";
+  const origin = String(fd.get("origin") || "UNKNOWN").toUpperCase().trim() || "UNKNOWN";
+  const completion = String(fd.get("completion") || "ONGOING").toUpperCase().trim() || "ONGOING";
+  const description = String(fd.get("description") || "").trim();
+  const subtitles = toStringArray(fd.get("subtitleEntries"));
+  const isMature = safeBool(fd.get("isMature"));
+
+  const ptRaw = String(fd.get("publishType") || "ORIGINAL").toUpperCase().trim();
+  const publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD" =
+    ptRaw === "TRANSLATION" || ptRaw === "REUPLOAD" ? (ptRaw as any) : "ORIGINAL";
+
+  const originalAuthorCredit = String(fd.get("originalAuthorCredit") || "").trim() || null;
+  const originalTranslatorCredit = String(fd.get("originalTranslatorCredit") || "").trim() || null;
+  const sourceUrl = String(fd.get("sourceUrl") || "").trim() || null;
+  const companyCredit = String(fd.get("companyCredit") || "").trim() || null;
+  const uploaderNote = String(fd.get("uploaderNote") || "").trim() || null;
+
+  const coverUrl = String(fd.get("coverUrl") || "").trim();
+  const coverKey = String(fd.get("coverKey") || "").trim() || null;
+  if (!coverUrl) return badRequest("Cover is required");
+
+  const genreIds = toStringArray(fd.get("genreIds"));
+  const warningTagIds = toStringArray(fd.get("warningTagIds"));
+  const deviantLoveTagIds = toStringArray(fd.get("deviantLoveTagIds"));
+  const tagNames = toStringArray(fd.get("tags"));
+
+  const seriesTitle = String(fd.get("seriesTitle") || "").trim();
+  const seriesOrderRaw = String(fd.get("seriesOrder") || "").trim();
+  const seriesOrder = seriesOrderRaw ? Number(seriesOrderRaw) : null;
+
+  const needsSource = publishType !== "ORIGINAL";
+  if (needsSource) {
+    if (!originalAuthorCredit) return badRequest("Original author credit is required");
+    if (!sourceUrl) return badRequest("Source URL is required");
+  }
+  if (publishType === "REUPLOAD" && !originalTranslatorCredit) {
+    return badRequest("Original translator credit is required for Reupload");
+  }
 
   try {
     const result = await createAdminWorkOnBehalf({
-      title,
-      type: type as "COMIC" | "NOVEL",
-      publishType: publishType as "ORIGINAL" | "TRANSLATION" | "REUPLOAD",
-      language: typeof language === "string" ? language : "unknown",
       creatorUserId,
       adminUserId: session.userId,
-      description: typeof description === "string" ? description : undefined,
+      title,
+      subtitles,
+      description,
+      type,
+      comicType,
+      language,
+      origin,
+      completion,
+      isMature,
+      publishType,
+      originalAuthorCredit,
+      originalTranslatorCredit,
+      sourceUrl,
+      companyCredit,
+      uploaderNote,
+      coverUrl,
+      coverKey,
+      genreIds,
+      warningTagIds,
+      deviantLoveTagIds,
+      tagNames,
+      seriesTitle,
+      seriesOrder,
     });
     return json(result);
   } catch (err) {

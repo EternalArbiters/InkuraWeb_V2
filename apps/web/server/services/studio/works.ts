@@ -40,21 +40,28 @@ function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | 
   return "UNKNOWN";
 }
 
-export async function listStudioWorksForViewer(input?: { all?: boolean }) {
+export async function listStudioWorksForViewer(input?: { all?: boolean; asUserId?: string }) {
   const { userId, role } = await requireCreatorSession();
   const all = !!input?.all;
+  const asUserId = role === "ADMIN" ? (input?.asUserId || null) : null;
 
-  const works = await profileHotspot("studioWorks.list", { scope: role === "ADMIN" && all ? "all" : "mine", isAdmin: role === "ADMIN" }, () =>
+  const where = asUserId
+    ? { OR: [{ authorId: asUserId }, { translatorId: asUserId }] }
+    : role === "ADMIN" && all
+      ? {}
+      : { OR: [{ authorId: userId }, { translatorId: userId }] };
+
+  const scope = asUserId ? "as_user" : role === "ADMIN" && all ? "all" : "mine";
+
+  const works = await profileHotspot("studioWorks.list", { scope, isAdmin: role === "ADMIN" }, () =>
     prisma.work.findMany({
-      where: role === "ADMIN" && all
-        ? {}
-        : { OR: [{ authorId: userId }, { translatorId: userId }] },
+      where,
       orderBy: { updatedAt: "desc" },
       select: studioWorkRowSelect,
     })
   );
 
-  return { works };
+  return { works, viewerUserId: userId, viewerRole: role };
 }
 
 export async function listStudioWorks(req: Request) {

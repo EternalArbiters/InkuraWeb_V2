@@ -2,6 +2,8 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
+import { normalizeWorkSubtitles, serializeWorkSubtitles } from "@/lib/workSubtitles";
+import { assignWorkToSeries } from "@/server/services/studio/series";
 
 export type AdminWorkItem = {
   id: string;
@@ -73,46 +75,111 @@ export async function searchAdminUsers({ query, take = 20 }: { query?: string; t
 }
 
 export type CreateAdminWorkInput = {
-  title: string;
-  type: "COMIC" | "NOVEL";
-  publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
-  language: string;
   creatorUserId: string;
   adminUserId: string;
-  description?: string;
+  title: string;
+  subtitles: string[];
+  description: string;
+  type: "COMIC" | "NOVEL";
+  comicType: "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER";
+  language: string;
+  origin: string;
+  completion: string;
+  isMature: boolean;
+  publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD";
+  originalAuthorCredit: string | null;
+  originalTranslatorCredit: string | null;
+  sourceUrl: string | null;
+  companyCredit: string | null;
+  uploaderNote: string | null;
+  coverUrl: string;
+  coverKey: string | null;
+  genreIds: string[];
+  warningTagIds: string[];
+  deviantLoveTagIds: string[];
+  tagNames: string[];
+  seriesTitle?: string;
+  seriesOrder?: number | null;
 };
 
-export async function createAdminWorkOnBehalf(input: CreateAdminWorkInput): Promise<{ ok: boolean; workId: string; slug: string }> {
-  const { title, type, publishType, language, creatorUserId, adminUserId, description } = input;
+export async function createAdminWorkOnBehalf(input: CreateAdminWorkInput): Promise<{ ok: boolean; workId: string; slug: string; work: { id: string; slug: string } }> {
+  const {
+    creatorUserId, adminUserId,
+    title, subtitles, description,
+    type, comicType, language, origin, completion, isMature,
+    publishType, originalAuthorCredit, originalTranslatorCredit,
+    sourceUrl, companyCredit, uploaderNote,
+    coverUrl, coverKey,
+    genreIds, warningTagIds, deviantLoveTagIds, tagNames,
+    seriesTitle, seriesOrder,
+  } = input;
 
   const creator = await prisma.user.findUnique({ where: { id: creatorUserId }, select: { id: true } });
   if (!creator) throw new Error("Creator user not found");
 
-  // Generate unique slug: slugify title + short random suffix
   const base = slugify(title).slice(0, 60) || "work";
-  const suffix = Math.random().toString(36).slice(2, 7);
+  const suffix = Math.random().toString(36).slice(2, 8);
   const slug = `${base}-${suffix}`;
 
   const authorId = publishType === "TRANSLATION" ? adminUserId : creatorUserId;
   const translatorId = publishType === "TRANSLATION" ? creatorUserId : null;
 
+  const normalizedSubtitles = normalizeWorkSubtitles(subtitles);
+  const subtitle = normalizedSubtitles[0] || null;
+
   const work = await prisma.work.create({
     data: {
-      title: title.trim(),
       slug,
-      type,
-      publishType,
-      language: language || "unknown",
+      title: title.trim(),
+      subtitle,
+      subtitleJson: serializeWorkSubtitles(normalizedSubtitles, subtitle),
       description: description?.trim() || null,
+      type,
+      comicType: type === "COMIC" ? comicType : "UNKNOWN",
+      status: "DRAFT",
+      coverImage: coverUrl || null,
+      coverKey: coverKey || null,
       authorId,
       translatorId,
       uploadedByAdminId: adminUserId,
-      status: "DRAFT",
+      language: language || "other",
+      origin: (origin || "UNKNOWN") as any,
+      completion: (completion || "ONGOING") as any,
+      isMature,
+
+      publishType: publishType as any,
+      originalAuthorCredit: publishType === "ORIGINAL" ? null : originalAuthorCredit,
+      originalTranslatorCredit: publishType === "REUPLOAD" ? originalTranslatorCredit : null,
+      sourceUrl: publishType === "ORIGINAL" ? null : sourceUrl,
+      uploaderNote: publishType === "REUPLOAD" ? uploaderNote : null,
+      translatorCredit: null,
+      companyCredit: publishType === "ORIGINAL" ? null : companyCredit,
+
+      genres: genreIds.length ? { connect: genreIds.map((id) => ({ id })) } : undefined,
+      warningTags: warningTagIds.length ? { connect: warningTagIds.map((id) => ({ id })) } : undefined,
+      deviantLoveTags: deviantLoveTagIds.length ? { connect: deviantLoveTagIds.map((id) => ({ id })) } : undefined,
+      tags: tagNames.length
+        ? {
+            connectOrCreate: tagNames.slice(0, 50).map((name) => {
+              const s = slugify(name);
+              return { where: { slug: s }, create: { name, slug: s } };
+            }),
+          }
+        : undefined,
     },
     select: { id: true, slug: true },
   });
 
-  return { ok: true, workId: work.id, slug: work.slug };
+  if (seriesTitle?.trim()) {
+    await assignWorkToSeries(prisma, {
+      workId: work.id,
+      userId: authorId,
+      seriesTitle,
+      seriesOrder,
+    }).catch(() => {});
+  }
+
+  return { ok: true, workId: work.id, slug: work.slug, work };
 }
 
 export async function patchAdminWorkPublishType(workId: string, publishType: string): Promise<{ ok: boolean }> {

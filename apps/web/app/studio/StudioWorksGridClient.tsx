@@ -21,7 +21,7 @@ type WorkLite = {
   translatorId?: string | null;
 };
 
-export default function StudioWorksGridClient({ works, viewerUserId }: { works: WorkLite[]; viewerUserId?: string | null }) {
+export default function StudioWorksGridClient({ works, viewerUserId, createNewHref }: { works: WorkLite[]; viewerUserId?: string | null; createNewHref?: string }) {
   const t = useUILanguageText("Page Studio");
   const tg = useUILanguageText();
   const [items, setItems] = React.useState<WorkLite[]>(works);
