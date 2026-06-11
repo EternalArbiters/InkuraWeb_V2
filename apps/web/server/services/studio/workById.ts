@@ -360,7 +360,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
       ...(isMature !== undefined ? { isMature } : {}),
 
       publishType: publishType as any,
-      translatorId: publishType === "TRANSLATION" ? userId : null,
+      ...(role !== "ADMIN" ? { translatorId: publishType === "TRANSLATION" ? userId : null } : {}),
       ...(needsSource
         ? {
             originalAuthorCredit: nextOriginalAuthorCredit,
