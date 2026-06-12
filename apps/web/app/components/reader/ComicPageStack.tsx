@@ -128,7 +128,7 @@ function ComicPageItem({
       <div
         aria-hidden="true"
         className="absolute inset-0 z-[2]"
-        style={{ WebkitTouchCallout: "none", touchAction: "pan-y pinch-zoom" }}
+        style={{ WebkitTouchCallout: "none", touchAction: "pan-x pan-y pinch-zoom" }}
         onContextMenu={(event) => event.preventDefault()}
         onDragStart={(event) => event.preventDefault()}
       />
