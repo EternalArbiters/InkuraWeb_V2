@@ -43,7 +43,8 @@
     "storage:audit": "tsx scripts/audit-image-storage.ts",
     "storage:reoptimize": "tsx scripts/reoptimize-images.ts",
     "storage:cleanup-orphans": "tsx scripts/cleanup-orphaned-r2-objects.ts",
-    "analytics:aggregate": "tsx scripts/aggregate-analytics.ts"
+    "analytics:aggregate": "tsx scripts/aggregate-analytics.ts",
+    "fix:admin-translator-bug": "tsx scripts/fix-admin-translator-bug.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
