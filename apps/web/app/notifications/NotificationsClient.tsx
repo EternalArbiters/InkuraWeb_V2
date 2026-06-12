@@ -1,9 +1,9 @@
 "use client";
 
-import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
-
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { Bell, Heart, MessageCircle, BookOpen, Star, Megaphone, Trophy } from "lucide-react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { dispatchNavBadgeRefresh } from "@/app/components/navBadgeEvents";
 
 type NotificationItem = {
@@ -16,10 +16,53 @@ type NotificationItem = {
   createdAt: string;
 };
 
+function relativeTime(dateStr: string): string {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return `${diff}s`;
+  const m = Math.floor(diff / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d`;
+  const w = Math.floor(d / 7);
+  if (w < 5) return `${w}w`;
+  return `${Math.floor(d / 30)}mo`;
+}
+
+function NotifIcon({ type }: { type: string }) {
+  const t = type.toLowerCase();
+  let Icon = Bell;
+  let from = "from-blue-500";
+  let to = "to-purple-600";
+
+  if (t.includes("like") || t.includes("heart") || t.includes("favorite")) {
+    Icon = Heart; from = "from-pink-500"; to = "to-rose-500";
+  } else if (t.includes("comment") || t.includes("reply")) {
+    Icon = MessageCircle; from = "from-sky-500"; to = "to-blue-600";
+  } else if (t.includes("chapter") || t.includes("update") || t.includes("new")) {
+    Icon = BookOpen; from = "from-emerald-500"; to = "to-green-600";
+  } else if (t.includes("rating") || t.includes("review") || t.includes("star")) {
+    Icon = Star; from = "from-yellow-400"; to = "to-amber-500";
+  } else if (t.includes("rank") || t.includes("badge") || t.includes("award")) {
+    Icon = Trophy; from = "from-amber-400"; to = "to-orange-500";
+  } else if (t.includes("system") || t.includes("announce") || t.includes("admin")) {
+    Icon = Megaphone; from = "from-orange-400"; to = "to-red-500";
+  }
+
+  return (
+    <div className={`h-11 w-11 shrink-0 rounded-full bg-gradient-to-br ${from} ${to} flex items-center justify-center shadow-sm`}>
+      <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+    </div>
+  );
+}
+
 export default function NotificationsClient({ initial }: { initial: NotificationItem[] }) {
   const t = useUILanguageText();
   const [items, setItems] = useState(initial);
   const [isPending, startTransition] = useTransition();
+
+  const unreadCount = items.filter((n) => !n.isRead).length;
 
   const markAll = () => {
     startTransition(async () => {
@@ -44,62 +87,61 @@ export default function NotificationsClient({ initial }: { initial: Notification
   };
 
   return (
-    <section className="mt-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-sm text-gray-600 dark:text-gray-300">
-          {items.filter((n) => !n.isRead).length} unread
-        </div>
-        <button
-          disabled={isPending}
-          onClick={markAll}
-          className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline disabled:opacity-60"
-        >
-          {t("Mark all read")}
-        </button>
+    <section className="mt-4">
+      <div className="flex items-center justify-between gap-3 pb-3">
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {unreadCount > 0 ? `${unreadCount} ${t("unread")}` : t("All caught up")}
+        </span>
+        {unreadCount > 0 && (
+          <button
+            disabled={isPending}
+            onClick={markAll}
+            className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline disabled:opacity-60"
+          >
+            {t("Mark all read")}
+          </button>
+        )}
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-          <div className="text-lg font-bold">No notification yet</div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <Bell className="h-7 w-7 text-gray-400" />
+          </div>
+          <div className="text-base font-semibold text-gray-700 dark:text-gray-200">{t("No notifications yet")}</div>
+          <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t("You're all caught up!")}</div>
         </div>
       ) : (
-        <div className="mt-6 space-y-3">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800/60">
           {items.map((n) => (
-            <div
+            <Link
               key={n.id}
-              className={`rounded-2xl border p-4 transition ${n.isRead
-                ? "border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-900/40"
-                : "border-purple-200 dark:border-purple-900 bg-purple-50/60 dark:bg-purple-950/30"
-                }`}
+              href={n.href}
+              onClick={() => markOne(n.id)}
+              className={`flex items-center gap-3 px-1 py-3.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50 rounded-xl ${
+                !n.isRead ? "bg-purple-50/40 dark:bg-purple-950/20" : ""
+              }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className={"text-sm font-bold " + (n.isRead ? "text-gray-700 dark:text-gray-200 opacity-70" : "")}>{n.title}</div>
-                  {n.body ? <div className={"mt-1 text-sm line-clamp-2 " + (n.isRead ? "text-gray-600 dark:text-gray-300" : "text-gray-700 dark:text-gray-200")}>{n.body}</div> : null}
-                  <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-                    {new Date(n.createdAt).toLocaleString()}
-                  </div>
-                </div>
-                {!n.isRead ? (
-                  <button
-                    className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-                    onClick={() => markOne(n.id)}
-                  >
-                    Mark read
-                  </button>
+              <NotifIcon type={n.type} />
+
+              <div className="min-w-0 flex-1">
+                <p className={`text-sm leading-snug ${!n.isRead ? "font-semibold text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
+                  {n.title}
+                  <span className="ml-1.5 text-xs font-normal text-gray-400 dark:text-gray-500">
+                    {relativeTime(n.createdAt)}
+                  </span>
+                </p>
+                {n.body ? (
+                  <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">
+                    {n.body}
+                  </p>
                 ) : null}
               </div>
 
-              <div className="mt-3">
-                <Link
-                  href={n.href}
-                  onClick={() => markOne(n.id)}
-                  className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110"
-                >
-                  Open
-                </Link>
-              </div>
-            </div>
+              {!n.isRead && (
+                <div className="shrink-0 h-2.5 w-2.5 rounded-full bg-purple-500" aria-hidden="true" />
+              )}
+            </Link>
           ))}
         </div>
       )}

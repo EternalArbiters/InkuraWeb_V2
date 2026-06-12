@@ -881,6 +881,12 @@ Sweep app/notifications/NotificationsClient.tsx
 
 No notification yet = Belum ada notifikasi
 
+All caught up = Semua sudah dibaca
+
+No notifications yet = Belum ada notifikasi
+
+You're all caught up! = Kamu sudah baca semua!
+
 ==========
 Sweep app/novel/page.tsx
 ==========

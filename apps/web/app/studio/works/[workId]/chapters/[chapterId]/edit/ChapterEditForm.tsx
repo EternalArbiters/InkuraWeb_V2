@@ -353,7 +353,7 @@ export default function ChapterEditForm({ workId, workTitle, workType, chapter, 
         />
       </label>
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-start gap-2">
         <button
           type="submit"
           disabled={loading}

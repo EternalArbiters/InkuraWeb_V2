@@ -2,7 +2,7 @@
 
 export default function SubmitRow({ loading }: { loading: boolean }) {
   return (
-    <div className="flex items-center justify-end">
+    <div className="flex items-center justify-start">
       <button
         type="submit"
         disabled={loading}

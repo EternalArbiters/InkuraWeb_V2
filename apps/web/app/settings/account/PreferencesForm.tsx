@@ -114,7 +114,7 @@ export default function PreferencesForm({ initial }: PreferencesFormProps) {
 
       <InkuraLanguageCard inkuraLanguage={inkuraLanguage} onChange={setInkuraLanguage} />
 
-      <div className="flex justify-end">
+      <div className="flex justify-start">
         <Button onClick={handleSave} disabled={saving}>
           {saving ? tForms("Saving…") : tForms("Save")}
         </Button>
