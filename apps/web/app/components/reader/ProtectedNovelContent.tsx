@@ -281,11 +281,19 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
     [html, preferences.fontScale, preferences.lineSpacing, viewport.height, viewport.width]
   );
   const isMobileViewport = viewport.width > 0 ? viewport.width < 1024 : true;
+  const showSlideWarning = preferences.mode === "slide" && isMobileViewport;
   const showSlideEndingPage = preferences.mode === "slide" && isMobileViewport && !!slideEndingContent;
-  const totalPages = pages.length + (showSlideEndingPage ? 1 : 0);
+  // +2 for start/end warning slides, +1 for ending content slide
+  const totalPages = pages.length + (showSlideWarning ? 2 : 0) + (showSlideEndingPage ? 1 : 0);
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, totalPages - 1));
-  const isEndingPage = showSlideEndingPage && clampedPageIndex === pages.length;
-  const currentPage = isEndingPage ? "" : pages[Math.min(clampedPageIndex, Math.max(0, pages.length - 1))] || html;
+  const contentOffset = showSlideWarning ? 1 : 0;
+  const isStartWarningPage = showSlideWarning && clampedPageIndex === 0;
+  const isEndWarningPage = showSlideWarning && clampedPageIndex === totalPages - 1;
+  const isEndingPage = showSlideEndingPage && clampedPageIndex === pages.length + contentOffset;
+  const currentPage =
+    isStartWarningPage || isEndWarningPage || isEndingPage
+      ? ""
+      : pages[Math.min(clampedPageIndex - contentOffset, Math.max(0, pages.length - 1))] || html;
   const lineHeight = lineHeightValue(preferences.lineSpacing);
   const fontSize = `${preferences.fontScale}rem`;
   const fontFamily = getNovelReaderFontFamilyValue(preferences.fontFamily);
@@ -595,7 +603,11 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
             paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
           }}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/warning.png" alt="Warning" draggable={false} className="block w-full h-auto mb-6 rounded-xl" style={{ pointerEvents: "none", userSelect: "none" }} />
           <div dangerouslySetInnerHTML={{ __html: html }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/warning.png" alt="Warning" draggable={false} className="block w-full h-auto mt-6 rounded-xl" style={{ pointerEvents: "none", userSelect: "none" }} />
         </article>
       ) : (
         <div
@@ -617,7 +629,16 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
             onTouchEnd={onTouchEnd}
             onClick={onSlideClick}
           >
-            {isEndingPage ? (
+            {isStartWarningPage || isEndWarningPage ? (
+              <div
+                className={`h-full flex items-center justify-center p-0 ${
+                  pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/warning.png" alt="Warning" draggable={false} className="w-full h-full object-contain" style={{ pointerEvents: "none", userSelect: "none" }} />
+              </div>
+            ) : isEndingPage ? (
               <article
                 className={`reader-ending-surface h-full overflow-y-auto px-5 py-6 select-none lg:px-8 lg:py-8 [&_*]:select-none ${
                   pageDirection === "next" ? "novel-page-next" : pageDirection === "prev" ? "novel-page-prev" : ""

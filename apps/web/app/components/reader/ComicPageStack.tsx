@@ -142,12 +142,16 @@ function ComicPageItem({
   );
 }
 
+const WARNING_PAGE_START: ComicPage = { id: "__warning_start__", imageUrl: "/images/warning.png", order: null };
+const WARNING_PAGE_END: ComicPage = { id: "__warning_end__", imageUrl: "/images/warning.png", order: null };
+
 export default function ComicPageStack({ pages }: { pages: ComicPage[] }) {
-  const total = pages.length;
+  const allPages = [WARNING_PAGE_START, ...pages, WARNING_PAGE_END];
+  const total = allPages.length;
 
   return (
     <div className="-mx-0 flex flex-col gap-0 sm:-mx-0 lg:mx-0">
-      {pages.map((page, index) => (
+      {allPages.map((page, index) => (
         <ComicPageItem key={page.id} page={page} index={index} total={total} />
       ))}
     </div>
