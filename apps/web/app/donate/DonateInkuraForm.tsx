@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -21,6 +22,7 @@ function parseRupiah(formatted: string): number {
 }
 
 export default function DonateInkuraForm() {
+  const t = useUILanguageText();
   const [step, setStep] = React.useState<"form" | "success">("form");
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -51,8 +53,8 @@ export default function DonateInkuraForm() {
     const nameVal = donorName.trim();
     const amountNum = parseRupiah(amount);
 
-    if (!nameVal) { setError("Sender name is required."); return; }
-    if (amountNum < 1000) { setError("Amount must be at least Rp 1,000."); return; }
+    if (!nameVal) { setError(t("Sender name is required.")); return; }
+    if (amountNum < 1000) { setError(t("Amount must be at least Rp 1,000.")); return; }
 
     setPending(true);
     try {
@@ -78,10 +80,10 @@ export default function DonateInkuraForm() {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((data as any)?.error || "An error occurred. Please try again.");
+      if (!res.ok) throw new Error((data as any)?.error || t("An error occurred. Please try again."));
       setStep("success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
+      setError(err instanceof Error ? err.message : t("An error occurred. Please try again."));
     } finally {
       setPending(false);
     }
@@ -97,16 +99,16 @@ export default function DonateInkuraForm() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
           </svg>
         </div>
-        <h3 className="text-lg font-bold">Thank you!</h3>
+        <h3 className="text-lg font-bold">{t("Thank you!")}</h3>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          Your donation to Inkura has been received. We appreciate your support!
+          {t("Your donation to Inkura has been received. We appreciate your support!")}
         </p>
         <button
           type="button"
           onClick={() => { setStep("form"); setDonorName(""); setAmount(""); setMessage(""); setProofFile(null); setProofPreview(null); }}
           className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
         >
-          Close
+          {t("Close")}
         </button>
       </div>
     );
@@ -114,21 +116,21 @@ export default function DonateInkuraForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 max-w-md space-y-4">
-      <h2 className="text-lg font-bold text-gray-900 dark:text-white">Already transferred? Let us know!</h2>
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t("Already transferred? Let us know!")}</h2>
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        Scan the QR above to pay, then fill in this form so we get notified.
+        {t("Scan the QR above to pay, then fill in this form so we get notified.")}
       </p>
 
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">
-          Your name <span className="text-red-500">*</span>
+          {t("Your name")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={donorName}
           onChange={(e) => setDonorName(e.target.value)}
           maxLength={100}
-          placeholder="Your fans..."
+          placeholder={t("Your fans...")}
           disabled={pending}
           className={inputCls}
         />
@@ -136,7 +138,7 @@ export default function DonateInkuraForm() {
 
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">
-          Transfer amount (IDR) <span className="text-red-500">*</span>
+          {t("Transfer amount (IDR)")} <span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-gray-500 dark:text-gray-400">Rp</span>
@@ -150,19 +152,19 @@ export default function DonateInkuraForm() {
             className="w-full rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
           />
         </div>
-        <p className="mt-1 text-xs text-gray-400">Minimum Rp 1,000</p>
+        <p className="mt-1 text-xs text-gray-400">{t("Minimum Rp 1,000")}</p>
       </div>
 
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">
-          Message <span className="font-normal text-gray-400">(optional)</span>
+          {t("Message")} <span className="font-normal text-gray-400">({t("optional")})</span>
         </label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           maxLength={500}
           rows={2}
-          placeholder="Write your message here..."
+          placeholder={t("Write your message here...")}
           disabled={pending}
           className="w-full resize-none rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
         />
@@ -170,18 +172,18 @@ export default function DonateInkuraForm() {
 
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">
-          Transfer proof <span className="font-normal text-gray-400">(optional but recommended)</span>
+          {t("Transfer proof")} <span className="font-normal text-gray-400">({t("optional but recommended")})</span>
         </label>
         {proofPreview ? (
           <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-            <img src={proofPreview} alt="Transfer proof" className="max-h-48 w-full object-contain bg-gray-50 dark:bg-gray-800" />
+            <img src={proofPreview} alt={t("Transfer proof")} className="max-h-48 w-full object-contain bg-gray-50 dark:bg-gray-800" />
             <button
               type="button"
               onClick={removeProof}
               disabled={pending}
               className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white hover:bg-black/80 disabled:opacity-50"
             >
-              Remove
+              {t("Remove")}
             </button>
           </div>
         ) : (
@@ -189,7 +191,7 @@ export default function DonateInkuraForm() {
             <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
-            <span>Click to upload transfer proof photo</span>
+            <span>{t("Click to upload transfer proof photo")}</span>
             <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={pending} onChange={handleFileChange} />
           </label>
         )}
@@ -204,7 +206,7 @@ export default function DonateInkuraForm() {
         disabled={pending}
         className="w-full rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "Sending..." : "Confirm Donation"}
+        {pending ? t("Sending...") : t("Confirm Donation")}
       </button>
     </form>
   );

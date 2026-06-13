@@ -11,7 +11,7 @@ export const GET = apiRoute(async () => {
 
   const users = await prisma.user.findMany({
     where: { payoutInfoJson: { not: null } },
-    select: { id: true, username: true, name: true, payoutInfoJson: true },
+    select: { id: true, username: true, name: true, image: true, payoutInfoJson: true },
     orderBy: { name: "asc" },
   });
 
