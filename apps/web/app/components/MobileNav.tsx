@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   ListTree,
   BarChart3,
+  Gift,
   Layers,
   ChevronDown,
   ChevronUp,
@@ -119,6 +120,7 @@ export default function MobileNav({
     ...(isAuthed ? [{ label: t("Admin Report"), href: "/admin-report", Icon: ShieldAlert }] : []),
     ...(isAdmin ? [{ label: t("Content Reports"), href: "/admin/reports", Icon: ShieldAlert }] : []),
     ...(isAdmin ? [{ label: t("Taxonomy"), href: "/admin/taxonomy", Icon: ListTree }] : []),
+    ...(isAdmin ? [{ label: t("Creator Donations"), href: "/admin/donations", Icon: Gift }] : []),
     ...(isAdmin ? [{ label: t("Analytics"), href: "/admin/analytics", Icon: BarChart3 }] : []),
   ];
 

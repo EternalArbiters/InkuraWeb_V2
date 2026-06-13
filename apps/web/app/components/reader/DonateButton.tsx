@@ -31,10 +31,6 @@ export default function DonateButton({
 }) {
   const t = useUILanguageText();
   const { data: session } = useSession();
-  const viewerName =
-    (session?.user as any)?.name?.trim() ||
-    (session?.user as any)?.username?.trim() ||
-    "";
 
   const buttonLabel =
     role === "author" ? t("Donate to Author") :
@@ -53,15 +49,11 @@ export default function DonateButton({
   const [proofFile, setProofFile] = React.useState<File | null>(null);
   const [proofPreview, setProofPreview] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (viewerName) setDonorName((prev) => (prev ? prev : viewerName));
-  }, [viewerName]);
-
   function resetForm() {
     setStep("form");
     setSubmitError(null);
     setPending(false);
-    setDonorName(viewerName);
+    setDonorName("");
     setAmount("");
     setMessage("");
     setProofFile(null);
@@ -227,7 +219,7 @@ export default function DonateButton({
                     value={donorName}
                     onChange={(e) => setDonorName(e.target.value)}
                     maxLength={100}
-                    placeholder={t("Your name or Anonymous")}
+                    placeholder={t("Your fans...")}
                     disabled={pending}
                     className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   />
