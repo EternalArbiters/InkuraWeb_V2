@@ -336,7 +336,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
       ...(isMature !== undefined ? { isMature } : {}),
 
       publishType: publishType as any,
-      ...(role !== "ADMIN" ? { translatorId: publishType === "TRANSLATION" ? userId : null } : {}),
+      translatorId: publishType === "TRANSLATION" ? existing.authorId : null,
       ...(needsSource
         ? {
             originalAuthorCredit: nextOriginalAuthorCredit,

@@ -186,12 +186,15 @@ export async function patchAdminWorkPublishType(workId: string, publishType: str
   const valid = ["ORIGINAL", "TRANSLATION", "REUPLOAD"] as const;
   if (!(valid as readonly string[]).includes(publishType)) throw new Error("Invalid publishType");
 
-  const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true } });
+  const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true, authorId: true } });
   if (!work) throw new Error("Work not found");
 
   await prisma.work.update({
     where: { id: workId },
-    data: { publishType: publishType as (typeof valid)[number] },
+    data: {
+      publishType: publishType as (typeof valid)[number],
+      translatorId: publishType === "TRANSLATION" ? work.authorId : null,
+    },
   });
 
   return { ok: true };

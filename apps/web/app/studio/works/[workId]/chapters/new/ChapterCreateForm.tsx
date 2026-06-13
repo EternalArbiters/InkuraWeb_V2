@@ -121,7 +121,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
       const payload: any = {
         workId,
         number,
-        displayLabel: autoLabel ? null : displayLabel.trim() || null,
+        label: autoLabel ? null : displayLabel.trim() || null,
         title: (title || (!autoLabel && displayLabel.trim() ? displayLabel.trim() : `Chapter ${number}`)).trim(),
         status,
         isMature,
