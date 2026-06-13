@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { apiRoute, json, badRequest, notFound, unauthorized } from "@/server/http";
+import { sendDonationNotification } from "@/server/notifications/telegram";
 
 export const runtime = "nodejs";
 
@@ -59,8 +60,8 @@ export const POST = apiRoute(async (req: Request) => {
   const amount = Number(body?.amount ?? 0);
   const currency = String(body?.currency || "IDR").trim().toUpperCase().slice(0, 8) || "IDR";
   const message = body?.message ? String(body.message).trim().slice(0, 500) : null;
-  const proofImageUrl = body?.proofImageUrl ? String(body.proofImageUrl).trim() : null;
-  const proofImageKey = body?.proofImageKey ? String(body.proofImageKey).trim() : null;
+  const proofImageBase64 = body?.proofImageBase64 ? String(body.proofImageBase64) : null;
+  const proofImageMimeType = body?.proofImageMimeType ? String(body.proofImageMimeType) : null;
 
   if (!recipientUserId) return badRequest("recipientUserId is required");
   if (!donorName) return badRequest("donorName is required");
@@ -68,7 +69,7 @@ export const POST = apiRoute(async (req: Request) => {
 
   const recipient = await prisma.user.findUnique({
     where: { id: recipientUserId },
-    select: { id: true },
+    select: { id: true, name: true, username: true },
   });
   if (!recipient) return notFound("Recipient user not found");
 
@@ -85,8 +86,6 @@ export const POST = apiRoute(async (req: Request) => {
       amount,
       currency,
       message: message || null,
-      proofImageUrl: proofImageUrl || null,
-      proofImageKey: proofImageKey || null,
       status: "PENDING",
     },
     select: {
@@ -99,6 +98,19 @@ export const POST = apiRoute(async (req: Request) => {
       createdAt: true,
     },
   });
+
+  // Fire-and-forget — jangan block response kalau Telegram gagal
+  sendDonationNotification({
+    donorName,
+    recipientName: recipient.name?.trim() || recipient.username?.trim() || recipientUserId,
+    recipientUsername: recipient.username ?? null,
+    amount,
+    currency,
+    message,
+    proofImageBase64,
+    proofImageMimeType,
+    donationId: donation.id,
+  }).catch(() => null);
 
   return json({ ok: true, donation });
 });

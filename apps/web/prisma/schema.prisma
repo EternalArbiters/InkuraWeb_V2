@@ -18,6 +18,7 @@ model User {
   bio       String?  @db.VarChar(200)
   profileUrl      String? @db.VarChar(500)
   profileUrlsJson String  @default("[]") @db.Text
+  payoutInfoJson  String? @db.Text
   image     String?
   // Avatar framing (object-position + scale) so user can adjust PP like WA/IG
   avatarFocusX Int?

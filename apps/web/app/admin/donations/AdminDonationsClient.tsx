@@ -4,7 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 
 type DonorUser = { id: string; username: string | null; name: string | null } | null;
-type RecipientUser = { id: string; username: string | null; name: string | null };
+type PayoutInfo = { bankName: string; accountNumber: string; holderName: string; notes: string } | null;
+type RecipientUser = { id: string; username: string | null; name: string | null; payoutInfoJson?: string | null };
 
 type Donation = {
   id: string;
@@ -44,6 +45,21 @@ function formatIDR(amount: number, currency = "IDR") {
   }).format(amount);
 }
 
+function parsePayoutInfo(raw: string | null | undefined): PayoutInfo {
+  try {
+    const p = JSON.parse(raw || "{}");
+    if (!p?.bankName && !p?.accountNumber) return null;
+    return {
+      bankName: String(p.bankName || ""),
+      accountNumber: String(p.accountNumber || ""),
+      holderName: String(p.holderName || ""),
+      notes: String(p.notes || ""),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function displayName(u: { username: string | null; name: string | null } | null) {
   if (!u) return null;
   return (u.name && u.name.trim()) || (u.username && u.username.trim()) || null;
@@ -56,6 +72,7 @@ function DonationCard({ donation, onUpdated }: { donation: Donation; onUpdated: 
   const [lightbox, setLightbox] = React.useState(false);
 
   const recipientDisplay = displayName(donation.recipientUser) || donation.recipientUser.username || "Unknown";
+  const payoutInfo = parsePayoutInfo(donation.recipientUser.payoutInfoJson);
   const donorUserDisplay = displayName(donation.donorUser);
 
   async function updateStatus(newStatus: string) {
@@ -157,6 +174,21 @@ function DonationCard({ donation, onUpdated }: { donation: Donation; onUpdated: 
                 </div>
               )}
             </div>
+
+            {payoutInfo ? (
+              <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-xs dark:border-violet-800 dark:bg-violet-900/20">
+                <p className="mb-1.5 font-bold text-violet-700 dark:text-violet-300">Send to creator:</p>
+                <div className="space-y-0.5 text-gray-700 dark:text-gray-200">
+                  <p><span className="font-semibold text-gray-500 dark:text-gray-400">Bank/E-wallet: </span>{payoutInfo.bankName}</p>
+                  <p><span className="font-semibold text-gray-500 dark:text-gray-400">Account: </span>{payoutInfo.accountNumber}</p>
+                  <p><span className="font-semibold text-gray-500 dark:text-gray-400">Holder: </span>{payoutInfo.holderName}</p>
+                  {payoutInfo.notes && <p><span className="font-semibold text-gray-500 dark:text-gray-400">Notes: </span>{payoutInfo.notes}</p>}
+                </div>
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">Creator has not set up payout info yet.</p>
+            )}
+
           </div>
 
           {donation.proofImageUrl && (

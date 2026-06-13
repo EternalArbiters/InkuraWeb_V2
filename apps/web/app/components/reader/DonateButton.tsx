@@ -2,11 +2,19 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
-import { presignUpload, uploadToPresignedUrl } from "@/lib/r2UploadClient";
 
-const QRIS_IMAGE_URL = process.env.NEXT_PUBLIC_QRIS_IMAGE_URL || "";
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const QRIS_IMAGE_URL = "/images/donate-qr.jpeg";
+const OWNER_USERNAME = "noelephgoddess";
 
 type Step = "form" | "success";
 type DonateRole = "author" | "translator" | "reuploader" | "profile";
@@ -23,20 +31,23 @@ function parseRupiah(formatted: string): number {
 export default function DonateButton({
   recipientUserId,
   recipientName,
+  recipientUsername,
   role = "profile",
 }: {
   recipientUserId: string;
   recipientName: string;
+  recipientUsername?: string | null;
   role?: DonateRole;
 }) {
   const t = useUILanguageText();
-  const { data: session } = useSession();
 
-  const buttonLabel =
-    role === "author" ? t("Donate to Author") :
-    role === "translator" ? t("Donate to Translator") :
-    role === "reuploader" ? t("Donate to Re-Uploader") :
-    t("Donate");
+  const isOwner = recipientUsername === OWNER_USERNAME;
+  const buttonLabel = isOwner
+    ? t("Donate to Ownah")
+    : role === "author" ? t("Donate to Author")
+    : role === "translator" ? t("Donate to Translator")
+    : role === "reuploader" ? t("Donate to Re-Uploader")
+    : t("Donate");
 
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState<Step>("form");
@@ -90,19 +101,12 @@ export default function DonateButton({
 
     setPending(true);
     try {
-      let proofImageUrl: string | null = null;
-      let proofImageKey: string | null = null;
+      let proofImageBase64: string | null = null;
+      let proofImageMimeType: string | null = null;
 
-      if (proofFile && session?.user) {
-        const signed = await presignUpload({
-          scope: "admin_report_attachments",
-          filename: proofFile.name,
-          contentType: proofFile.type,
-          size: proofFile.size,
-        });
-        await uploadToPresignedUrl(signed.uploadUrl, proofFile);
-        proofImageUrl = signed.publicUrl;
-        proofImageKey = signed.key;
+      if (proofFile) {
+        proofImageBase64 = await fileToBase64(proofFile);
+        proofImageMimeType = proofFile.type;
       }
 
       const res = await fetch("/api/donations", {
@@ -114,8 +118,8 @@ export default function DonateButton({
           amount: amountNum,
           currency: "IDR",
           message: message.trim() || null,
-          proofImageUrl,
-          proofImageKey,
+          proofImageBase64,
+          proofImageMimeType,
         }),
       });
 
@@ -183,31 +187,18 @@ export default function DonateButton({
                 </div>
 
                 {/* QRIS */}
-                <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                  {QRIS_IMAGE_URL ? (
-                    <div className="p-4 text-center">
-                      <p className="mb-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
-                        {t("Scan to pay via QRIS")}
-                      </p>
-                      <img
-                        src={QRIS_IMAGE_URL}
-                        alt="QRIS"
-                        className="mx-auto h-52 w-52 object-contain"
-                      />
-                      <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-                        {t("After paying, fill in the amount and upload proof below.")}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="px-4 py-3 text-center bg-amber-50 dark:bg-amber-900/10">
-                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                        {t("QRIS not yet available.")}
-                      </p>
-                      <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-500">
-                        {t("Please contact admin for transfer details.")}
-                      </p>
-                    </div>
-                  )}
+                <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 p-4 text-center">
+                  <p className="mb-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    {t("Scan to pay via QRIS")}
+                  </p>
+                  <img
+                    src={QRIS_IMAGE_URL}
+                    alt="QRIS"
+                    className="mx-auto h-52 w-52 object-contain"
+                  />
+                  <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                    {t("After paying, fill in the amount and upload proof below.")}
+                  </p>
                 </div>
 
                 <div>
@@ -268,14 +259,7 @@ export default function DonateButton({
                     <span className="font-normal text-gray-400">({t("optional but recommended")})</span>
                   </label>
 
-                  {!session?.user ? (
-                    <p className="rounded-xl border border-gray-200 px-3 py-2.5 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                      <a href="/auth/signin" className="text-red-500 underline underline-offset-2">
-                        {t("Sign in")}
-                      </a>{" "}
-                      {t("to attach transfer proof.")}
-                    </p>
-                  ) : proofPreview ? (
+                  {proofPreview ? (
                     <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                       <img
                         src={proofPreview}

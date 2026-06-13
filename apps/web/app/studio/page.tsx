@@ -42,11 +42,12 @@ export default async function StudioPage({
 
   const { works } = await listStudioWorksForViewer({ asUserId: effectiveAsUserId });
 
-  const [tCreateNew, tManageSeries, tSettings, tNoWorks] = await Promise.all([
+  const [tCreateNew, tManageSeries, tSettings, tNoWorks, tPayoutSettings] = await Promise.all([
     getActiveUILanguageText("Create new"),
     getActiveUILanguageText("Manage series"),
     getActiveUILanguageText("Settings"),
     getActiveUILanguageText("No works yet."),
+    getActiveUILanguageText("Payout Settings"),
   ]);
 
   const createNewHref = effectiveAsUserId
@@ -74,6 +75,12 @@ export default async function StudioPage({
                   className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 text-sm font-semibold text-center"
                 >
                   {tManageSeries}
+                </Link>
+                <Link
+                  href="/settings/payout"
+                  className="px-4 py-2 rounded-xl border border-violet-300 text-violet-700 dark:border-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 text-sm font-semibold text-center"
+                >
+                  {tPayoutSettings}
                 </Link>
               </>
             )}

@@ -184,7 +184,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                     Follow
                   </Link>
                 )}
-                <DonateButton recipientUserId={user.id} recipientName={displayName} />
+                <DonateButton recipientUserId={user.id} recipientName={displayName} recipientUsername={user.username} />
               </div>
             ) : null}
 

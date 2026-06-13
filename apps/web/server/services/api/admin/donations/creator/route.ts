@@ -38,7 +38,7 @@ export const GET = apiRoute(async (req: Request) => {
         forwardedAt: true,
         createdAt: true,
         donorUser: { select: { id: true, username: true, name: true } },
-        recipientUser: { select: { id: true, username: true, name: true } },
+        recipientUser: { select: { id: true, username: true, name: true, payoutInfoJson: true } },
       },
     }),
     prisma.creatorDonation.count({ where }),
