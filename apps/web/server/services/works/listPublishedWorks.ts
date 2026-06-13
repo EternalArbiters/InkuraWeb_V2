@@ -1,7 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
-import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { LEGACY_DEVIANT_GENRE_SLUGS } from "./legacyDeviant";
 import { parseCursor, parseSkip, parseTake, nextCursorFromRows } from "@/server/db/pagination";
 import { workCardSelect } from "@/server/db/selectors";
 import { getViewerWithPrefs, type ViewerWithPrefs } from "./viewer";
@@ -40,16 +40,6 @@ function tagToSlug(tag: string) {
     .replace(/-+/g, "-");
 }
 
-function legacyDeviantGenreSlugs() {
-  // Older DBs may have these as Genre rows. Treat them as Deviant Love for gating.
-  const base = new Set<string>([
-    ...deviantLoveTagSlugs(),
-    "lgbtq",
-    "bara-ml",
-    "alpha-beta-omega",
-  ]);
-  return Array.from(base);
-}
 
 export type ListPublishedWorksOptions = {
   viewer?: ViewerWithPrefs | null;
@@ -222,8 +212,7 @@ export async function listPublishedWorksFromSearchParams(
     // Hide any work that has at least 1 deviantLoveTag.
     AND.push({ deviantLoveTags: { none: {} } });
     // Also hide legacy deviant genres (older DBs).
-    const legacy = legacyDeviantGenreSlugs();
-    if (legacy.length) AND.push({ genres: { none: { slug: { in: legacy } } } });
+    if (LEGACY_DEVIANT_GENRE_SLUGS.length) AND.push({ genres: { none: { slug: { in: LEGACY_DEVIANT_GENRE_SLUGS } } } });
   } else {
     if (includeDeviant.length) {
       if (dmode === "and") {

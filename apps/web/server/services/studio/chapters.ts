@@ -7,32 +7,7 @@ import { ApiError } from "@/server/http";
 import { CommentTargetType, Prisma, ReportTargetType } from "@prisma/client";
 import { requireCreatorSession } from "./session";
 import { normalizeNovelContentForStorage, novelContentHasMeaningfulContent } from "@/lib/novelContent";
-
-function safeJsonArray(v: unknown): string[] {
-  if (Array.isArray(v)) return v.map(String).map((s) => s.trim()).filter(Boolean);
-  if (typeof v !== "string") return [];
-  try {
-    const parsed = JSON.parse(v);
-    if (Array.isArray(parsed)) return parsed.map(String).map((s) => s.trim()).filter(Boolean);
-  } catch {
-    // ignore
-  }
-  return [];
-}
-
-function safeBool(v: unknown) {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") {
-    const s = v.toLowerCase().trim();
-    return s === "1" || s === "true" || s === "yes" || s === "on";
-  }
-  return false;
-}
-
-function safeStatus(v: unknown): "DRAFT" | "PUBLISHED" {
-  const s = String(v || "").toUpperCase().trim();
-  return s === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
-}
+import { safeBool, safeJsonArray, safeStatus } from "@/server/http/validation";
 
 function safeLabel(v: unknown) {
   if (v === null) return null;

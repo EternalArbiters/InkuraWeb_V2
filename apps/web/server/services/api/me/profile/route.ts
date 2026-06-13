@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, internalError, badRequest, conflict } from "@/server/http";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 import { revalidatePublicProfile } from "@/server/cache/publicContent";
 import {
@@ -51,7 +51,7 @@ export const GET = apiRoute(async () => {
 
 export const PATCH = apiRoute(async (req: Request) => {
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const body = await req.json().catch(() => ({} as any));
   const data: any = {};
@@ -107,7 +107,7 @@ export const PATCH = apiRoute(async (req: Request) => {
 
   if ("username" in body) {
     const next = normalizeUsername(body.username);
-    if (!next) return json({ error: "Username is required" }, { status: 400 });
+    if (!next) return badRequest("Username is required");
     if (!isValidUsername(next)) {
       return json(
         {
@@ -122,7 +122,7 @@ export const PATCH = apiRoute(async (req: Request) => {
       where: { username: next, NOT: { id: session.user.id } },
       select: { id: true },
     });
-    if (clash) return json({ error: "Username already in use" }, { status: 409 });
+    if (clash) return conflict("Username already in use");
 
     data.username = next;
   }
@@ -206,9 +206,9 @@ export const PATCH = apiRoute(async (req: Request) => {
   } catch (e: any) {
     const msg = String(e?.message || "");
     if (msg.includes("P2002") || msg.toLowerCase().includes("unique")) {
-      return json({ error: "Username already in use" }, { status: 409 });
+      return conflict("Username already in use");
     }
     console.error("[api/me/profile] PATCH error", e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

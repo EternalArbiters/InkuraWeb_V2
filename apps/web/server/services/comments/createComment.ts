@@ -5,14 +5,7 @@ import { commentListInclude, mediaObjectSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { notifyCommentEvents } from "@/server/services/notifyCommentEvents";
 import { errorToMeta, logWarn } from "@/server/observability/logger";
-
-export type CommentTargetTypeString = "WORK" | "CHAPTER";
-
-function safeTargetType(v: unknown): CommentTargetTypeString | null {
-  const s = String(v || "").toUpperCase().trim();
-  if (s === "WORK" || s === "CHAPTER") return s;
-  return null;
-}
+import { safeTargetType } from "./moderation";
 
 export async function createCommentFromRequest(req: Request) {
   const session = await getSession();

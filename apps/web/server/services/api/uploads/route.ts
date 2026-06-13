@@ -1,9 +1,9 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { deleteObject } from "@/server/storage/r2";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, forbidden, badRequest } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -28,27 +28,27 @@ async function canEditChapter(userId: string, role: string, chapterId: string) {
 // NOTE: prefer to delete through specific resources (cover/page delete). This is for cleanup tools.
 export const DELETE = apiRoute(async (req: Request) => {
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const me = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
-  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return unauthorized();
 
   const body = await req.json().catch(() => ({} as any));
   const key = String(body?.key || "").trim();
   const workId = body?.workId ? String(body.workId) : undefined;
   const chapterId = body?.chapterId ? String(body.chapterId) : undefined;
 
-  if (!key) return json({ error: "key is required" }, { status: 400 });
+  if (!key) return badRequest("key is required");
 
   // Permission: must specify scope context so we can enforce ownership.
   if (chapterId) {
     const ok = await canEditChapter(session.user.id, me.role, chapterId);
-    if (!ok) return json({ error: "Forbidden" }, { status: 403 });
+    if (!ok) return forbidden();
   } else if (workId) {
     const ok = await canEditWork(session.user.id, me.role, workId);
-    if (!ok) return json({ error: "Forbidden" }, { status: 403 });
+    if (!ok) return forbidden();
   } else if (me.role !== "ADMIN") {
-    return json({ error: "workId/chapterId required (or admin)" }, { status: 400 });
+    return badRequest("workId/chapterId required (or admin)");
   }
 
   await deleteObject(key);

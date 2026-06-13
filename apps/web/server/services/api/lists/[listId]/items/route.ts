@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, forbidden, badRequest, notFound } from "@/server/http";
 import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
@@ -17,25 +17,25 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
   const { listId } = await params;
 
   const viewer = await getViewer();
-  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return unauthorized();
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
     select: { id: true, slug: true, ownerId: true },
   });
-  if (!list) return json({ error: "List not found" }, { status: 404 });
+  if (!list) return notFound("List not found");
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
-  if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwner && !isAdmin) return forbidden();
 
   const body = await req.json().catch(() => ({} as any));
   const workId = String(body?.workId || "").trim();
-  if (!workId) return json({ error: "workId required" }, { status: 400 });
+  if (!workId) return badRequest("workId required");
 
   const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true, status: true } });
   if (!work || work.status !== "PUBLISHED") {
-    return json({ error: "Work not found" }, { status: 404 });
+    return notFound("Work not found");
   }
 
   const last = await prisma.readingListItem.findFirst({

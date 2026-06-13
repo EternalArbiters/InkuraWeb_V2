@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, forbidden, notFound, badRequest } from "@/server/http";
 import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ async function getViewer() {
 export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
-  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return unauthorized();
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
@@ -53,12 +53,12 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
     },
   });
 
-  if (!list) return json({ error: "Not found" }, { status: 404 });
+  if (!list) return notFound();
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
   if (!isOwner && !isAdmin) {
-    return json({ error: "Forbidden" }, { status: 403 });
+    return forbidden();
   }
 
   return json({ list });
@@ -67,18 +67,18 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
 export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
-  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return unauthorized();
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
     select: { id: true, slug: true, ownerId: true },
   });
 
-  if (!list) return json({ error: "Not found" }, { status: 404 });
+  if (!list) return notFound();
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
-  if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwner && !isAdmin) return forbidden();
 
   const body = await req.json().catch(() => ({} as any));
   const title = body?.title != null ? String(body.title).trim() : undefined;
@@ -86,7 +86,7 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
   const isPublic = typeof body?.isPublic === "boolean" ? body.isPublic : undefined;
 
   if (title !== undefined && !title) {
-    return json({ error: "title cannot be empty" }, { status: 400 });
+    return badRequest("title cannot be empty");
   }
 
   const updated = await prisma.readingList.update({
@@ -106,18 +106,18 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
 export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ listId: string }> }) => {
   const { listId } = await params;
   const viewer = await getViewer();
-  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return unauthorized();
 
   const list = await prisma.readingList.findUnique({
     where: { id: listId },
     select: { id: true, slug: true, ownerId: true },
   });
 
-  if (!list) return json({ error: "Not found" }, { status: 404 });
+  if (!list) return notFound();
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
-  if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwner && !isAdmin) return forbidden();
 
   await prisma.readingList.delete({ where: { id: listId } });
   revalidatePublicReadingList(list.slug);

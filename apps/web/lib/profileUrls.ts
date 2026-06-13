@@ -106,14 +106,3 @@ export function serializeProfileLinks(raw: unknown, fallbackSingle?: unknown) {
   return JSON.stringify(normalizeProfileLinks(fallbackSingle));
 }
 
-export function normalizeProfileUrls(raw: unknown): string[] {
-  return normalizeProfileLinks(raw).map((entry) => entry.url);
-}
-
-export function parseProfileUrls(rawJson: unknown, fallbackSingle?: unknown): string[] {
-  return parseProfileLinks(rawJson, fallbackSingle).map((entry) => entry.url);
-}
-
-export function serializeProfileUrls(raw: unknown, fallbackSingle?: unknown) {
-  return JSON.stringify(normalizeProfileUrls(raw).length ? normalizeProfileLinks(raw) : normalizeProfileLinks(fallbackSingle));
-}

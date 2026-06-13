@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest, notFound } from "@/server/http";
 import { logWarn } from "@/server/observability/logger";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { headObject, publicUrlForKey } from "@/server/storage/r2";
@@ -20,7 +20,7 @@ function keyMatches(scope: Scope, sha256: string, key: string) {
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
   const limited = await enforceRateLimitOrResponse({ req, policyName: "upload.commit", userId: session.user.id });
   if (limited) return limited;
 
@@ -32,24 +32,24 @@ export const POST = apiRoute(async (req: Request) => {
   const sizeBytes = Number(body?.sizeBytes ?? body?.size ?? 0);
   const optimizationMeta = readUploadOptimizationMeta(body?.optimization ?? body?.uploadOptimization ?? body?.meta);
 
-  if (scope !== "comment_images" && scope !== "comment_gifs") return json({ error: "Invalid scope" }, { status: 400 });
-  if (!sha256) return json({ error: "sha256 is required" }, { status: 400 });
-  if (!key) return json({ error: "key is required" }, { status: 400 });
-  if (!keyMatches(scope, sha256, key)) return json({ error: "key does not match sha256" }, { status: 400 });
-  if (contentType && !isAllowedUploadContentType(scope, contentType)) return json({ error: "Unsupported file type" }, { status: 400 });
+  if (scope !== "comment_images" && scope !== "comment_gifs") return badRequest("Invalid scope");
+  if (!sha256) return badRequest("sha256 is required");
+  if (!key) return badRequest("key is required");
+  if (!keyMatches(scope, sha256, key)) return badRequest("key does not match sha256");
+  if (contentType && !isAllowedUploadContentType(scope, contentType)) return badRequest("Unsupported file type");
   const maxBytes = maxBytesForUploadScope(scope);
-  if (sizeBytes && sizeBytes > maxBytes) return json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
+  if (sizeBytes && sizeBytes > maxBytes) return badRequest(`File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)`);
 
   let validation;
   try {
     validation = validateUploadOptimizationMeta({ scope, contentType, sizeBytes, meta: optimizationMeta });
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : "Invalid upload optimization metadata" }, { status: 400 });
+    return badRequest(error instanceof Error ? error.message : "Invalid upload optimization metadata");
   }
   if (validation.warnings.length) logWarn("upload.commit_guardrail_warning", { userId: session.user.id, sha256, key, ...buildUploadGuardrailMeta({ scope, contentType, sizeBytes, validation }) });
 
   const head = await headObject(key);
-  if (!head.exists) return json({ error: "Object not found in storage" }, { status: 404 });
+  if (!head.exists) return notFound("Object not found in storage");
   if (sizeBytes && head.contentLength && head.contentLength !== sizeBytes) logWarn("upload.commit_size_mismatch", { userId: session.user.id, sha256, key, claimedSizeBytes: sizeBytes, storedSizeBytes: head.contentLength });
   if (contentType && head.contentType && head.contentType !== contentType) logWarn("upload.commit_content_type_mismatch", { userId: session.user.id, sha256, key, claimedContentType: contentType, storedContentType: head.contentType });
 

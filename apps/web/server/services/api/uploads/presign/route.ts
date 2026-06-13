@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, forbidden, badRequest } from "@/server/http";
 import { logWarn } from "@/server/observability/logger";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { headObject, makeObjectKey, presignPutObject, publicUrlForKey } from "@/server/storage/r2";
@@ -33,7 +33,7 @@ async function canEditChapter(userId: string, role: string, chapterId: string) {
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const body = await req.json().catch(() => ({} as any));
   const scope = normalizeUploadScope(body?.scope ?? body?.kind);
@@ -46,7 +46,7 @@ export const POST = apiRoute(async (req: Request) => {
   if (limited) return limited;
 
   const me = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
-  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return unauthorized();
 
   const filename = String(body?.filename || "upload").trim();
   const contentType = normalizeUploadContentType(filename, String(body?.contentType || body?.type || "").trim());
@@ -55,30 +55,30 @@ export const POST = apiRoute(async (req: Request) => {
   const chapterId = body?.chapterId ? String(body.chapterId) : undefined;
   const optimizationMeta = readUploadOptimizationMeta(body?.optimization ?? body?.uploadOptimization ?? body?.meta);
 
-  if (!filename) return json({ error: "filename is required" }, { status: 400 });
-  if (!isAllowedUploadContentType(scope, contentType)) return json({ error: "Unsupported file type" }, { status: 400 });
+  if (!filename) return badRequest("filename is required");
+  if (!isAllowedUploadContentType(scope, contentType)) return badRequest("Unsupported file type");
   const maxBytes = maxBytesForUploadScope(scope);
-  if (size && size > maxBytes) return json({ error: `File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)` }, { status: 400 });
+  if (size && size > maxBytes) return badRequest(`File too large (max ${Math.floor(maxBytes / (1024 * 1024))}MB)`);
 
   let validation;
   try {
     validation = validateUploadOptimizationMeta({ scope, contentType, sizeBytes: size, meta: optimizationMeta });
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : "Invalid upload optimization metadata" }, { status: 400 });
+    return badRequest(error instanceof Error ? error.message : "Invalid upload optimization metadata");
   }
 
   if (validation.warnings.length) {
     logWarn("upload.presign_guardrail_warning", { userId: session.user.id, ...buildUploadGuardrailMeta({ scope, contentType, sizeBytes: size, validation }) });
   }
 
-  if (scope === "covers" && workId && !(await canEditWork(session.user.id, me.role, workId))) return json({ error: "Forbidden" }, { status: 403 });
+  if (scope === "covers" && workId && !(await canEditWork(session.user.id, me.role, workId))) return forbidden();
   if (scope === "pages") {
     if (chapterId) {
-      if (!(await canEditChapter(session.user.id, me.role, chapterId))) return json({ error: "Forbidden" }, { status: 403 });
+      if (!(await canEditChapter(session.user.id, me.role, chapterId))) return forbidden();
     } else if (workId) {
-      if (!(await canEditWork(session.user.id, me.role, workId))) return json({ error: "Forbidden" }, { status: 403 });
+      if (!(await canEditWork(session.user.id, me.role, workId))) return forbidden();
     } else {
-      return json({ error: "chapterId or workId is required for pages" }, { status: 400 });
+      return badRequest("chapterId or workId is required for pages");
     }
   }
 
@@ -88,7 +88,7 @@ export const POST = apiRoute(async (req: Request) => {
 
   if (isCommentMedia) {
     sha256 = normalizeSha256(body?.sha256 ?? body?.hash);
-    if (!sha256) return json({ error: "sha256 is required for comment media" }, { status: 400 });
+    if (!sha256) return badRequest("sha256 is required for comment media");
     const ext = extFromUploadContentType(contentType, filename);
     key = makeCommentMediaObjectKey({ sha256, scope: scope as any, ext });
     const exists = await headObject(key);

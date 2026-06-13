@@ -39,18 +39,6 @@ export function conflict(message = "Conflict") {
   return error(message, 409);
 }
 
-export function payloadTooLarge(message = "Payload too large") {
-  return error(message, 413);
-}
-
-export function unsupportedMediaType(message = "Unsupported media type") {
-  return error(message, 415);
-}
-
-export function unprocessableEntity(message = "Unprocessable entity") {
-  return error(message, 422);
-}
-
 export function internalError(message = "Internal error") {
   return error(message, 500);
 }

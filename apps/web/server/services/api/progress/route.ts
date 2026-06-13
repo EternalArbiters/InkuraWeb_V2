@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest } from "@/server/http";
 import { getOptionalIntParam } from "@/server/http/queryParams";
 import { listViewerProgress } from "@/server/services/progress/viewerProgress";
 
@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 export const GET = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 
   const { searchParams } = new URL(req.url);
@@ -23,7 +23,7 @@ export const GET = apiRoute(async (req: Request) => {
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -31,7 +31,7 @@ export const POST = apiRoute(async (req: Request) => {
   const chapterId = String(body?.chapterId || "");
   const progress = body?.progress == null ? null : Number(body.progress);
   if (!workId || !chapterId) {
-    return json({ error: "workId and chapterId required" }, { status: 400 });
+    return badRequest("workId and chapterId required");
   }
 
   const chapter = await prisma.chapter.findUnique({
@@ -39,7 +39,7 @@ export const POST = apiRoute(async (req: Request) => {
     select: { id: true, workId: true },
   });
   if (!chapter || chapter.workId != workId) {
-    return json({ error: "Chapter mismatch" }, { status: 400 });
+    return badRequest("Chapter mismatch");
   }
 
   await prisma.readingProgress.upsert({

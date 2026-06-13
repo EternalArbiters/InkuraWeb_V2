@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import { getSession } from "@/server/auth/session";
 import { revalidatePublicWork } from "@/server/cache/publicContent";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { createStudioWork, listStudioWorks } from "@/server/services/studio/works";
 
@@ -15,7 +15,7 @@ export const GET = apiRoute(async (req: Request) => {
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
   const limited = await enforceRateLimitOrResponse({ req, policyName: "studio.work.create", userId: session.user.id });
   if (limited) return limited;
 

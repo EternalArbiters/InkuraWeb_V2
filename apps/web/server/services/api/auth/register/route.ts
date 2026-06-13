@@ -1,9 +1,9 @@
-import "server-only";
+﻿import "server-only";
 
 import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prisma";
 import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, internalError, badRequest, conflict } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
@@ -22,11 +22,11 @@ export const POST = apiRoute(async (req: Request) => {
     const password = body?.password as string;
 
     if (!username || !email || !password) {
-      return json({ error: "username, email, and password are required" }, { status: 400 });
+      return badRequest("username, email, and password are required");
     }
 
     if (password.length < 8) {
-      return json({ error: "Password must be at least 8 characters" }, { status: 400 });
+      return badRequest("Password must be at least 8 characters");
     }
 
     const existing = await prisma.user.findFirst({
@@ -37,7 +37,7 @@ export const POST = apiRoute(async (req: Request) => {
     });
 
     if (existing) {
-      return json({ error: "Email or username already in use" }, { status: 409 });
+      return conflict("Email or username already in use");
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -66,6 +66,6 @@ export const POST = apiRoute(async (req: Request) => {
     return json({ ok: true, user }, { status: 201 });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

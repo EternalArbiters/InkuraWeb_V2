@@ -1,9 +1,9 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
 import { commentListInclude } from "@/server/db/selectors";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest, notFound } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
@@ -32,7 +32,7 @@ export const GET = apiRoute(async (_req: Request, { params }: { params: Promise<
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ chapterId: string }> }) => {
   const { chapterId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
   const limited = await enforceRateLimitOrResponse({ req, policyName: "comment.create", userId: session.user.id });
   if (limited) return limited;
 
@@ -40,18 +40,18 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
   const text = String(body?.body || "").trim();
   const isSpoiler = !!body?.isSpoiler;
   const attachments: unknown[] = Array.isArray(body?.attachments) ? body.attachments : [];
-  if (!text) return json({ error: "Comment body is required" }, { status: 400 });
-  if (text.length > 2000) return json({ error: "Comment too long" }, { status: 400 });
+  if (!text) return badRequest("Comment body is required");
+  if (text.length > 2000) return badRequest("Comment too long");
 
   const ch = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { id: true } });
-  if (!ch) return json({ error: "Chapter not found" }, { status: 404 });
+  if (!ch) return notFound("Chapter not found");
 
   const mediaIds = attachments.map((a) => String((a as any)?.mediaId || (a as any)?.id || "").trim()).filter(Boolean);
   const uniqueMediaIds = Array.from(new Set<string>(mediaIds)).slice(0, 3);
   const mediaRows = uniqueMediaIds.length ? await prisma.mediaObject.findMany({ where: { id: { in: uniqueMediaIds } }, select: { id: true, type: true } }) : [];
-  if (mediaRows.length !== uniqueMediaIds.length) return json({ error: "One or more attachments not found" }, { status: 400 });
+  if (mediaRows.length !== uniqueMediaIds.length) return badRequest("One or more attachments not found");
   for (const m of mediaRows) {
-    if (m.type !== "COMMENT_IMAGE" && m.type !== "COMMENT_GIF") return json({ error: "Invalid attachment type" }, { status: 400 });
+    if (m.type !== "COMMENT_IMAGE" && m.type !== "COMMENT_GIF") return badRequest("Invalid attachment type");
   }
 
   const created = await prisma.$transaction(async (tx) => {

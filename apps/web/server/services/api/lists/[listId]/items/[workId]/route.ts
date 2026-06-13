@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, forbidden, notFound } from "@/server/http";
 import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
@@ -17,14 +17,14 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
   const { listId, workId } = await params;
 
   const viewer = await getViewer();
-  if (!viewer?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!viewer?.id) return unauthorized();
 
   const list = await prisma.readingList.findUnique({ where: { id: listId }, select: { slug: true, ownerId: true } });
-  if (!list) return json({ error: "List not found" }, { status: 404 });
+  if (!list) return notFound("List not found");
 
   const isOwner = list.ownerId === viewer.id;
   const isAdmin = viewer.role === "ADMIN";
-  if (!isOwner && !isAdmin) return json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwner && !isAdmin) return forbidden();
 
   await prisma.readingListItem.deleteMany({ where: { listId, workId } });
   await prisma.readingList.update({ where: { id: listId }, data: { updatedAt: new Date() } });

@@ -1,26 +1,12 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { userPublicSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, clampRating, cleanText, unauthorized, internalError, badRequest } from "@/server/http";
 import { ensureCanViewWorkReviews, listWorkReviews } from "@/server/services/reviews/listWorkReviews";
 
 export const runtime = "nodejs";
-
-function clampRating(v: number) {
-  if (!Number.isFinite(v)) return null;
-  const n = Math.round(v);
-  if (n < 1 || n > 5) return null;
-  return n;
-}
-
-function cleanText(v: unknown, max = 5000) {
-  if (typeof v !== "string") return "";
-  const s = v.trim();
-  if (!s) return "";
-  return s.length > max ? s.slice(0, max) : s;
-}
 
 export const GET = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
@@ -38,7 +24,7 @@ export const GET = apiRoute(async (req: Request, { params }: { params: Promise<{
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const gate = await ensureCanViewWorkReviews(workId);
   if (!gate.ok) return json(gate.body, { status: gate.status });
@@ -49,8 +35,8 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
   const body = cleanText(bodyJson?.body, 10000);
   const isSpoiler = !!bodyJson?.isSpoiler;
 
-  if (!rating) return json({ error: "rating must be 1..5" }, { status: 400 });
-  if (!body) return json({ error: "body is required" }, { status: 400 });
+  if (!rating) return badRequest("rating must be 1..5");
+  if (!body) return badRequest("body is required");
 
   const userId = session.user.id;
 
@@ -86,6 +72,6 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     return json({ ok: true, review: result.review, ratingAvg: result.ratingAvg, ratingCount: result.ratingCount });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

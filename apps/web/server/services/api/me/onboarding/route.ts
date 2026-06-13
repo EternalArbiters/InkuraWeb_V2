@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest } from "@/server/http";
 import {
   hasCompletedProfileOnboarding,
   normalizeBirthMonth,
@@ -16,7 +16,7 @@ export const runtime = "nodejs";
 
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const body = await req.json().catch(() => ({} as any));
   const gender = normalizeGender(body.gender);
@@ -25,7 +25,7 @@ export const POST = apiRoute(async (req: Request) => {
   const inkuraLanguage = normalizeInkuraLanguage(body.inkuraLanguage);
 
   if (!gender || !birthMonth || !birthYear || !inkuraLanguage) {
-    return json({ error: "Gender, birth month, birth year, and Inkura language are required" }, { status: 400 });
+    return badRequest("Gender, birth month, birth year, and Inkura language are required");
   }
 
   const current = await prisma.user.findUnique({

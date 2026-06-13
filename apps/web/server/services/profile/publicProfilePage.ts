@@ -1,7 +1,7 @@
 import "server-only";
 
 import prisma from "@/server/db/prisma";
-import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { LEGACY_DEVIANT_GENRE_SLUG_SET } from "@/server/services/works/legacyDeviant";
 import {
   PUBLIC_CONTENT_REVALIDATE,
   publicProfileTag,
@@ -15,7 +15,7 @@ import { profileHotspot } from "@/server/observability/profiling";
 
 type Viewer = Awaited<ReturnType<typeof getViewerBasic>>;
 
-const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
+const legacyDeviant = LEGACY_DEVIANT_GENRE_SLUG_SET;
 
 function canViewWork(
   work: {

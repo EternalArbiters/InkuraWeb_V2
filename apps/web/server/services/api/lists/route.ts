@@ -1,10 +1,10 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { getSession } from "@/server/auth/session";
 import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest } from "@/server/http";
 import { revalidatePublicReadingList } from "@/server/cache/publicContent";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 export const GET = apiRoute(async () => {
   const data = await listReadingListsForViewer();
   if (!data) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 
   return json(data);
@@ -21,7 +21,7 @@ export const GET = apiRoute(async () => {
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -30,7 +30,7 @@ export const POST = apiRoute(async (req: Request) => {
   const isPublic = !!body?.isPublic;
 
   if (!title) {
-    return json({ error: "title required" }, { status: 400 });
+    return badRequest("title required");
   }
 
   const baseSlug = slugify(title) || "list";

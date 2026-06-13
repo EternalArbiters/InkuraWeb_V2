@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest, forbidden } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 import { revalidatePublicProfile } from "@/server/cache/publicContent";
@@ -10,13 +10,13 @@ import { revalidatePublicProfile } from "@/server/cache/publicContent";
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ userId: string }> }) => {
   const { userId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
   const limited = await enforceRateLimitOrResponse({ req, policyName: "user.follow", userId: session.user.id });
   if (limited) return limited;
 
   const targetId = String(userId || "");
-  if (!targetId) return json({ error: "userId required" }, { status: 400 });
-  if (targetId === session.user.id) return json({ error: "Cannot follow yourself" }, { status: 400 });
+  if (!targetId) return badRequest("userId required");
+  if (targetId === session.user.id) return badRequest("Cannot follow yourself");
 
   const [existing, usernames, blockingState] = await Promise.all([
     prisma.followUser.findUnique({ where: { followerId_followingId: { followerId: session.user.id, followingId: targetId } } }),
@@ -36,7 +36,7 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
   ]);
 
   if (blockingState) {
-    return json({ error: "Follow unavailable because one account has blocked the other" }, { status: 403 });
+    return forbidden("Follow unavailable because one account has blocked the other");
   }
 
   const usernameById = new Map(usernames.map((user) => [user.id, user.username]));

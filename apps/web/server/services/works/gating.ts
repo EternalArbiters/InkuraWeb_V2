@@ -1,6 +1,6 @@
 import "server-only";
 
-import { legacyDeviantGenreSlugSet } from "./legacyDeviant";
+import { LEGACY_DEVIANT_GENRE_SLUG_SET } from "./legacyDeviant";
 import type { ViewerBasic } from "./viewer";
 
 export type GateReason = "MATURE" | "DEVIANT_LOVE" | "BOTH";
@@ -29,8 +29,7 @@ export function computeViewerAccess(viewer: ViewerBasic | null, authorId: string
 }
 
 export function workHasLegacyDeviantGenre(genres: Array<{ slug: string | null }> | null | undefined): boolean {
-  const legacy = legacyDeviantGenreSlugSet();
-  return Array.isArray(genres) && genres.some((g) => legacy.has(String(g?.slug || "")));
+  return Array.isArray(genres) && genres.some((g) => LEGACY_DEVIANT_GENRE_SLUG_SET.has(String(g?.slug || "")));
 }
 
 export function workHasDeviantLoveTags(tags: Array<{ slug?: string | null; id?: string | null }> | null | undefined): boolean {

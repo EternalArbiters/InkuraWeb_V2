@@ -1,9 +1,9 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { deletePublicUpload } from "@/server/uploads/upload";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, forbidden, notFound, badRequest } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -36,10 +36,10 @@ function isOwnerOrAdmin(role: string, userId: string, ownerId: string) {
 export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
   const { pageId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const me = await getMe(session.user.id);
-  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return unauthorized();
 
   const page = await prisma.comicPage.findUnique({
     where: { id: pageId },
@@ -52,9 +52,9 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
     },
   });
 
-  if (!page) return json({ error: "Not found" }, { status: 404 });
+  if (!page) return notFound();
   if (!isOwnerOrAdmin(me.role, session.user.id, page.chapter.work.authorId)) {
-    return json({ error: "Forbidden" }, { status: 403 });
+    return forbidden();
   }
 
   await prisma.comicPage.delete({ where: { id: pageId } });
@@ -71,24 +71,24 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
 export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ pageId: string }> }) => {
   const { pageId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const me = await getMe(session.user.id);
-  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return unauthorized();
 
   const body = await req.json().catch(() => ({} as any));
   const order = typeof body?.order === "number" ? body.order : parseInt(String(body?.order || ""), 10);
 
-  if (!order || order < 1) return json({ error: "Invalid order" }, { status: 400 });
+  if (!order || order < 1) return badRequest("Invalid order");
 
   const page = await prisma.comicPage.findUnique({
     where: { id: pageId },
     select: { id: true, chapterId: true, chapter: { select: { work: { select: { authorId: true } } } } },
   });
 
-  if (!page) return json({ error: "Not found" }, { status: 404 });
+  if (!page) return notFound();
   if (!isOwnerOrAdmin(me.role, session.user.id, page.chapter.work.authorId)) {
-    return json({ error: "Forbidden" }, { status: 403 });
+    return forbidden();
   }
 
   const chapterPages = await prisma.comicPage.findMany({
@@ -99,7 +99,7 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
 
   const ids = chapterPages.map((item) => item.id);
   const currentIndex = ids.indexOf(pageId);
-  if (currentIndex === -1) return json({ error: "Not found" }, { status: 404 });
+  if (currentIndex === -1) return notFound();
 
   const targetIndex = Math.max(0, Math.min(ids.length - 1, order - 1));
   const [picked] = ids.splice(currentIndex, 1);

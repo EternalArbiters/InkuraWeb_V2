@@ -8,31 +8,7 @@ import { requireCreatorSession } from "./session";
 import { assignWorkToSeries } from "./series";
 import { profileHotspot } from "@/server/observability/profiling";
 import { normalizeWorkSubtitles, serializeWorkSubtitles } from "@/lib/workSubtitles";
-
-function toStringArray(v: unknown): string[] {
-  if (!v) return [];
-  if (Array.isArray(v)) return v.map(String).map((s) => s.trim()).filter(Boolean);
-  if (typeof v === "string") {
-    const raw = v.trim();
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed.map(String).map((s) => s.trim()).filter(Boolean);
-    } catch {
-      // ignore
-    }
-  }
-  return [];
-}
-
-function safeBool(v: unknown) {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") {
-    const s = v.toLowerCase().trim();
-    return s === "1" || s === "true" || s === "yes" || s === "on";
-  }
-  return false;
-}
+import { safeBool, safeJsonArray } from "@/server/http/validation";
 
 function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER" {
   const s = String(v || "UNKNOWN").toUpperCase().trim();
@@ -84,7 +60,7 @@ export async function createStudioWork(req: Request) {
   const fd = await req.formData();
 
   const title = String(fd.get("title") || "").trim();
-  const subtitles = normalizeWorkSubtitles(toStringArray(fd.get("subtitleEntries")));
+  const subtitles = normalizeWorkSubtitles(safeJsonArray(fd.get("subtitleEntries")));
   const subtitle = subtitles[0] || (String(fd.get("subtitle") || "").trim() || null);
   const description = String(fd.get("description") || "").trim();
 
@@ -97,10 +73,10 @@ export async function createStudioWork(req: Request) {
   const completion = String(fd.get("completion") || "ONGOING").toUpperCase().trim() || "ONGOING";
   const isMature = safeBool(fd.get("isMature"));
 
-  const genreIds = toStringArray(fd.get("genreIds"));
-  const warningTagIds = toStringArray(fd.get("warningTagIds"));
-  const deviantLoveTagIds = toStringArray(fd.get("deviantLoveTagIds"));
-  const tagNames = toStringArray(fd.get("tags"));
+  const genreIds = safeJsonArray(fd.get("genreIds"));
+  const warningTagIds = safeJsonArray(fd.get("warningTagIds"));
+  const deviantLoveTagIds = safeJsonArray(fd.get("deviantLoveTagIds"));
+  const tagNames = safeJsonArray(fd.get("tags"));
 
   const pt = String(fd.get("publishType") || "ORIGINAL").toUpperCase().trim();
   const publishType: "ORIGINAL" | "TRANSLATION" | "REUPLOAD" =

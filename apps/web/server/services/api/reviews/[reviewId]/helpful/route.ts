@@ -1,23 +1,23 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, notFound, internalError, badRequest } from "@/server/http";
 
 export const runtime = "nodejs";
 
 export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const userId = session.user.id;
 
   const review = await prisma.review.findUnique({ where: { id: reviewId }, select: { id: true, userId: true } });
-  if (!review) return json({ error: "Not found" }, { status: 404 });
+  if (!review) return notFound();
 
   if (review.userId === userId) {
-    return json({ error: "You can't vote your own review" }, { status: 400 });
+    return badRequest("You can't vote your own review");
   }
 
   try {
@@ -41,6 +41,6 @@ export const POST = apiRoute(async (_req: Request, { params }: { params: Promise
     return json({ ok: true, voted: result.voted, helpfulCount: result.helpfulCount });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

@@ -1,14 +1,14 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, forbidden, badRequest, notFound } from "@/server/http";
 
 export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ reportId: string }> }) => {
   const { reportId } = await params;
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
-    return json({ error: "Forbidden" }, { status: 403 });
+    return forbidden();
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -17,11 +17,11 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
   const hideComment = !!body?.hideComment;
 
   if (statusRaw !== "RESOLVED" && statusRaw !== "DISMISSED") {
-    return json({ error: "status must be RESOLVED or DISMISSED" }, { status: 400 });
+    return badRequest("status must be RESOLVED or DISMISSED");
   }
 
   const report = await prisma.report.findUnique({ where: { id: reportId } });
-  if (!report) return json({ error: "Report not found" }, { status: 404 });
+  if (!report) return notFound("Report not found");
 
   if (hideComment && report.targetType === "COMMENT") {
     await prisma.comment.updateMany({

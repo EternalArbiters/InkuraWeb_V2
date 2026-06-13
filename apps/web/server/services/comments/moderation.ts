@@ -4,6 +4,12 @@ import prisma from "@/server/db/prisma";
 
 export type CommentTargetTypeString = "WORK" | "CHAPTER";
 
+export function safeTargetType(v: unknown): CommentTargetTypeString | null {
+  const s = String(v || "").toUpperCase().trim();
+  if (s === "WORK" || s === "CHAPTER") return s;
+  return null;
+}
+
 export async function canModerateForTarget(input: {
   session: any;
   targetType: CommentTargetTypeString;

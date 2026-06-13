@@ -2,7 +2,7 @@ import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { userPublicSelect } from "@/server/db/selectors";
-import { deviantLoveTagSlugs } from "@/lib/deviantLoveCatalog";
+import { LEGACY_DEVIANT_GENRE_SLUG_SET } from "@/server/services/works/legacyDeviant";
 import { getSession } from "@/server/auth/session";
 
 export type ReviewSortMode = "helpful" | "top" | "bottom" | "newest" | "oldest";
@@ -49,8 +49,7 @@ export async function ensureCanViewWorkReviews(workId: string) {
   const canViewDeviantLove =
     isOwner || viewer?.role === "ADMIN" || (!!viewer && viewer.adultConfirmed && viewer.deviantLoveConfirmed);
 
-  const legacyDeviant = new Set<string>([...deviantLoveTagSlugs(), "lgbtq", "bara-ml", "alpha-beta-omega"]);
-  const hasLegacyDeviantGenre = Array.isArray(work.genres) && work.genres.some((g: any) => legacyDeviant.has(String(g.slug || "")));
+  const hasLegacyDeviantGenre = Array.isArray(work.genres) && work.genres.some((g: any) => LEGACY_DEVIANT_GENRE_SLUG_SET.has(String(g.slug || "")));
   const hasDeviantTags = work.deviantLoveTags.length > 0;
 
   const requiresMatureGate = work.isMature && !canViewMature;

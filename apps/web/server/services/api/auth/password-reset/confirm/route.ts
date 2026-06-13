@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import bcrypt from "bcryptjs";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, internalError, badRequest } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 
 export const runtime = "nodejs";
@@ -17,10 +17,10 @@ export const POST = apiRoute(async (req: Request) => {
     const password = String(body?.password || "");
 
     if (!token || !password) {
-      return json({ error: "token and password are required" }, { status: 400 });
+      return badRequest("token and password are required");
     }
     if (password.length < 8) {
-      return json({ error: "Password must be at least 8 characters" }, { status: 400 });
+      return badRequest("Password must be at least 8 characters");
     }
 
     const rec = await prisma.passwordResetToken.findUnique({
@@ -29,13 +29,13 @@ export const POST = apiRoute(async (req: Request) => {
     });
 
     if (!rec) {
-      return json({ error: "Invalid token" }, { status: 400 });
+      return badRequest("Invalid token");
     }
     if (rec.usedAt) {
-      return json({ error: "Token already used" }, { status: 400 });
+      return badRequest("Token already used");
     }
     if (rec.expiresAt.getTime() < Date.now()) {
-      return json({ error: "Token expired" }, { status: 400 });
+      return badRequest("Token expired");
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -49,6 +49,6 @@ export const POST = apiRoute(async (req: Request) => {
     return json({ ok: true });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

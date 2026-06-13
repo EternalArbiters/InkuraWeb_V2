@@ -4,20 +4,9 @@ import prisma from "@/server/db/prisma";
 import { chapterListItemSelect, commentListInclude } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
 import { getCommunityUserIdentityMap } from "@/server/services/community/identity";
-import { canModerateForTarget, CommentTargetTypeString } from "./moderation";
+import { canModerateForTarget, CommentTargetTypeString, safeTargetType } from "./moderation";
 import { buildCommentTree, safeCommentSort, sortRootComments } from "./tree";
-
-function safeTargetType(v: unknown): CommentTargetTypeString | null {
-  const s = String(v || "").toUpperCase().trim();
-  if (s === "WORK" || s === "CHAPTER") return s;
-  return null;
-}
-
-function clampInt(v: unknown, def: number, min: number, max: number) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return def;
-  return Math.max(min, Math.min(max, Math.floor(n)));
-}
+import { clampInt } from "@/server/db/pagination";
 
 function attachChapterContextToTree(nodes: any[], byId: Map<string, any>): any[] {
   return (nodes || []).map((node) => ({

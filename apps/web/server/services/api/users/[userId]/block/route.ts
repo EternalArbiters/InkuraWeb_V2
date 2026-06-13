@@ -1,25 +1,25 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest, notFound } from "@/server/http";
 import { revalidatePublicProfile } from "@/server/cache/publicContent";
 
 export const POST = apiRoute(async (_req: Request, { params }: { params: Promise<{ userId: string }> }) => {
   const { userId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const targetId = String(userId || "");
-  if (!targetId) return json({ error: "userId required" }, { status: 400 });
-  if (targetId === session.user.id) return json({ error: "Cannot block yourself" }, { status: 400 });
+  if (!targetId) return badRequest("userId required");
+  if (targetId === session.user.id) return badRequest("Cannot block yourself");
 
   const [targetUser, existing] = await Promise.all([
     prisma.user.findUnique({ where: { id: targetId }, select: { id: true, username: true } }),
     prisma.userBlock.findUnique({ where: { blockerId_blockedId: { blockerId: session.user.id, blockedId: targetId } }, select: { blockerId: true } }),
   ]);
 
-  if (!targetUser) return json({ error: "User not found" }, { status: 404 });
+  if (!targetUser) return notFound("User not found");
 
   if (existing) {
     await prisma.userBlock.delete({ where: { blockerId_blockedId: { blockerId: session.user.id, blockedId: targetId } } });

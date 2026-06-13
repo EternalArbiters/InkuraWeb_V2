@@ -1,10 +1,10 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { normalizeInkuraLanguage } from "@/lib/inkuraLanguage";
 import { stringifyJsonStringArray } from "@/lib/prefs";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest } from "@/server/http";
 import { requireViewerPreferences } from "@/server/services/preferences/viewerPreferences";
 
 export const runtime = "nodejs";
@@ -17,7 +17,7 @@ export const GET = apiRoute(async () => {
 export const PATCH = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -32,7 +32,7 @@ export const PATCH = apiRoute(async (req: Request) => {
   const blockedDeviantLoveIds = Array.isArray(body.blockedDeviantLoveIds) ? body.blockedDeviantLoveIds.map(String) : undefined;
 
   if (body.inkuraLanguage !== undefined && body.inkuraLanguage !== null && !inkuraLanguage) {
-    return json({ error: "Invalid Inkura language" }, { status: 400 });
+    return badRequest("Invalid Inkura language");
   }
 
   const current = await prisma.user.findUnique({
@@ -48,7 +48,7 @@ export const PATCH = apiRoute(async (req: Request) => {
   if (!nextAdult) nextDeviant = false;
 
   if (nextDeviant && !nextAdult) {
-    return json({ error: "Deviant Love requires 18+ confirmation" }, { status: 400 });
+    return badRequest("Deviant Love requires 18+ confirmation");
   }
 
   if (adultConfirmed !== undefined) data.adultConfirmed = nextAdult;

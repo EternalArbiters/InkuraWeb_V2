@@ -1,20 +1,20 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, internalError, notFound } from "@/server/http";
 import { enforceRateLimitOrResponse } from "@/server/rate-limit/response";
 import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 
 export const POST = apiRoute(async (req: Request, { params }: { params: Promise<{ workId: string }> }) => {
   const { workId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
   const limited = await enforceRateLimitOrResponse({ req, policyName: "work.bookmark", userId: session.user.id });
   if (limited) return limited;
 
   const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true } });
-  if (!work) return json({ error: "Work not found" }, { status: 404 });
+  if (!work) return notFound("Work not found");
 
   const userId = session.user.id;
   try {
@@ -29,6 +29,6 @@ export const POST = apiRoute(async (req: Request, { params }: { params: Promise<
     return json({ ok: true, bookmarked: true });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

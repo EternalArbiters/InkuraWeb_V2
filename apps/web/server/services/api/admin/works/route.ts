@@ -1,29 +1,10 @@
 import "server-only";
 
 import { requireAdminSession } from "@/server/http/auth";
-import { apiRoute, json, badRequest } from "@/server/http";
+import { apiRoute, json, badRequest, safeBool, safeJsonArray } from "@/server/http";
 import { searchAdminWorks, createAdminWorkOnBehalf } from "@/server/services/admin/works";
 
 export const runtime = "nodejs";
-
-function toStringArray(v: FormDataEntryValue | null): string[] {
-  if (!v) return [];
-  const raw = String(v).trim();
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed.map(String).map((s) => s.trim()).filter(Boolean);
-  } catch {
-    // ignore
-  }
-  return [];
-}
-
-function safeBool(v: FormDataEntryValue | null) {
-  if (!v) return false;
-  const s = String(v).toLowerCase().trim();
-  return s === "1" || s === "true" || s === "yes" || s === "on";
-}
 
 export const GET = apiRoute(async (req: Request) => {
   await requireAdminSession();
@@ -63,7 +44,7 @@ export const POST = apiRoute(async (req: Request) => {
   const origin = String(fd.get("origin") || "UNKNOWN").toUpperCase().trim() || "UNKNOWN";
   const completion = String(fd.get("completion") || "ONGOING").toUpperCase().trim() || "ONGOING";
   const description = String(fd.get("description") || "").trim();
-  const subtitles = toStringArray(fd.get("subtitleEntries"));
+  const subtitles = safeJsonArray(fd.get("subtitleEntries"));
   const isMature = safeBool(fd.get("isMature"));
 
   const ptRaw = String(fd.get("publishType") || "ORIGINAL").toUpperCase().trim();
@@ -80,10 +61,10 @@ export const POST = apiRoute(async (req: Request) => {
   const coverKey = String(fd.get("coverKey") || "").trim() || null;
   if (!coverUrl) return badRequest("Cover is required");
 
-  const genreIds = toStringArray(fd.get("genreIds"));
-  const warningTagIds = toStringArray(fd.get("warningTagIds"));
-  const deviantLoveTagIds = toStringArray(fd.get("deviantLoveTagIds"));
-  const tagNames = toStringArray(fd.get("tags"));
+  const genreIds = safeJsonArray(fd.get("genreIds"));
+  const warningTagIds = safeJsonArray(fd.get("warningTagIds"));
+  const deviantLoveTagIds = safeJsonArray(fd.get("deviantLoveTagIds"));
+  const tagNames = safeJsonArray(fd.get("tags"));
 
   const seriesTitle = String(fd.get("seriesTitle") || "").trim();
   const seriesOrderRaw = String(fd.get("seriesOrder") || "").trim();

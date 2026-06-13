@@ -1,25 +1,11 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { userPublicSelect } from "@/server/db/selectors";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, clampRating, cleanText, unauthorized, forbidden, notFound, internalError, badRequest } from "@/server/http";
 
 export const runtime = "nodejs";
-
-function clampRating(v: number) {
-  if (!Number.isFinite(v)) return null;
-  const n = Math.round(v);
-  if (n < 1 || n > 5) return null;
-  return n;
-}
-
-function cleanText(v: unknown, max = 5000) {
-  if (typeof v !== "string") return "";
-  const s = v.trim();
-  if (!s) return "";
-  return s.length > max ? s.slice(0, max) : s;
-}
 
 async function getMe(userId: string) {
   return prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
@@ -28,25 +14,25 @@ async function getMe(userId: string) {
 export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const me = await getMe(session.user.id);
-  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return unauthorized();
 
   const existing = await prisma.review.findUnique({ where: { id: reviewId }, select: { id: true, userId: true, workId: true, rating: true } });
-  if (!existing) return json({ error: "Not found" }, { status: 404 });
-  if (me.role !== "ADMIN" && existing.userId !== me.id) return json({ error: "Forbidden" }, { status: 403 });
+  if (!existing) return notFound();
+  if (me.role !== "ADMIN" && existing.userId !== me.id) return forbidden();
 
   const bodyJson = await req.json().catch(() => ({} as any));
 
   const ratingMaybe = bodyJson?.rating !== undefined ? clampRating(Number(bodyJson.rating)) : null;
-  if (bodyJson?.rating !== undefined && !ratingMaybe) return json({ error: "rating must be 1..5" }, { status: 400 });
+  if (bodyJson?.rating !== undefined && !ratingMaybe) return badRequest("rating must be 1..5");
 
   const title = bodyJson?.title !== undefined ? (cleanText(bodyJson.title, 120) || null) : undefined;
   const body = bodyJson?.body !== undefined ? cleanText(bodyJson.body, 10000) : undefined;
   const isSpoiler = bodyJson?.isSpoiler !== undefined ? !!bodyJson.isSpoiler : undefined;
 
-  if (bodyJson?.body !== undefined && !body) return json({ error: "body is required" }, { status: 400 });
+  if (bodyJson?.body !== undefined && !body) return badRequest("body is required");
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -96,21 +82,21 @@ export const PATCH = apiRoute(async (req: Request, { params }: { params: Promise
     return json({ ok: true, review: result.review, ratingAvg: result.ratingAvg, ratingCount: result.ratingCount });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });
 
 export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promise<{ reviewId: string }> }) => {
   const { reviewId } = await params;
   const session = await getSession();
-  if (!session?.user?.id) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return unauthorized();
 
   const me = await getMe(session.user.id);
-  if (!me) return json({ error: "Unauthorized" }, { status: 401 });
+  if (!me) return unauthorized();
 
   const existing = await prisma.review.findUnique({ where: { id: reviewId }, select: { id: true, userId: true, workId: true } });
-  if (!existing) return json({ error: "Not found" }, { status: 404 });
-  if (me.role !== "ADMIN" && existing.userId !== me.id) return json({ error: "Forbidden" }, { status: 403 });
+  if (!existing) return notFound();
+  if (me.role !== "ADMIN" && existing.userId !== me.id) return forbidden();
 
   try {
     await prisma.review.delete({ where: { id: reviewId } });
@@ -121,6 +107,6 @@ export const DELETE = apiRoute(async (_req: Request, { params }: { params: Promi
     return json({ ok: true });
   } catch (e) {
     console.error(e);
-    return json({ error: "Internal error" }, { status: 500 });
+    return internalError();
   }
 });

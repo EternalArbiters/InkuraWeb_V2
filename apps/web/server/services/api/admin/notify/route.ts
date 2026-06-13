@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { getSession } from "@/server/auth/session";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, forbidden, badRequest, notFound } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,7 @@ function cleanHandle(v: unknown) {
 export const POST = apiRoute(async (req: Request) => {
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
-    return json({ error: "Forbidden" }, { status: 403 });
+    return forbidden();
   }
 
   const body = await req.json().catch(() => ({} as any));
@@ -25,8 +25,8 @@ export const POST = apiRoute(async (req: Request) => {
   const message = String(body?.message || body?.body || "").trim();
   const href = String(body?.href || "/notifications").trim() || "/notifications";
 
-  if (!to) return json({ error: "Target user is required" }, { status: 400 });
-  if (!message) return json({ error: "Message is required" }, { status: 400 });
+  if (!to) return badRequest("Target user is required");
+  if (!message) return badRequest("Message is required");
 
   const user = await prisma.user.findFirst({
     where: {
@@ -39,7 +39,7 @@ export const POST = apiRoute(async (req: Request) => {
   });
 
   if (!user) {
-    return json({ error: "User not found" }, { status: 404 });
+    return notFound("User not found");
   }
 
   const notif = await prisma.notification.create({

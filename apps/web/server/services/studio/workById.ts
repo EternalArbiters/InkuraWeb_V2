@@ -9,31 +9,7 @@ import { isOwnerOrAdmin } from "./creator";
 import { requireCreatorSession } from "./session";
 import { assignWorkToSeries } from "./series";
 import { normalizeWorkSubtitles, serializeWorkSubtitles } from "@/lib/workSubtitles";
-
-function safeJsonArray(v: unknown): string[] {
-  if (typeof v !== "string") return [];
-  try {
-    const parsed = JSON.parse(v);
-    if (Array.isArray(parsed)) return parsed.map(String).map((s) => s.trim()).filter(Boolean);
-  } catch {
-    // ignore
-  }
-  return [];
-}
-
-function safeBool(v: unknown) {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") {
-    const s = v.toLowerCase().trim();
-    return s === "1" || s === "true" || s === "yes" || s === "on";
-  }
-  return false;
-}
-
-function safeStatus(v: unknown): "DRAFT" | "PUBLISHED" {
-  const s = String(v || "").toUpperCase().trim();
-  return s === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
-}
+import { safeBool, safeJsonArray, safeStatus } from "@/server/http/validation";
 
 function safeComicType(v: unknown): "UNKNOWN" | "MANGA" | "MANHWA" | "MANHUA" | "WEBTOON" | "WESTERN" | "OTHER" {
   const s = String(v || "UNKNOWN").toUpperCase().trim();

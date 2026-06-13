@@ -1,9 +1,9 @@
-import "server-only";
+﻿import "server-only";
 
 import prisma from "@/server/db/prisma";
 import { requireUser } from "@/server/auth/requireUser";
 import { isAdminEmail } from "@/server/auth/adminEmail";
-import { apiRoute, json } from "@/server/http";
+import { apiRoute, json, unauthorized, badRequest } from "@/server/http";
 import { headObject, publicUrlForKey } from "@/server/storage/r2";
 import { isAllowedUploadContentType, maxBytesForUploadScope } from "@/server/uploads/presignRules";
 
@@ -153,7 +153,7 @@ export const GET = apiRoute(async () => {
 
     return json({ reports, isAdmin });
   } catch {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 });
 
@@ -166,17 +166,17 @@ export const POST = apiRoute(async (req: Request) => {
     const message = clamp(body?.message, 2000);
     const pageUrl = clamp(body?.pageUrl, 400) || null;
 
-    if (!title) return json({ error: "Title is required" }, { status: 400 });
-    if (!message) return json({ error: "Message is required" }, { status: 400 });
+    if (!title) return badRequest("Title is required");
+    if (!message) return badRequest("Message is required");
     if (Array.isArray(body?.attachments) && body.attachments.length > MAX_ADMIN_REPORT_ATTACHMENTS) {
-      return json({ error: `You can attach up to ${MAX_ADMIN_REPORT_ATTACHMENTS} files` }, { status: 400 });
+      return badRequest(`You can attach up to ${MAX_ADMIN_REPORT_ATTACHMENTS} files`);
     }
 
     let attachments;
     try {
       attachments = await normalizeAdminReportAttachments(body?.attachments, me.id);
     } catch (error) {
-      return json({ error: error instanceof Error ? error.message : "Invalid attachments" }, { status: 400 });
+      return badRequest(error instanceof Error ? error.message : "Invalid attachments");
     }
 
     const created = await prisma.adminInboxReport.create({
@@ -197,6 +197,6 @@ export const POST = apiRoute(async (req: Request) => {
 
     return json({ ok: true, id: created.id });
   } catch {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 });
