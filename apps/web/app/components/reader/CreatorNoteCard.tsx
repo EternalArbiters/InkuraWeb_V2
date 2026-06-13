@@ -3,8 +3,9 @@
 import * as React from "react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import PublicUserLink from "@/app/components/user/PublicUserLink";
+import DonateButton from "@/app/components/reader/DonateButton";
 
-type Person = { username?: string | null; name?: string | null; image?: string | null };
+type Person = { id?: string | null; username?: string | null; name?: string | null; image?: string | null };
 
 function rawDisplayName(p: Person) {
   return (p.name && p.name.trim()) || (p.username && p.username.trim()) || "Unknown";
@@ -38,6 +39,11 @@ export default function CreatorNoteCard({
       : publishType === "REUPLOAD"
         ? t("Re-uploaded by")
         : t("Uploaded by");
+
+  const donateRole =
+    publishType === "TRANSLATION" ? "translator" as const
+    : publishType === "REUPLOAD" ? "reuploader" as const
+    : "author" as const;
 
   return (
     <section
@@ -85,6 +91,16 @@ export default function CreatorNoteCard({
       </div>
 
       {note && note.trim() ? <div className="mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-white/85">{note}</div> : null}
+
+      {uploader.id ? (
+        <div className="mt-3">
+          <DonateButton
+            recipientUserId={uploader.id}
+            recipientName={uName}
+            role={donateRole}
+          />
+        </div>
+      ) : null}
     </section>
   );
 }

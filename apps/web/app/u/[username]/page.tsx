@@ -5,6 +5,7 @@ import ActionLink from "@/app/components/ActionLink";
 import CollectionRailCard from "@/app/components/user/CollectionRailCard";
 import CommunityBadgeChips from "@/app/components/user/CommunityBadgeChips";
 import FollowToggleButton from "@/app/components/user/FollowToggleButton";
+import DonateButton from "@/app/components/reader/DonateButton";
 import PublicProfileActionsMenu from "@/app/components/user/PublicProfileActionsMenu";
 import ProfileLinksSheet from "@/app/components/user/ProfileLinksSheet";
 import HorizontalRail from "@/app/home/HorizontalRail";
@@ -162,7 +163,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
             </div>
 
             {!isSelf ? (
-              <div className="mt-5">
+              <div className="mt-5 flex flex-col gap-2">
                 {viewerBlockedUser ? (
                   <button
                     type="button"
@@ -183,6 +184,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
                     Follow
                   </Link>
                 )}
+                <DonateButton recipientUserId={user.id} recipientName={displayName} />
               </div>
             ) : null}
 

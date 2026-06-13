@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Bell, Heart, MessageCircle, BookOpen, Star, Megaphone, Trophy } from "lucide-react";
+import { Bell, Heart, MessageCircle, BookOpen, Star, Megaphone, Trophy, Gift } from "lucide-react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 import { dispatchNavBadgeRefresh } from "@/app/components/navBadgeEvents";
 
@@ -46,6 +46,8 @@ function NotifIcon({ type }: { type: string }) {
     Icon = Star; from = "from-yellow-400"; to = "to-amber-500";
   } else if (t.includes("rank") || t.includes("badge") || t.includes("award")) {
     Icon = Trophy; from = "from-amber-400"; to = "to-orange-500";
+  } else if (t.includes("donation")) {
+    Icon = Gift; from = "from-green-500"; to = "to-emerald-600";
   } else if (t.includes("system") || t.includes("announce") || t.includes("admin")) {
     Icon = Megaphone; from = "from-orange-400"; to = "to-red-500";
   }

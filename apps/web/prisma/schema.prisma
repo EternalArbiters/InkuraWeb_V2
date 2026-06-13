@@ -84,6 +84,10 @@ model User {
   // Community ranking
   donationsReceived    DonationEntry[]        @relation("DonationRecipient")
   donationsRecorded    DonationEntry[]        @relation("DonationRecordedByAdmin")
+
+  // Creator donations (fan → creator)
+  creatorDonationsMade     CreatorDonation[] @relation("CreatorDonationsMade")
+  creatorDonationsReceived CreatorDonation[] @relation("CreatorDonationsReceived")
   leaderboardSnapshots LeaderboardSnapshot[]
   specialBadgeSnapshots SpecialBadgeSnapshot[]
 
@@ -700,6 +704,7 @@ enum NotificationType {
   COMMENT_MENTION
   COMMENT_PINNED
   ADMIN_MESSAGE
+  DONATION_RECEIVED
 }
 
 model Notification {
@@ -1182,6 +1187,52 @@ model DonationEntry {
   @@index([userId, donatedAt])
   @@index([createdByAdminId, createdAt])
   @@index([currency, donatedAt])
+}
+
+// --- Creator Donations (fan → creator, manual transfer flow) ---
+
+enum DonationStatus {
+  PENDING    // submitted, waiting for admin to verify transfer proof
+  VERIFIED   // admin confirmed the transfer
+  FORWARDED  // admin sent funds to creator
+  REJECTED   // admin rejected (fake proof, wrong amount, etc.)
+}
+
+model CreatorDonation {
+  id              String         @id @default(cuid())
+
+  // Donor info (userId null if not logged in or account deleted)
+  donorUserId     String?
+  donorName       String         @db.VarChar(100)
+
+  // Recipient (the creator being donated to)
+  recipientUserId String
+
+  // Amount
+  amount          Int
+  currency        String         @default("IDR") @db.VarChar(8)
+
+  // Optional message from donor to creator
+  message         String?        @db.VarChar(500)
+
+  // Transfer proof image uploaded to R2
+  proofImageUrl   String?
+  proofImageKey   String?
+
+  // Status lifecycle
+  status          DonationStatus @default(PENDING)
+  adminNote       String?        @db.VarChar(500)
+  forwardedAt     DateTime?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  donorUser       User?          @relation("CreatorDonationsMade", fields: [donorUserId], references: [id], onDelete: SetNull)
+  recipientUser   User           @relation("CreatorDonationsReceived", fields: [recipientUserId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId, createdAt])
+  @@index([donorUserId, createdAt])
+  @@index([status, createdAt])
 }
 
 model LeaderboardSnapshot {
