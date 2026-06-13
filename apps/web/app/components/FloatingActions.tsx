@@ -220,45 +220,40 @@ export default function FloatingActions() {
 
   const shouldHideScrollTop = hideScrollTop || (isReader && (readerChromeVisible || readerMode === "slide"));
   const opacityClass = isReader ? "opacity-50 hover:opacity-85" : "opacity-95 hover:opacity-100";
-  const rightContainerClass = isReader
+  const containerClass = isReader
     ? "fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3 md:bottom-24"
     : "fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3";
-  const leftContainerClass = isReader
-    ? "fixed bottom-6 left-6 z-[80] flex flex-col items-start gap-3 md:bottom-24"
-    : "fixed bottom-6 left-6 z-[60] flex flex-col items-start gap-3";
 
   return (
-    <>
-      <div className={rightContainerClass}>
-        {!shouldHideScrollTop ? (
-          <CircleButton ariaLabel={t("Scroll to top")} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={`${opacityClass} ${isReader ? "lg:hidden" : ""}`}>
-            <ArrowUpIcon />
-          </CircleButton>
-        ) : null}
-
-        {isReader && chapterId ? (
-          <div className={`hidden md:block ${isReader ? "lg:hidden" : ""}`}>
-            <CircleButton
-              ariaLabel={liked ? `${t("Liked")} (${count})` : `${t("Like chapter")} (${count})`}
-              onClick={toggleChapterLike}
-              className={`${opacityClass} ${isPending ? "pointer-events-none opacity-40" : ""}`}
-            >
-              <span className="relative inline-flex items-center justify-center">
-                <HeartIcon filled={liked} />
-                <span className="absolute -bottom-2 -right-3 text-[10px] font-extrabold">{count}</span>
-              </span>
-            </CircleButton>
-          </div>
-        ) : null}
-      </div>
+    <div className={containerClass}>
+      {!shouldHideScrollTop ? (
+        <CircleButton ariaLabel={t("Scroll to top")} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className={`${opacityClass} ${isReader ? "lg:hidden" : ""}`}>
+          <ArrowUpIcon />
+        </CircleButton>
+      ) : null}
 
       {showChat && !isReader ? (
-        <div className={leftContainerClass}>
+        <div className="hidden md:block">
           <CircleButton ariaLabel={t("Chat Elya")} href="/chat" className={opacityClass}>
             <HeartChatIcon />
           </CircleButton>
         </div>
       ) : null}
-    </>
+
+      {isReader && chapterId ? (
+        <div className={`hidden md:block ${isReader ? "lg:hidden" : ""}`}>
+          <CircleButton
+            ariaLabel={liked ? `${t("Liked")} (${count})` : `${t("Like chapter")} (${count})`}
+            onClick={toggleChapterLike}
+            className={`${opacityClass} ${isPending ? "pointer-events-none opacity-40" : ""}`}
+          >
+            <span className="relative inline-flex items-center justify-center">
+              <HeartIcon filled={liked} />
+              <span className="absolute -bottom-2 -right-3 text-[10px] font-extrabold">{count}</span>
+            </span>
+          </CircleButton>
+        </div>
+      ) : null}
+    </div>
   );
 }

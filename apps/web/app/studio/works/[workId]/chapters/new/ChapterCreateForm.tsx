@@ -317,7 +317,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
         </div>
       ) : null}
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-start gap-2">
         <button
           type="submit"
           disabled={loading || preparingPages || importingPages}
