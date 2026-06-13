@@ -223,12 +223,7 @@ function ReceivedCard({ d }: { d: DonationReceived }) {
             <span className="text-xs text-gray-400">{timeAgo(d.createdAt)}</span>
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{t("From")}</div>
-          <div className="font-semibold text-sm">
-            {d.donorName}
-            {d.donorUser?.username && (
-              <Link href={`/u/${d.donorUser.username}`} className="ml-1.5 text-xs text-violet-500 hover:underline">@{d.donorUser.username}</Link>
-            )}
-          </div>
+          <div className="font-semibold text-sm">{d.donorName}</div>
           {d.message && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 italic">&ldquo;{d.message}&rdquo;</p>}
           {d.adminNote && (
             <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
