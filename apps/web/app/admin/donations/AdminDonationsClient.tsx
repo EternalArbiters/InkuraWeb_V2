@@ -274,6 +274,111 @@ function DonationCard({ donation, onUpdated }: { donation: Donation; onUpdated: 
   );
 }
 
+type PayoutUser = {
+  id: string;
+  username: string | null;
+  name: string | null;
+  payoutInfoJson: string | null;
+};
+
+function PayoutListModal({ onClose }: { onClose: () => void }) {
+  const [users, setUsers] = React.useState<PayoutUser[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [copied, setCopied] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/admin/donations/creator/payouts")
+      .then((r) => r.json())
+      .then((d) => setUsers(d.users || []))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function copyText(text: string, key: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(null), 1500);
+    });
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg max-h-[80vh] flex flex-col rounded-2xl bg-white dark:bg-gray-900 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+          <h2 className="text-lg font-bold">Creator Bank Accounts</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto px-5 py-4 space-y-3">
+          {loading ? (
+            <p className="py-8 text-center text-sm text-gray-500">Loading...</p>
+          ) : users.length === 0 ? (
+            <p className="py-8 text-center text-sm text-gray-500">No creator has set up payout info yet.</p>
+          ) : (
+            users.map((u) => {
+              const info = parsePayoutInfo(u.payoutInfoJson);
+              if (!info) return null;
+              const displayName = (u.name?.trim()) || (u.username?.trim()) || "Unknown";
+              return (
+                <div key={u.id} className="rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="font-semibold text-sm">{displayName}</span>
+                    {u.username && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">@{u.username}</span>
+                    )}
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">Bank/E-wallet</span>
+                      <span className="font-semibold">{info.bankName}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">No. Rekening</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-semibold">{info.accountNumber}</span>
+                        <button
+                          type="button"
+                          onClick={() => copyText(info.accountNumber, `${u.id}-acc`)}
+                          className="rounded px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 text-gray-600 dark:text-gray-300"
+                        >
+                          {copied === `${u.id}-acc` ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">Nama</span>
+                      <span className="font-semibold">{info.holderName}</span>
+                    </div>
+                    {info.notes && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">Catatan</span>
+                        <span className="text-gray-700 dark:text-gray-300">{info.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDonationsClient({
   initial,
   initialTotal,
@@ -289,6 +394,7 @@ export default function AdminDonationsClient({
   const [totalPages, setTotalPages] = React.useState(initialTotalPages);
   const [page, setPage] = React.useState(1);
   const [loading, setLoading] = React.useState(false);
+  const [showPayouts, setShowPayouts] = React.useState(false);
 
   async function fetchDonations(status: string, newPage = 1) {
     setLoading(true);
@@ -320,23 +426,35 @@ export default function AdminDonationsClient({
 
   return (
     <div className="mt-6">
-      {/* Status tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => handleTabChange(tab.value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-              activeTab === tab.value
-                ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                : "border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <span className="ml-auto self-center text-sm text-gray-500">{total} total</span>
+      {showPayouts && <PayoutListModal onClose={() => setShowPayouts(false)} />}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        {/* Status tabs */}
+        <div className="flex flex-wrap gap-2">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => handleTabChange(tab.value)}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                activeTab === tab.value
+                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                  : "border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <span className="self-center text-sm text-gray-500">{total} total</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowPayouts(true)}
+          className="rounded-full border border-violet-300 dark:border-violet-700 px-4 py-1.5 text-sm font-semibold text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20"
+        >
+          Creator Accounts
+        </button>
       </div>
 
       {loading ? (
