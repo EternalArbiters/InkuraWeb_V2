@@ -9,7 +9,10 @@ export async function requireUser() {
   const userId = (session as any)?.user?.id as string | undefined;
   if (!userId) throw new Error("UNAUTHORIZED");
 
-  const me = await prisma.user.findUnique({ where: { id: userId } });
+  const me = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, email: true, username: true, name: true },
+  });
   if (!me) throw new Error("UNAUTHORIZED");
   return { session, me };
 }

@@ -97,6 +97,7 @@ export default function CreatorNoteCard({
           <DonateButton
             recipientUserId={uploader.id}
             recipientName={uName}
+            recipientUsername={uploader.username}
             role={donateRole}
           />
         </div>

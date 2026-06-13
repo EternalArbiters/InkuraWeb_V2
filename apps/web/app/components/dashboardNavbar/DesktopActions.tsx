@@ -137,6 +137,14 @@ export default function DesktopActions({
             </Link>
             {isAuthed ? (
               <Link
+                href="/settings/payout"
+                className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
+              >
+                {t("Finances")}
+              </Link>
+            ) : null}
+            {isAuthed ? (
+              <Link
                 href="/admin-report"
                 className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
               >

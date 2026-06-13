@@ -30,6 +30,7 @@ import {
   Award,
   Sun,
   Moon,
+  Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
@@ -117,6 +118,7 @@ export default function MobileNav({
     { label: tCommunity("Title"), href: "/community/title", Icon: Award },
 
     { label: t("Account"), href: "/settings/account", Icon: User },
+    ...(isAuthed ? [{ label: t("Finances"), href: "/settings/payout", Icon: Wallet }] : []),
     ...(isAuthed ? [{ label: t("Admin Report"), href: "/admin-report", Icon: ShieldAlert }] : []),
     ...(isAdmin ? [{ label: t("Content Reports"), href: "/admin/reports", Icon: ShieldAlert }] : []),
     ...(isAdmin ? [{ label: t("Taxonomy"), href: "/admin/taxonomy", Icon: ListTree }] : []),
