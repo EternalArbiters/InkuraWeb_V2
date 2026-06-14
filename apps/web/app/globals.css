@@ -178,43 +178,50 @@
 /* "modern" components, so the classic UI is left untouched.           */
 /* ------------------------------------------------------------------ */
 [data-ui-theme="modern"] {
-  --ink-bg: #ffffff;
-  --ink-fg: #1a1a1a;
-  --ink-muted: #8a8a8a;
-  --ink-border: #ededed;
+  --ink-bg: #f8fafc;
+  --ink-fg: #0f172a;
+  --ink-muted: #64748b;
+  --ink-border: #e2e8f0;
   --ink-surface: #ffffff;
-  --ink-surface-hover: #f5f5f5;
-  --ink-accent: #00c24e; /* Webtoon-style green */
-  --ink-accent-hover: #00a843;
+  --ink-surface-2: #f1f5f9;
+  --ink-surface-hover: #f1f5f9;
+  --ink-accent: #7c3aed; /* Inkura brand violet (blue→purple) */
+  --ink-accent-hover: #6d28d9;
   --ink-accent-fg: #ffffff;
+  /* Inkura signature gradient */
+  --ink-gradient: linear-gradient(to right, #3b82f6, #9333ea);
 }
 
 [data-ui-theme="modern"].dark {
-  --ink-bg: #0e0e0e;
-  --ink-fg: #fafafa;
-  --ink-muted: #9a9a9a;
-  --ink-border: #262626;
-  --ink-surface: #161616;
-  --ink-surface-hover: #1e1e1e;
-  --ink-accent: #00dc64;
-  --ink-accent-hover: #2be583;
-  --ink-accent-fg: #04130a;
+  --ink-bg: #0a0e1a;
+  --ink-fg: #f1f5f9;
+  --ink-muted: #94a3b8;
+  --ink-border: #1e293b;
+  --ink-surface: #111827;
+  --ink-surface-2: #0f1626;
+  --ink-surface-hover: #1e293b;
+  --ink-accent: #a78bfa;
+  --ink-accent-hover: #c4b5fd;
+  --ink-accent-fg: #0a0e1a;
+  --ink-gradient: linear-gradient(to right, #3b82f6, #9333ea);
 }
 
 .ink-btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1.1rem;
-  border-radius: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 0.6rem;
   font-size: 0.875rem;
   font-weight: 600;
-  background: var(--ink-accent);
-  color: var(--ink-accent-fg);
-  transition: background 0.15s ease, transform 0.15s ease;
+  color: #ffffff;
+  background-image: var(--ink-gradient);
+  box-shadow: 0 6px 16px -6px rgba(124, 58, 237, 0.5);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 .ink-btn-primary:hover {
-  background: var(--ink-accent-hover);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 22px -8px rgba(124, 58, 237, 0.6);
 }
 .ink-btn-primary:active {
   transform: translateY(1px);
@@ -224,28 +231,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1.1rem;
-  border-radius: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 0.6rem;
   font-size: 0.875rem;
   font-weight: 600;
-  background: transparent;
+  background: var(--ink-surface);
   color: var(--ink-fg);
   border: 1px solid var(--ink-border);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .ink-btn-ghost:hover {
   background: var(--ink-surface-hover);
+  border-color: var(--ink-accent);
 }
 
-.ink-card {
-  background: var(--ink-surface);
-  border: 1px solid var(--ink-border);
-  border-radius: 1rem;
+.ink-gradient-text {
+  background-image: var(--ink-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .ink-eyebrow {
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink-accent);

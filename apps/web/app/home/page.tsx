@@ -1,5 +1,4 @@
 import WorkRail from "./WorkRail";
-import HeroBanner from "./HeroBanner";
 import HomeView from "./HomeView";
 import { getHomePageData } from "@/server/services/home/getHomePageData";
 import { getBannerWorks } from "@/server/services/home/getBannerWorks";
@@ -14,7 +13,7 @@ export default async function HomePage() {
   try {
     const [{ trendingComics, trendingNovels, recent, originals, translations, draftWorks }, bannerWorks] =
       await Promise.all([getHomePageData(), getBannerWorks()]);
-    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel, seeAllLabel] =
+    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel, seeAllLabel, readLabel] =
       await Promise.all([
         getActiveUILanguageText("Home", { section: "Page Home" }),
         getActiveUILanguageText("Search", { section: "Navigation" }),
@@ -26,9 +25,8 @@ export default async function HomePage() {
         getActiveUILanguageText("Recently Updated", { section: "Page Home" }),
         getActiveUILanguageText("Still Draft", { section: "Page Home" }),
         getActiveUILanguageText("See all", { section: "Page Home" }),
+        getActiveUILanguageText("Read", { section: "Page Home" }),
       ]);
-
-    const hero = bannerWorks.length > 0 ? <HeroBanner works={bannerWorks} /> : null;
 
     const railItems = [
       { title: trendingComicsLabel, href: "/browse/trending-comics", works: trendingComics },
@@ -57,7 +55,8 @@ export default async function HomePage() {
         searchLabel={searchLabel}
         libraryLabel={libraryLabel}
         seeAllLabel={seeAllLabel}
-        hero={hero}
+        readLabel={readLabel}
+        bannerWorks={bannerWorks}
         rails={rails}
         railItems={railItems}
       />

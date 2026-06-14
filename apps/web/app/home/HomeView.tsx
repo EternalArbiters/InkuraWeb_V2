@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import WelcomePopup from "./WelcomePopup";
-import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
+import HeroBanner from "./HeroBanner";
+import ModernHero from "./ModernHero";
+import ModernWorkCard from "@/app/components/work/ModernWorkCard";
 import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
+import type { BannerWork } from "@/server/services/home/getBannerWorks";
 
 type RailItem = {
   title: string;
@@ -16,21 +19,21 @@ type Props = {
   searchLabel: string;
   libraryLabel: string;
   seeAllLabel: string;
-  /** Pre-rendered hero banner (server data passed down as a node), or null. */
-  hero: React.ReactNode;
+  readLabel: string;
+  bannerWorks: BannerWork[];
   /** Classic UI: pre-rendered server work rails. */
   rails: React.ReactNode;
-  /** Modern UI: structured rail data, re-rendered Webtoon-style on the client. */
+  /** Modern UI: structured rail data, re-rendered on the client. */
   railItems: RailItem[];
 };
 
-/** Bold section header with a green accent bar (Webtoon-style). */
+/** Bold section header with a brand accent bar. */
 function SectionHeader({ title, href, seeAllLabel }: { title: string; href: string; seeAllLabel: string }) {
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2.5">
-        <span className="h-6 w-1.5 rounded-full bg-[var(--ink-accent)]" />
-        <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--ink-fg)]">{title}</h2>
+      <div className="flex items-center gap-3">
+        <span className="h-7 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
+        <h2 className="text-xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-2xl">{title}</h2>
       </div>
       <Link
         href={href}
@@ -42,42 +45,28 @@ function SectionHeader({ title, href, seeAllLabel }: { title: string; href: stri
   );
 }
 
-/** Standard Webtoon-style horizontal rail. */
-function ModernRail({ title, href, works, seeAllLabel }: RailItem & { seeAllLabel: string }) {
+/** Horizontal rail of modern cards; pass `ranked` for the TOP-list numerals. */
+function ModernRail({
+  title,
+  href,
+  works,
+  seeAllLabel,
+  ranked = false,
+}: RailItem & { seeAllLabel: string; ranked?: boolean }) {
   if (!works?.length) return null;
+  const items = ranked ? works.slice(0, 10) : works;
   return (
     <section>
       <SectionHeader title={title} href={href} seeAllLabel={seeAllLabel} />
-      <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 no-scrollbar">
-        <div className="flex w-max gap-3 md:gap-4">
-          {works.map((work) => (
-            <InteractiveWorkCard
+      <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 no-scrollbar sm:-mx-6 sm:px-6">
+        <div className="flex w-max gap-4 md:gap-5">
+          {items.map((work, i) => (
+            <ModernWorkCard
               key={work.id}
               work={work}
-              className="w-[140px] shrink-0 snap-start sm:w-[165px]"
+              rank={ranked ? i + 1 : undefined}
+              className="w-[140px] shrink-0 sm:w-[160px]"
             />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** Ranking rail with large rank numerals — Webtoon's signature TOP-10 look. */
-function RankingRail({ title, href, works, seeAllLabel }: RailItem & { seeAllLabel: string }) {
-  if (!works?.length) return null;
-  return (
-    <section>
-      <SectionHeader title={title} href={href} seeAllLabel={seeAllLabel} />
-      <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 no-scrollbar">
-        <div className="flex w-max items-end gap-3 md:gap-5">
-          {works.slice(0, 10).map((work, index) => (
-            <div key={work.id} className="flex shrink-0 items-end gap-1">
-              <span className="-mb-1 select-none text-[64px] font-black leading-[0.75] text-[var(--ink-muted)] opacity-25">
-                {index + 1}
-              </span>
-              <InteractiveWorkCard work={work} className="w-[140px] shrink-0 sm:w-[165px]" />
-            </div>
           ))}
         </div>
       </div>
@@ -87,10 +76,19 @@ function RankingRail({ title, href, works, seeAllLabel }: RailItem & { seeAllLab
 
 /**
  * Chooses the Home layout based on the active UI theme. Data is fetched in the
- * server `page.tsx` and handed in as ready-to-render nodes (`hero`, `rails`) plus
- * structured `railItems` so both layouts share the same data without re-fetching.
+ * server `page.tsx`; the modern layout is a fully custom build (ModernHero +
+ * ModernWorkCard), while the classic layout is preserved untouched.
  */
-export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel, hero, rails, railItems }: Props) {
+export default function HomeView({
+  title,
+  searchLabel,
+  libraryLabel,
+  seeAllLabel,
+  readLabel,
+  bannerWorks,
+  rails,
+  railItems,
+}: Props) {
   const { uiTheme } = useUITheme();
 
   if (uiTheme === "modern") {
@@ -100,22 +98,21 @@ export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel
       <main className="min-h-[calc(100vh-96px)] bg-[var(--ink-bg)] text-[var(--ink-fg)]">
         <WelcomePopup />
 
-        {/* Full-bleed hero band, Webtoon-style */}
-        {hero ? (
+        {bannerWorks.length > 0 ? (
           <div className="border-b border-[var(--ink-border)]">
-            <div className="mx-auto max-w-7xl px-4 pt-6 pb-6 sm:px-6">{hero}</div>
+            <ModernHero works={bannerWorks} readLabel={readLabel} />
           </div>
         ) : null}
 
-        <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6">
           <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-baseline gap-3">
+            <div>
               <h1 className="text-3xl font-black tracking-tight md:text-4xl">{title}</h1>
-              <span className="hidden text-sm font-medium text-[var(--ink-muted)] sm:inline">
-                Discover stories worth your time
-              </span>
+              <p className="mt-1 text-sm font-medium text-[var(--ink-muted)]">
+                {railItems.reduce((n, r) => n + (r.works?.length || 0), 0)} stories to explore
+              </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <Link href="/search" className="ink-btn-ghost">
                 {searchLabel}
               </Link>
@@ -126,7 +123,7 @@ export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel
           </header>
 
           <div className="space-y-14">
-            {featured ? <RankingRail {...featured} seeAllLabel={seeAllLabel} /> : null}
+            {featured ? <ModernRail {...featured} seeAllLabel={seeAllLabel} ranked /> : null}
             {restRails.map((rail) => (
               <ModernRail key={rail.href} {...rail} seeAllLabel={seeAllLabel} />
             ))}
@@ -145,7 +142,7 @@ export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel
     <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <WelcomePopup />
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-8 space-y-10">
-        {hero}
+        {bannerWorks.length > 0 ? <HeroBanner works={bannerWorks} /> : null}
         <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{title}</h1>
