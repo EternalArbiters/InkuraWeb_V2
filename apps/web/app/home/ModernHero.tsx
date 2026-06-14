@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Play, Info } from "lucide-react";
 import type { BannerWork } from "@/server/services/home/getBannerWorks";
 
 const AUTO_SLIDE_MS = 7000;
@@ -14,7 +13,7 @@ const AUTO_SLIDE_MS = 7000;
  * (type/author eyebrow, large title, synopsis, Play + More info buttons),
  * crossfade slides and progress dots. Built fresh for the modern UI.
  */
-export default function ModernHero({ works, readLabel }: { works: BannerWork[]; readLabel: string }) {
+export default function ModernHero({ works }: { works: BannerWork[] }) {
   const [index, setIndex] = React.useState(0);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const total = works.length;
@@ -69,8 +68,11 @@ export default function ModernHero({ works, readLabel }: { works: BannerWork[]; 
       <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink-bg)] via-[var(--ink-bg)]/15 to-transparent" />
 
-      {/* editorial panel */}
-      <div className="absolute inset-0 flex items-end">
+      {/* whole banner is clickable */}
+      <Link href={`/w/${work.slug}`} className="absolute inset-0 z-10" aria-label={work.title} />
+
+      {/* editorial panel (display only; the link above handles navigation) */}
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-end">
         <div className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6 lg:pb-28">
           <motion.div
             key={index}
@@ -93,23 +95,6 @@ export default function ModernHero({ works, readLabel }: { works: BannerWork[]; 
                 {work.description}
               </p>
             ) : null}
-
-            <div className="mt-7 flex items-center gap-3">
-              <Link
-                href={`/w/${work.slug}`}
-                className="group inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-bold text-gray-950 shadow-xl transition hover:bg-white/90"
-              >
-                <Play size={17} className="fill-gray-950" />
-                {readLabel}
-              </Link>
-              <Link
-                href={`/w/${work.slug}`}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
-              >
-                <Info size={17} />
-                More info
-              </Link>
-            </div>
           </motion.div>
         </div>
       </div>

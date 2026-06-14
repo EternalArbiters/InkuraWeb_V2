@@ -21,7 +21,6 @@ type Props = {
   searchLabel: string;
   libraryLabel: string;
   seeAllLabel: string;
-  readLabel: string;
   bannerWorks: BannerWork[];
   /** Classic UI: pre-rendered server work rails. */
   rails: React.ReactNode;
@@ -98,26 +97,22 @@ function ModernRail({
           </div>
         </div>
 
-        {/* edge arrow controls */}
+        {/* edge arrow controls — clean circular buttons, centred on the posters */}
         <button
           type="button"
           onClick={() => scrollByDir(-1)}
           aria-label="Scroll left"
-          className="absolute left-0 top-4 bottom-4 z-20 hidden w-12 items-center justify-center bg-gradient-to-r from-[var(--ink-bg)] to-transparent text-[var(--ink-fg)] opacity-0 transition-opacity hover:from-[var(--ink-bg)] group-hover/row:opacity-100 md:flex"
+          className="absolute left-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ink-surface)]/95 text-[var(--ink-fg)] shadow-lg ring-1 ring-black/10 backdrop-blur-sm transition hover:bg-[var(--ink-accent)] hover:text-white opacity-0 group-hover/row:opacity-100 md:flex"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink-surface)] shadow-lg ring-1 ring-black/10">
-            <ChevronLeft size={22} />
-          </span>
+          <ChevronLeft size={20} />
         </button>
         <button
           type="button"
           onClick={() => scrollByDir(1)}
           aria-label="Scroll right"
-          className="absolute right-0 top-4 bottom-4 z-20 hidden w-12 items-center justify-center bg-gradient-to-l from-[var(--ink-bg)] to-transparent text-[var(--ink-fg)] opacity-0 transition-opacity group-hover/row:opacity-100 md:flex"
+          className="absolute right-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ink-surface)]/95 text-[var(--ink-fg)] shadow-lg ring-1 ring-black/10 backdrop-blur-sm transition hover:bg-[var(--ink-accent)] hover:text-white opacity-0 group-hover/row:opacity-100 md:flex"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink-surface)] shadow-lg ring-1 ring-black/10">
-            <ChevronRight size={22} />
-          </span>
+          <ChevronRight size={20} />
         </button>
       </div>
     </section>
@@ -134,7 +129,6 @@ export default function HomeView({
   searchLabel,
   libraryLabel,
   seeAllLabel,
-  readLabel,
   bannerWorks,
   rails,
   railItems,
@@ -148,15 +142,11 @@ export default function HomeView({
       <main className="relative min-h-[calc(100vh-96px)] overflow-hidden bg-[var(--ink-bg)] text-[var(--ink-fg)]">
         <WelcomePopup />
 
-        {bannerWorks.length > 0 ? <ModernHero works={bannerWorks} readLabel={readLabel} /> : null}
+        {bannerWorks.length > 0 ? <ModernHero works={bannerWorks} /> : null}
 
         <div className="relative">
           <AuroraBackdrop />
-          <div
-            className={`relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-6 ${
-              bannerWorks.length > 0 ? "-mt-16 lg:-mt-24" : "pt-10"
-            }`}
-          >
+          <div className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 lg:pt-16">
             <div className="space-y-10">
               {featured ? <ModernRail {...featured} seeAllLabel={seeAllLabel} ranked /> : null}
               {restRails.map((rail) => (

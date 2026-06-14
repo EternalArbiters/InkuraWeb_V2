@@ -7,6 +7,7 @@ import DashboardNavbar from "./DashboardNavbar";
 import FloatingActions from "./FloatingActions";
 import { maybeSendSessionSeen, sendAnalyticsEvent } from "@/lib/analyticsClient";
 import { useUILanguage } from "./ui-language/UILanguageProvider";
+import { useUITheme } from "./ui-theme/UIThemeProvider";
 
 function shouldShowNavbar(pathname: string) {
   return pathname !== "/" && !pathname.startsWith("/auth");
@@ -31,6 +32,11 @@ export default function LayoutClientWrapper({
   const showNavbar = shouldShowNavbar(pathname);
   const hideMobileNavbarInReader = isReaderRoute(pathname);
   const { language } = useUILanguage();
+  const { uiTheme } = useUITheme();
+  // Modern Home runs a full-bleed cinematic hero that sits *under* the fixed
+  // navbar (so there's no empty strip when the navbar auto-hides), and supplies
+  // its own background — so we drop the default top padding + light background.
+  const modernFullBleed = uiTheme === "modern" && pathname === "/home";
 
   useEffect(() => {
     document.documentElement.dataset.inkuraLanguage = language;
@@ -66,9 +72,11 @@ export default function LayoutClientWrapper({
       <div
         className={
           showNavbar
-            ? hideMobileNavbarInReader
-              ? "min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white md:pt-24"
-              : "pt-24 min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white"
+            ? modernFullBleed
+              ? "min-h-screen"
+              : hideMobileNavbarInReader
+                ? "min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white md:pt-24"
+                : "pt-24 min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white"
             : ""
         }
       >

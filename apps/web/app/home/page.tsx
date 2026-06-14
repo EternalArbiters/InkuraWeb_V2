@@ -13,7 +13,7 @@ export default async function HomePage() {
   try {
     const [{ trendingComics, trendingNovels, recent, originals, translations, draftWorks }, bannerWorks] =
       await Promise.all([getHomePageData(), getBannerWorks()]);
-    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel, seeAllLabel, readLabel] =
+    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel, seeAllLabel] =
       await Promise.all([
         getActiveUILanguageText("Home", { section: "Page Home" }),
         getActiveUILanguageText("Search", { section: "Navigation" }),
@@ -25,7 +25,6 @@ export default async function HomePage() {
         getActiveUILanguageText("Recently Updated", { section: "Page Home" }),
         getActiveUILanguageText("Still Draft", { section: "Page Home" }),
         getActiveUILanguageText("See all", { section: "Page Home" }),
-        getActiveUILanguageText("Read", { section: "Page Home" }),
       ]);
 
     const railItems = [
@@ -55,7 +54,6 @@ export default async function HomePage() {
         searchLabel={searchLabel}
         libraryLabel={libraryLabel}
         seeAllLabel={seeAllLabel}
-        readLabel={readLabel}
         bannerWorks={bannerWorks}
         rails={rails}
         railItems={railItems}
