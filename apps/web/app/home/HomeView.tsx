@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import WelcomePopup from "./WelcomePopup";
 import HeroBanner from "./HeroBanner";
@@ -32,11 +33,18 @@ type Props = {
 function AuroraBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <div className="absolute -left-24 top-[20%] h-[30rem] w-[30rem] rounded-full bg-blue-600/10 blur-[120px] animate-blob" />
-      <div className="absolute right-[-6rem] top-[50%] h-[28rem] w-[28rem] rounded-full bg-purple-600/12 blur-[120px] animate-blob animation-delay-2000" />
+      <div className="absolute -left-24 top-[20%] h-80 w-80 transform-gpu rounded-full bg-blue-600/10 blur-3xl will-change-transform animate-blob" />
+      <div className="absolute right-[-6rem] top-[50%] h-72 w-72 transform-gpu rounded-full bg-purple-600/12 blur-3xl will-change-transform animate-blob animation-delay-2000" />
     </div>
   );
 }
+
+// Row-level stagger: a single in-view observer per row drives all its cards,
+// instead of one observer per card — same reveal, far cheaper on scroll.
+const railContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.02 } },
+};
 
 /** Bold Netflix-style row header. */
 function SectionHeader({ title, href, seeAllLabel }: { title: string; href: string; seeAllLabel: string }) {
@@ -84,17 +92,22 @@ function ModernRail({
           ref={scrollerRef}
           className="-mx-4 overflow-x-auto overscroll-x-contain px-4 py-4 no-scrollbar sm:-mx-6 sm:px-6"
         >
-          <div className="flex w-max gap-3 md:gap-4">
+          <motion.div
+            className="flex w-max gap-3 md:gap-4"
+            variants={railContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.08 }}
+          >
             {items.map((work, i) => (
               <ModernWorkCard
                 key={work.id}
                 work={work}
-                index={i}
                 rank={ranked ? i + 1 : undefined}
                 className="w-[42vw] max-w-[200px] sm:w-[175px] lg:w-[190px]"
               />
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* edge arrow controls — clean circular buttons, centred on the posters */}

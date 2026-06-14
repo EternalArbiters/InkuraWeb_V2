@@ -44,6 +44,13 @@ function titleCase(value?: string | null) {
   return normalized.replace(/\b\w/g, (ch) => ch.toUpperCase());
 }
 
+// Entrance is driven by the parent rail's stagger container (one Intersection
+// observer per row instead of one per card) — much lighter on scroll.
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] } },
+};
+
 function genreText(genres?: Genre[] | null) {
   if (!Array.isArray(genres) || genres.length === 0) return null;
   const names = genres
@@ -67,13 +74,11 @@ export default function ModernWorkCard({
   work,
   className,
   rank,
-  index = 0,
   showBookmark = false,
 }: {
   work: WorkCardData;
   className?: string;
   rank?: number;
-  index?: number;
   showBookmark?: boolean;
 }) {
   const [active, setActive] = useState(false);
@@ -121,18 +126,12 @@ export default function ModernWorkCard({
   }, [active]);
 
   return (
-    <motion.div
-      className={["shrink-0", className || ""].join(" ")}
-      initial={{ opacity: 0, y: 22 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.5, delay: Math.min(index, 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <motion.div className={["shrink-0", className || ""].join(" ")} variants={cardVariants}>
       <div
         ref={rootRef}
-        className="group block transition-all duration-300 ease-out hover:-translate-y-1.5"
+        className="group block transform-gpu transition-transform duration-300 ease-out hover:-translate-y-1.5"
       >
-        <div className="relative aspect-[3/4] overflow-hidden rounded-none bg-[var(--ink-surface-2)] shadow-sm ring-1 ring-black/[0.06] transition-all duration-300 group-hover:shadow-[0_16px_34px_-12px_rgba(124,58,237,0.5)] group-hover:ring-2 group-hover:ring-[var(--ink-accent)]/60">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-none bg-[var(--ink-surface-2)] shadow-sm ring-1 ring-black/[0.06] transition duration-300 group-hover:shadow-[0_16px_34px_-12px_rgba(124,58,237,0.5)] group-hover:ring-2 group-hover:ring-[var(--ink-accent)]/60">
           <Link href={href} className="absolute inset-0 z-0" aria-label={title} />
 
           {cover ? (
@@ -141,7 +140,7 @@ export default function ModernWorkCard({
               src={cover}
               alt={title}
               loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.08]"
+              className="h-full w-full transform-gpu object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.08]"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-[var(--ink-muted)]">
