@@ -1,7 +1,8 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import WelcomePopup from "./WelcomePopup";
 import HeroBanner from "./HeroBanner";
 import ModernHero from "./ModernHero";
@@ -28,42 +29,35 @@ type Props = {
   railItems: RailItem[];
 };
 
-/** Animated aurora backdrop — soft brand-coloured light blooms drifting behind content. */
+/** Subtle animated brand glow drifting behind the content rows. */
 function AuroraBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <div className="absolute -left-24 -top-28 h-[30rem] w-[30rem] rounded-full bg-blue-500/20 blur-[110px] animate-blob dark:bg-blue-500/15" />
-      <div className="absolute right-[-6rem] top-24 h-[28rem] w-[28rem] rounded-full bg-purple-600/20 blur-[110px] animate-blob animation-delay-2000 dark:bg-purple-600/15" />
-      <div className="absolute bottom-10 left-1/3 h-[26rem] w-[26rem] rounded-full bg-fuchsia-500/15 blur-[120px] animate-blob dark:bg-fuchsia-500/10" />
+      <div className="absolute -left-24 top-[20%] h-[30rem] w-[30rem] rounded-full bg-blue-600/10 blur-[120px] animate-blob" />
+      <div className="absolute right-[-6rem] top-[50%] h-[28rem] w-[28rem] rounded-full bg-purple-600/12 blur-[120px] animate-blob animation-delay-2000" />
     </div>
   );
 }
 
-/** Bold section header with a brand accent bar. */
+/** Bold Netflix-style row header. */
 function SectionHeader({ title, href, seeAllLabel }: { title: string; href: string; seeAllLabel: string }) {
   return (
-    <motion.div
-      className="mb-5 flex items-center justify-between gap-3"
-      initial={{ opacity: 0, x: -16 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, amount: 0.6 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <div className="mb-3 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <span className="h-7 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
-        <h2 className="text-xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-2xl">{title}</h2>
+        <span className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
+        <h2 className="text-lg font-extrabold tracking-tight text-[var(--ink-fg)] md:text-xl">{title}</h2>
       </div>
       <Link
         href={href}
-        className="group/all shrink-0 text-xs font-bold uppercase tracking-wide text-[var(--ink-muted)] transition-colors hover:text-[var(--ink-accent)]"
+        className="group/all shrink-0 text-xs font-bold uppercase tracking-wide text-[var(--ink-muted)] opacity-100 transition-all hover:text-[var(--ink-accent)] md:opacity-0 md:group-hover/row:opacity-100"
       >
         {seeAllLabel} <span className="inline-block transition-transform group-hover/all:translate-x-0.5">›</span>
       </Link>
-    </motion.div>
+    </div>
   );
 }
 
-/** Horizontal rail of modern cards; pass `ranked` for the TOP-list numerals. */
+/** Netflix-style row: horizontal poster scroller with edge arrow controls. */
 function ModernRail({
   title,
   href,
@@ -71,23 +65,60 @@ function ModernRail({
   seeAllLabel,
   ranked = false,
 }: RailItem & { seeAllLabel: string; ranked?: boolean }) {
+  const scrollerRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollByDir = (dir: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
+  };
+
   if (!works?.length) return null;
   const items = ranked ? works.slice(0, 10) : works;
+
   return (
-    <section>
+    <section className="group/row relative">
       <SectionHeader title={title} href={href} seeAllLabel={seeAllLabel} />
-      <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 py-4 no-scrollbar sm:-mx-6 sm:px-6">
-        <div className="flex w-max gap-4 md:gap-5">
-          {items.map((work, i) => (
-            <ModernWorkCard
-              key={work.id}
-              work={work}
-              index={i}
-              rank={ranked ? i + 1 : undefined}
-              className="w-[140px] sm:w-[160px]"
-            />
-          ))}
+
+      <div className="relative">
+        <div
+          ref={scrollerRef}
+          className="-mx-4 overflow-x-auto overscroll-x-contain px-4 py-4 no-scrollbar sm:-mx-6 sm:px-6"
+        >
+          <div className="flex w-max gap-3 md:gap-4">
+            {items.map((work, i) => (
+              <ModernWorkCard
+                key={work.id}
+                work={work}
+                index={i}
+                rank={ranked ? i + 1 : undefined}
+                className="w-[135px] sm:w-[155px] lg:w-[170px]"
+              />
+            ))}
+          </div>
         </div>
+
+        {/* edge arrow controls */}
+        <button
+          type="button"
+          onClick={() => scrollByDir(-1)}
+          aria-label="Scroll left"
+          className="absolute left-0 top-4 bottom-4 z-20 hidden w-12 items-center justify-center bg-gradient-to-r from-[var(--ink-bg)] to-transparent text-[var(--ink-fg)] opacity-0 transition-opacity hover:from-[var(--ink-bg)] group-hover/row:opacity-100 md:flex"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink-surface)] shadow-lg ring-1 ring-black/10">
+            <ChevronLeft size={22} />
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollByDir(1)}
+          aria-label="Scroll right"
+          className="absolute right-0 top-4 bottom-4 z-20 hidden w-12 items-center justify-center bg-gradient-to-l from-[var(--ink-bg)] to-transparent text-[var(--ink-fg)] opacity-0 transition-opacity group-hover/row:opacity-100 md:flex"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink-surface)] shadow-lg ring-1 ring-black/10">
+            <ChevronRight size={22} />
+          </span>
+        </button>
       </div>
     </section>
   );
@@ -95,9 +126,8 @@ function ModernRail({
 
 /**
  * Chooses the Home layout based on the active UI theme. Data is fetched in the
- * server `page.tsx`; the modern layout is a fully custom, animated build
- * (AuroraBackdrop + ModernHero + ModernWorkCard), while the classic layout is
- * preserved untouched.
+ * server `page.tsx`; the modern layout is a fully custom, Netflix-style build
+ * (cinematic billboard + poster rows), while the classic layout is preserved.
  */
 export default function HomeView({
   title,
@@ -113,51 +143,21 @@ export default function HomeView({
 
   if (uiTheme === "modern") {
     const [featured, ...restRails] = railItems;
-    const totalWorks = railItems.reduce((n, r) => n + (r.works?.length || 0), 0);
 
     return (
       <main className="relative min-h-[calc(100vh-96px)] overflow-hidden bg-[var(--ink-bg)] text-[var(--ink-fg)]">
         <WelcomePopup />
-        <AuroraBackdrop />
 
-        <div className="relative z-10">
-          {bannerWorks.length > 0 ? (
-            <motion.div
-              className="border-b border-[var(--ink-border)]"
-              initial={{ opacity: 0, scale: 0.99 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <ModernHero works={bannerWorks} readLabel={readLabel} />
-            </motion.div>
-          ) : null}
+        {bannerWorks.length > 0 ? <ModernHero works={bannerWorks} readLabel={readLabel} /> : null}
 
-          <div className="mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6">
-            <motion.header
-              className="mb-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div>
-                <h1 className="text-4xl font-black leading-none tracking-tight md:text-5xl">
-                  <span className="ink-gradient-text">{title}</span>
-                </h1>
-                <p className="mt-2 text-sm font-medium text-[var(--ink-muted)]">
-                  {totalWorks} stories to explore
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Link href="/search" className="ink-btn-ghost">
-                  {searchLabel}
-                </Link>
-                <Link href="/library" className="ink-btn-primary">
-                  {libraryLabel}
-                </Link>
-              </div>
-            </motion.header>
-
-            <div className="space-y-16">
+        <div className="relative">
+          <AuroraBackdrop />
+          <div
+            className={`relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-6 ${
+              bannerWorks.length > 0 ? "-mt-16 lg:-mt-24" : "pt-10"
+            }`}
+          >
+            <div className="space-y-10">
               {featured ? <ModernRail {...featured} seeAllLabel={seeAllLabel} ranked /> : null}
               {restRails.map((rail) => (
                 <ModernRail key={rail.href} {...rail} seeAllLabel={seeAllLabel} />

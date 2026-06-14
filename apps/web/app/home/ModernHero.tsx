@@ -3,15 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Info } from "lucide-react";
 import type { BannerWork } from "@/server/services/home/getBannerWorks";
 
-const AUTO_SLIDE_MS = 6000;
+const AUTO_SLIDE_MS = 7000;
 
 /**
- * Cinematic featured hero for the modern Home — large editorial banner with a
- * left-aligned text panel (type eyebrow, big title, author, brand CTA), crossfade
- * slides, arrows and progress dots. Built fresh for the modern UI.
+ * Netflix-style cinematic billboard for the modern Home — full-bleed featured
+ * artwork that fades into the page, with a left-aligned editorial panel
+ * (type/author eyebrow, large title, synopsis, Play + More info buttons),
+ * crossfade slides and progress dots. Built fresh for the modern UI.
  */
 export default function ModernHero({ works, readLabel }: { works: BannerWork[]; readLabel: string }) {
   const [index, setIndex] = React.useState(0);
@@ -36,17 +37,6 @@ export default function ModernHero({ works, readLabel }: { works: BannerWork[]; 
     resetTimer();
   };
 
-  const touchStartX = React.useRef<number | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) goTo(index + (diff > 0 ? 1 : -1));
-    touchStartX.current = null;
-  };
-
   if (total === 0) return null;
 
   const work = works[index];
@@ -54,95 +44,86 @@ export default function ModernHero({ works, readLabel }: { works: BannerWork[]; 
   const author = work.author?.username ? `@${work.author.username}` : null;
 
   return (
-    <section
-      className="relative w-full overflow-hidden rounded-none bg-gray-950 aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/8]"
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-    >
+    <section className="relative h-[64vh] min-h-[460px] w-full overflow-hidden bg-gray-950 sm:h-[74vh] lg:h-[86vh]">
       {works.map((w, i) => {
         const img = w.bannerImage || w.coverImage;
         return (
           <div
             key={w.id}
             aria-hidden={i !== index}
-            className={`absolute inset-0 transition-opacity duration-700 ${
+            className={`absolute inset-0 transition-opacity duration-1000 ${
               i === index ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >
             {img ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={img} alt={w.title} className="h-full w-full object-cover" draggable={false} />
+              <img src={img} alt={w.title} className="h-full w-full object-cover object-top" draggable={false} />
             ) : (
               <div className="h-full w-full bg-gray-800" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
           </div>
         );
       })}
 
-      {/* brand glow accent */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-24 left-0 h-64 w-2/3 rounded-full bg-purple-600/30 blur-[100px]"
-      />
+      {/* cinematic gradients — dark for legibility + bottom fade into the page */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink-bg)] via-[var(--ink-bg)]/15 to-transparent" />
 
-      {/* text panel (re-animates per slide) */}
+      {/* editorial panel */}
       <div className="absolute inset-0 flex items-end">
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 26 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-3xl p-5 sm:p-8 lg:p-12"
-        >
-          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur-md">
-            {typeLabel}
-            {author ? <span className="ml-1.5 font-medium text-white/80">{author}</span> : null}
-          </span>
-          <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)] sm:text-4xl lg:text-6xl">
-            {work.title}
-          </h2>
-          <Link
-            href={`/w/${work.slug}`}
-            className="group mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-900/50 transition hover:brightness-110"
+        <div className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6 lg:pb-28">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-xl lg:max-w-2xl"
           >
-            {readLabel}
-            <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </motion.div>
+            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md">
+              {typeLabel}
+              {author ? <span className="ml-1.5 font-medium text-white/75">{author}</span> : null}
+            </span>
+
+            <h1 className="mt-4 line-clamp-2 text-3xl font-black leading-[1.02] tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.6)] sm:text-5xl lg:text-7xl">
+              {work.title}
+            </h1>
+
+            {work.description ? (
+              <p className="mt-4 line-clamp-2 max-w-xl text-sm text-white/80 drop-shadow sm:text-base lg:line-clamp-3">
+                {work.description}
+              </p>
+            ) : null}
+
+            <div className="mt-7 flex items-center gap-3">
+              <Link
+                href={`/w/${work.slug}`}
+                className="group inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-bold text-gray-950 shadow-xl transition hover:bg-white/90"
+              >
+                <Play size={17} className="fill-gray-950" />
+                {readLabel}
+              </Link>
+              <Link
+                href={`/w/${work.slug}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
+              >
+                <Info size={17} />
+                More info
+              </Link>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      {/* arrows */}
+      {/* progress dots */}
       {total > 1 ? (
-        <>
-          <button
-            onClick={() => goTo(index - 1)}
-            aria-label="Previous"
-            className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/65 sm:flex"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={() => goTo(index + 1)}
-            aria-label="Next"
-            className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/65 sm:flex"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </>
-      ) : null}
-
-      {/* dots */}
-      {total > 1 ? (
-        <div className="absolute bottom-4 right-5 z-20 flex gap-1.5">
+        <div className="absolute bottom-10 right-5 z-20 flex gap-1.5 sm:bottom-12 sm:right-8">
           {works.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
-                i === index ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+                i === index ? "w-7 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
               }`}
             />
           ))}
