@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { motion, type Variants } from "framer-motion";
 
 import InteractiveWorkCard from "@/app/components/work/InteractiveWorkCard";
+import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 
 type Work = {
   id: string;
@@ -24,6 +26,12 @@ type Work = {
   chapterCount?: number | null;
 };
 
+// Stagger container: a single in-view observer drives the whole grid's reveal.
+const gridContainer: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+};
+
 export default function WorksGrid({
   works,
   showRecentUpdateBadge = false,
@@ -39,37 +47,69 @@ export default function WorksGrid({
   initialCount?: number;
   step?: number;
 }) {
+  const { uiTheme } = useUITheme();
+  const isModern = uiTheme === "modern";
   const [visibleCount, setVisibleCount] = React.useState(initialCount);
   const visibleWorks = works.slice(0, visibleCount);
   const hasMore = visibleCount < works.length;
 
+  const gridClass = "grid grid-cols-2 gap-4 md:grid-cols-4";
+
+  const cards = visibleWorks.map((w) => (
+    <InteractiveWorkCard
+      key={w.id}
+      work={w}
+      showRecentUpdateBadge={showRecentUpdateBadge}
+      showBookmarkButton={showBookmarkButton}
+      showUpdatedSubtitle={showUpdatedSubtitle}
+    />
+  ));
+
+  const emptyState =
+    works.length === 0 ? (
+      isModern ? (
+        <div className="col-span-2 rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-6 md:col-span-4">
+          <div className="text-lg font-bold">No works</div>
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">There is no data to display yet.</p>
+        </div>
+      ) : (
+        <div className="col-span-2 rounded-2xl border border-gray-200 bg-white/70 p-6 md:col-span-4 dark:border-gray-800 dark:bg-gray-900/50">
+          <div className="text-lg font-bold">No works</div>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">There is no data to display yet.</p>
+        </div>
+      )
+    ) : null;
+
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {visibleWorks.map((w) => (
-          <InteractiveWorkCard
-            key={w.id}
-            work={w}
-            showRecentUpdateBadge={showRecentUpdateBadge}
-            showBookmarkButton={showBookmarkButton}
-            showUpdatedSubtitle={showUpdatedSubtitle}
-          />
-        ))}
-
-        {works.length === 0 ? (
-          <div className="col-span-2 rounded-2xl border border-gray-200 bg-white/70 p-6 md:col-span-4 dark:border-gray-800 dark:bg-gray-900/50">
-            <div className="text-lg font-bold">No works</div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">There is no data to display yet.</p>
-          </div>
-        ) : null}
-      </div>
+      {isModern ? (
+        <motion.div
+          className={gridClass}
+          variants={gridContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.05 }}
+        >
+          {cards}
+          {emptyState}
+        </motion.div>
+      ) : (
+        <div className={gridClass}>
+          {cards}
+          {emptyState}
+        </div>
+      )}
 
       {hasMore ? (
-        <div className="mt-6 flex justify-center">
+        <div className="mt-8 flex justify-center">
           <button
             type="button"
             onClick={() => setVisibleCount((current) => Math.min(current + step, works.length))}
-            className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900"
+            className={
+              isModern
+                ? "inline-flex items-center justify-center rounded-lg border border-[var(--ink-border)] bg-[var(--ink-surface)] px-6 py-2.5 text-sm font-semibold text-[var(--ink-fg)] transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
+                : "inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900"
+            }
           >
             Load more
           </button>

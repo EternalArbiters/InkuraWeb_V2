@@ -75,11 +75,13 @@ export default function ModernWorkCard({
   className,
   rank,
   showBookmark = false,
+  blurImage = false,
 }: {
   work: WorkCardData;
   className?: string;
   rank?: number;
   showBookmark?: boolean;
+  blurImage?: boolean;
 }) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -140,7 +142,9 @@ export default function ModernWorkCard({
               src={cover}
               alt={title}
               loading="lazy"
-              className="h-full w-full transform-gpu object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.08]"
+              className={`h-full w-full transform-gpu object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.08] ${
+                blurImage ? "blur-md" : ""
+              }`}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-[var(--ink-muted)]">

@@ -5,6 +5,7 @@ import { Heart, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import OriginFlag from "@/app/components/OriginFlag";
+import ModernWorkCard from "@/app/components/work/ModernWorkCard";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import { formatUpdatedAt, EN_TIME_LOCALE, ID_TIME_LOCALE } from "@/lib/time";
 import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
@@ -232,6 +233,20 @@ export default function InteractiveWorkCard({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [active]);
+
+  // Modern UI: render the redesigned card instead. (All hooks above still run so
+  // hook order stays stable.) Badge/analytics-only props are intentionally not
+  // forwarded — the modern card has its own visual language.
+  if (isModern) {
+    return (
+      <ModernWorkCard
+        work={work as any}
+        className={className}
+        showBookmark={showBookmarkButton}
+        blurImage={blurImage}
+      />
+    );
+  }
 
   const overlayClass = active ? "opacity-100" : "opacity-0 group-hover:opacity-100";
   const controlsClass = active ? "opacity-0 pointer-events-none" : "opacity-100 group-hover:opacity-0";

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
+import ListSurface from "@/app/components/ListSurface";
 
 type PageScaffoldLookupOptions = {
   section?: string;
@@ -34,7 +35,7 @@ export default async function PageScaffold({
     : [];
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
         {translatedCrumbs?.length ? (
           <nav className="text-sm mb-6 text-gray-600 dark:text-gray-300">
@@ -62,6 +63,6 @@ export default async function PageScaffold({
 
         {children}
       </div>
-    </main>
+    </ListSurface>
   );
 }
