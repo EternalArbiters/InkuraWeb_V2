@@ -179,26 +179,26 @@
 /* ------------------------------------------------------------------ */
 [data-ui-theme="modern"] {
   --ink-bg: #ffffff;
-  --ink-fg: #18181b;
-  --ink-muted: #71717a;
-  --ink-border: #e4e4e7;
+  --ink-fg: #1a1a1a;
+  --ink-muted: #8a8a8a;
+  --ink-border: #ededed;
   --ink-surface: #ffffff;
-  --ink-surface-hover: #f4f4f5;
-  --ink-accent: #4f46e5;
-  --ink-accent-hover: #4338ca;
+  --ink-surface-hover: #f5f5f5;
+  --ink-accent: #00c24e; /* Webtoon-style green */
+  --ink-accent-hover: #00a843;
   --ink-accent-fg: #ffffff;
 }
 
 [data-ui-theme="modern"].dark {
-  --ink-bg: #09090b;
+  --ink-bg: #0e0e0e;
   --ink-fg: #fafafa;
-  --ink-muted: #a1a1aa;
-  --ink-border: #27272a;
-  --ink-surface: #131316;
-  --ink-surface-hover: #1c1c20;
-  --ink-accent: #6366f1;
-  --ink-accent-hover: #818cf8;
-  --ink-accent-fg: #ffffff;
+  --ink-muted: #9a9a9a;
+  --ink-border: #262626;
+  --ink-surface: #161616;
+  --ink-surface-hover: #1e1e1e;
+  --ink-accent: #00dc64;
+  --ink-accent-hover: #2be583;
+  --ink-accent-fg: #04130a;
 }
 
 .ink-btn-primary {
@@ -206,7 +206,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1.1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.4rem;
   font-size: 0.875rem;
   font-weight: 600;
   background: var(--ink-accent);
@@ -225,7 +225,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1.1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.4rem;
   font-size: 0.875rem;
   font-weight: 600;
   background: transparent;

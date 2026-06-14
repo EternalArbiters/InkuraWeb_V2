@@ -3,10 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import type { BannerWork } from "@/server/services/home/getBannerWorks";
+import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 
 const AUTO_SLIDE_MS = 5000;
 
 export default function HeroBanner({ works }: { works: BannerWork[] }) {
+  const { uiTheme } = useUITheme();
+  const isModern = uiTheme === "modern";
   const [index, setIndex] = React.useState(0);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -62,7 +65,9 @@ export default function HeroBanner({ works }: { works: BannerWork[] }) {
 
   return (
     <section
-      className="relative w-full overflow-hidden rounded-2xl bg-gray-900 aspect-square md:aspect-[21/9]"
+      className={`relative w-full overflow-hidden bg-gray-900 aspect-square md:aspect-[21/9] ${
+        isModern ? "rounded-none" : "rounded-2xl"
+      }`}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >

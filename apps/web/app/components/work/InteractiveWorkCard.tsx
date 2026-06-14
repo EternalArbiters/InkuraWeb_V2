@@ -241,12 +241,18 @@ export default function InteractiveWorkCard({
       ref={rootRef}
       className={[
         isModern
-          ? "group min-w-0 overflow-hidden rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] transition duration-200 hover:border-[var(--ink-accent)] hover:-translate-y-0.5"
+          ? "group min-w-0 overflow-hidden rounded-none bg-transparent transition duration-200"
           : "group min-w-0 overflow-hidden rounded-[18px] border border-gray-200 bg-white/70 shadow-sm transition hover:shadow-lg dark:border-gray-800 dark:bg-[#08142e]/90",
         className || "",
       ].join(" ")}
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-gray-900">
+      <div
+        className={
+          isModern
+            ? "relative aspect-[3/4] overflow-hidden rounded-none border border-[var(--ink-border)] bg-[var(--ink-surface)]"
+            : "relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-gray-900"
+        }
+      >
         <Link
           href={href}
           className="absolute inset-0 z-0 block"
@@ -403,11 +409,15 @@ export default function InteractiveWorkCard({
 
       </div>
 
-      <Link href={href} className="block px-3 pb-3 pt-3" onClick={handleTrackedClick}>
+      <Link
+        href={href}
+        className={isModern ? "block px-0.5 pb-1 pt-2" : "block px-3 pb-3 pt-3"}
+        onClick={handleTrackedClick}
+      >
         <div
           className={
             isModern
-              ? "line-clamp-2 text-sm font-semibold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-[15px]"
+              ? "line-clamp-2 text-[13px] font-semibold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-sm"
               : "line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 dark:text-white sm:text-base"
           }
         >

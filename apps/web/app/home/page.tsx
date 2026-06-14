@@ -14,7 +14,7 @@ export default async function HomePage() {
   try {
     const [{ trendingComics, trendingNovels, recent, originals, translations, draftWorks }, bannerWorks] =
       await Promise.all([getHomePageData(), getBannerWorks()]);
-    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel] =
+    const [homeTitle, searchLabel, libraryLabel, trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel, seeAllLabel] =
       await Promise.all([
         getActiveUILanguageText("Home", { section: "Page Home" }),
         getActiveUILanguageText("Search", { section: "Navigation" }),
@@ -25,20 +25,29 @@ export default async function HomePage() {
         getActiveUILanguageText("Latest Translations", { section: "Page Home" }),
         getActiveUILanguageText("Recently Updated", { section: "Page Home" }),
         getActiveUILanguageText("Still Draft", { section: "Page Home" }),
+        getActiveUILanguageText("See all", { section: "Page Home" }),
       ]);
 
     const hero = bannerWorks.length > 0 ? <HeroBanner works={bannerWorks} /> : null;
 
+    const railItems = [
+      { title: trendingComicsLabel, href: "/browse/trending-comics", works: trendingComics },
+      { title: trendingNovelsLabel, href: "/browse/trending-novels", works: trendingNovels },
+      { title: originalsLabel, href: "/browse/new-originals", works: originals },
+      { title: translationsLabel, href: "/browse/latest-translations", works: translations },
+      { title: recentLabel, href: "/browse/recent-updates", works: recent },
+      ...(draftWorks && draftWorks.length > 0
+        ? [{ title: draftLabel, href: "/browse/still-drafts", works: draftWorks }]
+        : []),
+    ];
+
+    // Classic UI keeps the original server-rendered rails untouched; modern UI
+    // rebuilds them from the structured data (railItems) in a Webtoon-style grid.
     const rails = (
       <>
-        <WorkRail title={trendingComicsLabel} href="/browse/trending-comics" works={trendingComics} />
-        <WorkRail title={trendingNovelsLabel} href="/browse/trending-novels" works={trendingNovels} />
-        <WorkRail title={originalsLabel} href="/browse/new-originals" works={originals} />
-        <WorkRail title={translationsLabel} href="/browse/latest-translations" works={translations} />
-        <WorkRail title={recentLabel} href="/browse/recent-updates" works={recent} />
-        {draftWorks && draftWorks.length > 0 ? (
-          <WorkRail title={draftLabel} href="/browse/still-drafts" works={draftWorks} />
-        ) : null}
+        {railItems.map((rail) => (
+          <WorkRail key={rail.href} title={rail.title} href={rail.href} works={rail.works} />
+        ))}
       </>
     );
 
@@ -47,8 +56,10 @@ export default async function HomePage() {
         title={homeTitle}
         searchLabel={searchLabel}
         libraryLabel={libraryLabel}
+        seeAllLabel={seeAllLabel}
         hero={hero}
         rails={rails}
+        railItems={railItems}
       />
     );
   } finally {
