@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { BannerWork } from "@/server/services/home/getBannerWorks";
 
@@ -80,24 +81,36 @@ export default function ModernHero({ works, readLabel }: { works: BannerWork[]; 
         );
       })}
 
-      {/* text panel */}
+      {/* brand glow accent */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 left-0 h-64 w-2/3 rounded-full bg-purple-600/30 blur-[100px]"
+      />
+
+      {/* text panel (re-animates per slide) */}
       <div className="absolute inset-0 flex items-end">
-        <div className="w-full max-w-3xl p-5 sm:p-8 lg:p-12">
-          <span className="inline-block rounded-sm bg-white/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur-sm">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 26 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-3xl p-5 sm:p-8 lg:p-12"
+        >
+          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur-md">
             {typeLabel}
             {author ? <span className="ml-1.5 font-medium text-white/80">{author}</span> : null}
           </span>
-          <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">
+          <h2 className="mt-3 line-clamp-2 text-2xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)] sm:text-4xl lg:text-6xl">
             {work.title}
           </h2>
           <Link
             href={`/w/${work.slug}`}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-purple-900/40 transition hover:brightness-110"
+            className="group mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-900/50 transition hover:brightness-110"
           >
             {readLabel}
-            <ChevronRight size={16} />
+            <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
-        </div>
+        </motion.div>
       </div>
 
       {/* arrows */}
