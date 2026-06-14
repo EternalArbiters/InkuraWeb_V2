@@ -24,20 +24,30 @@ type Props = {
   railItems: RailItem[];
 };
 
-/** Webtoon-style horizontal rail used by the modern Home. */
+/** Bold section header with a green accent bar (Webtoon-style). */
+function SectionHeader({ title, href, seeAllLabel }: { title: string; href: string; seeAllLabel: string }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <span className="h-6 w-1.5 rounded-full bg-[var(--ink-accent)]" />
+        <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--ink-fg)]">{title}</h2>
+      </div>
+      <Link
+        href={href}
+        className="shrink-0 text-xs font-bold uppercase tracking-wide text-[var(--ink-muted)] transition-colors hover:text-[var(--ink-accent)]"
+      >
+        {seeAllLabel} ›
+      </Link>
+    </div>
+  );
+}
+
+/** Standard Webtoon-style horizontal rail. */
 function ModernRail({ title, href, works, seeAllLabel }: RailItem & { seeAllLabel: string }) {
   if (!works?.length) return null;
   return (
     <section>
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="text-lg md:text-xl font-bold tracking-tight text-[var(--ink-fg)]">{title}</h2>
-        <Link
-          href={href}
-          className="shrink-0 text-xs font-semibold text-[var(--ink-muted)] transition-colors hover:text-[var(--ink-accent)]"
-        >
-          {seeAllLabel} ›
-        </Link>
-      </div>
+      <SectionHeader title={title} href={href} seeAllLabel={seeAllLabel} />
       <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 no-scrollbar">
         <div className="flex w-max gap-3 md:gap-4">
           {works.map((work) => (
@@ -46,6 +56,28 @@ function ModernRail({ title, href, works, seeAllLabel }: RailItem & { seeAllLabe
               work={work}
               className="w-[140px] shrink-0 snap-start sm:w-[165px]"
             />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Ranking rail with large rank numerals — Webtoon's signature TOP-10 look. */
+function RankingRail({ title, href, works, seeAllLabel }: RailItem & { seeAllLabel: string }) {
+  if (!works?.length) return null;
+  return (
+    <section>
+      <SectionHeader title={title} href={href} seeAllLabel={seeAllLabel} />
+      <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 no-scrollbar">
+        <div className="flex w-max items-end gap-3 md:gap-5">
+          {works.slice(0, 10).map((work, index) => (
+            <div key={work.id} className="flex shrink-0 items-end gap-1">
+              <span className="-mb-1 select-none text-[64px] font-black leading-[0.75] text-[var(--ink-muted)] opacity-25">
+                {index + 1}
+              </span>
+              <InteractiveWorkCard work={work} className="w-[140px] shrink-0 sm:w-[165px]" />
+            </div>
           ))}
         </div>
       </div>
@@ -62,6 +94,8 @@ export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel
   const { uiTheme } = useUITheme();
 
   if (uiTheme === "modern") {
+    const [featured, ...restRails] = railItems;
+
     return (
       <main className="min-h-[calc(100vh-96px)] bg-[var(--ink-bg)] text-[var(--ink-fg)]">
         <WelcomePopup />
@@ -69,13 +103,18 @@ export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel
         {/* Full-bleed hero band, Webtoon-style */}
         {hero ? (
           <div className="border-b border-[var(--ink-border)]">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-6">{hero}</div>
+            <div className="mx-auto max-w-7xl px-4 pt-6 pb-6 sm:px-6">{hero}</div>
           </div>
         ) : null}
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 pb-16">
-          <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">{title}</h1>
+        <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6">
+          <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-3xl font-black tracking-tight md:text-4xl">{title}</h1>
+              <span className="hidden text-sm font-medium text-[var(--ink-muted)] sm:inline">
+                Discover stories worth your time
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <Link href="/search" className="ink-btn-ghost">
                 {searchLabel}
@@ -86,13 +125,14 @@ export default function HomeView({ title, searchLabel, libraryLabel, seeAllLabel
             </div>
           </header>
 
-          <div className="space-y-12">
-            {railItems.map((rail) => (
+          <div className="space-y-14">
+            {featured ? <RankingRail {...featured} seeAllLabel={seeAllLabel} /> : null}
+            {restRails.map((rail) => (
               <ModernRail key={rail.href} {...rail} seeAllLabel={seeAllLabel} />
             ))}
           </div>
 
-          <footer className="mt-14 border-t border-[var(--ink-border)] pt-8 text-xs text-[var(--ink-muted)]">
+          <footer className="mt-16 border-t border-[var(--ink-border)] pt-8 text-xs text-[var(--ink-muted)]">
             Inkura v16
           </footer>
         </div>
