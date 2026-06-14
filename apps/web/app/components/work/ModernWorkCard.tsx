@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Star, Info } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 
 type Person = { username?: string | null; name?: string | null } | null | undefined;
@@ -46,7 +46,7 @@ function titleCase(value?: string | null) {
 
 // Entrance is driven by the parent rail's stagger container (one Intersection
 // observer per row instead of one per card) — much lighter on scroll.
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] } },
 };

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import WelcomePopup from "./WelcomePopup";
 import HeroBanner from "./HeroBanner";
@@ -41,7 +41,7 @@ function AuroraBackdrop() {
 
 // Row-level stagger: a single in-view observer per row drives all its cards,
 // instead of one observer per card — same reveal, far cheaper on scroll.
-const railContainer = {
+const railContainer: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.05, delayChildren: 0.02 } },
 };
