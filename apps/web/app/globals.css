@@ -171,6 +171,85 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Modern UI theme (clean minimalist) — opt-in via data-ui-theme.      */
+/* These tokens + helper classes are only consumed by the redesigned   */
+/* "modern" components, so the classic UI is left untouched.           */
+/* ------------------------------------------------------------------ */
+[data-ui-theme="modern"] {
+  --ink-bg: #ffffff;
+  --ink-fg: #18181b;
+  --ink-muted: #71717a;
+  --ink-border: #e4e4e7;
+  --ink-surface: #ffffff;
+  --ink-surface-hover: #f4f4f5;
+  --ink-accent: #4f46e5;
+  --ink-accent-hover: #4338ca;
+  --ink-accent-fg: #ffffff;
+}
+
+[data-ui-theme="modern"].dark {
+  --ink-bg: #09090b;
+  --ink-fg: #fafafa;
+  --ink-muted: #a1a1aa;
+  --ink-border: #27272a;
+  --ink-surface: #131316;
+  --ink-surface-hover: #1c1c20;
+  --ink-accent: #6366f1;
+  --ink-accent-hover: #818cf8;
+  --ink-accent-fg: #ffffff;
+}
+
+.ink-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--ink-accent);
+  color: var(--ink-accent-fg);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.ink-btn-primary:hover {
+  background: var(--ink-accent-hover);
+}
+.ink-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.ink-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--ink-fg);
+  border: 1px solid var(--ink-border);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ink-btn-ghost:hover {
+  background: var(--ink-surface-hover);
+}
+
+.ink-card {
+  background: var(--ink-surface);
+  border: 1px solid var(--ink-border);
+  border-radius: 1rem;
+}
+
+.ink-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-accent);
+}
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
 }

@@ -6,6 +6,7 @@ import CustomCursor from "./components/CustomCursor";
 import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
 import UILanguageProvider from "./components/ui-language/UILanguageProvider";
+import { UIThemeProvider, UIThemeScript } from "./components/ui-theme/UIThemeProvider";
 import { inkuraLanguageToHtmlLang } from "@/lib/inkuraLanguage";
 import { getSession } from "@/server/auth/session";
 import { getAllUILanguageCatalogs } from "@/server/services/uiLanguage/catalog";
@@ -56,10 +57,13 @@ export default async function RootLayout({
   return (
     <html lang={inkuraLanguageToHtmlLang(initialLanguage)} data-inkura-language={initialLanguage}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
+        <UIThemeScript />
         <SessionWrapper session={hydratedSession}>
           <UILanguageProvider catalogs={catalogs} initialLanguage={initialLanguage}>
-            <CustomCursor />
-            <LayoutClientWrapper>{children}</LayoutClientWrapper>
+            <UIThemeProvider>
+              <CustomCursor />
+              <LayoutClientWrapper>{children}</LayoutClientWrapper>
+            </UIThemeProvider>
           </UILanguageProvider>
         </SessionWrapper>
       </body>

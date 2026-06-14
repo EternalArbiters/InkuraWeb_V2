@@ -17,6 +17,7 @@ import { useThemeToggle } from "./dashboardNavbar/useThemeToggle";
 import { useMobileHeaderVisibility } from "./dashboardNavbar/useMobileHeaderVisibility";
 import { useNavigationProgress } from "./dashboardNavbar/useNavigationProgress";
 import { useUILanguageText } from "./ui-language/UILanguageProvider";
+import { useUITheme } from "./ui-theme/UIThemeProvider";
 
 export default function DashboardNavbar() {
   const { data: session } = useSession();
@@ -24,6 +25,8 @@ export default function DashboardNavbar() {
   const pathname = usePathname();
   const isAuthed = !!session?.user?.id;
   const t = useUILanguageText("Navigation");
+  const { uiTheme } = useUITheme();
+  const isModern = uiTheme === "modern";
 
   const { isDarkMode, toggleDarkMode } = useThemeToggle();
 
@@ -73,15 +76,25 @@ export default function DashboardNavbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b dark:border-gray-800 ${
-          showMobileNav ? "" : "translate-y-[-100%] md:translate-y-0"
-        }`}
+        className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
+          isModern
+            ? "backdrop-blur bg-[var(--ink-bg)]/85 border-b border-[var(--ink-border)]"
+            : "backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b dark:border-gray-800"
+        } ${showMobileNav ? "" : "translate-y-[-100%] md:translate-y-0"}`}
       >
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between space-x-4">
           <div className="flex items-center justify-between w-full md:w-auto">
             <Link href="/home" className="flex items-center gap-2">
               <Image src="/logo-inkura.png" alt="Inkura" width={36} height={36} />
-              <span className="text-2xl font-bold text-gray-800 dark:text-white">INKURA</span>
+              <span
+                className={
+                  isModern
+                    ? "text-2xl font-semibold tracking-tight text-[var(--ink-fg)]"
+                    : "text-2xl font-bold text-gray-800 dark:text-white"
+                }
+              >
+                INKURA
+              </span>
             </Link>
             <div className="flex items-center gap-2 md:hidden ml-2">
               <IconButton icon={<Search size={22} />} label={t("Search")} onClick={() => setDropdown("search")} />
