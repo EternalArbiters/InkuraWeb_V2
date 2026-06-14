@@ -1,5 +1,6 @@
 import BackButton from "@/app/components/BackButton";
 import { notFound } from "next/navigation";
+import ListSurface from "@/app/components/ListSurface";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { getWorkPageDataBySlug } from "@/server/services/works/workPage";
@@ -17,7 +18,7 @@ export default async function WorkAllChaptersPage({ params: paramsPromise }: { p
   const progress = (data as any).progress || { lastReadChapterId: null, lastReadChapterNumber: null };
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="mx-auto max-w-5xl px-4 py-10">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
@@ -36,6 +37,6 @@ export default async function WorkAllChaptersPage({ params: paramsPromise }: { p
           showAllHref={null}
         />
       </div>
-    </main>
+    </ListSurface>
   );
 }

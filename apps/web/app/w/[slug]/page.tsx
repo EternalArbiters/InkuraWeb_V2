@@ -6,6 +6,7 @@ import { fetchComments } from "@/server/services/comments/fetchComments";
 import { listWorkReviews } from "@/server/services/reviews/listWorkReviews";
 import { listReadingListOptionsForViewer } from "@/server/services/readingLists/readingLists";
 import WorkCoverBadges from "../../components/WorkCoverBadges";
+import ListSurface from "@/app/components/ListSurface";
 import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import LikeButton from "@/app/components/work/LikeButton";
@@ -80,7 +81,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
         getActiveUILanguageText('NSFW is locked. Make sure you have checked "I am 18+" and enabled "Include mature content".', { section: "Page Work Detail" }),
       ]);
       return (
-        <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+        <ListSurface>
           <div className="max-w-4xl mx-auto px-4 py-10">
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
               <div className="p-6">
@@ -116,7 +117,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
               </div>
             </div>
           </div>
-        </main>
+        </ListSurface>
       );
     }
 
@@ -140,7 +141,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
     const deviantLoveTags = Array.isArray(work.deviantLoveTags) ? work.deviantLoveTags : [];
 
     return (
-      <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <ListSurface>
         <AnalyticsEventTracker
           eventType="WORK_VIEW"
           payload={{
@@ -391,7 +392,7 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
             </div>
           </div>
         </div>
-      </main>
+      </ListSurface>
     );
   } finally {
     logPageRenderMetric("work.detail", startedAt, { slug });

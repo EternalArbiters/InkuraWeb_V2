@@ -5,6 +5,7 @@ import * as React from "react";
 import { ArrowDownUp } from "lucide-react";
 import { getChapterDisplayLabel, getChapterSecondaryTitle } from "@/lib/chapterLabel";
 import { ChapterLite, formatChapterDateLabel, resolveChapterThumb } from "@/lib/workChapters";
+import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 
 const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
 
@@ -99,8 +100,24 @@ export default function WorkChaptersWebtoon({
   const visibleChapters = sorted.slice(0, effectiveLimit);
   const hasMoreChapters = sorted.length > effectiveLimit;
 
+  const { uiTheme } = useUITheme();
+  const isModern = uiTheme === "modern";
+
+  const panelClass = isModern
+    ? "rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-4"
+    : "rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50";
+  const rowSurface = isModern
+    ? "border border-[var(--ink-border)] bg-[var(--ink-surface)] transition hover:border-[var(--ink-accent)] hover:bg-[var(--ink-surface-hover)]"
+    : "border border-gray-200 bg-white transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900";
+  const pillButtonClass = isModern
+    ? "inline-flex w-full items-center justify-center rounded-lg border border-[var(--ink-border)] bg-[var(--ink-surface)] px-4 py-3 text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
+    : "inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900";
+  const sortButtonClass = isModern
+    ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--ink-border)] text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
+    : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900";
+
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+    <div className={panelClass}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold">Chapters</div>
@@ -110,7 +127,7 @@ export default function WorkChaptersWebtoon({
         <button
           type="button"
           onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
-          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+          className={sortButtonClass}
           title={sort === "newest" ? "Sort by oldest" : "Sort by newest"}
           aria-label={sort === "newest" ? "Sort by oldest" : "Sort by newest"}
         >
@@ -136,7 +153,8 @@ export default function WorkChaptersWebtoon({
                 key={chapter.id}
                 href={`/w/${slug}/read/${chapter.id}`}
                 className={
-                  "flex min-h-[92px] w-full min-w-0 max-w-full items-stretch gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900 sm:min-h-[96px] " +
+                  "flex min-h-[92px] w-full min-w-0 max-w-full items-stretch gap-3 overflow-hidden rounded-xl p-3 sm:min-h-[96px] " +
+                  rowSurface + " " +
                   (read ? "opacity-60" : "")
                 }
               >
@@ -189,7 +207,8 @@ export default function WorkChaptersWebtoon({
                 key={c.id}
                 href={`/w/${slug}/read/${c.id}`}
                 className={
-                  "flex min-h-[106px] w-full min-w-0 max-w-full items-stretch gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900 sm:min-h-[112px] " +
+                  "flex min-h-[106px] w-full min-w-0 max-w-full items-stretch gap-3 overflow-hidden rounded-xl p-3 sm:min-h-[112px] " +
+                  rowSurface + " " +
                   (read ? "opacity-60" : "")
                 }
               >
@@ -246,7 +265,7 @@ export default function WorkChaptersWebtoon({
           {showAllHref ? (
             <Link
               href={showAllHref}
-              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+              className={pillButtonClass}
             >
               All Chapters
             </Link>
@@ -254,7 +273,7 @@ export default function WorkChaptersWebtoon({
             <button
               type="button"
               onClick={() => setVisibleCount((current) => Math.min(current + 30, sorted.length))}
-              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+              className={pillButtonClass}
             >
               Load more
             </button>

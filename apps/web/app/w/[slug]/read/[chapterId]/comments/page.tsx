@@ -4,6 +4,7 @@ import { getChapterReaderData } from "@/server/services/chapters/readChapter";
 import { fetchComments } from "@/server/services/comments/fetchComments";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import LockLabel from "@/app/components/LockLabel";
+import ListSurface from "@/app/components/ListSurface";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import { getChapterDisplayTitle } from "@/lib/chapterLabel";
@@ -51,7 +52,7 @@ export default async function ChapterCommentsPage({
     ]);
 
     return (
-      <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <ListSurface>
         <div className="max-w-3xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
             <div className="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-black/70 text-white">
@@ -74,7 +75,7 @@ export default async function ChapterCommentsPage({
             </div>
           </div>
         </div>
-      </main>
+      </ListSurface>
     );
   }
 
@@ -133,6 +134,6 @@ export default async function ChapterCommentsPage({
           workPublishType={(work as any).publishType || null}
         />
       </div>
-    </main>
+    </ListSurface>
   );
 }
