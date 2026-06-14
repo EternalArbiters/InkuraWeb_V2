@@ -91,7 +91,7 @@ function ModernRail({
                 work={work}
                 index={i}
                 rank={ranked ? i + 1 : undefined}
-                className="w-[135px] sm:w-[155px] lg:w-[170px]"
+                className="w-[42vw] max-w-[200px] sm:w-[175px] lg:w-[190px]"
               />
             ))}
           </div>

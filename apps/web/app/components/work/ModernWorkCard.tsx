@@ -68,11 +68,13 @@ export default function ModernWorkCard({
   className,
   rank,
   index = 0,
+  showBookmark = false,
 }: {
   work: WorkCardData;
   className?: string;
   rank?: number;
   index?: number;
+  showBookmark?: boolean;
 }) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -81,7 +83,13 @@ export default function ModernWorkCard({
   const title = work?.title || "Untitled";
   const cover = work?.coverImage || null;
   const isComic = String(work?.type || "").toUpperCase() === "COMIC";
-  const typeLabel = titleCase(work?.comicType) || (isComic ? "Comic" : "Novel");
+  const comicTypeLabel = titleCase(work?.comicType);
+  const typeLabel =
+    comicTypeLabel && comicTypeLabel !== "Unknown" && comicTypeLabel !== "Other"
+      ? comicTypeLabel
+      : isComic
+        ? "Comic"
+        : "Novel";
   const author = personLabel(work?.author) || personLabel(work?.translator);
   const rating =
     typeof work?.ratingAvg === "number" && (work?.ratingCount ?? 0) > 0
@@ -141,20 +149,6 @@ export default function ModernWorkCard({
             </div>
           )}
 
-          {/* hover scrim + CTA (suppressed while the info overlay is open) */}
-          <div
-            className={`pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/80 via-black/25 to-transparent transition-opacity duration-300 ${
-              active ? "opacity-0" : "opacity-0 group-hover:opacity-100"
-            }`}
-          />
-          <span
-            className={`pointer-events-none absolute bottom-2 right-2 z-20 translate-y-2 bg-gradient-to-r from-blue-500 to-purple-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg transition-all duration-300 ${
-              active ? "opacity-0" : "opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-            }`}
-          >
-            Read →
-          </span>
-
           {/* rank chip / type badge */}
           {typeof rank === "number" ? (
             <span className="absolute left-0 top-0 z-10 flex h-9 min-w-9 items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 px-2 text-base font-black text-white shadow-lg">
@@ -179,9 +173,9 @@ export default function ModernWorkCard({
 
           {/* controls: info (!) toggle + bookmark */}
           <div
-            className={`absolute right-1.5 top-1.5 z-30 flex flex-col items-end gap-1.5 transition duration-200 ${
-              active ? "pointer-events-none opacity-0" : "opacity-100"
-            } ${work?.isMature ? "right-9" : ""}`}
+            className={`absolute right-1.5 z-30 flex flex-col items-end gap-1.5 transition duration-200 ${
+              work?.isMature ? "top-9" : "top-1.5"
+            } ${active ? "pointer-events-none opacity-0" : "opacity-100"}`}
           >
             <button
               type="button"
@@ -196,7 +190,7 @@ export default function ModernWorkCard({
             >
               <Info size={13} strokeWidth={2.3} />
             </button>
-            {work?.id ? (
+            {showBookmark && work?.id ? (
               <BookmarkIconButton
                 workId={work.id}
                 initialBookmarked={!!work.viewerBookmarked}
@@ -240,10 +234,10 @@ export default function ModernWorkCard({
         </div>
 
         <Link href={href} className="block">
-          <div className="mt-2.5 line-clamp-2 text-sm font-bold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)]">
+          <div className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-base">
             {title}
           </div>
-          {meta ? <div className="mt-0.5 line-clamp-1 text-xs text-[var(--ink-muted)]">{meta}</div> : null}
+          {meta ? <div className="mt-0.5 line-clamp-1 text-[13px] text-[var(--ink-muted)]">{meta}</div> : null}
         </Link>
       </div>
     </motion.div>
