@@ -8,6 +8,7 @@ import OriginFlag from "@/app/components/OriginFlag";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import { formatUpdatedAt, EN_TIME_LOCALE, ID_TIME_LOCALE } from "@/lib/time";
 import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
+import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 import { sendAnalyticsEvent } from "@/lib/analyticsClient";
 
 type Person = {
@@ -166,6 +167,8 @@ export default function InteractiveWorkCard({
   const title = work?.title || "Untitled";
   const flag = translationFlagEmoji(work?.language);
   const { language } = useUILanguage();
+  const { uiTheme } = useUITheme();
+  const isModern = uiTheme === "modern";
   const timeLocale = language === "ID" ? ID_TIME_LOCALE : EN_TIME_LOCALE;
 
   const computeTimeState = () => {
@@ -237,8 +240,9 @@ export default function InteractiveWorkCard({
     <div
       ref={rootRef}
       className={[
-        "group min-w-0 overflow-hidden rounded-[18px] border border-gray-200 bg-white/70 shadow-sm transition hover:shadow-lg",
-        "dark:border-gray-800 dark:bg-[#08142e]/90",
+        isModern
+          ? "group min-w-0 overflow-hidden rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] transition duration-200 hover:border-[var(--ink-accent)] hover:-translate-y-0.5"
+          : "group min-w-0 overflow-hidden rounded-[18px] border border-gray-200 bg-white/70 shadow-sm transition hover:shadow-lg dark:border-gray-800 dark:bg-[#08142e]/90",
         className || "",
       ].join(" ")}
     >
@@ -400,9 +404,23 @@ export default function InteractiveWorkCard({
       </div>
 
       <Link href={href} className="block px-3 pb-3 pt-3" onClick={handleTrackedClick}>
-        <div className="line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 dark:text-white sm:text-base">{title}</div>
+        <div
+          className={
+            isModern
+              ? "line-clamp-2 text-sm font-semibold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-[15px]"
+              : "line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 dark:text-white sm:text-base"
+          }
+        >
+          {title}
+        </div>
         {showUpdatedSubtitle && updatedLabel ? (
-          <div className="mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-gray-500 dark:text-gray-400">
+          <div
+            className={
+              isModern
+                ? "mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-[var(--ink-muted)]"
+                : "mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-gray-500 dark:text-gray-400"
+            }
+          >
             {updatedLabel}
           </div>
         ) : null}
