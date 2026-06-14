@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation";
 export default function NavLink({
   href,
   children,
+  light = false,
 }: {
   href: string;
   children: React.ReactNode;
+  light?: boolean;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -23,7 +25,9 @@ export default function NavLink({
       className={`text-sm font-medium px-3 py-1 rounded transition-all ${
         isActive
           ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-          : "hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white text-gray-800 dark:text-gray-200"
+          : `hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white ${
+              light ? "text-white" : "text-gray-800 dark:text-gray-200"
+            }`
       }`}
     >
       {children}

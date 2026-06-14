@@ -37,6 +37,7 @@ export default function DesktopActions({
   isDarkMode,
   toggleDarkMode,
   handleLogout,
+  light = false,
 }: {
   dropdown: string;
   toggleDropdown: (id: string) => void;
@@ -50,7 +51,12 @@ export default function DesktopActions({
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   handleLogout: () => void;
+  light?: boolean;
 }) {
+  // Dropdown panels have their own light background, so pin their text colour
+  // dark — otherwise the navbar's white text (when transparent over the hero)
+  // would bleed in and make menu items invisible.
+  const dropdownClass = "text-gray-800 dark:text-gray-100";
   const t = useUILanguageText("Navigation");
   const tCommunity = useUILanguageText("Navigation Community");
 
@@ -60,7 +66,7 @@ export default function DesktopActions({
       <div className="relative">
         <IconButton icon={<ListOrdered size={22} />} label={t("Categories")} onClick={() => toggleDropdown("category")} />
         {dropdown === "category" && (
-          <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg">
+          <div className={`absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg ${dropdownClass}`}>
             {CATEGORY_PATHS.map((path) => {
               const label = `${path[0].toUpperCase()}${path.slice(1)}`;
               return (
@@ -79,7 +85,7 @@ export default function DesktopActions({
       <div className="relative">
         <IconButton icon={<Users size={22} />} label={t("Community")} onClick={() => toggleDropdown("community")} />
         {dropdown === "community" && (
-          <div className="absolute mt-2 right-0 z-50 w-48 rounded border bg-white shadow-lg dark:bg-gray-800">
+          <div className={`absolute mt-2 right-0 z-50 w-48 rounded border bg-white shadow-lg dark:bg-gray-800 ${dropdownClass}`}>
             <Link
               href="/community"
               className="block px-4 py-2 hover:bg-gradient-to-r from-blue-500 to-purple-600 hover:text-white"
@@ -119,7 +125,7 @@ export default function DesktopActions({
       <div className="relative">
         <IconButton icon={<Settings size={22} />} label={t("Settings")} onClick={() => toggleDropdown("settings")} />
         {dropdown === "settings" && (
-          <div className="absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg w-48">
+          <div className={`absolute mt-2 right-0 z-50 bg-white dark:bg-gray-800 border rounded shadow-lg w-48 ${dropdownClass}`}>
             {isAuthed ? (
               <Link
                 href="/profile"
@@ -235,7 +241,11 @@ export default function DesktopActions({
           prefetch={false}
           className="ml-4 hidden md:flex items-center gap-2 group min-w-0 max-w-[150px]"
         >
-          <span className="max-w-[102px] truncate text-sm font-medium text-gray-800 dark:text-white group-hover:underline">
+          <span
+            className={`max-w-[102px] truncate text-sm font-medium group-hover:underline ${
+              light ? "text-white" : "text-gray-800 dark:text-white"
+            }`}
+          >
             {compactDisplayName(displayName)}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
@@ -253,7 +263,11 @@ export default function DesktopActions({
         </Link>
       ) : (
         <div className="ml-4 hidden md:flex items-center gap-2 min-w-0 max-w-[150px]">
-          <span className="max-w-[102px] truncate text-sm font-medium text-gray-800 dark:text-white">
+          <span
+            className={`max-w-[102px] truncate text-sm font-medium ${
+              light ? "text-white" : "text-gray-800 dark:text-white"
+            }`}
+          >
             {compactDisplayName(displayName)}
           </span>
           <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">

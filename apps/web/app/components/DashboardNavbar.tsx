@@ -134,8 +134,8 @@ export default function DashboardNavbar() {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-1 mx-auto">
-            <DesktopNavLinks />
+          <div className={`hidden md:flex items-center gap-1 mx-auto ${transparentNav ? "text-white" : ""}`}>
+            <DesktopNavLinks light={transparentNav} />
 
             <DesktopSearch
               searchType={searchType}
@@ -158,11 +158,12 @@ export default function DashboardNavbar() {
               isDarkMode={isDarkMode}
               toggleDarkMode={toggleDarkMode}
               handleLogout={handleLogout}
+              light={transparentNav}
             />
           </div>
         </div>
 
-        <ProgressBar isMenuOpen={isMenuOpen} isNavigating={isNavigating} navProgress={navProgress} />
+        <ProgressBar isMenuOpen={isMenuOpen} isNavigating={isNavigating} navProgress={navProgress} hideTrack={transparentNav} />
       </header>
 
       <SearchOverlay

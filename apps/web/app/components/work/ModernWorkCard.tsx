@@ -161,7 +161,9 @@ export default function ModernWorkCard({
           )}
 
           {work?.isMature ? (
-            <span className="absolute right-0 top-0 z-10 bg-red-600 px-1.5 py-1 text-[10px] font-black text-white">18+</span>
+            <span className="absolute bottom-2 right-2 z-10 rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
+              18+
+            </span>
           ) : null}
 
           {rating ? (
@@ -173,9 +175,9 @@ export default function ModernWorkCard({
 
           {/* controls: info (!) toggle + bookmark */}
           <div
-            className={`absolute right-1.5 z-30 flex flex-col items-end gap-1.5 transition duration-200 ${
-              work?.isMature ? "top-9" : "top-1.5"
-            } ${active ? "pointer-events-none opacity-0" : "opacity-100"}`}
+            className={`absolute right-1.5 top-1.5 z-30 flex flex-col items-end gap-1.5 transition duration-200 ${
+              active ? "pointer-events-none opacity-0" : "opacity-100"
+            }`}
           >
             <button
               type="button"
