@@ -3,6 +3,7 @@ import { getSession } from "@/server/auth/session";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import prisma from "@/server/db/prisma";
 import DonationsHistoryClient from "./DonationsHistoryClient";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +64,7 @@ export default async function DonationsPage() {
   ]);
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-3xl mx-auto px-4 py-10">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tTitle}</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{tSubtitle}</p>
@@ -77,6 +78,6 @@ export default async function DonationsPage() {
           receivedTotalPages={Math.ceil(receivedTotal / PAGE_SIZE)}
         />
       </div>
-    </main>
+    </ListSurface>
   );
 }

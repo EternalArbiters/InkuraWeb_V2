@@ -4,6 +4,7 @@ import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTrac
 import AnalyticsTrackedLink from "@/app/components/analytics/AnalyticsTrackedLink";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { parseUserSearchParams, searchUsers, type UserSearchScope } from "@/server/services/search/userSearch";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -107,7 +108,7 @@ export default async function UserSearchPage({
     getActiveUILanguageText("Search username / name"),
   ]);
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">Search {scopeLabel(data.scope)}</h1>
         <p className="mt-2 max-w-3xl text-sm text-gray-600 dark:text-gray-300 md:text-base">
@@ -185,6 +186,6 @@ export default async function UserSearchPage({
           </div>
         )}
       </div>
-    </main>
+    </ListSurface>
   );
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import NewWorkForm from "./NewWorkForm";
 import { getViewerPreferences } from "@/server/services/preferences/viewerPreferences";
 import { listActiveDeviantLoveTags, listActiveGenres, listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function StudioNewWorkPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -30,6 +31,6 @@ export default async function StudioNewWorkPage() {
 
         <NewWorkForm genres={genres as any} warningTags={warningTags as any} deviantLoveTags={deviantLoveTags as any} />
       </div>
-    </main>
+    </ListSurface>
   );
 }

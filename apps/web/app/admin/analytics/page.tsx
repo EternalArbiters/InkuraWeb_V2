@@ -3,6 +3,7 @@ import BackButton from "@/app/components/BackButton";
 import { getAdminAnalyticsData } from "@/server/services/admin/analytics";
 import AdminAnalyticsDashboard from "./AdminAnalyticsDashboard";
 import AdminAnalyticsActions from "./AdminAnalyticsActions";
+import ListSurface from "@/app/components/ListSurface";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,7 +37,7 @@ export default async function AdminAnalyticsPage({ searchParams: searchParamsPro
   });
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
@@ -96,6 +97,6 @@ export default async function AdminAnalyticsPage({ searchParams: searchParamsPro
 
         <AdminAnalyticsDashboard data={data} />
       </div>
-    </main>
+    </ListSurface>
   );
 }

@@ -96,7 +96,7 @@ export default async function ChapterCommentsPage({
   ]);
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <ReaderFloatingSeed
         chapterId={chapter.id}
         initialLiked={!!(chapter as any).viewerLiked}

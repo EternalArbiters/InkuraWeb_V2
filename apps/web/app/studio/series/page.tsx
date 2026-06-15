@@ -3,6 +3,7 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { listStudioSeries } from "@/server/services/studio/series";
 import StudioSeriesManagerClient from "./StudioSeriesManagerClient";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function StudioSeriesPage() {
   }));
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
@@ -52,6 +53,6 @@ export default async function StudioSeriesPage() {
           />
         </div>
       </div>
-    </main>
+    </ListSurface>
   );
 }

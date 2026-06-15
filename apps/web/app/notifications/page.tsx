@@ -3,6 +3,7 @@ import NotificationsClient from "./NotificationsClient";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { listViewerNotifications } from "@/server/services/notifications/viewerNotifications";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function NotificationsPage() {
   const tNotifications = await getActiveUILanguageText("Notifications");
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -23,6 +24,6 @@ export default async function NotificationsPage() {
 
         <NotificationsClient initial={notifications as any} />
       </div>
-    </main>
+    </ListSurface>
   );
 }

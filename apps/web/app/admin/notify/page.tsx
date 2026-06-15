@@ -1,10 +1,11 @@
 import BackButton from "@/app/components/BackButton";
 import Link from "next/link";
 import AdminNotifyClient from "./AdminNotifyClient";
+import ListSurface from "@/app/components/ListSurface";
 
 export default function AdminNotifyPage() {
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -24,6 +25,6 @@ export default function AdminNotifyPage() {
 
         <AdminNotifyClient />
       </div>
-    </main>
+    </ListSurface>
   );
 }

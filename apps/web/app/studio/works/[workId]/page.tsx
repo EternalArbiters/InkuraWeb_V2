@@ -7,6 +7,7 @@ import { getStudioWorkById } from "@/server/services/studio/workById";
 import { parseWorkSubtitles } from "@/lib/workSubtitles";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import DeleteChapterButton from "./DeleteChapterButton";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,7 @@ export default async function StudioWorkPage({
   ]);
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
+    <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
@@ -211,6 +212,6 @@ export default async function StudioWorkPage({
           </div>
         </div>
       </div>
-    </main>
+    </ListSurface>
   );
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getReadingListPageDataBySlug } from "@/server/services/readingLists/readingLists";
 import { logPageRenderMetric } from "@/server/observability/metrics";
 import ListPageShell from "./ListPageShell";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,11 @@ export default async function ReadingListPublicPage({ params: paramsPromise }: {
   const isOwner = !!viewer?.isOwner;
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-5xl mx-auto px-4 py-10">
         <ListPageShell initialList={list} initialItems={items} isOwner={isOwner} />
       </div>
-    </main>
+    </ListSurface>
   );
   } finally {
     logPageRenderMetric("reading-list.public", startedAt, { slug });

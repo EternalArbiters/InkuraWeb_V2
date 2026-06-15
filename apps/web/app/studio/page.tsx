@@ -7,6 +7,7 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { listStudioWorksForViewer } from "@/server/services/studio/works";
 import { getCreatorRole } from "@/server/services/studio/creator";
 import prisma from "@/server/db/prisma";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export default async function StudioPage({
     : "/studio/new";
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
@@ -101,6 +102,6 @@ export default async function StudioPage({
           )}
         </div>
       </div>
-    </main>
+    </ListSurface>
   );
 }

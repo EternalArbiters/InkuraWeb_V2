@@ -4,6 +4,7 @@ import { authOptions } from "@/server/auth/options";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import AdminReportClient from "@/app/admin-report/ui/AdminReportClient";
 import { isAdminEmail } from "@/server/auth/adminEmail";
+import ListSurface from "@/app/components/ListSurface";
 
 export const runtime = "nodejs";
 
@@ -19,7 +20,7 @@ export default async function AdminReportPage() {
   ]);
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{title}</h1>
@@ -30,6 +31,6 @@ export default async function AdminReportPage() {
 
         <AdminReportClient initialIsAdmin={initialIsAdmin} />
       </div>
-    </main>
+    </ListSurface>
   );
 }

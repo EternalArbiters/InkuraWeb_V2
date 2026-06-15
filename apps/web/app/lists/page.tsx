@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
 import LoadMoreList from "@/app/components/LoadMoreList";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default async function ListsPage() {
 
   if (!data) {
     return (
-      <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <ListSurface>
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
             <h1 className="text-2xl font-extrabold">{tCollection}</h1>
@@ -53,14 +54,14 @@ export default async function ListsPage() {
             </div>
           </div>
         </div>
-      </main>
+      </ListSurface>
     );
   }
 
   const lists = data.lists || [];
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
@@ -151,6 +152,6 @@ export default async function ListsPage() {
           </LoadMoreList>
         )}
       </div>
-    </main>
+    </ListSurface>
   );
 }

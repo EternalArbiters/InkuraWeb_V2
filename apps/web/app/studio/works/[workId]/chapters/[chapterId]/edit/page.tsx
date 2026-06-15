@@ -4,6 +4,7 @@ import BackButton from "@/app/components/BackButton";
 import { ApiError } from "@/server/http";
 import { listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
 import { getStudioChapterForEdit } from "@/server/services/studio/chapters";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function EditChapterPage({
   const workType = chapter.work?.type || "NOVEL";
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <BackButton href={`/studio/works/${params.workId}`} />
         <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight">Edit Chapter</h1>
@@ -51,6 +52,6 @@ export default async function EditChapterPage({
           warningTags={warningTags}
         />
       </div>
-    </main>
+    </ListSurface>
   );
 }

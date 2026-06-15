@@ -15,6 +15,7 @@ import prisma from "@/server/db/prisma";
 import { getViewerComments, getViewerReviews } from "@/server/services/profile/viewerActivity";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { getCommunityUserIdentity } from "@/server/services/community/identity";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -218,7 +219,7 @@ export default async function ProfilePage() {
   ]);
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
         <section className="rounded-[28px] border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-[#04112b] p-6 md:p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
@@ -379,6 +380,6 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
-    </main>
+    </ListSurface>
   );
 }

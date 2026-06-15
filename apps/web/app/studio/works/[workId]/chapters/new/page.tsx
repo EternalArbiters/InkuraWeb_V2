@@ -5,6 +5,7 @@ import { ApiError } from "@/server/http";
 import { listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
 import { getStudioWorkById } from "@/server/services/studio/workById";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ export default async function NewChapterPage({
   const nextNumber = lastNum + 1;
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tNewChapter}</h1>
@@ -46,6 +47,6 @@ export default async function NewChapterPage({
 
         <ChapterCreateForm workTitle={work.title} workId={work.id} workType={work.type} nextNumber={nextNumber} warningTags={warningTags as any} />
       </div>
-    </main>
+    </ListSurface>
   );
 }

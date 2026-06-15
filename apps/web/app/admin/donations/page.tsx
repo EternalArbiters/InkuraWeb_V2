@@ -2,6 +2,7 @@ import Link from "next/link";
 import BackButton from "@/app/components/BackButton";
 import AdminDonationsClient from "./AdminDonationsClient";
 import prisma from "@/server/db/prisma";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function AdminDonationsPage() {
   } catch (err: any) {
     // Table likely doesn't exist yet — remind admin to run prisma db push
     return (
-      <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <ListSurface>
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h1 className="text-3xl font-extrabold">Creator Donations</h1>
           <div className="mt-6 rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-6">
@@ -55,12 +56,12 @@ export default async function AdminDonationsPage() {
             <p className="mt-2 text-xs text-red-500">{String(err?.message || err)}</p>
           </div>
         </div>
-      </main>
+      </ListSurface>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -92,6 +93,6 @@ export default async function AdminDonationsPage() {
           initialTotalPages={Math.ceil(total / PAGE_SIZE) || 1}
         />
       </div>
-    </main>
+    </ListSurface>
   );
 }

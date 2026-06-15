@@ -14,6 +14,7 @@ import { logPageRenderMetric } from "@/server/observability/metrics";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { getCommunityUserIdentity } from "@/server/services/community/identity";
 import { getProfilePageData } from "@/server/services/profile/publicProfilePage";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -121,7 +122,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
     const callbackPath = `/u/${user.username}`;
 
     return (
-      <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+      <ListSurface>
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="relative rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 md:p-8">
             {!isSelf ? (
@@ -254,7 +255,7 @@ export default async function PublicProfilePage({ params: paramsPromise }: { par
             )}
           </section>
         </div>
-      </main>
+      </ListSurface>
     );
   } finally {
     logPageRenderMetric("profile.public", startedAt, { username });

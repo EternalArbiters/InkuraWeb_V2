@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import AdminReportsClient from "./AdminReportsClient";
 import { ApiError } from "@/server/http";
 import { listOpenAdminReports } from "@/server/services/admin/reports";
+import ListSurface from "@/app/components/ListSurface";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function AdminReportsPage() {
   }));
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <ListSurface>
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -70,6 +71,6 @@ export default async function AdminReportsPage() {
 
         <AdminReportsClient initial={initial as any} />
       </div>
-    </main>
+    </ListSurface>
   );
 }
