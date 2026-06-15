@@ -51,32 +51,32 @@ export default async function AllWorksPage({
 
   return (
     <ListSurface>
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <BrowsePageChrome title={title} count={works.length} searchLabel={advancedSearchLabel} />
+      <div className="max-w-6xl mx-auto px-4 pt-10 pb-4">
+        <BrowsePageChrome title={title} searchLabel={advancedSearchLabel} />
+      </div>
 
-        <BrowseCatalogFilter
-          action="/all"
-          defaultSort={sort}
-          defaultPublishType={publishType}
-          defaultAuthor={author}
-          defaultTranslator={translator}
-          labels={{
-            newest: newestLabel,
-            liked: likedLabel,
-            rated: ratedLabel,
-            anyPublishType: anyPublishTypeLabel,
-            original: originalLabel,
-            translation: translationLabel,
-            reupload: reuploadLabel,
-            author: authorLabel,
-            translator: translatorLabel,
-            apply: applyLabel,
-          }}
-        />
+      <BrowseCatalogFilter
+        action="/all"
+        defaultSort={sort}
+        defaultPublishType={publishType}
+        defaultAuthor={author}
+        defaultTranslator={translator}
+        labels={{
+          newest: newestLabel,
+          liked: likedLabel,
+          rated: ratedLabel,
+          anyPublishType: anyPublishTypeLabel,
+          original: originalLabel,
+          translation: translationLabel,
+          reupload: reuploadLabel,
+          author: authorLabel,
+          translator: translatorLabel,
+          apply: applyLabel,
+        }}
+      />
 
-        <div className="mt-10">
-          <WorksGrid works={works as any} showBookmarkButton />
-        </div>
+      <div className="max-w-6xl mx-auto px-4 pb-10 mt-10">
+        <WorksGrid works={works as any} showBookmarkButton />
       </div>
     </ListSurface>
   );
