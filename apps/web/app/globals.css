@@ -266,3 +266,46 @@ html {
 * {
   cursor: none !important;
 }
+
+/* ——— Ink server-component theme utilities ————————————————————
+   Add these alongside classic Tailwind classes in server components.
+   Only activate under data-ui-theme="modern" so classic mode is unaffected. */
+[data-ui-theme="modern"] .ink-input {
+  background: var(--ink-surface) !important;
+  border-color: var(--ink-border) !important;
+  color: var(--ink-fg) !important;
+}
+[data-ui-theme="modern"] .ink-input::placeholder {
+  color: var(--ink-muted);
+}
+[data-ui-theme="modern"] .ink-input:focus {
+  border-color: var(--ink-accent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink-accent) 20%, transparent);
+  outline: none;
+}
+[data-ui-theme="modern"] .ink-panel {
+  background: var(--ink-surface) !important;
+  border-color: var(--ink-border) !important;
+}
+[data-ui-theme="modern"] .ink-muted-text {
+  color: var(--ink-muted) !important;
+}
+[data-ui-theme="modern"] .ink-accent-link {
+  color: var(--ink-accent) !important;
+}
+[data-ui-theme="modern"] .ink-accent-link:hover {
+  color: var(--ink-accent-hover) !important;
+}
+[data-ui-theme="modern"] .ink-ghost-link {
+  background: transparent !important;
+  border-color: var(--ink-border) !important;
+  color: var(--ink-fg) !important;
+}
+[data-ui-theme="modern"] .ink-ghost-link:hover {
+  background: var(--ink-surface-hover) !important;
+  border-color: var(--ink-accent) !important;
+  color: var(--ink-accent) !important;
+}
+[data-ui-theme="modern"] .ink-grid {
+  row-gap: 2rem;
+}

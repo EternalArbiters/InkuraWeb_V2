@@ -11,12 +11,12 @@ export default async function FilmPage() {
 
   return (
     <PageScaffold title={title} description={description}>
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6">
-        <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-6 ink-panel">
+        <p className="text-sm text-gray-600 dark:text-gray-300 ink-muted-text">{description}</p>
         <div className="mt-4">
           <Link
             href="/all"
-            className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 ink-ghost-link"
           >
             {returnLabel}
           </Link>

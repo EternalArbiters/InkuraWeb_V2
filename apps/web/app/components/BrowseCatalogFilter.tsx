@@ -39,11 +39,16 @@ export default function BrowseCatalogFilter({
     ? "w-full rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] px-4 py-3 text-[var(--ink-fg)] placeholder:text-[var(--ink-muted)] outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
     : "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900";
 
+  const wrapClass = isModern
+    ? "mt-6 rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-4"
+    : "mt-6";
+
   return (
+    <div className={wrapClass}>
     <form
       action={action}
       method="get"
-      className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-[160px_200px_1fr_1fr_140px]"
+      className="grid grid-cols-1 gap-3 md:grid-cols-[160px_200px_1fr_1fr_140px]"
     >
       <select name="sort" defaultValue={defaultSort} className={inputClass}>
         <option value="newest">{labels.newest}</option>
@@ -77,5 +82,6 @@ export default function BrowseCatalogFilter({
         {labels.apply}
       </button>
     </form>
+    </div>
   );
 }

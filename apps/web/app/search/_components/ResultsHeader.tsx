@@ -8,17 +8,17 @@ type Props = {
 export default function ResultsHeader({ q, count }: Props) {
   return (
     <div className="mt-8 flex items-center justify-between gap-3">
-      <div className="text-sm text-gray-600 dark:text-gray-300">
+      <div className="text-sm text-gray-600 dark:text-gray-300 ink-muted-text">
         {q ? (
           <span>
             Results for <b>"{q}"</b> • {count} items
           </span>
         ) : (
-          <span>{count} item</span>
+          <span>{count} items</span>
         )}
       </div>
-      <Link href="/all" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-        Explore
+      <Link href="/all" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline ink-accent-link">
+        Explore all
       </Link>
     </div>
   );

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import SearchPresets from "@/components/SearchPresets";
 import { getSearchPageData, type SearchPageRawParams } from "@/server/services/search/searchPage";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 
 import ActiveFiltersBar from "./_components/ActiveFiltersBar";
@@ -8,6 +9,7 @@ import ResultsHeader from "./_components/ResultsHeader";
 import SearchForm from "./_components/SearchForm";
 import WorksGrid from "./_components/WorksGrid";
 import ListSurface from "@/app/components/ListSurface";
+import ScaffoldHeader from "@/app/components/ScaffoldHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -39,12 +41,15 @@ export default async function SearchPage({
     redirect(`/search?${next.toString()}`);
   }
 
-  const data = await getSearchPageData(searchParams);
+  const [data, tPageTitle] = await Promise.all([
+    getSearchPageData(searchParams),
+    getActiveUILanguageText("Advanced Search", { section: "Page Search" }),
+  ]);
 
   return (
     <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Advance Search</h1>
+        <ScaffoldHeader title={tPageTitle} />
 
         <SearchForm
           q={data.q}

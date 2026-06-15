@@ -158,13 +158,13 @@ export default async function SearchForm({
         name="q"
         defaultValue={q}
         placeholder={tSearchForTitle}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 ink-input"
       />
 
       <select
         name="kind"
         defaultValue={kind || "all"}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ink-input"
       >
         <option value="all">{tSearchTitle.includes("All") ? "All" : "All"}</option>
         <option value="novel">Novel</option>
@@ -174,7 +174,7 @@ export default async function SearchForm({
       <select
         name="sort"
         defaultValue={sort || "newest"}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ink-input"
       >
         <option value="newest">{tNewest}</option>
         <option value="liked">{tMostLiked}</option>
@@ -184,7 +184,7 @@ export default async function SearchForm({
       <select
         name="genre"
         defaultValue={genre || ""}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ink-input"
       >
         <option value="">{tAnyGenre}</option>
         {genres.map((g: any) => (
@@ -198,7 +198,7 @@ export default async function SearchForm({
         name="tag"
         defaultValue={tag}
         placeholder={tTag}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 ink-input"
       />
 
       <button className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110">
@@ -206,12 +206,12 @@ export default async function SearchForm({
       </button>
 
       {/* Advanced filters */}
-      <details className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 md:col-span-6">
+      <details className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 md:col-span-6 ink-panel">
         <summary className="cursor-pointer select-none text-sm font-semibold">{tAdvancedFilters}</summary>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-            <div className="text-sm font-semibold">{tLanguage}</div>
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3 ink-panel">
+            <div className="text-sm font-semibold text-[var(--ink-fg,inherit)]">{tLanguage}</div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {LANGUAGE_CATALOG.slice(0, 10).map((l) => (
                 <label key={l.code} className="flex items-center gap-2 text-sm">
@@ -220,21 +220,21 @@ export default async function SearchForm({
                 </label>
               ))}
             </div>
-            <label className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <label className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
               <input type="checkbox" name="ignoreLang" value="1" defaultChecked={ignoreLang} />
               {tIgnoreLangPref}
             </label>
           </div>
 
-          <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-            <div className="text-sm font-semibold">{tStatusPublishChapters}</div>
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3 ink-panel">
+            <div className="text-sm font-semibold text-[var(--ink-fg,inherit)]">{tStatusPublishChapters}</div>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tCompletion}
                 <select
                   name="completion"
                   defaultValue={completion || ""}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 >
                   <option value="">{tAny}</option>
                   <option value="ONGOING">{tOngoing}</option>
@@ -244,12 +244,12 @@ export default async function SearchForm({
                 </select>
               </label>
 
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tOrigin}
                 <select
                   name="origin"
                   defaultValue={origin || ""}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 >
                   <option value="">{tAny}</option>
                   <option value="ORIGINAL">{tOriginal}</option>
@@ -259,12 +259,12 @@ export default async function SearchForm({
                 </select>
               </label>
 
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tPublishType}
                 <select
                   name="publishType"
                   defaultValue={publishType || ""}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 >
                   <option value="">{tAny}</option>
                   <option value="ORIGINAL">{tOriginal}</option>
@@ -273,12 +273,12 @@ export default async function SearchForm({
                 </select>
               </label>
 
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tComicType}
                 <select
                   name="comicType"
                   defaultValue={comicType || ""}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 >
                   <option value="">{tAny}</option>
                   {COMIC_TYPE_CATALOG.filter((x) => x.value !== "UNKNOWN").map((x) => (
@@ -290,35 +290,35 @@ export default async function SearchForm({
                 </select>
               </label>
 
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tAuthor}
                 <input
                   name="author"
                   defaultValue={author}
                   placeholder="username / name"
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 />
               </label>
 
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tMinChapters}
                 <input
                   name="minCh"
                   type="number"
                   min={0}
                   defaultValue={minCh || ""}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 />
               </label>
 
-              <label className="text-xs text-gray-600 dark:text-gray-300">
+              <label className="text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
                 {tMaxChapters}
                 <input
                   name="maxCh"
                   type="number"
                   min={0}
                   defaultValue={maxCh || ""}
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 />
               </label>
 
@@ -328,7 +328,7 @@ export default async function SearchForm({
                   name="translator"
                   defaultValue={translator}
                   placeholder="username / name"
-                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800"
+                  className="mt-1 w-full px-3 py-2 rounded-xl bg-transparent border border-gray-200 dark:border-gray-800 ink-input"
                 />
               </label>
 
@@ -376,7 +376,7 @@ export default async function SearchForm({
               <select
                 name="gmode"
                 defaultValue={includeMode === "and" ? "and" : "or"}
-                className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
+                className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1 ink-input"
               >
                 <option value="or">{tOrAny}</option>
                 <option value="and">{tAndAll}</option>
@@ -404,7 +404,7 @@ export default async function SearchForm({
                   <select
                     name="dmode"
                     defaultValue={deviantMode === "and" ? "and" : "or"}
-                    className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
+                    className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1 ink-input"
                   >
                     <option value="or">{tOrAny}</option>
                     <option value="and">{tAndAll}</option>
@@ -443,7 +443,7 @@ export default async function SearchForm({
                   <select
                     name="wmode"
                     defaultValue={warningMode === "and" ? "and" : "or"}
-                    className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1"
+                    className="rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-2 py-1 ink-input"
                   >
                     <option value="or">{tOrAny}</option>
                     <option value="and">{tAndAll}</option>
@@ -463,7 +463,7 @@ export default async function SearchForm({
           )}
         </div>
 
-        <label className="mt-4 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+        <label className="mt-4 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 ink-muted-text">
           <input type="checkbox" name="ignoreBlocked" value="1" defaultChecked={ignoreBlocked} />
           {tIgnoreBlockedGenres}
         </label>

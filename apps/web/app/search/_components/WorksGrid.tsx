@@ -14,7 +14,7 @@ export default async function WorksGrid({ works, canViewMature, searchQuery, sea
     getActiveUILanguageText("Try another keyword or change the filters."),
   ]);
   return (
-    <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4 ink-grid">
       {works.map((w: any, index: number) => {
         const blur = w.isMature && !canViewMature;
         return (
@@ -34,9 +34,9 @@ export default async function WorksGrid({ works, canViewMature, searchQuery, sea
       })}
 
       {works.length === 0 ? (
-        <div className="col-span-2 rounded-2xl border border-gray-200 bg-white/70 p-6 md:col-span-4 dark:border-gray-800 dark:bg-gray-900/50">
+        <div className="col-span-2 rounded-2xl border border-gray-200 bg-white/70 p-6 md:col-span-4 dark:border-gray-800 dark:bg-gray-900/50 ink-panel">
           <div className="text-lg font-bold">{tNoResults}</div>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{tTryAnother}</p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 ink-muted-text">{tTryAnother}</p>
         </div>
       ) : null}
     </div>

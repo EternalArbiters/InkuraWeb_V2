@@ -14,8 +14,8 @@ export default async function ActiveFiltersBar({ hasActiveFilters }: Props) {
 
   return (
     <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-      <span className="text-gray-600 dark:text-gray-300">{tActiveFilters}</span>
-      <Link href="/search" className="ml-auto text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+      <span className="text-gray-600 dark:text-gray-300 ink-muted-text">{tActiveFilters}</span>
+      <Link href="/search" className="ml-auto text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline ink-accent-link">
         {tClearAll}
       </Link>
     </div>
