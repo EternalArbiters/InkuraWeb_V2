@@ -242,7 +242,6 @@ export default function ModernWorkCard({
           <div className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-base">
             {title}
           </div>
-          {meta ? <div className="mt-0.5 line-clamp-1 text-[13px] text-[var(--ink-muted)]">{meta}</div> : null}
         </Link>
       </div>
     </motion.div>

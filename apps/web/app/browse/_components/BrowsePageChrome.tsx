@@ -24,14 +24,7 @@ export default function BrowsePageChrome({
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
-          <div>
-            {count != null && (
-              <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-[var(--ink-muted)]">
-                {count} works
-              </p>
-            )}
-            <h1 className="text-3xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-4xl">{title}</h1>
-          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-4xl">{title}</h1>
         </div>
         <Link
           href={searchHref}

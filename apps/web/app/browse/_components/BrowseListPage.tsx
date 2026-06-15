@@ -38,7 +38,7 @@ export default async function BrowseListPage({
       <div className="max-w-6xl mx-auto px-4 py-10">
         <BrowsePageChrome title={title} count={works.length} searchLabel={tAdvancedSearch} />
 
-        <div className="mt-7">
+        <div className="mt-10">
           {works?.length ? (
             <WorksGrid
               works={works}

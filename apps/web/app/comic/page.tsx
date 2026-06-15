@@ -75,7 +75,7 @@ export default async function ComicPage({
           }}
         />
 
-        <div className="mt-8">
+        <div className="mt-10">
           <WorksGrid works={works as any} showBookmarkButton />
         </div>
       </div>

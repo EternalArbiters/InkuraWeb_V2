@@ -32,7 +32,7 @@ export default async function StillDraftPage() {
       <div className="max-w-6xl mx-auto px-4 py-10">
         <BrowsePageChrome title={title} count={works.length} searchLabel={searchLabel} />
 
-        <div className="mt-7">
+        <div className="mt-10">
           {works.length ? (
             <WorksGrid works={works as any[]} showBookmarkButton showUpdatedSubtitle />
           ) : (
