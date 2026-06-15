@@ -150,11 +150,12 @@ export default async function SearchForm({
   ]);
   return (
     <form
+      id="search-form"
       className="mt-6"
       action="/search"
       method="get"
     >
-      {/* Row 1: main search + submit */}
+      {/* Main search row */}
       <div className="flex gap-2">
         <input
           name="q"
@@ -165,49 +166,6 @@ export default async function SearchForm({
         <button className="shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-base font-semibold text-white hover:brightness-110">
           {tSearch}
         </button>
-      </div>
-
-      {/* Row 2: secondary filter chips */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <select
-          name="kind"
-          defaultValue={kind || "all"}
-          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
-        >
-          <option value="all">All</option>
-          <option value="novel">Novel</option>
-          <option value="comic">Comic</option>
-        </select>
-
-        <select
-          name="sort"
-          defaultValue={sort || "newest"}
-          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
-        >
-          <option value="newest">{tNewest}</option>
-          <option value="liked">{tMostLiked}</option>
-          <option value="rated">{tBestRated}</option>
-        </select>
-
-        <select
-          name="genre"
-          defaultValue={genre || ""}
-          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
-        >
-          <option value="">{tAnyGenre}</option>
-          {genres.map((g: any) => (
-            <option key={g.slug} value={g.slug}>
-              {g.name}
-            </option>
-          ))}
-        </select>
-
-        <input
-          name="tag"
-          defaultValue={tag}
-          placeholder={tTag}
-          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
-        />
       </div>
 
       {/* Advanced filters */}

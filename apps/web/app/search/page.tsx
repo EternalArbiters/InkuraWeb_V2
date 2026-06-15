@@ -7,6 +7,7 @@ import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTrac
 import ActiveFiltersBar from "./_components/ActiveFiltersBar";
 import ResultsHeader from "./_components/ResultsHeader";
 import SearchForm from "./_components/SearchForm";
+import SearchFilterBar from "./_components/SearchFilterBar";
 import WorksGrid from "./_components/WorksGrid";
 import ListSurface from "@/app/components/ListSurface";
 import ScaffoldHeader from "@/app/components/ScaffoldHeader";
@@ -41,16 +42,21 @@ export default async function SearchPage({
     redirect(`/search?${next.toString()}`);
   }
 
-  const [data, tPageTitle] = await Promise.all([
+  const [data, tPageTitle, tNewest, tMostLiked, tBestRated, tAnyGenre, tTag] = await Promise.all([
     getSearchPageData(searchParams),
     getActiveUILanguageText("Advanced Search", { section: "Page Search" }),
+    getActiveUILanguageText("Newest"),
+    getActiveUILanguageText("Most liked"),
+    getActiveUILanguageText("Best rated"),
+    getActiveUILanguageText("Any genre"),
+    getActiveUILanguageText("Tags"),
   ]);
 
   return (
     <ListSurface>
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      {/* Title + main search input + advanced filters */}
+      <div className="max-w-6xl mx-auto px-4 pt-10 pb-2">
         <ScaffoldHeader title={tPageTitle} />
-
         <SearchForm
           q={data.q}
           kind={data.kind}
@@ -87,7 +93,20 @@ export default async function SearchPage({
           canUseNsfwTags={data.canUseNsfwTags}
           canUseDeviantLoveTags={data.canUseDeviantLoveTags}
         />
+      </div>
 
+      {/* Sticky filter chips — links to search-form via form attribute */}
+      <SearchFilterBar
+        kind={data.kind}
+        sort={data.sort}
+        genre={data.genre}
+        tag={data.tag}
+        genres={data.genres}
+        labels={{ newest: tNewest, mostLiked: tMostLiked, bestRated: tBestRated, anyGenre: tAnyGenre, tags: tTag }}
+      />
+
+      {/* Results */}
+      <div className="max-w-6xl mx-auto px-4 pb-10">
         <ActiveFiltersBar hasActiveFilters={data.hasActiveFilters} />
 
         {(data.q || data.tag || data.genre || data.author || data.translator || data.hasActiveFilters) ? (
