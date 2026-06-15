@@ -150,63 +150,68 @@ export default async function SearchForm({
   ]);
   return (
     <form
-      className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_180px_180px_220px_180px_140px] gap-3"
+      className="mt-6"
       action="/search"
       method="get"
     >
-      <input
-        name="q"
-        defaultValue={q}
-        placeholder={tSearchForTitle}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 ink-input"
-      />
+      {/* Row 1: main search + submit */}
+      <div className="flex gap-2">
+        <input
+          name="q"
+          defaultValue={q}
+          placeholder={tSearchForTitle}
+          className="flex-1 px-5 py-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-base outline-none focus:ring-2 focus:ring-purple-500 ink-input"
+        />
+        <button className="shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-base font-semibold text-white hover:brightness-110">
+          {tSearch}
+        </button>
+      </div>
 
-      <select
-        name="kind"
-        defaultValue={kind || "all"}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ink-input"
-      >
-        <option value="all">{tSearchTitle.includes("All") ? "All" : "All"}</option>
-        <option value="novel">Novel</option>
-        <option value="comic">Comic</option>
-      </select>
+      {/* Row 2: secondary filter chips */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <select
+          name="kind"
+          defaultValue={kind || "all"}
+          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
+        >
+          <option value="all">All</option>
+          <option value="novel">Novel</option>
+          <option value="comic">Comic</option>
+        </select>
 
-      <select
-        name="sort"
-        defaultValue={sort || "newest"}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ink-input"
-      >
-        <option value="newest">{tNewest}</option>
-        <option value="liked">{tMostLiked}</option>
-        <option value="rated">{tBestRated}</option>
-      </select>
+        <select
+          name="sort"
+          defaultValue={sort || "newest"}
+          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
+        >
+          <option value="newest">{tNewest}</option>
+          <option value="liked">{tMostLiked}</option>
+          <option value="rated">{tBestRated}</option>
+        </select>
 
-      <select
-        name="genre"
-        defaultValue={genre || ""}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ink-input"
-      >
-        <option value="">{tAnyGenre}</option>
-        {genres.map((g: any) => (
-          <option key={g.slug} value={g.slug}>
-            {g.name}
-          </option>
-        ))}
-      </select>
+        <select
+          name="genre"
+          defaultValue={genre || ""}
+          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
+        >
+          <option value="">{tAnyGenre}</option>
+          {genres.map((g: any) => (
+            <option key={g.slug} value={g.slug}>
+              {g.name}
+            </option>
+          ))}
+        </select>
 
-      <input
-        name="tag"
-        defaultValue={tag}
-        placeholder={tTag}
-        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500 ink-input"
-      />
-
-      <button className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110">
-        {tSearch}
-      </button>
+        <input
+          name="tag"
+          defaultValue={tag}
+          placeholder={tTag}
+          className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-purple-500 ink-input"
+        />
+      </div>
 
       {/* Advanced filters */}
-      <details className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 md:col-span-6 ink-panel">
+      <details className="mt-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 ink-panel">
         <summary className="cursor-pointer select-none text-sm font-semibold">{tAdvancedFilters}</summary>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">

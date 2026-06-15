@@ -33,48 +33,57 @@ export default function BrowseCatalogFilter({
   labels,
 }: Props) {
   const { uiTheme } = useUITheme();
-  const isModern = uiTheme === "modern";
 
-  const inputClass = isModern
-    ? "w-full rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] px-4 py-3 text-[var(--ink-fg)] placeholder:text-[var(--ink-muted)] outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-    : "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900";
+  if (uiTheme === "modern") {
+    const chip =
+      "rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 py-2 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
+    return (
+      <form action={action} method="get" className="mt-8 flex flex-wrap items-center gap-2">
+        <select name="sort" defaultValue={defaultSort} className={chip}>
+          <option value="newest">{labels.newest}</option>
+          <option value="liked">{labels.liked}</option>
+          <option value="rated">{labels.rated}</option>
+        </select>
+        <select name="publishType" defaultValue={defaultPublishType} className={chip}>
+          <option value="">{labels.anyPublishType}</option>
+          <option value="ORIGINAL">{labels.original}</option>
+          <option value="TRANSLATION">{labels.translation}</option>
+          <option value="REUPLOAD">{labels.reupload}</option>
+        </select>
+        <input name="author" defaultValue={defaultAuthor} placeholder={labels.author} className={chip} />
+        <input name="translator" defaultValue={defaultTranslator} placeholder={labels.translator} className={chip} />
+        <button
+          type="submit"
+          className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95"
+        >
+          {labels.apply}
+        </button>
+      </form>
+    );
+  }
 
-  const wrapClass = isModern
-    ? "mt-6 rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-4"
-    : "mt-6";
+  const inputClass =
+    "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900";
 
   return (
-    <div className={wrapClass}>
     <form
       action={action}
       method="get"
-      className="grid grid-cols-1 gap-3 md:grid-cols-[160px_200px_1fr_1fr_140px]"
+      className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-[160px_200px_1fr_1fr_140px]"
     >
       <select name="sort" defaultValue={defaultSort} className={inputClass}>
         <option value="newest">{labels.newest}</option>
         <option value="liked">{labels.liked}</option>
         <option value="rated">{labels.rated}</option>
       </select>
-
       <select name="publishType" defaultValue={defaultPublishType} className={inputClass}>
         <option value="">{labels.anyPublishType}</option>
         <option value="ORIGINAL">{labels.original}</option>
         <option value="TRANSLATION">{labels.translation}</option>
         <option value="REUPLOAD">{labels.reupload}</option>
       </select>
-
-      <input
-        name="author"
-        defaultValue={defaultAuthor}
-        placeholder={labels.author}
-        className={inputClass}
-      />
-      <input
-        name="translator"
-        defaultValue={defaultTranslator}
-        placeholder={labels.translator}
-        className={inputClass}
-      />
+      <input name="author" defaultValue={defaultAuthor} placeholder={labels.author} className={inputClass} />
+      <input name="translator" defaultValue={defaultTranslator} placeholder={labels.translator} className={inputClass} />
       <button
         type="submit"
         className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 py-3 font-semibold text-white hover:brightness-110"
@@ -82,6 +91,5 @@ export default function BrowseCatalogFilter({
         {labels.apply}
       </button>
     </form>
-    </div>
   );
 }
