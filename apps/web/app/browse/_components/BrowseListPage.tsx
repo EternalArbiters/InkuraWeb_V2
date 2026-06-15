@@ -1,7 +1,8 @@
-import ActionLink from "@/app/components/ActionLink";
 import WorksGrid from "@/app/components/WorksGrid";
 import ListSurface from "@/app/components/ListSurface";
+import BrowsePageChrome from "./BrowsePageChrome";
 import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
+import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 
 type Props = {
   title: string;
@@ -30,15 +31,12 @@ export default async function BrowseListPage({
     works = [];
   }
 
+  const tAdvancedSearch = await getActiveUILanguageText("Advanced search");
+
   return (
     <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{title}</h1>
-          </div>
-          <ActionLink href="/search">Advanced search</ActionLink>
-        </div>
+        <BrowsePageChrome title={title} count={works.length} searchLabel={tAdvancedSearch} />
 
         <div className="mt-7">
           {works?.length ? (
@@ -48,7 +46,7 @@ export default async function BrowseListPage({
               showUpdatedSubtitle={showUpdatedSubtitle}
             />
           ) : (
-            <div className="border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
               {emptyText || "No items."}
             </div>
           )}

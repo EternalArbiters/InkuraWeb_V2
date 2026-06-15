@@ -1,8 +1,9 @@
-import ActionLink from "@/app/components/ActionLink";
 import { listPublishedWorksFromSearchParams } from "@/server/services/works/listPublishedWorks";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import WorksGrid from "../components/WorksGrid";
 import ListSurface from "../components/ListSurface";
+import BrowsePageChrome from "@/app/browse/_components/BrowsePageChrome";
+import BrowseCatalogFilter from "@/app/components/BrowseCatalogFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -52,34 +53,30 @@ export default async function NovelPage({
   return (
     <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{title}</h1>
-          </div>
-          <ActionLink href="/search?kind=novel">{advancedSearchLabel}</ActionLink>
-        </div>
+        <BrowsePageChrome title={title} count={works.length} searchHref="/search?kind=novel" searchLabel={advancedSearchLabel} />
 
-        <form action="/novel" method="get" className="mt-6 grid grid-cols-1 md:grid-cols-[160px_200px_1fr_1fr_140px] gap-3">
-          <select name="sort" defaultValue={sort} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-            <option value="newest">{newestLabel}</option>
-            <option value="liked">{likedLabel}</option>
-            <option value="rated">{ratedLabel}</option>
-          </select>
-
-          <select name="publishType" defaultValue={publishType} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-            <option value="">{anyPublishTypeLabel}</option>
-            <option value="ORIGINAL">{originalLabel}</option>
-            <option value="TRANSLATION">{translationLabel}</option>
-            <option value="REUPLOAD">{reuploadLabel}</option>
-          </select>
-
-          <input name="author" defaultValue={author} placeholder={authorLabel} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500" />
-          <input name="translator" defaultValue={translator} placeholder={translatorLabel} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 outline-none focus:ring-2 focus:ring-purple-500" />
-          <button className="w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:brightness-110">{applyLabel}</button>
-        </form>
+        <BrowseCatalogFilter
+          action="/novel"
+          defaultSort={sort}
+          defaultPublishType={publishType}
+          defaultAuthor={author}
+          defaultTranslator={translator}
+          labels={{
+            newest: newestLabel,
+            liked: likedLabel,
+            rated: ratedLabel,
+            anyPublishType: anyPublishTypeLabel,
+            original: originalLabel,
+            translation: translationLabel,
+            reupload: reuploadLabel,
+            author: authorLabel,
+            translator: translatorLabel,
+            apply: applyLabel,
+          }}
+        />
 
         <div className="mt-8">
-          <WorksGrid works={works as any} />
+          <WorksGrid works={works as any} showBookmarkButton />
         </div>
       </div>
     </ListSurface>

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
-import ActionLink from "@/app/components/ActionLink";
 import WorksGrid from "@/app/components/WorksGrid";
 import ListSurface from "@/app/components/ListSurface";
+import BrowsePageChrome from "@/app/browse/_components/BrowsePageChrome";
 import { requireAdmin } from "@/server/auth/requireUser";
 import { listDraftWorksForAdmin } from "@/server/services/works/listDraftWorks";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
@@ -30,18 +30,13 @@ export default async function StillDraftPage() {
   return (
     <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{title}</h1>
-          </div>
-          <ActionLink href="/search">{searchLabel}</ActionLink>
-        </div>
+        <BrowsePageChrome title={title} count={works.length} searchLabel={searchLabel} />
 
         <div className="mt-7">
           {works.length ? (
             <WorksGrid works={works as any[]} showBookmarkButton showUpdatedSubtitle />
           ) : (
-            <div className="border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
               {emptyLabel}
             </div>
           )}

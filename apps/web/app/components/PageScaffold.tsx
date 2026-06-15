@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import ListSurface from "@/app/components/ListSurface";
+import ScaffoldHeader from "@/app/components/ScaffoldHeader";
 
 type PageScaffoldLookupOptions = {
   section?: string;
@@ -37,30 +37,11 @@ export default async function PageScaffold({
   return (
     <ListSurface>
       <div className="max-w-6xl mx-auto px-4 py-10">
-        {translatedCrumbs?.length ? (
-          <nav className="text-sm mb-6 text-gray-600 dark:text-gray-300">
-            <ol className="flex flex-wrap gap-2">
-              {translatedCrumbs.map((c, i) => (
-                <li key={c.href} className="flex items-center gap-2">
-                  <Link className="hover:text-pink-500" href={c.href}>
-                    {c.label}
-                  </Link>
-                  {i !== translatedCrumbs.length - 1 && <span className="opacity-60">/</span>}
-                </li>
-              ))}
-            </ol>
-          </nav>
-        ) : null}
-
-        <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{translatedTitle}</h1>
-          {translatedDescription ? (
-            <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-3xl">
-              {translatedDescription}
-            </p>
-          ) : null}
-        </header>
-
+        <ScaffoldHeader
+          title={translatedTitle}
+          description={translatedDescription}
+          crumbs={translatedCrumbs}
+        />
         {children}
       </div>
     </ListSurface>
