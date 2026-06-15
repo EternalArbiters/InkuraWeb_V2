@@ -53,7 +53,9 @@ export default function WorksGrid({
   const visibleWorks = works.slice(0, visibleCount);
   const hasMore = visibleCount < works.length;
 
-  const gridClass = "grid grid-cols-2 gap-4 md:grid-cols-4";
+  const gridClass = isModern
+    ? "grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4"
+    : "grid grid-cols-2 gap-4 md:grid-cols-4";
 
   const cards = visibleWorks.map((w) => (
     <InteractiveWorkCard
