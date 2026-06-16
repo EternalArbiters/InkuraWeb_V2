@@ -244,6 +244,7 @@ export default function InteractiveWorkCard({
         className={className}
         showBookmark={showBookmarkButton}
         blurImage={blurImage}
+        topLeftBadge={topLeftBadge}
       />
     );
   }

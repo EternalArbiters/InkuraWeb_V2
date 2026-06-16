@@ -74,12 +74,14 @@ export default function ModernWorkCard({
   work,
   className,
   rank,
+  topLeftBadge = null,
   showBookmark = false,
   blurImage = false,
 }: {
   work: WorkCardData;
   className?: string;
   rank?: number;
+  topLeftBadge?: string | null;
   showBookmark?: boolean;
   blurImage?: boolean;
 }) {
@@ -152,10 +154,14 @@ export default function ModernWorkCard({
             </div>
           )}
 
-          {/* rank chip / type badge */}
+          {/* rank chip / arc badge / type badge */}
           {typeof rank === "number" ? (
             <span className="absolute left-0 top-0 z-10 flex h-9 min-w-9 items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 px-2 text-base font-black text-white shadow-lg">
               {rank}
+            </span>
+          ) : topLeftBadge ? (
+            <span className="absolute left-0 top-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
+              {topLeftBadge}
             </span>
           ) : (
             <span className="absolute left-0 top-0 z-10 bg-black/55 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">

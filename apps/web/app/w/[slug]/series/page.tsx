@@ -113,12 +113,12 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
           <div>
             <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">{tMoreInSeries}</div>
             <div className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">{seriesTitle}</div>
-            <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">{tWorksOrderedByArc}</div>
+            <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 ink-muted-text">{tWorksOrderedByArc}</div>
           </div>
           <BackButton href={`/w/${work.slug}`} />
         </div>
 
-        <LoadMoreList className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <LoadMoreList className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
           {allWorks.map((item) => {
             const active = item.id === work.id;
             return (
