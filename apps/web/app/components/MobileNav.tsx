@@ -50,13 +50,16 @@ export default function MobileNav({
   const pathname = usePathname();
   const t = useUILanguageText("Navigation");
   const tCommunity = useUILanguageText("Navigation Community");
+  const { uiTheme } = useUITheme();
   const [activeTab, setActiveTab] = useState<ActiveTab>("book");
   const [showCategories, setShowCategories] = useState(false);
+  const [showCategoriesClassic, setShowCategoriesClassic] = useState(false);
 
   if (!isOpen) return null;
 
   const isActive = (href: string) => pathname === href;
 
+  /* ── shared nav data ── */
   const bookTop: NavItem[] = [
     { label: t("Advanced Search"), href: "/search", Icon: Search },
     { label: t("All"), href: "/all", Icon: LayoutGrid },
@@ -74,6 +77,148 @@ export default function MobileNav({
     { label: t("History"), href: "/settings/history", Icon: History },
     { label: t("Collection"), href: "/lists", Icon: Layers },
   ];
+
+  /* ── Classic mode (original design) ── */
+  if (uiTheme !== "modern") {
+    const allNavItems: NavItem[] = [
+      ...bookTop,
+      { label: t("Library"), href: "/library", Icon: Bookmark },
+      { label: t("History"), href: "/settings/history", Icon: History },
+      { label: t("Collection"), href: "/lists", Icon: Layers },
+      { label: t("Notifications"), href: "/notifications", Icon: Bell },
+      { label: t("Upload"), href: "/studio", Icon: Upload },
+      { label: t("Community"), href: "/community", Icon: Users },
+      { label: tCommunity("Ranking"), href: "/community/ranking", Icon: Trophy },
+      { label: tCommunity("Title"), href: "/community/title", Icon: Award },
+      { label: t("Account"), href: "/settings/account", Icon: User },
+      ...(isAuthed ? [{ label: t("Finances"), href: "/settings/payout", Icon: Wallet }] : []),
+      ...(isAuthed ? [{ label: t("Admin Report"), href: "/admin-report", Icon: ShieldAlert }] : []),
+      ...(isAdmin ? [{ label: t("Content Reports"), href: "/admin/reports", Icon: ShieldAlert }] : []),
+      ...(isAdmin ? [{ label: t("Taxonomy"), href: "/admin/taxonomy", Icon: ListTree }] : []),
+      ...(isAdmin ? [{ label: t("Creator Donations"), href: "/admin/donations", Icon: Gift }] : []),
+      ...(isAdmin ? [{ label: t("Analytics"), href: "/admin/analytics", Icon: BarChart3 }] : []),
+    ];
+
+    const classicRow = (item: NavItem, badge?: string) => (
+      <Link
+        key={item.href}
+        href={item.href}
+        prefetch={false}
+        onClick={onClose}
+        className={`flex items-center gap-2 rounded px-4 py-2 text-sm transition ${
+          isActive(item.href)
+            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+            : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white dark:text-white/80"
+        }`}
+      >
+        <item.Icon className="h-4 w-4 shrink-0 opacity-90" />
+        <span className="truncate">{item.label}</span>
+        {badge && (
+          <span className="ml-auto">
+            <NavCountBadge endpoint={badge} variant="inline" enabled={isAuthed} />
+          </span>
+        )}
+      </Link>
+    );
+
+    return (
+      <>
+        <div className="fixed inset-0 z-40" onClick={onClose}>
+          <div className="absolute right-0 top-0 h-full w-[60%] bg-gradient-to-br from-purple-700/70 via-indigo-700/60 to-blue-700/50 backdrop-blur-xl" />
+        </div>
+        <aside className="fixed right-0 top-0 z-50 flex h-full w-[60%] flex-col justify-between overflow-y-auto bg-white px-6 py-6 shadow-xl dark:bg-gray-900">
+          <div>
+            <div className="mb-6 flex items-center space-x-4">
+              {isAuthed ? (
+                <Link href="/profile" prefetch={false} onClick={onClose} className="group flex items-center space-x-4">
+                  <div className="relative h-9 w-9 overflow-hidden rounded-full border border-gray-400">
+                    <img src={userImage} alt={t("User")} className="absolute inset-0 h-full w-full object-cover"
+                      style={{ objectPosition: `${avatarFocusX}% ${avatarFocusY}%`, transform: `scale(${avatarZoom})`, transformOrigin: "center" }} />
+                  </div>
+                  <span className="truncate text-sm font-medium text-gray-800 group-hover:underline dark:text-white">{displayName}</span>
+                </Link>
+              ) : (
+                <>
+                  <div className="relative h-9 w-9 overflow-hidden rounded-full border border-gray-400">
+                    <img src={userImage} alt={t("User")} className="absolute inset-0 h-full w-full object-cover" />
+                  </div>
+                  <span className="truncate text-sm font-medium text-gray-800 dark:text-white">{displayName}</span>
+                </>
+              )}
+            </div>
+            <div className="mb-6">
+              <Link href="/chat" prefetch={false} onClick={onClose}
+                className="block w-full rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-md transition hover:brightness-110 hover:scale-105">
+                {t("Chat Elya~")}
+              </Link>
+            </div>
+            <div className="mb-6">
+              <Link href="/donate" prefetch={false} onClick={onClose}
+                className="block w-full rounded-full bg-red-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-md transition hover:bg-red-700">
+                {t("Donate For Inkura")}
+              </Link>
+            </div>
+            <nav className="space-y-2">
+              {allNavItems.slice(0, 5).map((item) => classicRow(item,
+                item.href === "/notifications" ? "/api/notifications/unread-count"
+                : item.href === "/admin-report" ? "/api/admin-report/unread-count"
+                : undefined))}
+              <div className="mt-2">
+                <button onClick={() => setShowCategoriesClassic((v) => !v)}
+                  className="flex w-full items-center justify-between rounded px-4 py-2 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white dark:text-white/80">
+                  <span className="inline-flex items-center gap-2">
+                    <Tags className="h-4 w-4 opacity-90" />{t("Categories")}
+                  </span>
+                  {showCategoriesClassic ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+                {showCategoriesClassic && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {categoryItems.map((item) => (
+                      <Link key={item.href} href={item.href} prefetch={false} onClick={onClose}
+                        className={`flex items-center gap-2 rounded px-3 py-1 text-sm transition ${
+                          isActive(item.href) ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                          : "text-gray-600 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white dark:text-white/70"}`}>
+                        <item.Icon className="h-4 w-4 shrink-0 opacity-90" />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {allNavItems.slice(5).map((item) => classicRow(item,
+                item.href === "/notifications" ? "/api/notifications/unread-count"
+                : item.href === "/admin-report" ? "/api/admin-report/unread-count"
+                : undefined))}
+            </nav>
+          </div>
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 dark:text-white">{t("Theme")}</span>
+              <button onClick={toggleDarkMode}
+                className={`flex h-8 w-14 items-center rounded-full px-1 shadow-inner transition ${isDarkMode ? "justify-end bg-gradient-to-r from-blue-600 to-purple-600" : "justify-start bg-gray-300"}`}>
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md">
+                  {isDarkMode ? <Moon size={14} className="text-indigo-700" /> : <Sun size={14} className="text-yellow-600" />}
+                </div>
+              </button>
+            </div>
+            {isAuthed ? (
+              <button onClick={handleLogout} className="w-full rounded px-4 py-2 text-left text-red-500 hover:bg-white/10">
+                {t("Logout")}
+              </button>
+            ) : (
+              <Link href="/auth/signin" prefetch={false} onClick={onClose}
+                className="block w-full rounded px-4 py-2 text-left font-semibold text-purple-600 hover:bg-white/10 dark:text-purple-400">
+                {t("Sign In")}
+              </Link>
+            )}
+          </div>
+        </aside>
+      </>
+    );
+  }
+
+  /* ── Modern mode continues below ── */
+
   const settingsItems: NavItem[] = [
     { label: t("Notifications"), href: "/notifications", Icon: Bell },
     { label: t("Upload"), href: "/studio", Icon: Upload },
