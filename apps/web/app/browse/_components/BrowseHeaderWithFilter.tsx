@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, User, Languages } from "lucide-react";
 import ActionLink from "@/app/components/ActionLink";
 import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 
@@ -45,12 +45,15 @@ export default function BrowseHeaderWithFilter({
   const { uiTheme } = useUITheme();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMounted, setSheetMounted] = useState(false);
+  const [sheetSort, setSheetSort] = useState(defaultSort || "newest");
+  const [sheetPublishType, setSheetPublishType] = useState(defaultPublishType || "");
   const unmountTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const openSheet = () => {
     if (unmountTimer.current) clearTimeout(unmountTimer.current);
+    setSheetSort(defaultSort || "newest");
+    setSheetPublishType(defaultPublishType || "");
     setSheetMounted(true);
-    // Two rAF to ensure mount before CSS transition kicks in
     requestAnimationFrame(() => requestAnimationFrame(() => setSheetOpen(true)));
   };
 
@@ -153,56 +156,124 @@ export default function BrowseHeaderWithFilter({
               }`}
               style={{
                 background: "var(--ink-bg)",
-                borderTop: "1px solid var(--ink-border)",
-                paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+                paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
               }}
             >
+              {/* Gradient top accent */}
+              <div className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r from-blue-500 to-purple-600" />
+
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
                 <div className="h-1 w-10 rounded-full" style={{ background: "var(--ink-border)" }} />
               </div>
 
               {/* Sheet header */}
-              <div className="flex items-center justify-between px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal size={16} className="text-[var(--ink-accent)]" />
+              <div className="flex items-center justify-between px-5 pt-1 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                    <SlidersHorizontal size={14} className="text-[var(--ink-accent)]" />
+                  </div>
                   <span className="text-base font-bold text-[var(--ink-fg)]">Filter</span>
                 </div>
                 <button
                   type="button"
                   onClick={closeSheet}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--ink-border)] text-[var(--ink-muted)] transition hover:text-[var(--ink-fg)]"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--ink-border)] text-[var(--ink-muted)] transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-fg)]"
                 >
-                  <X size={15} />
+                  <X size={14} />
                 </button>
               </div>
 
-              <div className="h-px mx-5" style={{ background: "var(--ink-border)" }} />
+              <div className="h-px mx-5 mb-5" style={{ background: "var(--ink-border)" }} />
 
               {/* Sheet filters */}
               <form
                 action={action}
                 method="get"
                 onSubmit={closeSheet}
-                className="flex flex-col gap-3 px-5 pt-4 pb-2"
+                className="flex flex-col gap-5 px-5"
               >
-                <select name="sort" defaultValue={defaultSort} className={sheetInput}>
-                  <option value="newest">{labels.newest}</option>
-                  <option value="liked">{labels.liked}</option>
-                  <option value="rated">{labels.rated}</option>
-                </select>
-                <select name="publishType" defaultValue={defaultPublishType} className={sheetInput}>
-                  <option value="">{labels.anyPublishType}</option>
-                  <option value="ORIGINAL">{labels.original}</option>
-                  <option value="TRANSLATION">{labels.translation}</option>
-                  <option value="REUPLOAD">{labels.reupload}</option>
-                </select>
-                <input name="author" defaultValue={defaultAuthor} placeholder={labels.author} className={sheetInput} />
-                <input name="translator" defaultValue={defaultTranslator} placeholder={labels.translator} className={sheetInput} />
+                {/* Hidden inputs carry pill selections */}
+                <input type="hidden" name="sort" value={sheetSort} />
+                <input type="hidden" name="publishType" value={sheetPublishType} />
 
+                {/* Sort */}
+                <div>
+                  <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-muted)]">Sort by</p>
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { value: "newest", label: labels.newest },
+                      { value: "liked", label: labels.liked },
+                      { value: "rated", label: labels.rated },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setSheetSort(opt.value)}
+                        className={`h-9 rounded-full px-4 text-sm font-medium transition ${
+                          sheetSort === opt.value
+                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md shadow-purple-500/25"
+                            : "border border-[var(--ink-border)] bg-[var(--ink-surface-2)] text-[var(--ink-fg)] hover:border-[var(--ink-accent)]"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Type */}
+                <div>
+                  <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-muted)]">Type</p>
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { value: "", label: labels.anyPublishType },
+                      { value: "ORIGINAL", label: labels.original },
+                      { value: "TRANSLATION", label: labels.translation },
+                      { value: "REUPLOAD", label: labels.reupload },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setSheetPublishType(opt.value)}
+                        className={`h-9 rounded-full px-4 text-sm font-medium transition ${
+                          sheetPublishType === opt.value
+                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md shadow-purple-500/25"
+                            : "border border-[var(--ink-border)] bg-[var(--ink-surface-2)] text-[var(--ink-fg)] hover:border-[var(--ink-accent)]"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Author */}
+                <div className="relative">
+                  <User size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
+                  <input
+                    name="author"
+                    defaultValue={defaultAuthor}
+                    placeholder={labels.author}
+                    className={`${sheetInput} pl-10`}
+                  />
+                </div>
+
+                {/* Translator */}
+                <div className="relative">
+                  <Languages size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
+                  <input
+                    name="translator"
+                    defaultValue={defaultTranslator}
+                    placeholder={labels.translator}
+                    className={`${sheetInput} pl-10`}
+                  />
+                </div>
+
+                {/* Apply */}
                 <button
                   type="submit"
-                  className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-base font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
+                  className="h-12 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-base font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:brightness-110 active:scale-[0.98]"
                 >
                   {labels.apply}
                 </button>
