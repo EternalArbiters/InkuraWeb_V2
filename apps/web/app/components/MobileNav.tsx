@@ -289,141 +289,234 @@ export default function MobileNav({
 
         <div className="mx-4 h-px shrink-0 bg-white/[0.08]" />
 
-        {/* ▓▓ [2] MAIN AREA — 2 columns ▓▓ */}
+        {/* ▓▓ [2] MAIN AREA ▓▓ */}
         <div className="flex min-h-0 flex-1">
 
-          {/* ░░ KOLOM KIRI: foto profil (besar) + 3 tombol horizontal ░░ */}
+          {/* ░░ LEFT: profile circle — focal point with overlapping elements ░░ */}
           <div
-            className="flex shrink-0 flex-col items-center border-r border-white/[0.08] py-6"
-            style={{ width: "42%" }}
+            className="relative shrink-0 border-r border-white/[0.08]"
+            style={{ width: "42%", overflow: "visible" }}
           >
-            {/* Foto profil — besar */}
-            {isAuthed ? (
-              <Link href="/profile" prefetch={false} onClick={onClose} className="group">
+            {/* Center the circle + its absolute children */}
+            <div style={{ display: "flex", justifyContent: "center", paddingTop: 24 }}>
+              {/* position: relative on the 82×82 circle wrapper so absolute children are anchored to it */}
+              <div style={{ position: "relative", width: 82, height: 82, flexShrink: 0 }}>
+
+                {/* Profile circle */}
+                {isAuthed ? (
+                  <Link href="/profile" prefetch={false} onClick={onClose} className="group block">
+                    <div
+                      className="overflow-hidden rounded-full transition group-hover:scale-[1.03]"
+                      style={{
+                        width: 82,
+                        height: 82,
+                        boxShadow:
+                          "0 0 0 3px rgba(139,92,246,0.55), 0 0 0 5px rgba(59,130,246,0.18)",
+                      }}
+                    >
+                      <img
+                        src={userImage}
+                        alt={displayName}
+                        className="h-full w-full object-cover"
+                        style={{
+                          objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
+                          transform: `scale(${avatarZoom})`,
+                          transformOrigin: "center",
+                        }}
+                      />
+                    </div>
+                  </Link>
+                ) : (
+                  <div
+                    className="overflow-hidden rounded-full"
+                    style={{
+                      width: 82,
+                      height: 82,
+                      boxShadow: "0 0 0 3px rgba(255,255,255,0.15)",
+                    }}
+                  >
+                    <img src={userImage} alt="" className="h-full w-full object-cover" />
+                  </div>
+                )}
+
+                {/* 3 buttons — OVERLAP the bottom-center edge of the circle */}
                 <div
-                  className="overflow-hidden rounded-full transition group-hover:scale-[1.03]"
                   style={{
-                    width: 82,
-                    height: 82,
-                    boxShadow: "0 0 0 3px rgba(139,92,246,0.55), 0 0 0 5px rgba(59,130,246,0.18)",
+                    position: "absolute",
+                    bottom: -16,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    display: "flex",
+                    gap: 6,
+                    zIndex: 20,
                   }}
                 >
-                  <img
-                    src={userImage}
-                    alt={displayName}
-                    className="h-full w-full object-cover"
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("book")}
+                    aria-label="Browse"
                     style={{
-                      objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
-                      transform: `scale(${avatarZoom})`,
-                      transformOrigin: "center",
+                      width: 34,
+                      height: 34,
+                      borderRadius: "50%",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        activeTab === "book"
+                          ? "linear-gradient(135deg,#3b82f6,#9333ea)"
+                          : "rgba(14,18,32,0.95)",
+                      color: activeTab === "book" ? "#fff" : "rgba(255,255,255,0.45)",
+                      boxShadow:
+                        activeTab === "book"
+                          ? "0 4px 14px rgba(147,51,234,0.45)"
+                          : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                      transition: "all 0.2s",
                     }}
-                  />
+                  >
+                    <BookOpen size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("settings")}
+                    aria-label="Settings"
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: "50%",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        activeTab === "settings"
+                          ? "linear-gradient(135deg,#3b82f6,#9333ea)"
+                          : "rgba(14,18,32,0.95)",
+                      color: activeTab === "settings" ? "#fff" : "rgba(255,255,255,0.45)",
+                      boxShadow:
+                        activeTab === "settings"
+                          ? "0 4px 14px rgba(147,51,234,0.45)"
+                          : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <Settings size={15} />
+                  </button>
+                  <Link
+                    href="/chat"
+                    prefetch={false}
+                    onClick={onClose}
+                    aria-label="Chat Elya"
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(14,18,32,0.95)",
+                      color: "rgba(255,255,255,0.45)",
+                      boxShadow:
+                        "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <MessageCircle size={15} />
+                  </Link>
                 </div>
-              </Link>
-            ) : (
-              <div
-                className="overflow-hidden rounded-full"
-                style={{
-                  width: 82,
-                  height: 82,
-                  boxShadow: "0 0 0 3px rgba(255,255,255,0.15)",
-                }}
-              >
-                <img src={userImage} alt="" className="h-full w-full object-cover" />
+
+                {/* Username badge — OVERLAP the top-right edge, extending into right column */}
+                {isAuthed ? (
+                  <Link
+                    href="/profile"
+                    prefetch={false}
+                    onClick={onClose}
+                    style={{
+                      position: "absolute",
+                      top: 7,
+                      left: 66,
+                      zIndex: 20,
+                      display: "block",
+                    }}
+                  >
+                    <div
+                      style={{
+                        background:
+                          "linear-gradient(135deg,rgba(88,28,135,0.80) 0%,rgba(30,58,138,0.65) 100%)",
+                        border: "1px solid rgba(139,92,246,0.40)",
+                        borderRadius: 10,
+                        padding: "5px 12px 5px 20px",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: "white",
+                          maxWidth: 108,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {displayName}
+                      </p>
+                      <p style={{ fontSize: 10, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>
+                        View profile →
+                      </p>
+                    </div>
+                  </Link>
+                ) : (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 7,
+                      left: 66,
+                      zIndex: 20,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "rgba(255,255,255,0.07)",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        borderRadius: 10,
+                        padding: "5px 12px 5px 20px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "rgba(255,255,255,0.62)",
+                          maxWidth: 108,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {displayName}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
               </div>
-            )}
-
-            {/* Jarak antara foto dan tombol */}
-            <div style={{ height: 20 }} />
-
-            {/* 3 tombol HORIZONTAL: Book | Settings | Chat */}
-            <div className="flex items-center gap-2.5">
-
-              {/* Book */}
-              <button
-                type="button"
-                onClick={() => setActiveTab("book")}
-                aria-label="Browse"
-                className="flex items-center justify-center rounded-full transition-all duration-200"
-                style={{
-                  width: 36,
-                  height: 36,
-                  background:
-                    activeTab === "book"
-                      ? "linear-gradient(135deg,#3b82f6,#9333ea)"
-                      : "rgba(255,255,255,0.08)",
-                  color: activeTab === "book" ? "#fff" : "rgba(255,255,255,0.4)",
-                  boxShadow:
-                    activeTab === "book"
-                      ? "0 4px 14px rgba(147,51,234,0.4)"
-                      : "none",
-                }}
-              >
-                <BookOpen size={16} />
-              </button>
-
-              {/* Settings */}
-              <button
-                type="button"
-                onClick={() => setActiveTab("settings")}
-                aria-label="Settings"
-                className="flex items-center justify-center rounded-full transition-all duration-200"
-                style={{
-                  width: 36,
-                  height: 36,
-                  background:
-                    activeTab === "settings"
-                      ? "linear-gradient(135deg,#3b82f6,#9333ea)"
-                      : "rgba(255,255,255,0.08)",
-                  color: activeTab === "settings" ? "#fff" : "rgba(255,255,255,0.4)",
-                  boxShadow:
-                    activeTab === "settings"
-                      ? "0 4px 14px rgba(147,51,234,0.4)"
-                      : "none",
-                }}
-              >
-                <Settings size={16} />
-              </button>
-
-              {/* Chat — langsung navigate */}
-              <Link
-                href="/chat"
-                prefetch={false}
-                onClick={onClose}
-                aria-label="Chat Elya"
-                className="flex items-center justify-center rounded-full transition-all duration-200"
-                style={{
-                  width: 36,
-                  height: 36,
-                  background: "rgba(255,255,255,0.08)",
-                  color: "rgba(255,255,255,0.4)",
-                }}
-              >
-                <MessageCircle size={16} />
-              </Link>
             </div>
           </div>
 
-          {/* ░░ KOLOM KANAN: username atas + nav items ░░ */}
+          {/* ░░ RIGHT: nav items (username overlaid from left column) ░░ */}
           <div className="flex min-h-0 flex-1 flex-col">
-
-            {/* Username / Display name — sejajar dengan foto profil */}
-            <div className="shrink-0 px-3 py-6">
-              {isAuthed ? (
-                <Link href="/profile" prefetch={false} onClick={onClose} className="group block">
-                  <p className="truncate text-[13px] font-bold leading-tight text-white transition group-hover:text-white/80">
-                    {displayName}
-                  </p>
-                  <p className="mt-1 text-[11px] text-white/35">View profile →</p>
-                </Link>
-              ) : (
-                <p className="truncate text-[13px] font-bold text-white/80">{displayName}</p>
-              )}
-            </div>
+            {/* Spacer = paddingTop(24) + circle(82) + buttons_overflow(16) + gap(14) = 136px */}
+            <div style={{ height: 136, flexShrink: 0 }} />
 
             <div className="mx-3 h-px shrink-0 bg-white/[0.08]" />
 
-            {/* Nav items — scrollable, mengisi sisa tinggi */}
+            {/* Nav items — scrollable */}
             <div className="flex-1 overflow-y-auto py-1.5 pr-1.5 pl-1">
 
               {activeTab === "book" ? (
