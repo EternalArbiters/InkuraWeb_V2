@@ -36,14 +36,14 @@ export default function BrowseCatalogFilter({
 
   if (uiTheme === "modern") {
     const chip =
-      "h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
+      "shrink-0 h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
     return (
       <div
-        className="sticky top-20 z-30 border-b border-[var(--ink-border)] backdrop-blur-md"
+        className="md:sticky md:top-20 md:z-30 md:border-b md:border-[var(--ink-border)] md:backdrop-blur-md"
         style={{ background: "color-mix(in srgb, var(--ink-bg) 85%, transparent)" }}
       >
         <div className="mx-auto max-w-6xl px-4">
-          <form action={action} method="get" className="flex flex-wrap items-center gap-2 py-3">
+          <form action={action} method="get" className="flex items-center gap-2 overflow-x-auto py-3 [&::-webkit-scrollbar]:hidden md:flex-wrap md:overflow-visible">
             <select name="sort" defaultValue={defaultSort} className={chip}>
               <option value="newest">{labels.newest}</option>
               <option value="liked">{labels.liked}</option>
@@ -62,7 +62,7 @@ export default function BrowseCatalogFilter({
 
             <button
               type="submit"
-              className="ml-auto h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95"
+              className="shrink-0 ml-auto h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95"
             >
               {labels.apply}
             </button>

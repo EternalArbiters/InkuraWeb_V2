@@ -160,7 +160,7 @@ export default function ModernWorkCard({
               {rank}
             </span>
           ) : topLeftBadge ? (
-            <span className="absolute left-0 top-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
+            <span className="absolute left-0 top-0 z-10 bg-black/55 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
               {topLeftBadge}
             </span>
           ) : (

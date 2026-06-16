@@ -27,14 +27,14 @@ export default function SearchFilterBar({ kind, sort, genre, tag, genres, labels
 
   if (uiTheme === "modern") {
     const chip =
-      "h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
+      "shrink-0 h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
     return (
       <div
-        className="sticky top-20 z-30 border-b border-[var(--ink-border)] backdrop-blur-md"
+        className="md:sticky md:top-20 md:z-30 md:border-b md:border-[var(--ink-border)] md:backdrop-blur-md"
         style={{ background: "color-mix(in srgb, var(--ink-bg) 85%, transparent)" }}
       >
         <div className="mx-auto max-w-6xl px-4">
-          <div className="flex flex-wrap items-center gap-2 py-3">
+          <div className="flex items-center gap-2 overflow-x-auto py-3 [&::-webkit-scrollbar]:hidden md:flex-wrap md:overflow-visible">
             <select name="kind" form="search-form" defaultValue={kind || "all"} className={chip}>
               <option value="all">All</option>
               <option value="novel">Novel</option>

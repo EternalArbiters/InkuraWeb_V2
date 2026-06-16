@@ -109,11 +109,18 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
   return (
     <ListSurface>
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-10 flex items-start justify-between gap-3">
           <div>
-            <div className="inline-flex rounded-xl bg-black px-3 py-1 text-sm font-semibold text-white">{tMoreInSeries}</div>
-            <div className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">{seriesTitle}</div>
-            <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 ink-muted-text">{tWorksOrderedByArc}</div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--ink-accent,#7c3aed)]">
+              {tMoreInSeries}
+            </p>
+            <div className="flex items-center gap-3">
+              <span className="h-12 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{seriesTitle}</h1>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 ink-muted-text">{tWorksOrderedByArc}</p>
+              </div>
+            </div>
           </div>
           <BackButton href={`/w/${work.slug}`} />
         </div>
