@@ -2,8 +2,7 @@ import { listPublishedWorksFromSearchParams } from "@/server/services/works/list
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import WorksGrid from "../components/WorksGrid";
 import ListSurface from "../components/ListSurface";
-import BrowsePageChrome from "@/app/browse/_components/BrowsePageChrome";
-import BrowseCatalogFilter from "@/app/components/BrowseCatalogFilter";
+import BrowseHeaderWithFilter from "@/app/browse/_components/BrowseHeaderWithFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -51,11 +50,9 @@ export default async function AllWorksPage({
 
   return (
     <ListSurface>
-      <div className="max-w-6xl mx-auto px-4 pt-10 pb-4">
-        <BrowsePageChrome title={title} searchLabel={advancedSearchLabel} />
-      </div>
-
-      <BrowseCatalogFilter
+      <BrowseHeaderWithFilter
+        title={title}
+        searchLabel={advancedSearchLabel}
         action="/all"
         defaultSort={sort}
         defaultPublishType={publishType}
