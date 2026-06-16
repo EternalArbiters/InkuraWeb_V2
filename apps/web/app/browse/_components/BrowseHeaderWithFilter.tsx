@@ -143,7 +143,7 @@ export default function BrowseHeaderWithFilter({
           <>
             {/* Backdrop */}
             <div
-              className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+              className={`fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
                 sheetOpen ? "opacity-100" : "opacity-0 pointer-events-none"
               }`}
               onClick={closeSheet}
@@ -151,7 +151,7 @@ export default function BrowseHeaderWithFilter({
 
             {/* Sheet */}
             <div
-              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out md:hidden ${
+              className={`fixed bottom-0 left-0 right-0 z-[70] rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out md:hidden ${
                 sheetOpen ? "translate-y-0" : "translate-y-full"
               }`}
               style={{
