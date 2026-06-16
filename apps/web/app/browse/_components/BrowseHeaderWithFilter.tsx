@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import ActionLink from "@/app/components/ActionLink";
@@ -44,6 +44,22 @@ export default function BrowseHeaderWithFilter({
 }: Props) {
   const { uiTheme } = useUITheme();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMounted, setSheetMounted] = useState(false);
+  const unmountTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openSheet = () => {
+    if (unmountTimer.current) clearTimeout(unmountTimer.current);
+    setSheetMounted(true);
+    // Two rAF to ensure mount before CSS transition kicks in
+    requestAnimationFrame(() => requestAnimationFrame(() => setSheetOpen(true)));
+  };
+
+  const closeSheet = () => {
+    setSheetOpen(false);
+    unmountTimer.current = setTimeout(() => setSheetMounted(false), 320);
+  };
+
+  useEffect(() => () => { if (unmountTimer.current) clearTimeout(unmountTimer.current); }, []);
 
   if (uiTheme === "modern") {
     const desktopChip =
@@ -53,19 +69,21 @@ export default function BrowseHeaderWithFilter({
 
     return (
       <>
-        {/* ── Header row ── */}
+        {/* ── Header ── */}
         <div className="mx-auto max-w-6xl px-4 pt-10 pb-4">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Title */}
             <div className="flex items-center gap-3">
               <span className="h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
               <h1 className="text-3xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-4xl">{title}</h1>
             </div>
 
+            {/* Buttons — below title on mobile, right side on desktop */}
             <div className="flex items-center gap-2">
               {/* Filter icon — mobile only */}
               <button
                 type="button"
-                onClick={() => setSheetOpen(true)}
+                onClick={openSheet}
                 aria-label="Open filters"
                 className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--ink-fg)] shadow-sm ring-1 ring-inset ring-white/10 backdrop-blur-sm transition hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:ring-transparent"
               >
@@ -83,6 +101,9 @@ export default function BrowseHeaderWithFilter({
             </div>
           </header>
         </div>
+
+        {/* Mobile-only thin separator before works */}
+        <div className="md:hidden h-px mx-4" style={{ background: "var(--ink-border)" }} />
 
         {/* ── Desktop sticky filter bar ── */}
         <div
@@ -114,76 +135,81 @@ export default function BrowseHeaderWithFilter({
           </div>
         </div>
 
-        {/* ── Mobile bottom sheet backdrop ── */}
-        <div
-          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-            sheetOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-          onClick={() => setSheetOpen(false)}
-        />
+        {/* ── Mobile bottom sheet (only in DOM while open/animating) ── */}
+        {sheetMounted && (
+          <>
+            {/* Backdrop */}
+            <div
+              className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+                sheetOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
+              onClick={closeSheet}
+            />
 
-        {/* ── Mobile bottom sheet ── */}
-        <div
-          className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out md:hidden ${
-            sheetOpen ? "translate-y-0" : "translate-y-full"
-          }`}
-          style={{
-            background: "var(--ink-bg)",
-            borderTop: "1px solid var(--ink-border)",
-            paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
-          }}
-        >
-          {/* Drag handle */}
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="h-1 w-10 rounded-full" style={{ background: "var(--ink-border)" }} />
-          </div>
+            {/* Sheet */}
+            <div
+              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out md:hidden ${
+                sheetOpen ? "translate-y-0" : "translate-y-full"
+              }`}
+              style={{
+                background: "var(--ink-bg)",
+                borderTop: "1px solid var(--ink-border)",
+                paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+              }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="h-1 w-10 rounded-full" style={{ background: "var(--ink-border)" }} />
+              </div>
 
-          {/* Sheet header */}
-          <div className="flex items-center justify-between px-5 py-3">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal size={16} className="text-[var(--ink-accent)]" />
-              <span className="text-base font-bold text-[var(--ink-fg)]">Filter</span>
+              {/* Sheet header */}
+              <div className="flex items-center justify-between px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={16} className="text-[var(--ink-accent)]" />
+                  <span className="text-base font-bold text-[var(--ink-fg)]">Filter</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeSheet}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--ink-border)] text-[var(--ink-muted)] transition hover:text-[var(--ink-fg)]"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <div className="h-px mx-5" style={{ background: "var(--ink-border)" }} />
+
+              {/* Sheet filters */}
+              <form
+                action={action}
+                method="get"
+                onSubmit={closeSheet}
+                className="flex flex-col gap-3 px-5 pt-4 pb-2"
+              >
+                <select name="sort" defaultValue={defaultSort} className={sheetInput}>
+                  <option value="newest">{labels.newest}</option>
+                  <option value="liked">{labels.liked}</option>
+                  <option value="rated">{labels.rated}</option>
+                </select>
+                <select name="publishType" defaultValue={defaultPublishType} className={sheetInput}>
+                  <option value="">{labels.anyPublishType}</option>
+                  <option value="ORIGINAL">{labels.original}</option>
+                  <option value="TRANSLATION">{labels.translation}</option>
+                  <option value="REUPLOAD">{labels.reupload}</option>
+                </select>
+                <input name="author" defaultValue={defaultAuthor} placeholder={labels.author} className={sheetInput} />
+                <input name="translator" defaultValue={defaultTranslator} placeholder={labels.translator} className={sheetInput} />
+
+                <button
+                  type="submit"
+                  className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-base font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
+                >
+                  {labels.apply}
+                </button>
+              </form>
             </div>
-            <button
-              type="button"
-              onClick={() => setSheetOpen(false)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--ink-border)] text-[var(--ink-muted)] transition hover:text-[var(--ink-fg)]"
-            >
-              <X size={15} />
-            </button>
-          </div>
-
-          <div className="h-px mx-5" style={{ background: "var(--ink-border)" }} />
-
-          {/* Sheet filters */}
-          <form
-            action={action}
-            method="get"
-            onSubmit={() => setSheetOpen(false)}
-            className="flex flex-col gap-3 px-5 pt-4 pb-2"
-          >
-            <select name="sort" defaultValue={defaultSort} className={sheetInput}>
-              <option value="newest">{labels.newest}</option>
-              <option value="liked">{labels.liked}</option>
-              <option value="rated">{labels.rated}</option>
-            </select>
-            <select name="publishType" defaultValue={defaultPublishType} className={sheetInput}>
-              <option value="">{labels.anyPublishType}</option>
-              <option value="ORIGINAL">{labels.original}</option>
-              <option value="TRANSLATION">{labels.translation}</option>
-              <option value="REUPLOAD">{labels.reupload}</option>
-            </select>
-            <input name="author" defaultValue={defaultAuthor} placeholder={labels.author} className={sheetInput} />
-            <input name="translator" defaultValue={defaultTranslator} placeholder={labels.translator} className={sheetInput} />
-
-            <button
-              type="submit"
-              className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-base font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
-            >
-              {labels.apply}
-            </button>
-          </form>
-        </div>
+          </>
+        )}
       </>
     );
   }
