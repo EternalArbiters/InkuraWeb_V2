@@ -235,7 +235,6 @@ export default function MobileNav({
     { type: "link", href: "/library",          label: t("Library"),           Icon: Bookmark },
     { type: "link", href: "/settings/history", label: t("History"),           Icon: History },
     { type: "link", href: "/lists",            label: t("Collection"),        Icon: Layers },
-    { type: "close",                           label: t("Back"),              Icon: ArrowLeft },
   ];
 
   const settingsOrbit: OrbitItem[] = [
@@ -257,12 +256,16 @@ export default function MobileNav({
       ? [{ type: "logout" as const, label: t("Logout"),   Icon: ArrowLeft }]
       : [{ type: "link"   as const, href: "/auth/signin", label: t("Sign In"), Icon: User }]
     ),
-    { type: "close", label: t("Back"), Icon: ArrowLeft },
   ];
 
   const orbitItems = activeTab === "book" ? bookOrbit : settingsOrbit;
   const N = orbitItems.length;
-  const ORBIT_R = 165;
+  // Vertical half-span: space items evenly so each pill (≈30px) has a 12px gap → 42px slot.
+  // Horizontal radius capped at 200px so labels don't fall off screen.
+  const VERT_R  = N <= 1 ? 100 : Math.ceil((N - 1) * 42 / 2);
+  const HORIZ_R = Math.min(200, VERT_R);
+  // Minimum x from circle center so items never overlap the profile photo (circle r=55 + 10px gap).
+  const MIN_OX  = 65;
 
   return (
     <>
@@ -418,10 +421,14 @@ export default function MobileNav({
 
         {/* ── Orbital nav items: right semi-circle around profile center ── */}
         {orbitItems.map((item, i) => {
-          const angleDeg = N === 1 ? 0 : -90 + (180 / (N - 1)) * i;
-          const angleRad = (angleDeg * Math.PI) / 180;
-          const ox = Math.round(ORBIT_R * Math.cos(angleRad));
-          const oy = Math.round(ORBIT_R * Math.sin(angleRad));
+          // Even vertical spacing: distribute items uniformly within [-VERT_R, +VERT_R]
+          const ySlot = N <= 1 ? 0 : (2 * VERT_R) / (N - 1);
+          const oy = Math.round(i * ySlot - VERT_R);
+          // Ellipse: x = HORIZ_R * sqrt(1 - (oy/VERT_R)²), minimum MIN_OX
+          const ellipseX = VERT_R === 0
+            ? HORIZ_R
+            : HORIZ_R * Math.sqrt(Math.max(0, 1 - (oy / VERT_R) ** 2));
+          const ox = Math.max(MIN_OX, Math.round(ellipseX));
           const active = item.type === "link" && isActive((item as OrbitLink).href);
           const isRed = (item as OrbitLink).red || item.type === "logout";
 
