@@ -52,7 +52,6 @@ export default function MobileNav({
   const tCommunity = useUILanguageText("Navigation Community");
   const { uiTheme } = useUITheme();
   const [activeTab, setActiveTab] = useState<ActiveTab>("book");
-  const [showCategories, setShowCategories] = useState(false);
   const [showCategoriesClassic, setShowCategoriesClassic] = useState(false);
 
   if (!isOpen) return null;
@@ -217,399 +216,262 @@ export default function MobileNav({
     );
   }
 
-  /* ── Modern mode continues below ── */
+  /* ── Modern mode: orbital nav ── */
 
-  const settingsItems: NavItem[] = [
-    { label: t("Notifications"), href: "/notifications", Icon: Bell },
-    { label: t("Upload"), href: "/studio", Icon: Upload },
-    { label: t("Community"), href: "/community", Icon: Users },
-    { label: tCommunity("Ranking"), href: "/community/ranking", Icon: Trophy },
-    { label: tCommunity("Title"), href: "/community/title", Icon: Award },
-    { label: t("Account"), href: "/settings/account", Icon: User },
-    ...(isAuthed ? [{ label: t("Finances"), href: "/settings/payout", Icon: Wallet }] : []),
-    ...(isAuthed ? [{ label: t("Admin Report"), href: "/admin-report", Icon: ShieldAlert }] : []),
-    ...(isAdmin ? [{ label: t("Content Reports"), href: "/admin/reports", Icon: ShieldAlert }] : []),
-    ...(isAdmin ? [{ label: t("Taxonomy"), href: "/admin/taxonomy", Icon: ListTree }] : []),
-    ...(isAdmin ? [{ label: t("Creator Donations"), href: "/admin/donations", Icon: Gift }] : []),
-    ...(isAdmin ? [{ label: t("Analytics"), href: "/admin/analytics", Icon: BarChart3 }] : []),
+  type OrbitLink   = { type: "link";   href: string; label: string; Icon: LucideIcon; red?: boolean };
+  type OrbitClose  = { type: "close";  label: string; Icon: LucideIcon };
+  type OrbitTheme  = { type: "theme";  label: string; Icon: LucideIcon };
+  type OrbitLogout = { type: "logout"; label: string; Icon: LucideIcon };
+  type OrbitItem   = OrbitLink | OrbitClose | OrbitTheme | OrbitLogout;
+
+  const bookOrbit: OrbitItem[] = [
+    { type: "link", href: "/donate",           label: t("Donate For Inkura"), Icon: Gift,        red: true },
+    { type: "link", href: "/search",           label: t("Advanced Search"),   Icon: Search },
+    { type: "link", href: "/all",              label: t("All"),               Icon: LayoutGrid },
+    { type: "link", href: "/novel",            label: t("Novel"),             Icon: BookText },
+    { type: "link", href: "/comic",            label: t("Comic"),             Icon: PanelsTopLeft },
+    { type: "link", href: "/film",             label: t("Film"),              Icon: Clapperboard },
+    { type: "link", href: "/genre",            label: t("Genres"),            Icon: Tags },
+    { type: "link", href: "/library",          label: t("Library"),           Icon: Bookmark },
+    { type: "link", href: "/settings/history", label: t("History"),           Icon: History },
+    { type: "link", href: "/lists",            label: t("Collection"),        Icon: Layers },
+    { type: "close",                           label: t("Back"),              Icon: ArrowLeft },
   ];
 
-  const NavLink = ({ item, badge }: { item: NavItem; badge?: string }) => {
-    const active = isActive(item.href);
-    return (
-      <Link
-        href={item.href}
-        prefetch={false}
-        onClick={onClose}
-        className={`flex items-center gap-2 rounded-lg px-2.5 py-[7px] text-[13px] transition-colors ${
-          active
-            ? "bg-white/12 font-semibold text-white"
-            : "text-white/55 hover:bg-white/8 hover:text-white/85"
-        }`}
-      >
-        <item.Icon size={13} className="shrink-0" />
-        <span className="truncate">{item.label}</span>
-        {active && (
-          <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500" />
-        )}
-        {badge && (
-          <span className="ml-auto">
-            <NavCountBadge endpoint={badge} variant="inline" enabled={!!isAuthed} />
-          </span>
-        )}
-      </Link>
-    );
-  };
+  const settingsOrbit: OrbitItem[] = [
+    { type: "link", href: "/donate",            label: t("Donate For Inkura"),       Icon: Gift,       red: true },
+    { type: "link", href: "/notifications",     label: t("Notifications"),           Icon: Bell },
+    { type: "link", href: "/studio",            label: t("Upload"),                  Icon: Upload },
+    { type: "link", href: "/community",         label: t("Community"),               Icon: Users },
+    { type: "link", href: "/community/ranking", label: tCommunity("Ranking"),        Icon: Trophy },
+    { type: "link", href: "/community/title",   label: tCommunity("Title"),          Icon: Award },
+    { type: "link", href: "/settings/account",  label: t("Account"),                 Icon: User },
+    ...(isAuthed ? [{ type: "link" as const, href: "/settings/payout", label: t("Finances"),          Icon: Wallet }] : []),
+    ...(isAuthed ? [{ type: "link" as const, href: "/admin-report",    label: t("Admin Report"),      Icon: ShieldAlert }] : []),
+    ...(isAdmin  ? [{ type: "link" as const, href: "/admin/reports",   label: t("Content Reports"),   Icon: ShieldAlert }] : []),
+    ...(isAdmin  ? [{ type: "link" as const, href: "/admin/taxonomy",  label: t("Taxonomy"),          Icon: ListTree }] : []),
+    ...(isAdmin  ? [{ type: "link" as const, href: "/admin/donations", label: t("Creator Donations"), Icon: Gift }] : []),
+    ...(isAdmin  ? [{ type: "link" as const, href: "/admin/analytics", label: t("Analytics"),         Icon: BarChart3 }] : []),
+    { type: "theme",  label: t("Theme"),  Icon: isDarkMode ? Moon : Sun },
+    ...(isAuthed
+      ? [{ type: "logout" as const, label: t("Logout"),   Icon: ArrowLeft }]
+      : [{ type: "link"   as const, href: "/auth/signin", label: t("Sign In"), Icon: User }]
+    ),
+    { type: "close", label: t("Back"), Icon: ArrowLeft },
+  ];
+
+  const orbitItems = activeTab === "book" ? bookOrbit : settingsOrbit;
+  const N = orbitItems.length;
+  const ORBIT_R = 165;
 
   return (
     <>
-      {/* ══════════ SIDEBAR ══════════ */}
       <aside
-        className="fixed inset-0 z-50 flex flex-col overflow-hidden"
+        className="fixed inset-0 z-50 overflow-hidden"
         style={{ background: "linear-gradient(150deg,#0c0e1b 0%,#111827 100%)" }}
       >
 
-        {/* ▓▓ MAIN AREA ▓▓ */}
-        <div className="flex min-h-0 flex-1">
+        {/* ── Profile circle: anchored at left-center ── */}
+        <div
+          style={{
+            position: "absolute",
+            left: "22%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 30,
+          }}
+        >
+          <div style={{ position: "relative", width: 110, height: 110 }}>
 
-          {/* ░░ LEFT: profile circle — focal point with overlapping elements ░░ */}
-          <div
-            className="relative shrink-0 border-r border-white/[0.08]"
-            style={{ width: "42%", overflow: "visible", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            {/* position: relative on the circle wrapper so absolute children are anchored to it */}
-            <div style={{ position: "relative", width: 110, height: 110, flexShrink: 0 }}>
-
-                {/* Profile circle */}
-                {isAuthed ? (
-                  <Link href="/profile" prefetch={false} onClick={onClose} className="group block">
-                    <div
-                      className="overflow-hidden rounded-full transition group-hover:scale-[1.03]"
-                      style={{
-                        width: 110,
-                        height: 110,
-                        boxShadow:
-                          "0 0 0 3px rgba(139,92,246,0.55), 0 0 0 6px rgba(59,130,246,0.18)",
-                      }}
-                    >
-                      <img
-                        src={userImage}
-                        alt={displayName}
-                        className="h-full w-full object-cover"
-                        style={{
-                          objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
-                          transform: `scale(${avatarZoom})`,
-                          transformOrigin: "center",
-                        }}
-                      />
-                    </div>
-                  </Link>
-                ) : (
-                  <div
-                    className="overflow-hidden rounded-full"
-                    style={{
-                      width: 110,
-                      height: 110,
-                      boxShadow: "0 0 0 3px rgba(255,255,255,0.15)",
-                    }}
-                  >
-                    <img src={userImage} alt="" className="h-full w-full object-cover" />
-                  </div>
-                )}
-
-                {/* 3 buttons — OVERLAP the bottom-center edge of the circle */}
+            {/* Circle */}
+            {isAuthed ? (
+              <Link href="/profile" prefetch={false} onClick={onClose} className="group block">
                 <div
+                  className="overflow-hidden rounded-full transition group-hover:scale-[1.03]"
                   style={{
-                    position: "absolute",
-                    bottom: -16,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    display: "flex",
-                    gap: 6,
-                    zIndex: 20,
+                    width: 110,
+                    height: 110,
+                    boxShadow: "0 0 0 3px rgba(139,92,246,0.55), 0 0 0 6px rgba(59,130,246,0.18)",
                   }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("book")}
-                    aria-label="Browse"
+                  <img
+                    src={userImage}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
                     style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: "50%",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background:
-                        activeTab === "book"
-                          ? "linear-gradient(135deg,#3b82f6,#9333ea)"
-                          : "rgba(14,18,32,0.95)",
-                      color: activeTab === "book" ? "#fff" : "rgba(255,255,255,0.45)",
-                      boxShadow:
-                        activeTab === "book"
-                          ? "0 4px 14px rgba(147,51,234,0.45)"
-                          : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
-                      transition: "all 0.2s",
+                      objectPosition: `${avatarFocusX}% ${avatarFocusY}%`,
+                      transform: `scale(${avatarZoom})`,
+                      transformOrigin: "center",
                     }}
-                  >
-                    <BookOpen size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("settings")}
-                    aria-label="Settings"
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: "50%",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background:
-                        activeTab === "settings"
-                          ? "linear-gradient(135deg,#3b82f6,#9333ea)"
-                          : "rgba(14,18,32,0.95)",
-                      color: activeTab === "settings" ? "#fff" : "rgba(255,255,255,0.45)",
-                      boxShadow:
-                        activeTab === "settings"
-                          ? "0 4px 14px rgba(147,51,234,0.45)"
-                          : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <Settings size={15} />
-                  </button>
-                  <Link
-                    href="/chat"
-                    prefetch={false}
-                    onClick={onClose}
-                    aria-label="Chat Elya"
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "rgba(14,18,32,0.95)",
-                      color: "rgba(255,255,255,0.45)",
-                      boxShadow:
-                        "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <MessageCircle size={15} />
-                  </Link>
+                  />
                 </div>
+              </Link>
+            ) : (
+              <div
+                className="overflow-hidden rounded-full"
+                style={{ width: 110, height: 110, boxShadow: "0 0 0 3px rgba(255,255,255,0.15)" }}
+              >
+                <img src={userImage} alt="" className="h-full w-full object-cover" />
+              </div>
+            )}
 
-                {/* Username badge — OVERLAP the top-right edge, extending into right column */}
-                {isAuthed ? (
-                  <Link
-                    href="/profile"
-                    prefetch={false}
-                    onClick={onClose}
-                    style={{
-                      position: "absolute",
-                      top: 7,
-                      left: 94,
-                      zIndex: 20,
-                      display: "block",
-                    }}
-                  >
-                    <div
-                      style={{
-                        background:
-                          "linear-gradient(135deg,rgba(88,28,135,0.80) 0%,rgba(30,58,138,0.65) 100%)",
-                        border: "1px solid rgba(139,92,246,0.40)",
-                        borderRadius: 10,
-                        padding: "5px 12px 5px 20px",
-                        backdropFilter: "blur(12px)",
-                        WebkitBackdropFilter: "blur(12px)",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: "white",
-                          maxWidth: 108,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {displayName}
-                      </p>
-                      <p style={{ fontSize: 10, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>
-                        View profile →
-                      </p>
-                    </div>
-                  </Link>
-                ) : (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 7,
-                      left: 94,
-                      zIndex: 20,
-                    }}
-                  >
-                    <div
-                      style={{
-                        background: "rgba(255,255,255,0.07)",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        borderRadius: 10,
-                        padding: "5px 12px 5px 20px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: "rgba(255,255,255,0.62)",
-                          maxWidth: 108,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {displayName}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-            </div>
-          </div>
-
-          {/* ░░ RIGHT: nav items ░░ */}
-          <div className="flex min-h-0 flex-1 flex-col">
-
-            {/* Donate — same style as nav items but red, always first */}
-            <Link
-              href="/donate"
-              prefetch={false}
-              onClick={onClose}
-              className="flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-[7px] text-[13px] font-semibold text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+            {/* 3 tab buttons — overlap bottom edge */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: -18,
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                gap: 7,
+                zIndex: 20,
+              }}
             >
-              <Gift size={13} className="shrink-0" />
-              <span className="truncate">{t("Donate For Inkura")}</span>
-            </Link>
-
-            <div className="mx-2 h-px shrink-0 bg-white/[0.08]" />
-
-            {/* Nav items — scrollable */}
-            <div className="flex-1 overflow-y-auto py-1.5 pr-1.5 pl-1">
-
-              {activeTab === "book" ? (
-                <nav className="space-y-0.5">
-                  {bookTop.map((item) => (
-                    <NavLink key={item.href} item={item} />
-                  ))}
-
-                  {/* Categories expandable */}
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => setShowCategories((v) => !v)}
-                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-[7px] text-[13px] text-white/55 transition-colors hover:bg-white/8 hover:text-white/85"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Tags size={13} className="shrink-0" />
-                        {t("Categories")}
-                      </span>
-                      {showCategories ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                    </button>
-                    {showCategories && (
-                      <div className="ml-3 mt-0.5 space-y-0.5 border-l border-white/[0.08] pl-2">
-                        {categoryItems.map((item) => (
-                          <NavLink key={item.href} item={item} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {bookBottom.map((item) => (
-                    <NavLink key={item.href} item={item} />
-                  ))}
-                </nav>
-              ) : (
-                <nav className="space-y-0.5">
-                  {settingsItems.map((item) => (
-                    <NavLink
-                      key={item.href}
-                      item={item}
-                      badge={
-                        item.href === "/notifications"
-                          ? "/api/notifications/unread-count"
-                          : item.href === "/admin-report"
-                            ? "/api/admin-report/unread-count"
-                            : undefined
-                      }
-                    />
-                  ))}
-
-                  {/* Theme toggle */}
-                  <div className="mt-2 border-t border-white/[0.08] pt-2">
-                    <div className="flex items-center justify-between rounded-lg px-2.5 py-[7px]">
-                      <span className="text-[13px] text-white/55">{t("Theme")}</span>
-                      <button
-                        onClick={toggleDarkMode}
-                        className={`flex h-6 w-11 items-center rounded-full px-0.5 transition-all ${
-                          isDarkMode
-                            ? "justify-end bg-gradient-to-r from-blue-600 to-purple-600"
-                            : "justify-start bg-white/20"
-                        }`}
-                      >
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow">
-                          {isDarkMode
-                            ? <Moon size={10} className="text-indigo-700" />
-                            : <Sun size={10} className="text-yellow-600" />}
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {isAuthed ? (
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="w-full rounded-lg px-2.5 py-[7px] text-left text-[13px] text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
-                    >
-                      {t("Logout")}
-                    </button>
-                  ) : (
-                    <Link
-                      href="/auth/signin"
-                      prefetch={false}
-                      onClick={onClose}
-                      className="block rounded-lg px-2.5 py-[7px] text-[13px] font-semibold text-purple-400 transition hover:bg-purple-500/10"
-                    >
-                      {t("Sign In")}
-                    </Link>
-                  )}
-                </nav>
-              )}
+              {([
+                { tab: "book" as ActiveTab,     Icon: BookOpen,     label: "Browse"   },
+                { tab: "settings" as ActiveTab, Icon: Settings,     label: "Settings" },
+              ] as const).map(({ tab, Icon, label }) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  aria-label={label}
+                  style={{
+                    width: 34, height: 34, borderRadius: "50%", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: activeTab === tab ? "linear-gradient(135deg,#3b82f6,#9333ea)" : "rgba(14,18,32,0.95)",
+                    color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.45)",
+                    boxShadow: activeTab === tab
+                      ? "0 4px 14px rgba(147,51,234,0.45)"
+                      : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <Icon size={15} />
+                </button>
+              ))}
+              <Link
+                href="/chat"
+                prefetch={false}
+                onClick={onClose}
+                aria-label="Chat Elya"
+                style={{
+                  width: 34, height: 34, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(14,18,32,0.95)",
+                  color: "rgba(255,255,255,0.45)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                  transition: "all 0.2s",
+                }}
+              >
+                <MessageCircle size={15} />
+              </Link>
             </div>
 
-            <div className="mx-2 h-px shrink-0 bg-white/[0.08]" />
-
-            {/* Back — always last, same style as nav items */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-[7px] text-[13px] text-white/40 transition-colors hover:bg-white/8 hover:text-white/65"
-            >
-              <ArrowLeft size={13} className="shrink-0" />
-              <span>{t("Back")}</span>
-            </button>
+            {/* Username badge — overlap top-right edge */}
+            {isAuthed ? (
+              <Link
+                href="/profile"
+                prefetch={false}
+                onClick={onClose}
+                style={{ position: "absolute", top: 7, left: 94, zIndex: 20, display: "block" }}
+              >
+                <div
+                  style={{
+                    background: "linear-gradient(135deg,rgba(88,28,135,0.80) 0%,rgba(30,58,138,0.65) 100%)",
+                    border: "1px solid rgba(139,92,246,0.40)",
+                    borderRadius: 10,
+                    padding: "5px 12px 5px 20px",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "white", maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {displayName}
+                  </p>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>
+                    View profile →
+                  </p>
+                </div>
+              </Link>
+            ) : (
+              <div style={{ position: "absolute", top: 7, left: 94, zIndex: 20 }}>
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: 10,
+                    padding: "5px 12px 5px 20px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.62)", maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {displayName}
+                  </p>
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
+
+        {/* ── Orbital nav items: right semi-circle around profile center ── */}
+        {orbitItems.map((item, i) => {
+          const angleDeg = N === 1 ? 0 : -90 + (180 / (N - 1)) * i;
+          const angleRad = (angleDeg * Math.PI) / 180;
+          const ox = Math.round(ORBIT_R * Math.cos(angleRad));
+          const oy = Math.round(ORBIT_R * Math.sin(angleRad));
+          const active = item.type === "link" && isActive((item as OrbitLink).href);
+          const isRed = (item as OrbitLink).red || item.type === "logout";
+
+          const pillCls = [
+            "inline-flex items-center gap-2 rounded-full px-3 py-[7px] text-[13px] transition-all duration-150 active:scale-95 select-none",
+            isRed
+              ? "font-semibold text-red-400 hover:bg-red-500/15 hover:text-red-300"
+              : item.type === "close"
+                ? "text-white/40 hover:bg-white/8 hover:text-white/65"
+                : active
+                  ? "bg-white/12 font-semibold text-white"
+                  : "text-white/65 hover:bg-white/10 hover:text-white",
+          ].join(" ");
+
+          const content = (
+            <>
+              <item.Icon size={13} className="shrink-0" />
+              <span className="truncate" style={{ maxWidth: 130 }}>{item.label}</span>
+              {active && (
+                <span className="ml-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500" />
+              )}
+            </>
+          );
+
+          return (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: `calc(22% + ${ox}px)`,
+                top: `calc(50% + ${oy}px)`,
+                transform: "translateY(-50%)",
+                zIndex: 20,
+              }}
+            >
+              {item.type === "close" ? (
+                <button type="button" onClick={onClose} className={pillCls}>{content}</button>
+              ) : item.type === "theme" ? (
+                <button type="button" onClick={toggleDarkMode} className={pillCls}>{content}</button>
+              ) : item.type === "logout" ? (
+                <button type="button" onClick={handleLogout} className={pillCls}>{content}</button>
+              ) : (
+                <Link href={(item as OrbitLink).href} prefetch={false} onClick={onClose} className={pillCls}>
+                  {content}
+                </Link>
+              )}
+            </div>
+          );
+        })}
+
       </aside>
     </>
   );
