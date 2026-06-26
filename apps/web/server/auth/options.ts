@@ -104,6 +104,7 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
     role: enforcedRole as any,
     name: name ?? existing.name,
     image: image ?? existing.image,
+    username: existing.username ?? null,
     avatarFocusX: existing.avatarFocusX ?? null,
     avatarFocusY: existing.avatarFocusY ?? null,
     avatarZoom: existing.avatarZoom ?? null,
@@ -143,6 +144,7 @@ export const authOptions: NextAuthOptions = {
             name: true,
             image: true,
             password: true,
+            username: true,
             avatarFocusX: true,
             avatarFocusY: true,
             avatarZoom: true,
@@ -171,6 +173,7 @@ export const authOptions: NextAuthOptions = {
           role: enforcedRole,
           name: user.name ?? null,
           image: user.image ?? null,
+          username: user.username ?? null,
           avatarFocusX: user.avatarFocusX ?? null,
           avatarFocusY: user.avatarFocusY ?? null,
           avatarZoom: user.avatarZoom ?? null,
@@ -229,6 +232,7 @@ export const authOptions: NextAuthOptions = {
             name: true,
             image: true,
             email: true,
+            username: true,
             avatarFocusX: true,
             avatarFocusY: true,
             avatarZoom: true,
@@ -244,6 +248,7 @@ export const authOptions: NextAuthOptions = {
           token.picture = dbUser.image ?? null;
           token.email = dbUser.email ?? token.email;
           token.role = enforcedRoleFromEmail(String(dbUser.email || token.email || ""));
+          (token as any).username = dbUser.username ?? null;
           (token as any).avatarFocusX = dbUser.avatarFocusX ?? null;
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
           (token as any).avatarZoom = dbUser.avatarZoom ?? null;
@@ -265,6 +270,7 @@ export const authOptions: NextAuthOptions = {
         token.role = enforcedRoleFromEmail((user as any).email);
         token.name = (user as any).name ?? null;
         token.picture = (user as any).image ?? null;
+        (token as any).username = (user as any).username ?? null;
         (token as any).avatarFocusX = (user as any).avatarFocusX ?? null;
         (token as any).avatarFocusY = (user as any).avatarFocusY ?? null;
         (token as any).avatarZoom = (user as any).avatarZoom ?? null;
@@ -292,6 +298,7 @@ export const authOptions: NextAuthOptions = {
           token.role = enforcedRoleFromEmail(email);
           token.name = dbUser.name ?? null;
           token.picture = dbUser.image ?? null;
+          (token as any).username = (dbUser as any).username ?? null;
           (token as any).avatarFocusX = dbUser.avatarFocusX ?? null;
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
           (token as any).avatarZoom = dbUser.avatarZoom ?? null;
@@ -315,6 +322,7 @@ export const authOptions: NextAuthOptions = {
             role: true,
             name: true,
             image: true,
+            username: true,
             avatarFocusX: true,
             avatarFocusY: true,
             avatarZoom: true,
@@ -330,6 +338,7 @@ export const authOptions: NextAuthOptions = {
           token.role = enforcedRoleFromEmail(String(token.email));
           token.name = dbUser.name ?? (token.name as any) ?? null;
           token.picture = dbUser.image ?? (token.picture as any) ?? null;
+          (token as any).username = dbUser.username ?? null;
           (token as any).avatarFocusX = dbUser.avatarFocusX ?? null;
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
           (token as any).avatarZoom = dbUser.avatarZoom ?? null;
@@ -380,6 +389,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = String(token.email || session.user.email || "");
         session.user.name = (token.name as string) ?? null;
         session.user.image = (token.picture as string) ?? null;
+        (session.user as any).username = (token as any).username ?? null;
         (session.user as any).avatarFocusX = (token as any).avatarFocusX ?? null;
         (session.user as any).avatarFocusY = (token as any).avatarFocusY ?? null;
         (session.user as any).avatarZoom = (token as any).avatarZoom ?? null;

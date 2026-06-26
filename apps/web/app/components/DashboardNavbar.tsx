@@ -57,6 +57,8 @@ export default function DashboardNavbar() {
     session?.user?.email?.split("@")[0] ||
     (isAuthed ? t("User") : t("Guest"));
 
+  const username = session?.user?.username || session?.user?.email?.split("@")[0] || "";
+
   const userImage = session?.user?.image || "/images/default-avatar.png";
   const avatarFocusX = Number.isFinite(Number((session?.user as any)?.avatarFocusX))
     ? Number((session?.user as any)?.avatarFocusX)
@@ -180,6 +182,7 @@ export default function DashboardNavbar() {
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         displayName={displayName}
+        username={username}
         userImage={userImage}
         avatarFocusX={avatarFocusX}
         avatarFocusY={avatarFocusY}

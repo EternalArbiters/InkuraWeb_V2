@@ -8,6 +8,7 @@ declare module "next-auth" {
       role: string;
       name?: string | null;
       image?: string | null;
+      username?: string | null;
       profileOnboardingComplete?: boolean;
       analyticsOnboardingCompletedAt?: string | null;
       inkuraLanguage?: "EN" | "ID" | null;

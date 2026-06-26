@@ -19,6 +19,7 @@ interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
   displayName: string;
+  username: string;
   userImage: string;
   avatarFocusX?: number;
   avatarFocusY?: number;
@@ -37,6 +38,7 @@ export default function MobileNav({
   isOpen,
   onClose,
   displayName,
+  username,
   userImage,
   avatarFocusX = 50,
   avatarFocusY = 50,
@@ -420,8 +422,8 @@ export default function MobileNav({
                   <p style={{ fontSize: 12, fontWeight: 700, color: "white", maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {displayName}
                   </p>
-                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>
-                    View profile →
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.50)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis" }}>
+                    @{username}
                   </p>
                 </div>
               </Link>
