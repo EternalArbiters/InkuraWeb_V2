@@ -279,12 +279,26 @@ export default function MobileNav({
       <aside
         className="fixed inset-0 z-50 overflow-hidden"
         style={{
-          background: "linear-gradient(150deg,rgba(8,10,22,0.72) 0%,rgba(13,19,33,0.68) 100%)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
+          background: "linear-gradient(150deg,rgba(6,8,20,0.58) 0%,rgba(10,15,28,0.55) 60%,rgba(14,10,30,0.52) 100%)",
+          backdropFilter: "blur(32px) saturate(180%)",
+          WebkitBackdropFilter: "blur(32px) saturate(180%)",
+          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06), inset 1px 0 0 rgba(255,255,255,0.04)",
         }}
         onClick={onClose}
       >
+        {/* Subtle noise/grain overlay for glass feel */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 0,
+            background:
+              "radial-gradient(ellipse 80% 60% at 20% 50%, rgba(99,57,200,0.08) 0%, transparent 70%), " +
+              "radial-gradient(ellipse 50% 80% at 80% 20%, rgba(30,80,180,0.06) 0%, transparent 65%)",
+          }}
+        />
 
         {/* ── Profile circle: anchored at left-center ── */}
         <div
@@ -495,6 +509,7 @@ export default function MobileNav({
         })}
 
       </aside>
+
     </>
   );
 }
