@@ -279,7 +279,7 @@ export default function MobileNav({
       <aside
         className="fixed inset-0 z-50 overflow-hidden"
         style={{
-          background: "linear-gradient(150deg,rgba(6,8,20,0.58) 0%,rgba(10,15,28,0.55) 60%,rgba(14,10,30,0.52) 100%)",
+          background: "linear-gradient(150deg,rgba(6,8,20,0.30) 0%,rgba(10,15,28,0.28) 60%,rgba(14,10,30,0.25) 100%)",
           backdropFilter: "blur(32px) saturate(180%)",
           WebkitBackdropFilter: "blur(32px) saturate(180%)",
           boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06), inset 1px 0 0 rgba(255,255,255,0.04)",
@@ -460,17 +460,21 @@ export default function MobileNav({
           const isRed = (item as OrbitLink).red || item.type === "logout";
 
           const pillCls = [
-            "inline-flex items-center gap-2 rounded-full px-3 py-[7px] text-[13px] transition-all duration-150 active:scale-95 select-none",
-            // base glass card so pills pop on transparent background
-            "shadow-[0_2px_12px_rgba(0,0,0,0.45)] ring-1",
+            "inline-flex items-center gap-2 px-2 py-[5px] text-[13px] transition-all duration-150 active:scale-95 select-none",
             isRed
-              ? "bg-red-950/60 ring-red-500/25 font-semibold text-red-400 hover:bg-red-900/70 hover:text-red-300"
+              ? "font-semibold text-red-400"
               : item.type === "close"
-                ? "bg-white/[0.06] ring-white/10 text-white/40 hover:bg-white/10 hover:text-white/65"
+                ? "text-white/50 hover:text-white/75"
                 : active
-                  ? "bg-white/15 ring-white/20 font-semibold text-white shadow-[0_2px_16px_rgba(139,92,246,0.30)]"
-                  : "bg-black/35 ring-white/[0.08] text-white/70 hover:bg-white/10 hover:text-white",
+                  ? "font-semibold text-white"
+                  : "text-white/85 hover:text-white",
           ].join(" ");
+
+          const dropFilter = isRed
+            ? "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 6px rgba(185,28,28,0.5))"
+            : active
+              ? "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(139,92,246,0.7))"
+              : "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 12px rgba(0,0,0,0.95))";
 
           const content = (
             <>
@@ -491,6 +495,7 @@ export default function MobileNav({
                 top: `calc(50% + ${oy}px)`,
                 transform: "translateY(-50%)",
                 zIndex: 20,
+                filter: dropFilter,
               }}
             >
               {item.type === "close" ? (
