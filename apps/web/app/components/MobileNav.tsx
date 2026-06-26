@@ -263,15 +263,9 @@ export default function MobileNav({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
       {/* ══════════ SIDEBAR ══════════ */}
       <aside
-        className="fixed right-0 top-0 z-50 flex h-full w-[78%] max-w-[320px] flex-col overflow-hidden shadow-2xl"
+        className="fixed inset-0 z-50 flex flex-col overflow-hidden"
         style={{ background: "linear-gradient(150deg,#0c0e1b 0%,#111827 100%)" }}
       >
 
