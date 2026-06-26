@@ -130,6 +130,7 @@ export default function FloatingActions() {
   const [count, setCount] = useState(0);
   const [readerChromeVisible, setReaderChromeVisible] = useState(false);
   const [readerMode, setReaderMode] = useState<string | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     if (!chapterId) return;
@@ -218,7 +219,14 @@ export default function FloatingActions() {
     });
   };
 
-  const shouldHideScrollTop = hideScrollTop || (isReader && (readerChromeVisible || readerMode === "slide"));
+  useEffect(() => {
+    const check = () => setMobileNavOpen(document.documentElement.dataset.navOpen === "1");
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-nav-open"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const shouldHideScrollTop = mobileNavOpen || hideScrollTop || (isReader && (readerChromeVisible || readerMode === "slide"));
   const opacityClass = isReader ? "opacity-50 hover:opacity-85" : "opacity-95 hover:opacity-100";
   const containerClass = isReader
     ? "fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3 md:bottom-24"
