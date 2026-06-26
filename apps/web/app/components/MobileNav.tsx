@@ -269,32 +269,16 @@ export default function MobileNav({
         style={{ background: "linear-gradient(150deg,#0c0e1b 0%,#111827 100%)" }}
       >
 
-        {/* ▓▓ [1] DONATE — full width, always top ▓▓ */}
-        <div className="shrink-0 px-4 pt-5 pb-3">
-          <Link
-            href="/donate"
-            prefetch={false}
-            onClick={onClose}
-            className="block w-full rounded-full bg-gradient-to-r from-rose-500 to-red-600 py-2.5 text-center text-sm font-bold text-white shadow-lg shadow-red-600/20 transition hover:brightness-110 active:scale-[0.98]"
-          >
-            {t("Donate For Inkura")}
-          </Link>
-        </div>
-
-        <div className="mx-4 h-px shrink-0 bg-white/[0.08]" />
-
-        {/* ▓▓ [2] MAIN AREA ▓▓ */}
+        {/* ▓▓ MAIN AREA ▓▓ */}
         <div className="flex min-h-0 flex-1">
 
           {/* ░░ LEFT: profile circle — focal point with overlapping elements ░░ */}
           <div
             className="relative shrink-0 border-r border-white/[0.08]"
-            style={{ width: "42%", overflow: "visible" }}
+            style={{ width: "42%", overflow: "visible", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            {/* Center the circle + its absolute children */}
-            <div style={{ display: "flex", justifyContent: "center", paddingTop: 24 }}>
-              {/* position: relative on the 82×82 circle wrapper so absolute children are anchored to it */}
-              <div style={{ position: "relative", width: 82, height: 82, flexShrink: 0 }}>
+            {/* position: relative on the circle wrapper so absolute children are anchored to it */}
+            <div style={{ position: "relative", width: 110, height: 110, flexShrink: 0 }}>
 
                 {/* Profile circle */}
                 {isAuthed ? (
@@ -302,10 +286,10 @@ export default function MobileNav({
                     <div
                       className="overflow-hidden rounded-full transition group-hover:scale-[1.03]"
                       style={{
-                        width: 82,
-                        height: 82,
+                        width: 110,
+                        height: 110,
                         boxShadow:
-                          "0 0 0 3px rgba(139,92,246,0.55), 0 0 0 5px rgba(59,130,246,0.18)",
+                          "0 0 0 3px rgba(139,92,246,0.55), 0 0 0 6px rgba(59,130,246,0.18)",
                       }}
                     >
                       <img
@@ -324,8 +308,8 @@ export default function MobileNav({
                   <div
                     className="overflow-hidden rounded-full"
                     style={{
-                      width: 82,
-                      height: 82,
+                      width: 110,
+                      height: 110,
                       boxShadow: "0 0 0 3px rgba(255,255,255,0.15)",
                     }}
                   >
@@ -431,7 +415,7 @@ export default function MobileNav({
                     style={{
                       position: "absolute",
                       top: 7,
-                      left: 66,
+                      left: 94,
                       zIndex: 20,
                       display: "block",
                     }}
@@ -470,7 +454,7 @@ export default function MobileNav({
                     style={{
                       position: "absolute",
                       top: 7,
-                      left: 66,
+                      left: 94,
                       zIndex: 20,
                     }}
                   >
@@ -499,16 +483,24 @@ export default function MobileNav({
                   </div>
                 )}
 
-              </div>
             </div>
           </div>
 
-          {/* ░░ RIGHT: nav items (username overlaid from left column) ░░ */}
+          {/* ░░ RIGHT: nav items ░░ */}
           <div className="flex min-h-0 flex-1 flex-col">
-            {/* Spacer = paddingTop(24) + circle(82) + buttons_overflow(16) + gap(14) = 136px */}
-            <div style={{ height: 136, flexShrink: 0 }} />
 
-            <div className="mx-3 h-px shrink-0 bg-white/[0.08]" />
+            {/* Donate — same style as nav items but red, always first */}
+            <Link
+              href="/donate"
+              prefetch={false}
+              onClick={onClose}
+              className="flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-[7px] text-[13px] font-semibold text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+            >
+              <Gift size={13} className="shrink-0" />
+              <span className="truncate">{t("Donate For Inkura")}</span>
+            </Link>
+
+            <div className="mx-2 h-px shrink-0 bg-white/[0.08]" />
 
             {/* Nav items — scrollable */}
             <div className="flex-1 overflow-y-auto py-1.5 pr-1.5 pl-1">
@@ -603,19 +595,20 @@ export default function MobileNav({
                 </nav>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* ▓▓ [3] BACK — full width, always bottom ▓▓ */}
-        <div className="shrink-0 border-t border-white/[0.08] px-4 pb-6 pt-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-white/[0.12] py-2.5 text-[13px] text-white/40 transition hover:border-white/25 hover:text-white/65"
-          >
-            <ArrowLeft size={14} />
-            <span>{t("Back")}</span>
-          </button>
+            <div className="mx-2 h-px shrink-0 bg-white/[0.08]" />
+
+            {/* Back — always last, same style as nav items */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-[7px] text-[13px] text-white/40 transition-colors hover:bg-white/8 hover:text-white/65"
+            >
+              <ArrowLeft size={13} className="shrink-0" />
+              <span>{t("Back")}</span>
+            </button>
+
+          </div>
         </div>
       </aside>
     </>
