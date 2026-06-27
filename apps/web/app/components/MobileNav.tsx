@@ -408,6 +408,7 @@ export default function MobileNav({
                 onClick={onClose}
                 style={{ position: "absolute", top: 7, left: 94, zIndex: 20, display: "block" }}
               >
+                {/* display name — bordered card */}
                 <div
                   style={{
                     background: "linear-gradient(135deg,rgba(88,28,135,0.80) 0%,rgba(30,58,138,0.65) 100%)",
@@ -422,10 +423,23 @@ export default function MobileNav({
                   <p style={{ fontSize: 12, fontWeight: 700, color: "white", maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {displayName}
                   </p>
-                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.50)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis" }}>
+                </div>
+                {/* username — floating below, no border, samar */}
+                {username ? (
+                  <p style={{
+                    fontSize: 10,
+                    color: "rgba(255,255,255,0.35)",
+                    marginTop: 4,
+                    paddingLeft: 20,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: 140,
+                    letterSpacing: "0.01em",
+                  }}>
                     @{username}
                   </p>
-                </div>
+                ) : null}
               </Link>
             ) : (
               <div style={{ position: "absolute", top: 7, left: 94, zIndex: 20 }}>
