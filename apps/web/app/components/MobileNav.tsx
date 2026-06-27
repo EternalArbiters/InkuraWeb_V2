@@ -406,7 +406,7 @@ export default function MobileNav({
                 href="/profile"
                 prefetch={false}
                 onClick={onClose}
-                style={{ position: "absolute", top: 7, left: 94, zIndex: 20, display: "block" }}
+                style={{ position: "absolute", top: -14, left: 88, zIndex: 20, display: "block" }}
               >
                 {/* display name — bordered card */}
                 <div
