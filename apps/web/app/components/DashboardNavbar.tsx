@@ -17,7 +17,6 @@ import { useThemeToggle } from "./dashboardNavbar/useThemeToggle";
 import { useMobileHeaderVisibility } from "./dashboardNavbar/useMobileHeaderVisibility";
 import { useNavigationProgress } from "./dashboardNavbar/useNavigationProgress";
 import { useUILanguageText } from "./ui-language/UILanguageProvider";
-import { useUITheme } from "./ui-theme/UIThemeProvider";
 
 export default function DashboardNavbar() {
   const { data: session } = useSession();
@@ -25,8 +24,6 @@ export default function DashboardNavbar() {
   const pathname = usePathname();
   const isAuthed = !!session?.user?.id;
   const t = useUILanguageText("Navigation");
-  const { uiTheme } = useUITheme();
-  const isModern = uiTheme === "modern";
 
   // Netflix-style navbar: transparent over the full-bleed Home hero at the top
   // of the page, fading to a solid bar once the user scrolls.
@@ -38,9 +35,9 @@ export default function DashboardNavbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isModernHome = isModern && pathname === "/home";
+  const isModernHome = pathname === "/home";
   const transparentNav = isModernHome && !scrolled;
-  const navSolid = isModern && !transparentNav;
+  const navSolid = !transparentNav;
 
   const { isDarkMode, toggleDarkMode } = useThemeToggle();
 
@@ -93,36 +90,28 @@ export default function DashboardNavbar() {
     <>
       <header
         className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
-          isModern ? "" : "backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b dark:border-gray-800"
-        } ${showMobileNav ? "" : "translate-y-[-100%] md:translate-y-0"}`}
+          showMobileNav ? "" : "translate-y-[-100%] md:translate-y-0"
+        }`}
       >
-        {isModern && (
-          <>
-            {/* solid bar — fades in once scrolled */}
-            <div
-              className={`pointer-events-none absolute inset-0 -z-10 border-b border-[var(--ink-border)] bg-[var(--ink-bg)]/85 backdrop-blur transition-opacity duration-300 ${
-                navSolid ? "opacity-100" : "opacity-0"
-              }`}
-            />
-            {/* legibility scrim while transparent over the hero */}
-            <div
-              className={`pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/25 to-transparent transition-opacity duration-300 ${
-                transparentNav ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </>
-        )}
+        {/* solid bar — fades in once scrolled */}
+        <div
+          className={`pointer-events-none absolute inset-0 -z-10 border-b border-[var(--ink-border)] bg-[var(--ink-bg)]/85 backdrop-blur transition-opacity duration-300 ${
+            navSolid ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        {/* legibility scrim while transparent over the hero */}
+        <div
+          className={`pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/25 to-transparent transition-opacity duration-300 ${
+            transparentNav ? "opacity-100" : "opacity-0"
+          }`}
+        />
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between space-x-4">
           <div className="flex items-center justify-between w-full md:w-auto">
             <Link href="/home" className="flex items-center gap-2">
               <Image src="/logo-inkura.png" alt="Inkura" width={36} height={36} />
               <span
-                className={`text-2xl tracking-tight ${isModern ? "font-semibold" : "font-bold"} ${
-                  transparentNav
-                    ? "text-white drop-shadow"
-                    : isModern
-                      ? "text-[var(--ink-fg)]"
-                      : "text-gray-800 dark:text-white"
+                className={`text-2xl font-semibold tracking-tight ${
+                  transparentNav ? "text-white drop-shadow" : "text-[var(--ink-fg)]"
                 }`}
               >
                 INKURA

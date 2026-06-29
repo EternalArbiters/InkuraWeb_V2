@@ -5,7 +5,6 @@ import * as React from "react";
 import { ArrowDownUp } from "lucide-react";
 import { getChapterDisplayLabel, getChapterSecondaryTitle } from "@/lib/chapterLabel";
 import { ChapterLite, formatChapterDateLabel, resolveChapterThumb } from "@/lib/workChapters";
-import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 
 const READ_CHAPTERS_STORAGE_PREFIX = "inkura:read-chapters:";
 
@@ -100,21 +99,10 @@ export default function WorkChaptersWebtoon({
   const visibleChapters = sorted.slice(0, effectiveLimit);
   const hasMoreChapters = sorted.length > effectiveLimit;
 
-  const { uiTheme } = useUITheme();
-  const isModern = uiTheme === "modern";
-
-  const panelClass = isModern
-    ? "rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-4"
-    : "rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/50";
-  const rowSurface = isModern
-    ? "border border-[var(--ink-border)] bg-[var(--ink-surface)] transition hover:border-[var(--ink-accent)] hover:bg-[var(--ink-surface-hover)]"
-    : "border border-gray-200 bg-white transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20 dark:hover:bg-gray-900";
-  const pillButtonClass = isModern
-    ? "inline-flex w-full items-center justify-center rounded-lg border border-[var(--ink-border)] bg-[var(--ink-surface)] px-4 py-3 text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
-    : "inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900";
-  const sortButtonClass = isModern
-    ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--ink-border)] text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
-    : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900";
+  const panelClass = "rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-4";
+  const rowSurface = "border border-[var(--ink-border)] bg-[var(--ink-surface)] transition hover:border-[var(--ink-accent)] hover:bg-[var(--ink-surface-hover)]";
+  const pillButtonClass = "inline-flex w-full items-center justify-center rounded-lg border border-[var(--ink-border)] bg-[var(--ink-surface)] px-4 py-3 text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]";
+  const sortButtonClass = "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--ink-border)] text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]";
 
   return (
     <div className={panelClass}>

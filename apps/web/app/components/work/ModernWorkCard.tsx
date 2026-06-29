@@ -7,6 +7,7 @@ import { motion, type Variants } from "framer-motion";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
 import { formatUpdatedAt, EN_TIME_LOCALE, ID_TIME_LOCALE } from "@/lib/time";
 import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
+import { sendAnalyticsEvent } from "@/lib/analyticsClient";
 
 type Person = { username?: string | null; name?: string | null } | null | undefined;
 type Genre = { name?: string | null; slug?: string | null } | string | null | undefined;
@@ -79,23 +80,37 @@ export default function ModernWorkCard({
   className,
   rank,
   topLeftBadge = null,
+  bottomRightBadge = null,
   showBookmark = false,
   blurImage = false,
   showUpdatedAt = false,
+  showRecentUpdateBadge = false,
+  analyticsClickEvent = null,
 }: {
   work: WorkCardData;
   className?: string;
   rank?: number;
   topLeftBadge?: string | null;
+  bottomRightBadge?: string | null;
   showBookmark?: boolean;
   blurImage?: boolean;
   showUpdatedAt?: boolean;
+  showRecentUpdateBadge?: boolean;
+  analyticsClickEvent?: Record<string, unknown> | null;
 }) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const { language } = useUILanguage();
   const timeLocale = language === "ID" ? ID_TIME_LOCALE : EN_TIME_LOCALE;
   const updatedLabel = formatUpdatedAt(work?.lastChapterPublishedAt ?? work?.updatedAt, { thresholdDays: 100, locale: timeLocale });
+  const updatedAtDate = work?.updatedAt ? new Date(work.updatedAt as any) : null;
+  const isUp = !!updatedAtDate && Date.now() - +updatedAtDate < 24 * 60 * 60 * 1000;
+
+  const handleTrackedClick = () => {
+    if (analyticsClickEvent?.eventType) {
+      sendAnalyticsEvent(analyticsClickEvent as any);
+    }
+  };
 
   const href = work?.slug ? `/w/${work.slug}` : work?.id ? `/work/${work.id}` : "#";
   const title = work?.title || "Untitled";
@@ -145,7 +160,7 @@ export default function ModernWorkCard({
         className="group block transform-gpu transition-transform duration-300 ease-out hover:-translate-y-1.5"
       >
         <div className="relative aspect-[3/4] overflow-hidden rounded-none bg-[var(--ink-surface-2)] shadow-sm ring-1 ring-black/[0.06] transition duration-300 group-hover:shadow-[0_16px_34px_-12px_rgba(124,58,237,0.5)] group-hover:ring-2 group-hover:ring-[var(--ink-accent)]/60">
-          <Link href={href} className="absolute inset-0 z-0" aria-label={title} />
+          <Link href={href} className="absolute inset-0 z-0" aria-label={title} onClick={handleTrackedClick} />
 
           {cover ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -178,17 +193,37 @@ export default function ModernWorkCard({
             </span>
           )}
 
-          {work?.isMature ? (
-            <span className="absolute bottom-2 right-2 z-10 rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
-              18+
-            </span>
+          {/* bottom-right stack: "current" badge + mature flag */}
+          {(bottomRightBadge || work?.isMature) ? (
+            <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1">
+              {bottomRightBadge ? (
+                <span className="rounded-sm bg-purple-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                  {bottomRightBadge}
+                </span>
+              ) : null}
+              {work?.isMature ? (
+                <span className="rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
+                  18+
+                </span>
+              ) : null}
+            </div>
           ) : null}
 
-          {rating ? (
-            <span className="pointer-events-none absolute bottom-2 left-2 z-10 inline-flex items-center gap-1 rounded-sm bg-black/65 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">
-              <Star size={11} className="fill-amber-400 text-amber-400" />
-              {rating}
-            </span>
+          {/* bottom-left stack: recently-updated "Up" badge + rating */}
+          {(rating || (showRecentUpdateBadge && isUp)) ? (
+            <div className="pointer-events-none absolute bottom-2 left-2 z-10 flex flex-col items-start gap-1">
+              {showRecentUpdateBadge && isUp ? (
+                <span className="rounded-sm bg-emerald-500/90 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white shadow-sm">
+                  Up
+                </span>
+              ) : null}
+              {rating ? (
+                <span className="inline-flex items-center gap-1 rounded-sm bg-black/65 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                  {rating}
+                </span>
+              ) : null}
+            </div>
           ) : null}
 
           {/* controls: info (!) toggle + bookmark */}
@@ -253,7 +288,7 @@ export default function ModernWorkCard({
           </div>
         </div>
 
-        <Link href={href} className="block">
+        <Link href={href} className="block" onClick={handleTrackedClick}>
           <div className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-base">
             {title}
           </div>

@@ -14,7 +14,6 @@ import DeviantLoveCard from "./components/preferences/DeviantLoveCard";
 import InkuraLanguageCard from "./components/preferences/InkuraLanguageCard";
 import PreferenceAlerts from "./components/preferences/PreferenceAlerts";
 import PreferredLanguagesCard from "./components/preferences/PreferredLanguagesCard";
-import UIThemeCard from "./components/preferences/UIThemeCard";
 
 type TaxonomyOption = {
   id: string;
@@ -86,8 +85,6 @@ export default function PreferencesForm({ initial }: PreferencesFormProps) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PreferenceAlerts err={err} msg={msg} />
-
-      <UIThemeCard />
 
       <AdultConfirmCard
         adultConfirmed={adultConfirmed}

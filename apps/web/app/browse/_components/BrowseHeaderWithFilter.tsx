@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, SlidersHorizontal, X, User, Languages } from "lucide-react";
-import ActionLink from "@/app/components/ActionLink";
-import { useUITheme } from "@/app/components/ui-theme/UIThemeProvider";
 
 type Labels = {
   newest: string;
@@ -42,7 +40,6 @@ export default function BrowseHeaderWithFilter({
   defaultTranslator,
   labels,
 }: Props) {
-  const { uiTheme } = useUITheme();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMounted, setSheetMounted] = useState(false);
   const [sheetSort, setSheetSort] = useState(defaultSort || "newest");
@@ -64,7 +61,6 @@ export default function BrowseHeaderWithFilter({
 
   useEffect(() => () => { if (unmountTimer.current) clearTimeout(unmountTimer.current); }, []);
 
-  if (uiTheme === "modern") {
     const desktopChip =
       "shrink-0 h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
     const sheetInput =
@@ -283,38 +279,4 @@ export default function BrowseHeaderWithFilter({
         )}
       </>
     );
-  }
-
-  /* ── Classic mode ── */
-  const inputClass =
-    "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-800 dark:bg-gray-900";
-  return (
-    <div className="mx-auto max-w-6xl px-4">
-      <div className="pt-10 pb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{title}</h1>
-        <ActionLink href={searchHref}>{searchLabel}</ActionLink>
-      </div>
-      <form action={action} method="get" className="mt-2 mb-6 grid grid-cols-1 gap-3 md:grid-cols-[160px_200px_1fr_1fr_140px]">
-        <select name="sort" defaultValue={defaultSort} className={inputClass}>
-          <option value="newest">{labels.newest}</option>
-          <option value="liked">{labels.liked}</option>
-          <option value="rated">{labels.rated}</option>
-        </select>
-        <select name="publishType" defaultValue={defaultPublishType} className={inputClass}>
-          <option value="">{labels.anyPublishType}</option>
-          <option value="ORIGINAL">{labels.original}</option>
-          <option value="TRANSLATION">{labels.translation}</option>
-          <option value="REUPLOAD">{labels.reupload}</option>
-        </select>
-        <input name="author" defaultValue={defaultAuthor} placeholder={labels.author} className={inputClass} />
-        <input name="translator" defaultValue={defaultTranslator} placeholder={labels.translator} className={inputClass} />
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 py-3 font-semibold text-white hover:brightness-110"
-        >
-          {labels.apply}
-        </button>
-      </form>
-    </div>
-  );
 }
