@@ -347,58 +347,50 @@ export default function MobileNav({
               </div>
             )}
 
-            {/* 3 tab buttons — overlap bottom edge */}
-            <div
+            {/* 3 tab buttons — SW arc around circle (r=60, angles 210°/233°/256°) */}
+            {([
+              { tab: "book"     as ActiveTab, Icon: BookOpen,     label: "Browse",   left: 8,   top: 90 },
+              { tab: "settings" as ActiveTab, Icon: Settings,     label: "Settings", left: -10, top: 74 },
+            ] as const).map(({ tab, Icon, label, left, top }) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setActiveTab(tab); }}
+                aria-label={label}
+                style={{
+                  position: "absolute", left, top,
+                  width: 34, height: 34, borderRadius: "50%", border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: activeTab === tab ? "linear-gradient(135deg,#3b82f6,#9333ea)" : "rgba(14,18,32,0.95)",
+                  color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.45)",
+                  boxShadow: activeTab === tab
+                    ? "0 4px 14px rgba(147,51,234,0.45)"
+                    : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                  transition: "all 0.2s",
+                  zIndex: 20,
+                }}
+              >
+                <Icon size={15} />
+              </button>
+            ))}
+            <Link
+              href="/chat"
+              prefetch={false}
+              onClick={onClose}
+              aria-label="Chat Elya"
               style={{
-                position: "absolute",
-                bottom: -18,
-                left: "50%",
-                transform: "translateX(-50%)",
-                display: "flex",
-                gap: 7,
+                position: "absolute", left: -20, top: 53,
+                width: 34, height: 34, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(14,18,32,0.95)",
+                color: "rgba(255,255,255,0.45)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                transition: "all 0.2s",
                 zIndex: 20,
               }}
             >
-              {([
-                { tab: "book" as ActiveTab,     Icon: BookOpen,     label: "Browse"   },
-                { tab: "settings" as ActiveTab, Icon: Settings,     label: "Settings" },
-              ] as const).map(({ tab, Icon, label }) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setActiveTab(tab); }}
-                  aria-label={label}
-                  style={{
-                    width: 34, height: 34, borderRadius: "50%", border: "none", cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: activeTab === tab ? "linear-gradient(135deg,#3b82f6,#9333ea)" : "rgba(14,18,32,0.95)",
-                    color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.45)",
-                    boxShadow: activeTab === tab
-                      ? "0 4px 14px rgba(147,51,234,0.45)"
-                      : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  <Icon size={15} />
-                </button>
-              ))}
-              <Link
-                href="/chat"
-                prefetch={false}
-                onClick={onClose}
-                aria-label="Chat Elya"
-                style={{
-                  width: 34, height: 34, borderRadius: "50%",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  background: "rgba(14,18,32,0.95)",
-                  color: "rgba(255,255,255,0.45)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
-                  transition: "all 0.2s",
-                }}
-              >
-                <MessageCircle size={15} />
-              </Link>
-            </div>
+              <MessageCircle size={15} />
+            </Link>
 
             {/* Username badge — overlap top-right edge */}
             {isAuthed ? (
