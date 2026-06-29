@@ -4,6 +4,7 @@ import { getAdminAnalyticsData } from "@/server/services/admin/analytics";
 import AdminAnalyticsDashboard from "./AdminAnalyticsDashboard";
 import AdminAnalyticsActions from "./AdminAnalyticsActions";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,6 +95,7 @@ export default async function AdminAnalyticsPage({ searchParams: searchParamsPro
             />
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         <AdminAnalyticsDashboard data={data} />
       </div>

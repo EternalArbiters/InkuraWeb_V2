@@ -9,6 +9,7 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +35,9 @@ export default async function LibraryPage() {
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tLibrary}</h1>
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
-        <div className="mt-10">
+        <div className="mt-8">
           <div className="flex items-end justify-between gap-3">
             <h2 className="text-lg font-bold">{tContinueReading}</h2>
             <ActionLink href="/settings/history">{tSeeAll}</ActionLink>

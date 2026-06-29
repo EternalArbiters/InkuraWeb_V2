@@ -8,6 +8,7 @@ import { listStudioWorksForViewer } from "@/server/services/studio/works";
 import { getCreatorRole } from "@/server/services/studio/creator";
 import prisma from "@/server/db/prisma";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,7 @@ export default async function StudioPage({
             </Link>
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         <div className="mt-8">
           {works.length === 0 ? (

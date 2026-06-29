@@ -5,6 +5,7 @@ import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerConnectionsPageData } from "@/server/services/profile/follows";
 import LoadMoreList from "@/app/components/LoadMoreList";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function ProfileFollowersPage() {
           </div>
           <Link href="/profile" className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">{tBack}</Link>
         </div>
+        <TitleSeparator className="mt-6" />
 
         {data.items.length ? (
           <LoadMoreList className="mt-6 grid gap-3">

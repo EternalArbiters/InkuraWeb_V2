@@ -2,6 +2,7 @@ import BackButton from "@/app/components/BackButton";
 import Link from "next/link";
 import AdminNotifyClient from "./AdminNotifyClient";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export default function AdminNotifyPage() {
   return (
@@ -22,6 +23,7 @@ export default function AdminNotifyPage() {
             <BackButton href="/home" />
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         <AdminNotifyClient />
       </div>

@@ -4,6 +4,7 @@ import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { listViewerNotifications } from "@/server/services/notifications/viewerNotifications";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function NotificationsPage() {
           </div>
           <BackButton href="/all" />
         </div>
+        <TitleSeparator className="mt-6" />
 
         <NotificationsClient initial={notifications as any} />
       </div>

@@ -5,6 +5,7 @@ import { getViewerPreferences } from "@/server/services/preferences/viewerPrefer
 import { listActiveDeviantLoveTags, listActiveGenres, listActiveWarningTags } from "@/server/services/taxonomy/publicTaxonomy";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function AccountSettingsPage() {
           </div>
           <BackButton href="/home" />
         </div>
+        <TitleSeparator className="mt-6" />
 
         <PreferencesForm
           genres={genres as any}

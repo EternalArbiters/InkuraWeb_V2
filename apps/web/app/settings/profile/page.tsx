@@ -5,6 +5,7 @@ import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerProfile } from "@/server/services/profile/viewerProfile";
 import ProfileForm from "./ProfileForm";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function EditProfilePage() {
           </div>
           <BackButton href="/home" />
         </div>
+        <TitleSeparator className="mt-6" />
 
         <ProfileForm
           initial={{

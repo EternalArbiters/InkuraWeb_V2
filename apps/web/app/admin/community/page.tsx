@@ -4,6 +4,7 @@ import BackButton from "@/app/components/BackButton";
 import { getAdminCommunityPageData } from "@/server/services/admin/community";
 import AdminCommunityClient from "./AdminCommunityClient";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,6 +54,7 @@ export default async function AdminCommunityPage() {
             <BackButton href="/home" />
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         <AdminCommunityClient initial={data} />
       </div>

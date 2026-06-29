@@ -38,6 +38,7 @@ export default function ScaffoldHeader({ title, description, crumbs }: Props) {
             ) : null}
           </div>
         </div>
+        <div className="mt-4 h-px" style={{ background: "var(--ink-border)" }} />
       </header>
     );
   }

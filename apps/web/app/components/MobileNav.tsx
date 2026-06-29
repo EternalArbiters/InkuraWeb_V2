@@ -347,10 +347,10 @@ export default function MobileNav({
               </div>
             )}
 
-            {/* 3 tab buttons — SW arc around circle (r=60, angles 210°/233°/256°) */}
+            {/* 3 tab buttons — SW arc around circle (r=65, angles 200°/230°/260°) */}
             {([
-              { tab: "book"     as ActiveTab, Icon: BookOpen,     label: "Browse",   left: 8,   top: 90 },
-              { tab: "settings" as ActiveTab, Icon: Settings,     label: "Settings", left: -10, top: 74 },
+              { tab: "book"     as ActiveTab, Icon: BookOpen,     label: "Browse",   left: 19,  top: 102 },
+              { tab: "settings" as ActiveTab, Icon: Settings,     label: "Settings", left: -9,  top: 83  },
             ] as const).map(({ tab, Icon, label, left, top }) => (
               <button
                 key={tab}
@@ -359,7 +359,7 @@ export default function MobileNav({
                 aria-label={label}
                 style={{
                   position: "absolute", left, top,
-                  width: 34, height: 34, borderRadius: "50%", border: "none", cursor: "pointer",
+                  width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   background: activeTab === tab ? "linear-gradient(135deg,#3b82f6,#9333ea)" : "rgba(14,18,32,0.95)",
                   color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.45)",
@@ -370,7 +370,7 @@ export default function MobileNav({
                   zIndex: 20,
                 }}
               >
-                <Icon size={15} />
+                <Icon size={13} />
               </button>
             ))}
             <Link
@@ -379,8 +379,8 @@ export default function MobileNav({
               onClick={onClose}
               aria-label="Chat Elya"
               style={{
-                position: "absolute", left: -20, top: 53,
-                width: 34, height: 34, borderRadius: "50%",
+                position: "absolute", left: -23, top: 51,
+                width: 28, height: 28, borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(14,18,32,0.95)",
                 color: "rgba(255,255,255,0.45)",
@@ -389,7 +389,7 @@ export default function MobileNav({
                 zIndex: 20,
               }}
             >
-              <MessageCircle size={15} />
+              <MessageCircle size={13} />
             </Link>
 
             {/* Username badge — overlap top-right edge */}
@@ -398,7 +398,7 @@ export default function MobileNav({
                 href="/profile"
                 prefetch={false}
                 onClick={onClose}
-                style={{ position: "absolute", top: -14, left: 88, zIndex: 20, display: "block" }}
+                style={{ position: "absolute", top: -14, left: 73, zIndex: 20, display: "block" }}
               >
                 {/* display name — bordered card */}
                 <div

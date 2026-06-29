@@ -3,6 +3,7 @@ import BackButton from "@/app/components/BackButton";
 import AdminDonationsClient from "./AdminDonationsClient";
 import prisma from "@/server/db/prisma";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -86,6 +87,7 @@ export default async function AdminDonationsPage() {
             <BackButton href="/admin/reports" />
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         <AdminDonationsClient
           initial={donations}

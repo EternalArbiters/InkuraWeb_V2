@@ -5,6 +5,7 @@ import AdminReportsClient from "./AdminReportsClient";
 import { ApiError } from "@/server/http";
 import { listOpenAdminReports } from "@/server/services/admin/reports";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,7 @@ export default async function AdminReportsPage() {
             <BackButton href="/home" />
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         <AdminReportsClient initial={initial as any} />
       </div>

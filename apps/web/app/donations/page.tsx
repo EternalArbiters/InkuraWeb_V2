@@ -4,6 +4,7 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import prisma from "@/server/db/prisma";
 import DonationsHistoryClient from "./DonationsHistoryClient";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,7 @@ export default async function DonationsPage() {
       <div className="max-w-3xl mx-auto px-4 py-10">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{tTitle}</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{tSubtitle}</p>
+        <TitleSeparator className="mt-6" />
 
         <DonationsHistoryClient
           initialSent={sent.map(serializeDonation) as any}

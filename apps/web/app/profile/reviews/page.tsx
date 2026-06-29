@@ -7,6 +7,7 @@ import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerReviews } from "@/server/services/profile/viewerActivity";
 import LoadMoreList from "@/app/components/LoadMoreList";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ export default async function ProfileReviewsPage({
           </div>
           <ProfileSortSelect value={sort} label={tSortReviews} options={[...REVIEW_SORT_OPTIONS]} />
         </div>
+        <TitleSeparator className="mt-6" />
 
         {items.length ? (
           <LoadMoreList className="mt-6 grid gap-3">

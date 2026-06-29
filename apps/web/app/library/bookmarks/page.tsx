@@ -5,6 +5,7 @@ import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerLibrary } from "@/server/services/library/viewerLibrary";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,7 @@ export default async function LibraryBookmarksPage() {
             {tBackToLibrary}
           </Link>
         </div>
+        <TitleSeparator className="mt-6" />
 
         {bookmarkWorks.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-6 text-sm text-gray-600 dark:text-gray-300">

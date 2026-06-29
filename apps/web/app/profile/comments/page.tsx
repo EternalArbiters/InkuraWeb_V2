@@ -7,6 +7,7 @@ import { requirePageUserId } from "@/server/auth/pageAuth";
 import { getViewerComments } from "@/server/services/profile/viewerActivity";
 import LoadMoreList from "@/app/components/LoadMoreList";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,7 @@ export default async function ProfileCommentsPage({
           </div>
           <ProfileSortSelect value={sort} label={tSortComments} options={[...COMMENT_SORT_OPTIONS]} />
         </div>
+        <TitleSeparator className="mt-6" />
 
         {items.length ? (
           <LoadMoreList className="mt-6 grid gap-3">

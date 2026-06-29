@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Star, Info } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
 import BookmarkIconButton from "@/app/components/work/BookmarkIconButton";
+import { formatUpdatedAt, EN_TIME_LOCALE, ID_TIME_LOCALE } from "@/lib/time";
+import { useUILanguage } from "@/app/components/ui-language/UILanguageProvider";
 
 type Person = { username?: string | null; name?: string | null } | null | undefined;
 type Genre = { name?: string | null; slug?: string | null } | string | null | undefined;
@@ -24,6 +26,8 @@ type WorkCardData = {
   chapterCount?: number | null;
   ratingAvg?: number | null;
   ratingCount?: number | null;
+  updatedAt?: string | Date | null;
+  lastChapterPublishedAt?: string | Date | null;
   author?: Person;
   translator?: Person;
   genres?: Genre[] | null;
@@ -87,6 +91,9 @@ export default function ModernWorkCard({
 }) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const { language } = useUILanguage();
+  const timeLocale = language === "ID" ? ID_TIME_LOCALE : EN_TIME_LOCALE;
+  const updatedLabel = formatUpdatedAt(work?.lastChapterPublishedAt ?? work?.updatedAt, { thresholdDays: 100, locale: timeLocale });
 
   const href = work?.slug ? `/w/${work.slug}` : work?.id ? `/work/${work.id}` : "#";
   const title = work?.title || "Untitled";
@@ -248,6 +255,11 @@ export default function ModernWorkCard({
           <div className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-base">
             {title}
           </div>
+          {updatedLabel ? (
+            <div className="mt-0.5 line-clamp-1 text-[11px] font-medium text-[var(--ink-muted)]">
+              {updatedLabel}
+            </div>
+          ) : null}
         </Link>
       </div>
     </motion.div>

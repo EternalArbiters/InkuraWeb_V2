@@ -3,6 +3,7 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import { listReadingListsForViewer } from "@/server/services/readingLists/readingLists";
 import LoadMoreList from "@/app/components/LoadMoreList";
 import ListSurface from "@/app/components/ListSurface";
+import TitleSeparator from "@/app/components/TitleSeparator";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +84,7 @@ export default async function ListsPage() {
             </Link>
           </div>
         </div>
+        <TitleSeparator className="mt-6" />
 
         {lists.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 p-8">

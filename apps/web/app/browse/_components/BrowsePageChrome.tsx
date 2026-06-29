@@ -22,19 +22,22 @@ export default function BrowsePageChrome({
 
   if (uiTheme === "modern") {
     return (
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
-          <h1 className="text-3xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-4xl">{title}</h1>
-        </div>
-        <Link
-          href={searchHref}
-          className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-[var(--ink-fg)] shadow-sm ring-1 ring-inset ring-white/10 backdrop-blur-sm transition hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:ring-transparent"
-        >
-          <Search size={14} strokeWidth={2.5} className="text-[var(--ink-accent)] transition group-hover:text-white" />
-          {searchLabel}
-        </Link>
-      </header>
+      <>
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
+            <h1 className="text-3xl font-extrabold tracking-tight text-[var(--ink-fg)] md:text-4xl">{title}</h1>
+          </div>
+          <Link
+            href={searchHref}
+            className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-[var(--ink-fg)] shadow-sm ring-1 ring-inset ring-white/10 backdrop-blur-sm transition hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:ring-transparent"
+          >
+            <Search size={14} strokeWidth={2.5} className="text-[var(--ink-accent)] transition group-hover:text-white" />
+            {searchLabel}
+          </Link>
+        </header>
+        <div className="mt-6 h-px" style={{ background: "var(--ink-border)" }} />
+      </>
     );
   }
 
