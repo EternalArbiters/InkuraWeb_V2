@@ -81,6 +81,7 @@ export default function ModernWorkCard({
   topLeftBadge = null,
   showBookmark = false,
   blurImage = false,
+  showUpdatedAt = false,
 }: {
   work: WorkCardData;
   className?: string;
@@ -88,6 +89,7 @@ export default function ModernWorkCard({
   topLeftBadge?: string | null;
   showBookmark?: boolean;
   blurImage?: boolean;
+  showUpdatedAt?: boolean;
 }) {
   const [active, setActive] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -255,7 +257,7 @@ export default function ModernWorkCard({
           <div className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[var(--ink-fg)] transition-colors group-hover:text-[var(--ink-accent)] sm:text-base">
             {title}
           </div>
-          {updatedLabel ? (
+          {showUpdatedAt && updatedLabel ? (
             <div className="mt-0.5 line-clamp-1 text-[11px] font-medium text-[var(--ink-muted)]">
               {updatedLabel}
             </div>

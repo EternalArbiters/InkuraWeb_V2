@@ -15,6 +15,7 @@ type RailItem = {
   title: string;
   href: string;
   works: any[];
+  showUpdatedAt?: boolean;
 };
 
 type Props = {
@@ -71,6 +72,7 @@ function ModernRail({
   works,
   seeAllLabel,
   ranked = false,
+  showUpdatedAt = false,
 }: RailItem & { seeAllLabel: string; ranked?: boolean }) {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
 
@@ -105,6 +107,7 @@ function ModernRail({
                 work={work}
                 rank={ranked ? i + 1 : undefined}
                 className="w-[42vw] max-w-[200px] sm:w-[175px] lg:w-[190px]"
+                showUpdatedAt={showUpdatedAt}
               />
             ))}
           </motion.div>

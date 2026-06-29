@@ -32,7 +32,7 @@ export default async function HomePage() {
       { title: trendingNovelsLabel, href: "/browse/trending-novels", works: trendingNovels },
       { title: originalsLabel, href: "/browse/new-originals", works: originals },
       { title: translationsLabel, href: "/browse/latest-translations", works: translations },
-      { title: recentLabel, href: "/browse/recent-updates", works: recent },
+      { title: recentLabel, href: "/browse/recent-updates", works: recent, showUpdatedAt: true },
       ...(draftWorks && draftWorks.length > 0
         ? [{ title: draftLabel, href: "/browse/still-drafts", works: draftWorks }]
         : []),
