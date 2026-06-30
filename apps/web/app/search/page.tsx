@@ -5,7 +5,6 @@ import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
 
 import ActiveFiltersBar from "./_components/ActiveFiltersBar";
-import ResultsHeader from "./_components/ResultsHeader";
 import SearchForm from "./_components/SearchForm";
 import WorksGrid from "./_components/WorksGrid";
 import ListSurface from "@/app/components/ListSurface";
@@ -50,7 +49,7 @@ export default async function SearchPage({
     <ListSurface>
       {/* Title + main search input + advanced filters */}
       <div className="max-w-6xl mx-auto px-4 pt-10 pb-2">
-        <ScaffoldHeader title={tPageTitle} />
+        <ScaffoldHeader title={tPageTitle} separator={false} />
         <SearchForm
           q={data.q}
           kind={data.kind}
@@ -93,6 +92,8 @@ export default async function SearchPage({
       <div className="max-w-6xl mx-auto px-4 pb-10">
         <ActiveFiltersBar hasActiveFilters={data.hasActiveFilters} />
 
+        <div className="mt-4 h-px" style={{ background: "var(--ink-border)" }} />
+
         {(data.q || data.tag || data.genre || data.author || data.translator || data.hasActiveFilters) ? (
           <AnalyticsEventTracker
             eventType="SEARCH_SUBMIT"
@@ -112,8 +113,6 @@ export default async function SearchPage({
             }}
           />
         ) : null}
-
-        <ResultsHeader q={data.q} count={data.works.length} />
 
         <WorksGrid works={data.works} canViewMature={data.canViewMature} searchQuery={data.q || data.tag || data.genre || data.author || data.translator || undefined} searchType={data.kind || "works"} />
 

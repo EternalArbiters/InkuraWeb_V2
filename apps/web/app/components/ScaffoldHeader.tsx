@@ -6,9 +6,11 @@ type Props = {
   title: string;
   description?: string;
   crumbs?: Crumb[];
+  /** Render the thin divider under the title. Default true. */
+  separator?: boolean;
 };
 
-export default function ScaffoldHeader({ title, description, crumbs }: Props) {
+export default function ScaffoldHeader({ title, description, crumbs, separator = true }: Props) {
   return (
     <header className="mb-8">
       {crumbs?.length ? (
@@ -32,7 +34,7 @@ export default function ScaffoldHeader({ title, description, crumbs }: Props) {
           ) : null}
         </div>
       </div>
-      <div className="mt-4 h-px" style={{ background: "var(--ink-border)" }} />
+      {separator ? <div className="mt-4 h-px" style={{ background: "var(--ink-border)" }} /> : null}
     </header>
   );
 }
