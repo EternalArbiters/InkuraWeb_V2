@@ -109,9 +109,9 @@ export default function MobileNav({
   const orbitItems = activeTab === "book" ? bookOrbit : settingsOrbit;
   const N = orbitItems.length;
   // Vertical half-span: space items evenly so each pill (≈30px) has a 12px gap → 42px slot.
-  // Horizontal radius capped at 200px so labels don't fall off screen.
+  // Horizontal radius capped so the items level with the profile photo sit closer to it.
   const VERT_R  = N <= 1 ? 100 : Math.ceil((N - 1) * 42 / 2);
-  const HORIZ_R = Math.min(200, VERT_R);
+  const HORIZ_R = Math.min(135, VERT_R);
   // Minimum x from circle center so items never overlap the profile photo (circle r=55 + 10px gap).
   const MIN_OX  = 65;
 
