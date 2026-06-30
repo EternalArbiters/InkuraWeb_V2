@@ -35,27 +35,8 @@ export default function SearchControls({
 
   return (
     <div className="mt-6">
-      {/* 1) Advanced Filters — pill button (like the browse "Advanced search" pill) */}
-      <button
-        type="button"
-        onClick={() => setShowAdvanced((v) => !v)}
-        aria-expanded={showAdvanced}
-        className={`group inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-sm ring-1 ring-inset backdrop-blur-sm transition hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:ring-transparent ${
-          showAdvanced
-            ? "border-transparent bg-gradient-to-r from-blue-500 to-purple-600 text-white ring-transparent"
-            : "border-white/10 bg-white/5 text-[var(--ink-fg)] ring-white/10"
-        }`}
-      >
-        <ChevronLeft
-          size={16}
-          strokeWidth={2.5}
-          className={showAdvanced ? "text-white" : "text-[var(--ink-accent)] transition group-hover:text-white"}
-        />
-        {advancedLabel}
-      </button>
-
-      {/* 2-4) Search row: input + magnifier + funnel */}
-      <div className="mt-3 flex items-center gap-2">
+      {/* Search row (top): input + magnifier + funnel — round buttons like the pill */}
+      <div className="flex items-center gap-2">
         <input
           name="q"
           defaultValue={q}
@@ -66,7 +47,7 @@ export default function SearchControls({
           type="submit"
           aria-label={searchLabel}
           title={searchLabel}
-          className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110"
+          className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110"
         >
           <Search size={20} strokeWidth={2.5} />
         </button>
@@ -76,7 +57,7 @@ export default function SearchControls({
           aria-expanded={showFilters}
           aria-label={filtersLabel}
           title={filtersLabel}
-          className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-xl border transition ${
+          className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full border transition ${
             showFilters
               ? "border-[var(--ink-accent)] bg-[var(--ink-surface-2)] text-[var(--ink-accent)]"
               : "border-[var(--ink-border)] bg-[var(--ink-surface)] text-[var(--ink-fg)] hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
@@ -89,6 +70,27 @@ export default function SearchControls({
       {/* Quick filter chips (All / Newest / Any genre / tag) — revealed by the funnel */}
       <div className={showFilters ? "mt-3 rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] p-3" : "hidden"}>
         {filterChips}
+      </div>
+
+      {/* Advanced Filters — pill button (below), like the browse "Advanced search" pill */}
+      <div className="mt-3">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced((v) => !v)}
+          aria-expanded={showAdvanced}
+          className={`group inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-sm ring-1 ring-inset backdrop-blur-sm transition hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:ring-transparent ${
+            showAdvanced
+              ? "border-transparent bg-gradient-to-r from-blue-500 to-purple-600 text-white ring-transparent"
+              : "border-white/10 bg-white/5 text-[var(--ink-fg)] ring-white/10"
+          }`}
+        >
+          <ChevronLeft
+            size={16}
+            strokeWidth={2.5}
+            className={showAdvanced ? "text-white" : "text-[var(--ink-accent)] transition group-hover:text-white"}
+          />
+          {advancedLabel}
+        </button>
       </div>
 
       {/* Advanced filters panel — revealed by the pill */}
