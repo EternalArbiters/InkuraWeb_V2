@@ -9,6 +9,11 @@ type Props = {
   labels: { newest: string; mostLiked: string; bestRated: string; anyGenre: string; tags: string };
 };
 
+/**
+ * Quick filter chips (kind / sort / genre / tag). Embedded inside the funnel
+ * panel on the search page; the fields associate with `#search-form` and apply
+ * on the next search submit.
+ */
 export default function SearchFilterBar({ kind, sort, genre, tag, genres, labels }: Props) {
   const genreOptions = (
     <>
@@ -19,31 +24,25 @@ export default function SearchFilterBar({ kind, sort, genre, tag, genres, labels
     </>
   );
 
-    const chip =
-      "shrink-0 h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
-    return (
-      <div
-        className="md:sticky md:top-20 md:z-30 md:border-b md:border-[var(--ink-border)] md:backdrop-blur-md"
-        style={{ background: "color-mix(in srgb, var(--ink-bg) 85%, transparent)" }}
-      >
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="flex items-center gap-2 overflow-x-auto py-3 [&::-webkit-scrollbar]:hidden md:flex-wrap md:overflow-visible">
-            <select name="kind" form="search-form" defaultValue={kind || "all"} className={chip}>
-              <option value="all">All</option>
-              <option value="novel">Novel</option>
-              <option value="comic">Comic</option>
-            </select>
-            <select name="sort" form="search-form" defaultValue={sort || "newest"} className={chip}>
-              <option value="newest">{labels.newest}</option>
-              <option value="liked">{labels.mostLiked}</option>
-              <option value="rated">{labels.bestRated}</option>
-            </select>
-            <select name="genre" form="search-form" defaultValue={genre || ""} className={chip}>
-              {genreOptions}
-            </select>
-            <input name="tag" form="search-form" defaultValue={tag} placeholder={labels.tags} className={chip} />
-          </div>
-        </div>
-      </div>
-    );
+  const chip =
+    "shrink-0 h-9 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface-2)] px-4 text-sm font-medium text-[var(--ink-fg)] outline-none transition-colors hover:border-[var(--ink-accent)] focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)]";
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <select name="kind" form="search-form" defaultValue={kind || "all"} className={chip}>
+        <option value="all">All</option>
+        <option value="novel">Novel</option>
+        <option value="comic">Comic</option>
+      </select>
+      <select name="sort" form="search-form" defaultValue={sort || "newest"} className={chip}>
+        <option value="newest">{labels.newest}</option>
+        <option value="liked">{labels.mostLiked}</option>
+        <option value="rated">{labels.bestRated}</option>
+      </select>
+      <select name="genre" form="search-form" defaultValue={genre || ""} className={chip}>
+        {genreOptions}
+      </select>
+      <input name="tag" form="search-form" defaultValue={tag} placeholder={labels.tags} className={chip} />
+    </div>
+  );
 }

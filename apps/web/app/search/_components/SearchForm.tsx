@@ -1,9 +1,10 @@
-import ActionLink from "@/app/components/ActionLink";
 import LockLabel from "@/app/components/LockLabel";
 import GenreTriStatePicker from "@/components/GenreTriStatePicker";
 import { COMIC_TYPE_CATALOG } from "@/lib/comicTypeCatalog";
 import { LANGUAGE_CATALOG } from "@/lib/languageCatalog";
 import { getActiveUILanguageText } from "@/server/services/uiLanguage/runtime";
+import SearchControls from "./SearchControls";
+import SearchFilterBar from "./SearchFilterBar";
 
 type Props = {
   q: string;
@@ -99,7 +100,7 @@ export default async function SearchForm({
     tDeviantIncludeMode, tNsfwIncludeMode,
     tIgnoreLangPref, tIgnoreBlockedGenres,
     tSearchForTitle, tTag, tEnableSettings,
-    tSearchDeviantLove, tSearchNsfw, tSearchGenre, tClearAll,
+    tSearchDeviantLove, tSearchNsfw, tSearchGenre, tClearAll, tFilters,
   ] = await Promise.all([
     getActiveUILanguageText("Advance Search", { section: "Page Search" }),
     getActiveUILanguageText("Newest"),
@@ -147,32 +148,29 @@ export default async function SearchForm({
     getActiveUILanguageText("Search for NSFW tag..."),
     getActiveUILanguageText("Search for genre..."),
     getActiveUILanguageText("Clear All"),
+    getActiveUILanguageText("Filters"),
   ]);
   return (
-    <form
-      id="search-form"
-      className="mt-6"
-      action="/search"
-      method="get"
-    >
-      {/* Main search row */}
-      <div className="flex gap-2">
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder={tSearchForTitle}
-          className="flex-1 px-5 py-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-base outline-none focus:ring-2 focus:ring-purple-500 ink-input"
-        />
-        <button className="shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-base font-semibold text-white hover:brightness-110">
-          {tSearch}
-        </button>
-      </div>
-
-      {/* Advanced filters */}
-      <details className="mt-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 ink-panel">
-        <summary className="cursor-pointer select-none text-sm font-semibold">{tAdvancedFilters}</summary>
-
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form id="search-form" action="/search" method="get">
+      <SearchControls
+        q={q}
+        searchPlaceholder={tSearchForTitle}
+        searchLabel={tSearch}
+        advancedLabel={tAdvancedFilters}
+        filtersLabel={tFilters}
+        filterChips={
+          <SearchFilterBar
+            kind={kind}
+            sort={sort}
+            genre={genre}
+            tag={tag}
+            genres={genres}
+            labels={{ newest: tNewest, mostLiked: tMostLiked, bestRated: tBestRated, anyGenre: tAnyGenre, tags: tTag }}
+          />
+        }
+        advancedPanel={
+          <>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3 ink-panel">
             <div className="text-sm font-semibold text-[var(--ink-fg,inherit)]">{tLanguage}</div>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -430,7 +428,9 @@ export default async function SearchForm({
           <input type="checkbox" name="ignoreBlocked" value="1" defaultChecked={ignoreBlocked} />
           {tIgnoreBlockedGenres}
         </label>
-      </details>
+          </>
+        }
+      />
     </form>
   );
 }
