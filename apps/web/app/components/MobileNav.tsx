@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import NavCountBadge from "@/app/components/NavCountBadge";
 import {
   Search, LayoutGrid, BookText, PanelsTopLeft, Clapperboard,
-  Bookmark, Bell, Upload, Users, User, History, Tags,
+  Bookmark, Bell, Upload, Users, User, History, Tags, Map, Languages,
   ShieldAlert, ListTree, BarChart3, Gift, Layers,
   Trophy, Award, Sun, Moon, Wallet,
   BookOpen, Settings, MessageCircle, ArrowLeft,
@@ -65,11 +66,10 @@ export default function MobileNav({
 
   /* ── Modern mode: orbital nav ── */
 
-  type OrbitLink   = { type: "link";   href: string; label: string; Icon: LucideIcon; red?: boolean };
+  type OrbitLink   = { type: "link";   href: string; label: string; Icon: LucideIcon; red?: boolean; badge?: string };
   type OrbitClose  = { type: "close";  label: string; Icon: LucideIcon };
-  type OrbitTheme  = { type: "theme";  label: string; Icon: LucideIcon };
   type OrbitLogout = { type: "logout"; label: string; Icon: LucideIcon };
-  type OrbitItem   = OrbitLink | OrbitClose | OrbitTheme | OrbitLogout;
+  type OrbitItem   = OrbitLink | OrbitClose | OrbitLogout;
 
   const bookOrbit: OrbitItem[] = [
     { type: "link", href: "/donate",           label: t("Donate For Inkura"), Icon: Gift,        red: true },
@@ -79,6 +79,8 @@ export default function MobileNav({
     { type: "link", href: "/comic",            label: t("Comic"),             Icon: PanelsTopLeft },
     { type: "link", href: "/film",             label: t("Film"),              Icon: Clapperboard },
     { type: "link", href: "/genre",            label: t("Genres"),            Icon: Tags },
+    { type: "link", href: "/region",           label: t("Regions"),           Icon: Map },
+    { type: "link", href: "/translated",       label: t("Translated"),        Icon: Languages },
     { type: "link", href: "/library",          label: t("Library"),           Icon: Bookmark },
     { type: "link", href: "/settings/history", label: t("History"),           Icon: History },
     { type: "link", href: "/lists",            label: t("Collection"),        Icon: Layers },
@@ -86,19 +88,18 @@ export default function MobileNav({
 
   const settingsOrbit: OrbitItem[] = [
     { type: "link", href: "/donate",            label: t("Donate For Inkura"),       Icon: Gift,       red: true },
-    { type: "link", href: "/notifications",     label: t("Notifications"),           Icon: Bell },
+    { type: "link", href: "/notifications",     label: t("Notifications"),           Icon: Bell,       badge: "/api/notifications/unread-count" },
     { type: "link", href: "/studio",            label: t("Upload"),                  Icon: Upload },
     { type: "link", href: "/community",         label: t("Community"),               Icon: Users },
     { type: "link", href: "/community/ranking", label: tCommunity("Ranking"),        Icon: Trophy },
     { type: "link", href: "/community/title",   label: tCommunity("Title"),          Icon: Award },
     { type: "link", href: "/settings/account",  label: t("Account"),                 Icon: User },
     ...(isAuthed ? [{ type: "link" as const, href: "/settings/payout", label: t("Finances"),          Icon: Wallet }] : []),
-    ...(isAuthed ? [{ type: "link" as const, href: "/admin-report",    label: t("Admin Report"),      Icon: ShieldAlert }] : []),
+    ...(isAuthed ? [{ type: "link" as const, href: "/admin-report",    label: t("Admin Report"),      Icon: ShieldAlert, badge: "/api/admin-report/unread-count" }] : []),
     ...(isAdmin  ? [{ type: "link" as const, href: "/admin/reports",   label: t("Content Reports"),   Icon: ShieldAlert }] : []),
     ...(isAdmin  ? [{ type: "link" as const, href: "/admin/taxonomy",  label: t("Taxonomy"),          Icon: ListTree }] : []),
     ...(isAdmin  ? [{ type: "link" as const, href: "/admin/donations", label: t("Creator Donations"), Icon: Gift }] : []),
     ...(isAdmin  ? [{ type: "link" as const, href: "/admin/analytics", label: t("Analytics"),         Icon: BarChart3 }] : []),
-    { type: "theme",  label: t("Theme"),  Icon: isDarkMode ? Moon : Sun },
     ...(isAuthed
       ? [{ type: "logout" as const, label: t("Logout"),   Icon: ArrowLeft }]
       : [{ type: "link"   as const, href: "/auth/signin", label: t("Sign In"), Icon: User }]
@@ -230,6 +231,26 @@ export default function MobileNav({
               <MessageCircle size={13} />
             </Link>
 
+            {/* Light/Dark toggle — round button above chat, continues the SW arc (θ≈290°) */}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); toggleDarkMode(); }}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              title={isDarkMode ? "Light mode" : "Dark mode"}
+              style={{
+                position: "absolute", left: -20, top: 19,
+                width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(14,18,32,0.95)",
+                color: isDarkMode ? "#c4b5fd" : "#fbbf24",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
+                transition: "all 0.2s",
+                zIndex: 20,
+              }}
+            >
+              {isDarkMode ? <Moon size={14} /> : <Sun size={14} />}
+            </button>
+
             {/* Username badge — overlap top-right edge */}
             {isAuthed ? (
               <Link
@@ -322,10 +343,14 @@ export default function MobileNav({
               ? "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(139,92,246,0.7))"
               : "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 12px rgba(0,0,0,0.95))";
 
+          const badgeEndpoint = item.type === "link" ? (item as OrbitLink).badge : undefined;
           const content = (
             <>
               <item.Icon size={13} className="shrink-0" />
               <span className="truncate" style={{ maxWidth: 130 }}>{item.label}</span>
+              {badgeEndpoint ? (
+                <NavCountBadge endpoint={badgeEndpoint} variant="inline" enabled={isAuthed} />
+              ) : null}
               {active && (
                 <span className="ml-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500" />
               )}
@@ -346,8 +371,6 @@ export default function MobileNav({
             >
               {item.type === "close" ? (
                 <button type="button" onClick={onClose} className={pillCls}>{content}</button>
-              ) : item.type === "theme" ? (
-                <button type="button" onClick={toggleDarkMode} className={pillCls}>{content}</button>
               ) : item.type === "logout" ? (
                 <button type="button" onClick={handleLogout} className={pillCls}>{content}</button>
               ) : (
