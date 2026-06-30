@@ -41,15 +41,15 @@ export default function SearchControls({
           name="q"
           defaultValue={q}
           placeholder={searchPlaceholder}
-          className="min-w-0 flex-1 rounded-xl border border-[var(--ink-border)] bg-[var(--ink-surface)] px-5 py-3.5 text-base text-[var(--ink-fg)] outline-none transition focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)] ink-input"
+          className="min-w-0 flex-1 rounded-full border border-[var(--ink-border)] bg-[var(--ink-surface)] px-5 py-2.5 text-sm text-[var(--ink-fg)] outline-none transition focus:border-[var(--ink-accent)] focus:ring-1 focus:ring-[var(--ink-accent)] placeholder:text-[var(--ink-muted)] ink-input"
         />
         <button
           type="submit"
           aria-label={searchLabel}
           title={searchLabel}
-          className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110"
+          className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white transition hover:brightness-110"
         >
-          <Search size={20} strokeWidth={2.5} />
+          <Search size={17} strokeWidth={2.5} />
         </button>
         <button
           type="button"
@@ -57,13 +57,13 @@ export default function SearchControls({
           aria-expanded={showFilters}
           aria-label={filtersLabel}
           title={filtersLabel}
-          className={`flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full border transition ${
+          className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full border transition ${
             showFilters
               ? "border-[var(--ink-accent)] bg-[var(--ink-surface-2)] text-[var(--ink-accent)]"
               : "border-[var(--ink-border)] bg-[var(--ink-surface)] text-[var(--ink-fg)] hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]"
           }`}
         >
-          <SlidersHorizontal size={20} strokeWidth={2.3} />
+          <SlidersHorizontal size={17} strokeWidth={2.3} />
         </button>
       </div>
 
