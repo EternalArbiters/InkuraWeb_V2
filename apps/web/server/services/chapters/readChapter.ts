@@ -8,7 +8,7 @@ import {
   publicWorksTag,
   withCachedPublicData,
 } from "@/server/cache/publicContent";
-import { computeChapterGate } from "@/server/services/works/gating";
+import { canViewNonPublishedWork, computeChapterGate } from "@/server/services/works/gating";
 import { getViewerBasic } from "@/server/services/works/viewer";
 
 export type ReadChapterResult =
@@ -276,7 +276,7 @@ export async function getChapterReaderData(chapterId: string): Promise<ReadChapt
 
     const adminLikeBase = await loadAdminChapterReaderData(chapterId);
     if (!adminLikeBase.ok) return adminLikeBase;
-    if (!(adminLikeBase.work as any).isAdminCollection) {
+    if (!canViewNonPublishedWork(viewer, adminLikeBase.work as any)) {
       return { ok: false, status: 404, error: "Not found" };
     }
     const viewerPayload = await getViewerChapterReaderPayload(chapterId, adminLikeBase.work, adminLikeBase.chapter);

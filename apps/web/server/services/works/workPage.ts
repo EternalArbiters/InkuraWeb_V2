@@ -9,7 +9,7 @@ import {
   publicWorksTag,
   withCachedPublicData,
 } from "@/server/cache/publicContent";
-import { computeWorkGate } from "@/server/services/works/gating";
+import { canViewNonPublishedWork, computeWorkGate } from "@/server/services/works/gating";
 import { getViewerBasic } from "@/server/services/works/viewer";
 import { profileHotspot } from "@/server/observability/profiling";
 import { parseWorkSubtitles } from "@/lib/workSubtitles";
@@ -514,7 +514,7 @@ export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResul
 
     const adminLikeBase = await loadAdminWorkPageDataBySlug(slug);
     if (!adminLikeBase.ok) return adminLikeBase;
-    if (!(adminLikeBase.work as any).isAdminCollection) {
+    if (!canViewNonPublishedWork(viewerForAdminCheck, adminLikeBase.work as any)) {
       return { ok: false, status: 404, error: "Not found" };
     }
 
