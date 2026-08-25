@@ -32,37 +32,29 @@ export async function middleware(req: NextRequest) {
   const privateModeOn = isPrivateModeEnabled();
   const needsAdminCheck = isAdminPath(pathname);
 
-  // v30 fix: this app's JWT carries enough custom fields (avatar URL, avatarFocusX/Y/
-  // Zoom, inkuraLanguage, profileOnboardingComplete, etc.) that the encoded/encrypted
-  // token routinely exceeds a single cookie's ~4KB limit — when that happens, NextAuth
-  // transparently SPLITS it across multiple cookies (named "...session-token.0", ".1",
-  // etc.) and getToken() already knows how to reassemble them. A prior version of this
-  // file pre-checked for an EXACT cookie name before bothering to call getToken(), which
-  // broke for exactly this chunked-cookie case and made valid, logged-in sessions look
-  // anonymous to this middleware. Always call getToken() directly instead — it's cheap
-  // (near-instant, no crypto work) when there's no cookie at all.
+  // v30 fix: getToken() in Edge Middleware auto-detects whether to look for the
+  // "__Secure-"-prefixed session cookie by guessing at the request's protocol — and
+  // that guess is unreliable specifically inside Vercel Edge Middleware, where it can
+  // end up looking for the plain "next-auth.session-token" name even though NextAuth
+  // actually set (and the browser is sending) "__Secure-next-auth.session-token" —
+  // silently treating a fully valid, logged-in session as anonymous. Force the correct
+  // behavior explicitly instead of relying on the guess: Vercel always serves over
+  // HTTPS in every deployed environment (production + preview), so secureCookie should
+  // be true whenever we're not running the local "next dev" server.
+  const secureCookie = process.env.NODE_ENV === "production";
+
   let token: Awaited<ReturnType<typeof getToken>> | null = null;
   let tokenFetched = false;
   const ensureToken = async () => {
     if (tokenFetched) return token;
     tokenFetched = true;
-    token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET, secureCookie });
     return token;
   };
 
   if (privateModeOn && !isPublicInPrivateMode(pathname)) {
     const t = await ensureToken();
     const role = (t as any)?.role;
-    // TEMP DIAGNOSTIC (v30) — remove once the private-mode login issue is confirmed fixed.
-    const secretEnv = process.env.NEXTAUTH_SECRET || "";
-    console.log("[private-mode-debug]", {
-      pathname,
-      cookieNames: req.cookies.getAll().map((c) => c.name),
-      hasToken: !!t,
-      role: role ?? null,
-      secretLen: secretEnv.length,
-      secretEdges: secretEnv ? `${secretEnv.slice(0, 3)}...${secretEnv.slice(-3)}` : null,
-    });
     if (!t || (role !== "ADMIN" && role !== "SPECIAL_USER")) {
       if (isApi) {
         return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
