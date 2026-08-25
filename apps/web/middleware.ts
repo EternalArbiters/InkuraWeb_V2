@@ -32,6 +32,8 @@ function isPublicInPrivateMode(pathname: string) {
   if (pathname === "/api/auth/register") return false; // MUST stay blocked (self-registration)
   if (pathname.startsWith("/api/auth/")) return true; // NextAuth's own routes (csrf/session/callback/providers/signin/signout)
   if (pathname.startsWith("/api/cron/")) return true; // Vercel Cron calls this with a Bearer secret, never a session cookie
+  if (pathname === "/api/analytics/events") return true; // fire-and-forget page-view beacon, fires unconditionally on every page incl. the private landing notice — reveals nothing sensitive
+  if (pathname === "/api/client-metrics") return true; // same reasoning — perf beacon, no sensitive data
   return false;
 }
 
