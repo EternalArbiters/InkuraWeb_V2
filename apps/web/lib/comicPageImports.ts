@@ -218,16 +218,20 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         context.fillStyle = "#ffffff";
         context.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: context, viewport, background: "#ffffff" }).promise;
-        // v30: PNG is lossless — no quality knob to tune down. Rendering straight to PNG
-        // instead of quality-0.92 WebP means the page is written to disk exactly as
-        // pdf.js rasterized it, with nothing lost here for the later upload-optimization
-        // pass (which is a no-op on an already-lossless source) to compound on top of.
-        const blob = await canvasToBlob(canvas, "image/png");
+        // v30: PNG (fully lossless) was tried here first, but real comic pages at this
+        // resolution came out 10-20MB EACH as PNG — big enough to fail ("Failed to
+        // fetch") on ordinary/mobile connections during upload. WebP at a near-lossless
+        // quality (0.98, up from the old 0.92) is the practical middle ground: visually
+        // indistinguishable from the source render, but small enough to actually upload
+        // reliably, AND — since 0.98 is so close to lossless — a second re-encode pass
+        // later in the pipeline (uploadOptimization.ts, only triggered for files over
+        // 5MB) no longer compounds into visible blur the way stacking two 0.92 passes did.
+        const blob = await canvasToBlob(canvas, "image/webp", 0.98);
         files.push(
           blobToFile(
             blob,
-            `${baseName}-page-${String(pageNumber).padStart(3, "0")}.png`,
-            "image/png"
+            `${baseName}-page-${String(pageNumber).padStart(3, "0")}.webp`,
+            "image/webp"
           )
         );
       } finally {
