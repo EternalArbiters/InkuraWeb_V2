@@ -53,6 +53,7 @@ function mapChapterReaderPayload(chapter: any) {
       genres: chapter.work.genres,
       chapters: chapter.work.chapters,
       status: chapter.work.status,
+      isAdminCollection: (chapter.work as any).isAdminCollection ?? false,
     },
   };
 }
@@ -136,6 +137,7 @@ async function loadAdminChapterReaderData(chapterId: string) {
           warningTags: { select: nameSlugSelect },
           deviantLoveTags: { select: nameSlugSelect },
           genres: { select: { slug: true } },
+          isAdminCollection: true,
           chapters: {
             orderBy: [{ number: "asc" }, { createdAt: "asc" }],
             select: chapterListItemSelect,
@@ -230,12 +232,7 @@ export async function getViewerChapterReaderPayload(chapterId: string, work: any
   };
 }
 
-export async function getChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
-  const viewer = await getViewerBasic();
-  const base = viewer?.role === "ADMIN" ? await loadAdminChapterReaderData(chapterId) : await getPublicChapterReaderData(chapterId);
-  if (!base.ok) return base;
-
-  const viewerPayload = await getViewerChapterReaderPayload(chapterId, base.work, base.chapter);
+function finishChapterReaderResult(viewerPayload: Awaited<ReturnType<typeof getViewerChapterReaderPayload>>): ReadChapterResult {
   if (viewerPayload.gated) {
     return {
       ok: true,
@@ -254,6 +251,42 @@ export async function getChapterReaderData(chapterId: string): Promise<ReadChapt
     chapter: viewerPayload.chapter,
     work: viewerPayload.work,
   };
+}
+
+export async function getChapterReaderData(chapterId: string): Promise<ReadChapterResult> {
+  const viewer = await getViewerBasic();
+
+  if (viewer?.role === "ADMIN") {
+    const base = await loadAdminChapterReaderData(chapterId);
+    if (!base.ok) return base;
+    const viewerPayload = await getViewerChapterReaderPayload(chapterId, base.work, base.chapter);
+    return finishChapterReaderResult(viewerPayload);
+  }
+
+  if (viewer?.role === "SPECIAL_USER") {
+    // v30: try the cached public path first (PUBLISHED chapter + PUBLISHED work, same
+    // as any USER). Only fall back to the uncached admin-style loader — which ignores
+    // chapter/work status entirely — when the parent work is flagged "Koleksi Admin";
+    // that flag then cascades to EVERY chapter of that work, draft or published.
+    const publicBase = await getPublicChapterReaderData(chapterId);
+    if (publicBase.ok) {
+      const viewerPayload = await getViewerChapterReaderPayload(chapterId, publicBase.work, publicBase.chapter);
+      return finishChapterReaderResult(viewerPayload);
+    }
+
+    const adminLikeBase = await loadAdminChapterReaderData(chapterId);
+    if (!adminLikeBase.ok) return adminLikeBase;
+    if (!(adminLikeBase.work as any).isAdminCollection) {
+      return { ok: false, status: 404, error: "Not found" };
+    }
+    const viewerPayload = await getViewerChapterReaderPayload(chapterId, adminLikeBase.work, adminLikeBase.chapter);
+    return finishChapterReaderResult(viewerPayload);
+  }
+
+  const base = await getPublicChapterReaderData(chapterId);
+  if (!base.ok) return base;
+  const viewerPayload = await getViewerChapterReaderPayload(chapterId, base.work, base.chapter);
+  return finishChapterReaderResult(viewerPayload);
 }
 
 

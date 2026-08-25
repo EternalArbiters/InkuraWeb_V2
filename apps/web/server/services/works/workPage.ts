@@ -287,6 +287,7 @@ async function loadAdminWorkPageDataBySlug(slug: string) {
       chapterCount: true,
       createdAt: true,
       updatedAt: true,
+      isAdminCollection: true,
       warningTags: { select: { name: true, slug: true } },
       deviantLoveTags: { select: { name: true, slug: true } },
       genres: { select: { name: true, slug: true } },
@@ -481,6 +482,59 @@ export async function getWorkPageDataBySlug(slug: string): Promise<WorkPageResul
       progress: viewerPayload.progress,
       interactions: viewerPayload.interactions,
       work: base.work,
+    };
+  }
+
+  // v30: SPECIAL_USER — try the cheap cached public path first (covers PUBLISHED works,
+  // same as a normal USER). Only fall back to the uncached full loader when the work
+  // isn't publicly visible, and only proceed if it's explicitly flagged "Koleksi Admin" —
+  // otherwise treat it exactly like any other draft (404), never the ADMIN blanket view.
+  if (viewerForAdminCheck?.role === "SPECIAL_USER") {
+    const publicBase = await getPublicWorkPageDataBySlug(slug);
+    if (publicBase.ok) {
+      const viewerPayload = await getViewerWorkPagePayload(publicBase.work);
+      if (viewerPayload.gated) {
+        return {
+          ok: true,
+          gated: true,
+          gateReason: viewerPayload.gateReason,
+          viewer: viewerPayload.viewer,
+          work: viewerPayload.work,
+        };
+      }
+      return {
+        ok: true,
+        gated: false,
+        viewer: viewerPayload.viewer,
+        progress: viewerPayload.progress,
+        interactions: viewerPayload.interactions,
+        work: publicBase.work,
+      };
+    }
+
+    const adminLikeBase = await loadAdminWorkPageDataBySlug(slug);
+    if (!adminLikeBase.ok) return adminLikeBase;
+    if (!(adminLikeBase.work as any).isAdminCollection) {
+      return { ok: false, status: 404, error: "Not found" };
+    }
+
+    const viewerPayload = await getViewerWorkPagePayload(adminLikeBase.work);
+    if (viewerPayload.gated) {
+      return {
+        ok: true,
+        gated: true,
+        gateReason: viewerPayload.gateReason,
+        viewer: viewerPayload.viewer,
+        work: viewerPayload.work,
+      };
+    }
+    return {
+      ok: true,
+      gated: false,
+      viewer: viewerPayload.viewer,
+      progress: viewerPayload.progress,
+      interactions: viewerPayload.interactions,
+      work: adminLikeBase.work,
     };
   }
 

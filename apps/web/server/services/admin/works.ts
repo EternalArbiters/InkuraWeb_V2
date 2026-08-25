@@ -13,6 +13,7 @@ export type AdminWorkItem = {
   publishType: string;
   status: string;
   createdAt: string;
+  isAdminCollection: boolean;
   author: {
     id: string;
     username: string | null;
@@ -43,6 +44,7 @@ export async function searchAdminWorks({ query, take = 60 }: { query?: string; t
       publishType: true,
       status: true,
       createdAt: true,
+      isAdminCollection: true,
       author: { select: { id: true, username: true, name: true } },
     },
   });
@@ -55,22 +57,34 @@ export type AdminUserSearchItem = {
   username: string | null;
   name: string | null;
   image: string | null;
+  email: string;
+  role: string;
 };
 
 export async function searchAdminUsers({ query, take = 20 }: { query?: string; take?: number }): Promise<AdminUserSearchItem[]> {
-  if (!query || query.trim().length < 2) return [];
-  const q = query.trim();
+  const q = (query || "").trim();
+  if (q.length >= 2) {
+    return prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: q, mode: "insensitive" } },
+          { name: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+        ],
+      },
+      take,
+      select: { id: true, username: true, name: true, image: true, email: true, role: true },
+      orderBy: { username: "asc" },
+    });
+  }
+
+  // v30: blank query — list most recently created users (mirrors searchAdminWorks'
+  // "blank = most recently updated" convention) so the admin user-management panel
+  // has something to show without requiring a search term.
   return prisma.user.findMany({
-    where: {
-      OR: [
-        { username: { contains: q, mode: "insensitive" } },
-        { name: { contains: q, mode: "insensitive" } },
-        { email: { contains: q, mode: "insensitive" } },
-      ],
-    },
     take,
-    select: { id: true, username: true, name: true, image: true },
-    orderBy: { username: "asc" },
+    select: { id: true, username: true, name: true, image: true, email: true, role: true },
+    orderBy: { createdAt: "desc" },
   });
 }
 
@@ -196,6 +210,17 @@ export async function patchAdminWorkPublishType(workId: string, publishType: str
       translatorId: publishType === "TRANSLATION" ? work.authorId : null,
     },
   });
+
+  return { ok: true };
+}
+
+// v30: toggles whether a work (typically a DRAFT) is part of "Koleksi Admin" —
+// visible + fully readable (all chapters) for ADMIN and SPECIAL_USER viewers.
+export async function patchAdminWorkIsAdminCollection(workId: string, isAdminCollection: boolean): Promise<{ ok: boolean }> {
+  const work = await prisma.work.findUnique({ where: { id: workId }, select: { id: true } });
+  if (!work) throw new Error("Work not found");
+
+  await prisma.work.update({ where: { id: workId }, data: { isAdminCollection } });
 
   return { ok: true };
 }

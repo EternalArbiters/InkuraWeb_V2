@@ -6,7 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prisma";
-import { enforcedRoleFromEmail } from "@/server/auth/adminEmail";
+import { reconcileRole } from "@/server/auth/adminEmail";
 import { trackAuthAnalyticsEvent } from "@/server/analytics/track";
 import { normalizeInkuraLanguage } from "@/lib/inkuraLanguage";
 import { hasCompletedProfileOnboarding } from "@/server/services/profile/demographics";
@@ -40,7 +40,6 @@ async function ensureUsername(userId: string, email?: string | null, name?: stri
 
 async function upsertOAuthUser(email: string, name?: string | null, image?: string | null) {
   const emailLower = email.toLowerCase();
-  const enforcedRole = enforcedRoleFromEmail(emailLower);
 
   const existing = await prisma.user.findUnique({
     where: { email: emailLower },
@@ -62,6 +61,7 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
   });
 
   if (!existing) {
+    const enforcedRole = reconcileRole(emailLower, null);
     const created = await prisma.user.create({
       data: {
         email: emailLower,
@@ -90,10 +90,11 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
     return created;
   }
 
+  const reconciledRole = reconcileRole(emailLower, existing.role);
   const next: any = {};
   if (name && name !== existing.name) next.name = name;
   if (image && image !== existing.image) next.image = image;
-  if (existing.role !== enforcedRole) next.role = enforcedRole;
+  if (existing.role !== reconciledRole) next.role = reconciledRole;
   if (Object.keys(next).length) {
     await prisma.user.update({ where: { id: existing.id }, data: next });
   }
@@ -101,7 +102,7 @@ async function upsertOAuthUser(email: string, name?: string | null, image?: stri
 
   return {
     id: existing.id,
-    role: enforcedRole as any,
+    role: reconciledRole as any,
     name: name ?? existing.name,
     image: image ?? existing.image,
     username: existing.username ?? null,
@@ -162,15 +163,15 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) throw new Error("Invalid credentials");
 
-        const enforcedRole = enforcedRoleFromEmail(user.email);
-        if (user.role !== enforcedRole) {
-          await prisma.user.update({ where: { id: user.id }, data: { role: enforcedRole as any } });
+        const reconciledRole = reconcileRole(user.email, user.role);
+        if (user.role !== reconciledRole) {
+          await prisma.user.update({ where: { id: user.id }, data: { role: reconciledRole as any } });
         }
 
         return {
           id: user.id,
           email: user.email,
-          role: enforcedRole,
+          role: reconciledRole,
           name: user.name ?? null,
           image: user.image ?? null,
           username: user.username ?? null,
@@ -232,6 +233,7 @@ export const authOptions: NextAuthOptions = {
             name: true,
             image: true,
             email: true,
+            role: true,
             username: true,
             avatarFocusX: true,
             avatarFocusY: true,
@@ -247,7 +249,7 @@ export const authOptions: NextAuthOptions = {
           token.name = dbUser.name ?? null;
           token.picture = dbUser.image ?? null;
           token.email = dbUser.email ?? token.email;
-          token.role = enforcedRoleFromEmail(String(dbUser.email || token.email || ""));
+          token.role = reconcileRole(String(dbUser.email || token.email || ""), dbUser.role);
           (token as any).username = dbUser.username ?? null;
           (token as any).avatarFocusX = dbUser.avatarFocusX ?? null;
           (token as any).avatarFocusY = dbUser.avatarFocusY ?? null;
@@ -267,7 +269,7 @@ export const authOptions: NextAuthOptions = {
       if (user && account?.provider === "credentials") {
         token.id = (user as any).id;
         token.email = (user as any).email;
-        token.role = enforcedRoleFromEmail((user as any).email);
+        token.role = reconcileRole((user as any).email, (user as any).role);
         token.name = (user as any).name ?? null;
         token.picture = (user as any).image ?? null;
         (token as any).username = (user as any).username ?? null;
@@ -295,7 +297,7 @@ export const authOptions: NextAuthOptions = {
           );
           token.id = dbUser.id;
           token.email = email;
-          token.role = enforcedRoleFromEmail(email);
+          token.role = reconcileRole(email, dbUser.role);
           token.name = dbUser.name ?? null;
           token.picture = dbUser.image ?? null;
           (token as any).username = (dbUser as any).username ?? null;
@@ -335,7 +337,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           token.id = dbUser.id;
-          token.role = enforcedRoleFromEmail(String(token.email));
+          token.role = reconcileRole(String(token.email), dbUser.role);
           token.name = dbUser.name ?? (token.name as any) ?? null;
           token.picture = dbUser.image ?? (token.picture as any) ?? null;
           (token as any).username = dbUser.username ?? null;
@@ -377,7 +379,10 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (token.email) {
-        token.role = enforcedRoleFromEmail(String(token.email));
+        // v30: reconcile against the role the token ALREADY carries (set by one of the
+        // branches above, or carried over unchanged from the previous encoded JWT) —
+        // do NOT recompute purely from email, that would stomp SPECIAL_USER back to USER.
+        token.role = reconcileRole(String(token.email), token.role as any);
       }
 
       return token;

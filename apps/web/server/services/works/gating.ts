@@ -72,6 +72,21 @@ export function computeWorkGate(input: {
   };
 }
 
+// v30: whether a non-published (DRAFT) work is visible at all, independent of the
+// mature/deviant-love gate above. ADMIN sees every draft (unchanged). SPECIAL_USER
+// sees a draft ONLY when the admin has flagged it as part of "Koleksi Admin" — they
+// still go through computeWorkGate/computeChapterGate normally for mature/deviant.
+export function canViewNonPublishedWork(
+  viewer: ViewerBasic | null,
+  work: { status: string; isAdminCollection?: boolean | null }
+): boolean {
+  if (work.status === "PUBLISHED") return true;
+  if (!viewer) return false;
+  if (viewer.role === "ADMIN") return true;
+  if (viewer.role === "SPECIAL_USER") return !!work.isAdminCollection;
+  return false;
+}
+
 export function computeChapterGate(input: {
   viewer: ViewerBasic | null;
   work: {

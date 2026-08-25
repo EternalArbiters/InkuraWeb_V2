@@ -10,6 +10,11 @@ import { trackAnalyticsEventSafe } from "@/server/analytics/track";
 export const runtime = "nodejs";
 
 export const POST = apiRoute(async (req: Request) => {
+  // v30: self-registration is fully disabled on the private deployment.
+  if (process.env.PRIVATE_MODE === "true") {
+    return badRequest("Registration is disabled.");
+  }
+
   const limited = await enforceRateLimitOrResponse({ req, policyName: "auth.register" });
   if (limited) return limited;
 

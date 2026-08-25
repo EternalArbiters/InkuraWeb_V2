@@ -15,6 +15,7 @@ import {
 } from "@/server/services/works/viewerInteractions";
 import { profileHotspot } from "@/server/observability/profiling";
 import { listDraftWorksForAdmin } from "@/server/services/works/listDraftWorks";
+import { listAdminCollectionWorks } from "@/server/services/works/listAdminCollectionWorks";
 
 function sortByRecentActivity(works: any[]): any[] {
   return works.slice().sort((a, b) => {
@@ -101,8 +102,15 @@ export async function getHomePageData() {
   // Fetch draft works only for admin — not cached, always fresh
   const draftWorks = viewer?.role === "ADMIN" ? await listDraftWorksForAdmin({ take: 20 }) : [];
 
+  // v30: "Koleksi Admin" rail — fetched outside the cache (same reasoning as draftWorks
+  // above), visible to ADMIN and SPECIAL_USER only.
+  const adminCollectionWorks =
+    viewer?.role === "ADMIN" || viewer?.role === "SPECIAL_USER"
+      ? await listAdminCollectionWorks({ take: 20 })
+      : [];
+
   if (!viewer?.id) {
-    return { ...base, draftWorks: [] };
+    return { ...base, draftWorks: [], adminCollectionWorks: [] };
   }
 
   return {
@@ -112,5 +120,6 @@ export async function getHomePageData() {
     originals: applyViewerWorkInteractions(base.originals as any[], interactions),
     translations: applyViewerWorkInteractions(base.translations as any[], interactions),
     draftWorks,
+    adminCollectionWorks,
   };
 }

@@ -150,7 +150,16 @@ export async function listPublishedWorksFromSearchParams(
   const effectiveExcludeDeviant = excludeDeviant.filter((d) => !includeDeviantSet.has(d));
 
   const isAdmin = !!viewer && viewer.role === "ADMIN";
-  const where: any = options?.forcePublishedOnly ? { status: "PUBLISHED" } : isAdmin ? {} : { status: "PUBLISHED" };
+  // v30: SPECIAL_USER sees PUBLISHED works (same rules as USER below) plus any DRAFT
+  // work the admin has flagged into "Koleksi Admin" — never the full draft set.
+  const isSpecialUser = !!viewer && viewer.role === "SPECIAL_USER";
+  const where: any = options?.forcePublishedOnly
+    ? { status: "PUBLISHED" }
+    : isAdmin
+      ? {}
+      : isSpecialUser
+        ? { OR: [{ status: "PUBLISHED" }, { status: "DRAFT", isAdminCollection: true }] }
+        : { status: "PUBLISHED" };
 
   if (type === "NOVEL" || type === "COMIC") where.type = type;
 

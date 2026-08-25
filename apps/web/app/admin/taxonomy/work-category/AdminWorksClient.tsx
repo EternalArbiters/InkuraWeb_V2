@@ -10,6 +10,7 @@ type WorkItem = {
   publishType: string;
   status: string;
   createdAt: string;
+  isAdminCollection: boolean;
   author: { id: string; username: string | null; name: string | null };
 };
 
@@ -36,6 +37,7 @@ export default function AdminWorksClient() {
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState<string | null>(null);
   const [drafts, setDrafts] = React.useState<Record<string, string>>({});
+  const [collectionSaving, setCollectionSaving] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -85,6 +87,29 @@ export default function AdminWorksClient() {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(null);
+    }
+  }
+
+  async function toggleAdminCollection(workId: string, next: boolean) {
+    setCollectionSaving(workId);
+    setMessage(null);
+    setError(null);
+    // Optimistic update — roll back on failure.
+    setWorks((prev) => prev.map((w) => (w.id === workId ? { ...w, isAdminCollection: next } : w)));
+    try {
+      const res = await fetch(`/api/admin/works/${workId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ isAdminCollection: next }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Failed to save");
+      setMessage(next ? "Added to Admin Collection." : "Removed from Admin Collection.");
+    } catch (err) {
+      setWorks((prev) => prev.map((w) => (w.id === workId ? { ...w, isAdminCollection: !next } : w)));
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setCollectionSaving(null);
     }
   }
 
@@ -161,6 +186,16 @@ export default function AdminWorksClient() {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                        <input
+                          type="checkbox"
+                          checked={work.isAdminCollection}
+                          disabled={collectionSaving === work.id}
+                          onChange={(e) => toggleAdminCollection(work.id, e.target.checked)}
+                          className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-700"
+                        />
+                        Admin Collection
+                      </label>
                       <select
                         value={draft ?? work.publishType}
                         onChange={(e) => setDrafts((prev) => ({ ...prev, [work.id]: e.target.value }))}

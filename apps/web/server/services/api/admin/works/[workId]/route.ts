@@ -2,7 +2,7 @@ import "server-only";
 
 import { requireAdminSession } from "@/server/http/auth";
 import { apiRoute, badRequest, json, notFound, readJsonObject } from "@/server/http";
-import { patchAdminWorkPublishType } from "@/server/services/admin/works";
+import { patchAdminWorkIsAdminCollection, patchAdminWorkPublishType } from "@/server/services/admin/works";
 
 export const runtime = "nodejs";
 
@@ -14,6 +14,11 @@ export const PATCH = apiRoute(async (req: Request, ctx: Ctx) => {
   const body = await readJsonObject(req);
 
   try {
+    if (typeof body.isAdminCollection === "boolean") {
+      const result = await patchAdminWorkIsAdminCollection(workId, body.isAdminCollection);
+      return json(result);
+    }
+
     const result = await patchAdminWorkPublishType(workId, String(body.publishType || ""));
     return json(result);
   } catch (err) {

@@ -112,6 +112,7 @@ model User {
 enum Role {
   ADMIN
   USER
+  SPECIAL_USER
 }
 
 enum UserGender {
@@ -297,6 +298,10 @@ model Work {
   // v29: admin uploaded on behalf of a user
   uploadedByAdminId String?
   uploadedByAdmin   User? @relation("WorkUploadedByAdmin", fields: [uploadedByAdminId], references: [id])
+
+  // v30: admin-curated cross-status visibility flag — lets SPECIAL_USER viewers see this
+  // work (and cascades to ALL its chapters, draft or published) even while status=DRAFT.
+  isAdminCollection Boolean @default(false)
 
   // Cached counters (updated by API routes)
   likeCount   Int        @default(0)

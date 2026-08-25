@@ -10,15 +10,16 @@ export default async function HomePage() {
   const startedAt = Date.now();
 
   try {
-    const [{ trendingComics, trendingNovels, recent, originals, translations, draftWorks }, bannerWorks] =
+    const [{ trendingComics, trendingNovels, recent, originals, translations, draftWorks, adminCollectionWorks }, bannerWorks] =
       await Promise.all([getHomePageData(), getBannerWorks()]);
-    const [trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, draftLabel, seeAllLabel] =
+    const [trendingComicsLabel, trendingNovelsLabel, originalsLabel, translationsLabel, recentLabel, adminCollectionLabel, draftLabel, seeAllLabel] =
       await Promise.all([
         getActiveUILanguageText("Trending Comics", { section: "Page Home" }),
         getActiveUILanguageText("Trending Novels", { section: "Page Home" }),
         getActiveUILanguageText("New Originals", { section: "Page Home" }),
         getActiveUILanguageText("Latest Translations", { section: "Page Home" }),
         getActiveUILanguageText("Recently Updated", { section: "Page Home" }),
+        getActiveUILanguageText("Admin Collection", { section: "Page Home" }),
         getActiveUILanguageText("Still Draft", { section: "Page Home" }),
         getActiveUILanguageText("See all", { section: "Page Home" }),
       ]);
@@ -29,6 +30,9 @@ export default async function HomePage() {
       { title: originalsLabel, href: "/browse/new-originals", works: originals },
       { title: translationsLabel, href: "/browse/latest-translations", works: translations },
       { title: recentLabel, href: "/browse/recent-updates", works: recent },
+      ...(adminCollectionWorks && adminCollectionWorks.length > 0
+        ? [{ title: adminCollectionLabel, href: "/browse/admin-collection", works: adminCollectionWorks }]
+        : []),
       ...(draftWorks && draftWorks.length > 0
         ? [{ title: draftLabel, href: "/browse/still-drafts", works: draftWorks }]
         : []),
