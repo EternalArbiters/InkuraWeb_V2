@@ -176,6 +176,68 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
   });
 }
 
+const MARGIN_TRIM_SAFETY_PX = 2; // keep a small buffer so we don't clip anti-aliased art edges
+const MARGIN_COLOR_TOLERANCE = 6; // per-channel tolerance when comparing a row against the detected background color
+const MARGIN_ROW_SAMPLE_STRIDE = 4; // sample every Nth pixel across a row when checking uniformity, for speed
+
+function isUniformRow(data: Uint8ClampedArray, width: number, y: number, bg: readonly [number, number, number]) {
+  for (let x = 0; x < width; x += MARGIN_ROW_SAMPLE_STRIDE) {
+    const offset = (y * width + x) * 4;
+    if (
+      Math.abs(data[offset] - bg[0]) > MARGIN_COLOR_TOLERANCE ||
+      Math.abs(data[offset + 1] - bg[1]) > MARGIN_COLOR_TOLERANCE ||
+      Math.abs(data[offset + 2] - bg[2]) > MARGIN_COLOR_TOLERANCE
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// v30: PDFs exported from a "print-ready" or paginated source often bake a thin flat
+// margin onto the top/bottom of every page. Rendered as one image per page and then
+// stacked vertically in the webtoon reader, that margin reads as a visible seam/border
+// between otherwise-continuous artwork. Trim uniform-color top/bottom bands (matched
+// against the page's own top-left corner color, not assumed to be pure white) before
+// encoding, so consecutive pages butt up against each other cleanly. Deliberately only
+// trims top/bottom (not left/right) — that's the axis that actually causes a visible
+// line in a VERTICAL stack; side margins don't produce the reported seam and are left
+// alone to minimize the chance of clipping intentional framing/art.
+function trimVerticalMargins(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): HTMLCanvasElement {
+  const { width, height } = canvas;
+  if (width < 20 || height < 40) return canvas;
+
+  let data: Uint8ClampedArray;
+  try {
+    data = context.getImageData(0, 0, width, height).data;
+  } catch {
+    return canvas; // be conservative if pixel readback ever fails for any reason
+  }
+
+  const bg: readonly [number, number, number] = [data[0], data[1], data[2]];
+
+  let top = 0;
+  while (top < height / 2 && isUniformRow(data, width, top, bg)) top += 1;
+  let bottom = height - 1;
+  while (bottom > height / 2 && isUniformRow(data, width, bottom, bg)) bottom -= 1;
+
+  top = Math.max(0, top - MARGIN_TRIM_SAFETY_PX);
+  bottom = Math.min(height - 1, bottom + MARGIN_TRIM_SAFETY_PX);
+
+  const trimmedHeight = bottom - top + 1;
+  // Nothing meaningful to trim, or the page is (almost) entirely blank — bail out and
+  // keep the original render rather than risk producing a sliver/empty image.
+  if (trimmedHeight >= height - 1 || trimmedHeight < 40) return canvas;
+
+  const trimmedCanvas = document.createElement("canvas");
+  trimmedCanvas.width = width;
+  trimmedCanvas.height = trimmedHeight;
+  const trimmedContext = trimmedCanvas.getContext("2d", { alpha: false });
+  if (!trimmedContext) return canvas;
+  trimmedContext.drawImage(canvas, 0, top, width, trimmedHeight, 0, 0, width, trimmedHeight);
+  return trimmedCanvas;
+}
+
 export async function importComicPagesFromZip(zipFile: File): Promise<File[]> {
   const JSZip = await loadJsZip();
   const archive = await JSZip.loadAsync(await zipFile.arrayBuffer());
@@ -218,6 +280,7 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         context.fillStyle = "#ffffff";
         context.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: context, viewport, background: "#ffffff" }).promise;
+        const trimmedCanvas = trimVerticalMargins(canvas, context);
         // v30: PNG (fully lossless) was tried here first, but real comic pages at this
         // resolution came out 10-20MB EACH as PNG — big enough to fail ("Failed to
         // fetch") on ordinary/mobile connections during upload. WebP at a near-lossless
@@ -226,7 +289,7 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         // reliably, AND — since 0.98 is so close to lossless — a second re-encode pass
         // later in the pipeline (uploadOptimization.ts, only triggered for files over
         // 5MB) no longer compounds into visible blur the way stacking two 0.92 passes did.
-        const blob = await canvasToBlob(canvas, "image/webp", 0.98);
+        const blob = await canvasToBlob(trimmedCanvas, "image/webp", 0.98);
         files.push(
           blobToFile(
             blob,
