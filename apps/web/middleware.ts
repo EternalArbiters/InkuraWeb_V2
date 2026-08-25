@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { getToken, decode } from "next-auth/jwt";
 
 function isAdminPath(pathname: string) {
   return pathname === "/admin" || pathname.startsWith("/admin/");
@@ -55,6 +55,25 @@ export async function middleware(req: NextRequest) {
   if (privateModeOn && !isPublicInPrivateMode(pathname)) {
     const t = await ensureToken();
     const role = (t as any)?.role;
+
+    // TEMP DIAGNOSTIC (v30) — remove once resolved. getToken() swallows decode errors
+    // and just returns null; decode the raw cookie ourselves to see the REAL reason.
+    if (!t) {
+      const raw =
+        req.cookies.get("__Secure-next-auth.session-token")?.value ||
+        req.cookies.get("next-auth.session-token")?.value ||
+        null;
+      console.log("[private-mode-debug] raw cookie present?", !!raw, "length:", raw?.length ?? 0);
+      if (raw) {
+        try {
+          const decoded = await decode({ token: raw, secret: process.env.NEXTAUTH_SECRET as string });
+          console.log("[private-mode-debug] manual decode SUCCEEDED:", { role: (decoded as any)?.role, email: (decoded as any)?.email });
+        } catch (err: any) {
+          console.log("[private-mode-debug] manual decode FAILED:", err?.name, err?.message, err?.stack?.slice(0, 500));
+        }
+      }
+    }
+
     if (!t || (role !== "ADMIN" && role !== "SPECIAL_USER")) {
       if (isApi) {
         return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
