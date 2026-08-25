@@ -20,21 +20,25 @@ export default function PrivateLoginForm() {
     setLoading(true);
     setError(null);
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email: identifier,
-      password,
-      callbackUrl: "/home",
-    });
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: identifier,
+        password,
+        callbackUrl: "/home",
+      });
 
-    setLoading(false);
+      if (!res || res.error) {
+        setError("Incorrect credentials.");
+        return;
+      }
 
-    if (!res || res.error) {
-      setError("Incorrect credentials.");
-      return;
+      router.push(res.url || "/home");
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push(res.url || "/home");
   }
 
   return (
