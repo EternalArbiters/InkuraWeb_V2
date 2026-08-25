@@ -195,14 +195,18 @@ function isUniformRow(data: Uint8ClampedArray, width: number, y: number, bg: rea
 }
 
 // v30: PDFs exported from a "print-ready" or paginated source often bake a thin flat
-// margin onto the top/bottom of every page. Rendered as one image per page and then
-// stacked vertically in the webtoon reader, that margin reads as a visible seam/border
-// between otherwise-continuous artwork. Trim uniform-color top/bottom bands (matched
-// against the page's own top-left corner color, not assumed to be pure white) before
-// encoding, so consecutive pages butt up against each other cleanly. Deliberately only
-// trims top/bottom (not left/right) — that's the axis that actually causes a visible
-// line in a VERTICAL stack; side margins don't produce the reported seam and are left
-// alone to minimize the chance of clipping intentional framing/art.
+// margin/bar onto the top and/or bottom of every page (often black, not necessarily
+// matching the page's own art background). Rendered as one image per page and then
+// stacked vertically in the webtoon reader, that band reads as a visible seam/border
+// between otherwise-continuous artwork. Trim uniform-color top/bottom bands before
+// encoding, so consecutive pages butt up against each other cleanly. The top band and
+// bottom band are detected INDEPENDENTLY, each against its OWN edge row's color — not
+// a single shared reference — because the top of a page is often actual art (e.g. a
+// colored background) while only the bottom carries the stray bar, or vice versa; a
+// single reference color would miss whichever edge doesn't happen to match it.
+// Deliberately only trims top/bottom (not left/right) — that's the axis that actually
+// causes a visible line in a VERTICAL stack; side margins don't produce the reported
+// seam and are left alone to minimize the chance of clipping intentional framing/art.
 function trimVerticalMargins(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): HTMLCanvasElement {
   const { width, height } = canvas;
   if (width < 20 || height < 40) return canvas;
@@ -214,12 +218,18 @@ function trimVerticalMargins(canvas: HTMLCanvasElement, context: CanvasRendering
     return canvas; // be conservative if pixel readback ever fails for any reason
   }
 
-  const bg: readonly [number, number, number] = [data[0], data[1], data[2]];
+  const topBg: readonly [number, number, number] = [data[0], data[1], data[2]];
+  const lastRowOffset = (height - 1) * width * 4;
+  const bottomBg: readonly [number, number, number] = [
+    data[lastRowOffset],
+    data[lastRowOffset + 1],
+    data[lastRowOffset + 2],
+  ];
 
   let top = 0;
-  while (top < height / 2 && isUniformRow(data, width, top, bg)) top += 1;
+  while (top < height / 2 && isUniformRow(data, width, top, topBg)) top += 1;
   let bottom = height - 1;
-  while (bottom > height / 2 && isUniformRow(data, width, bottom, bg)) bottom -= 1;
+  while (bottom > height / 2 && isUniformRow(data, width, bottom, bottomBg)) bottom -= 1;
 
   top = Math.max(0, top - MARGIN_TRIM_SAFETY_PX);
   bottom = Math.min(height - 1, bottom + MARGIN_TRIM_SAFETY_PX);
