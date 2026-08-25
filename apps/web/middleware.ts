@@ -53,6 +53,13 @@ export async function middleware(req: NextRequest) {
   if (privateModeOn && !isPublicInPrivateMode(pathname)) {
     const t = await ensureToken();
     const role = (t as any)?.role;
+    // TEMP DIAGNOSTIC (v30) — remove once the private-mode login issue is confirmed fixed.
+    console.log("[private-mode-debug]", {
+      pathname,
+      cookieNames: req.cookies.getAll().map((c) => c.name),
+      hasToken: !!t,
+      role: role ?? null,
+    });
     if (!t || (role !== "ADMIN" && role !== "SPECIAL_USER")) {
       if (isApi) {
         return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
