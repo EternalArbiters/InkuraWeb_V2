@@ -6,17 +6,6 @@ function isAdminPath(pathname: string) {
   return pathname === "/admin" || pathname.startsWith("/admin/");
 }
 
-function hasAuthCookie(req: NextRequest) {
-  const names = [
-    "__Secure-next-auth.session-token",
-    "__Host-next-auth.session-token",
-    "next-auth.session-token",
-    "__Secure-authjs.session-token",
-    "authjs.session-token",
-  ];
-  return names.some((n) => !!req.cookies.get(n)?.value);
-}
-
 // v30: private-deployment gate. Only active when PRIVATE_MODE=true (Project 2's env).
 // Project 1 never sets this, so this whole block is a no-op there — behavior stays
 // byte-for-byte identical to before this change for Project 1.
@@ -43,13 +32,20 @@ export async function middleware(req: NextRequest) {
   const privateModeOn = isPrivateModeEnabled();
   const needsAdminCheck = isAdminPath(pathname);
 
-  // Decode the JWT at most once per request, shared by both gates below.
+  // v30 fix: this app's JWT carries enough custom fields (avatar URL, avatarFocusX/Y/
+  // Zoom, inkuraLanguage, profileOnboardingComplete, etc.) that the encoded/encrypted
+  // token routinely exceeds a single cookie's ~4KB limit — when that happens, NextAuth
+  // transparently SPLITS it across multiple cookies (named "...session-token.0", ".1",
+  // etc.) and getToken() already knows how to reassemble them. A prior version of this
+  // file pre-checked for an EXACT cookie name before bothering to call getToken(), which
+  // broke for exactly this chunked-cookie case and made valid, logged-in sessions look
+  // anonymous to this middleware. Always call getToken() directly instead — it's cheap
+  // (near-instant, no crypto work) when there's no cookie at all.
   let token: Awaited<ReturnType<typeof getToken>> | null = null;
   let tokenFetched = false;
   const ensureToken = async () => {
     if (tokenFetched) return token;
     tokenFetched = true;
-    if (!hasAuthCookie(req)) return null;
     token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     return token;
   };
@@ -70,15 +66,14 @@ export async function middleware(req: NextRequest) {
 
   if (!needsAdminCheck) return NextResponse.next();
 
-  if (!hasAuthCookie(req)) {
+  const adminToken = await ensureToken();
+  if (!adminToken) {
     const url = req.nextUrl.clone();
     url.pathname = "/";
     url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
     return NextResponse.redirect(url);
   }
-
-  const adminToken = await ensureToken();
-  if (adminToken && (adminToken as any).role !== "ADMIN") {
+  if ((adminToken as any).role !== "ADMIN") {
     const url = req.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);
