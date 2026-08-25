@@ -9,6 +9,7 @@ export const PUBLIC_CONTENT_REVALIDATE = {
   readingList: 300,
   profile: 300,
   searchShell: 900,
+  adminCollection: 60,
 } as const;
 
 export function publicHomeTag() {
@@ -41,6 +42,13 @@ export function publicProfileTag(username: string) {
 
 export function publicSearchShellTag() {
   return "public:search-shell";
+}
+
+// v30: "Koleksi Admin" — the set of works an admin has flagged visible to ADMIN/SPECIAL_USER
+// regardless of publish status. Cached like the other rails, busted immediately on toggle
+// (see revalidateAdminCollection) so the flip always shows up right away despite the cache.
+export function publicAdminCollectionTag() {
+  return "public:admin-collection";
 }
 
 export function publicReadingListTag(slug: string) {
@@ -77,4 +85,8 @@ export function revalidatePublicReadingList(slug: string | null | undefined) {
 export function revalidatePublicProfile(username: string | null | undefined) {
   revalidateTag(publicProfilesTag());
   if (username) revalidateTag(publicProfileTag(username));
+}
+
+export function revalidateAdminCollection() {
+  revalidateTag(publicAdminCollectionTag());
 }

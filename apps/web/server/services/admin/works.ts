@@ -4,6 +4,7 @@ import prisma from "@/server/db/prisma";
 import { slugify } from "@/lib/slugify";
 import { normalizeWorkSubtitles, serializeWorkSubtitles } from "@/lib/workSubtitles";
 import { assignWorkToSeries } from "@/server/services/studio/series";
+import { revalidateAdminCollection } from "@/server/cache/publicContent";
 
 export type AdminWorkItem = {
   id: string;
@@ -221,6 +222,7 @@ export async function patchAdminWorkIsAdminCollection(workId: string, isAdminCol
   if (!work) throw new Error("Work not found");
 
   await prisma.work.update({ where: { id: workId }, data: { isAdminCollection } });
+  revalidateAdminCollection();
 
   return { ok: true };
 }
