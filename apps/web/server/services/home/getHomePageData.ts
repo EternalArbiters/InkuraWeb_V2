@@ -103,10 +103,11 @@ export async function getHomePageData() {
   const draftWorks = viewer?.role === "ADMIN" ? await listDraftWorksForAdmin({ take: 20 }) : [];
 
   // v30: "Koleksi Admin" rail — fetched outside the cache (same reasoning as draftWorks
-  // above), visible to ADMIN and SPECIAL_USER only.
+  // above), visible to ADMIN and SPECIAL_USER only. Pass the viewer through so mature/
+  // Deviant Love filtering still applies (SPECIAL_USER gets no automatic gate bypass).
   const adminCollectionWorks =
     viewer?.role === "ADMIN" || viewer?.role === "SPECIAL_USER"
-      ? await listAdminCollectionWorks({ take: 20 })
+      ? await listAdminCollectionWorks({ take: 20, viewer })
       : [];
 
   if (!viewer?.id) {
