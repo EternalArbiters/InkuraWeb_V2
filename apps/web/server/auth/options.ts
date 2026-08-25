@@ -385,6 +385,15 @@ export const authOptions: NextAuthOptions = {
         token.role = reconcileRole(String(token.email), token.role as any);
       }
 
+      // TEMP DIAGNOSTIC (v30) — compare against the same log in middleware.ts to check
+      // for a NEXTAUTH_SECRET mismatch between the Node runtime (here) and Edge runtime.
+      const secretEnv = process.env.NEXTAUTH_SECRET || "";
+      console.log("[private-mode-debug][node-jwt-callback]", {
+        secretLen: secretEnv.length,
+        secretEdges: secretEnv ? `${secretEnv.slice(0, 3)}...${secretEnv.slice(-3)}` : null,
+        role: token.role,
+      });
+
       return token;
     },
     async session({ session, token }) {
