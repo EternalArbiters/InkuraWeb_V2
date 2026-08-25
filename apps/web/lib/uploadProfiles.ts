@@ -89,7 +89,10 @@ export const UPLOAD_PROFILES: Record<UploadOptimizationScope, UploadOptimization
     preserveAlpha: true,
     stripMetadata: true,
     preserveAnimation: false,
-    quality: 0.98,
+    // v30: matches the max-quality (1.0) WebP encode now used for PDF-derived pages
+    // (lib/comicPageImports.ts) — if a page is big enough to trigger this second pass
+    // anyway, it should lose nothing further rather than settle for a lower ceiling.
+    quality: 1,
     minWidth: null,
     minHeight: 400,
     maxWidth: 3600,

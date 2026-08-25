@@ -293,13 +293,13 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         const trimmedCanvas = trimVerticalMargins(canvas, context);
         // v30: PNG (fully lossless) was tried here first, but real comic pages at this
         // resolution came out 10-20MB EACH as PNG — big enough to fail ("Failed to
-        // fetch") on ordinary/mobile connections during upload. WebP at a near-lossless
-        // quality (0.98, up from the old 0.92) is the practical middle ground: visually
-        // indistinguishable from the source render, but small enough to actually upload
-        // reliably, AND — since 0.98 is so close to lossless — a second re-encode pass
-        // later in the pipeline (uploadOptimization.ts, only triggered for files over
-        // 5MB) no longer compounds into visible blur the way stacking two 0.92 passes did.
-        const blob = await canvasToBlob(trimmedCanvas, "image/webp", 0.98);
+        // fetch") on ordinary/mobile connections during upload, even though the user is
+        // fine with a heavy page for a long manhwa-style chapter. WebP quality 1.0 (max,
+        // up from the old 0.92) is the closest this API gets to "not compressed" while
+        // staying reliably uploadable — and since it's already at the ceiling, the later
+        // re-encode pass in uploadOptimization.ts (only triggered for files over 5MB)
+        // has nothing further to lose either, now that its own "pages" quality matches.
+        const blob = await canvasToBlob(trimmedCanvas, "image/webp", 1);
         files.push(
           blobToFile(
             blob,

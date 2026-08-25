@@ -75,7 +75,12 @@ function ComicPageItem({
     }
   }, [page.imageUrl]);
 
-  const aspectRatio = meta && meta.width > 0 && meta.height > 0 ? `${meta.width} / ${meta.height}` : undefined;
+  // v30: falls back to a typical portrait-page ratio before the real image dimensions
+  // are known. Needed now that the <img> itself is absolutely positioned (see below) —
+  // it no longer contributes to the container's height on its own, so without a fallback
+  // here the container (and its loading skeleton) would collapse to zero height while a
+  // lazy-loaded page is still off-screen/loading.
+  const aspectRatio = meta && meta.width > 0 && meta.height > 0 ? `${meta.width} / ${meta.height}` : "3 / 4";
 
   return (
     <div
@@ -104,7 +109,15 @@ function ComicPageItem({
         decoding="async"
         draggable={false}
         className={[
-          "relative z-[1] block h-auto w-full transition-opacity duration-300",
+          // v30: the wrapper div's height comes from CSS `aspect-ratio` (set below from
+          // the image's own natural size) so the loading skeleton has somewhere to sit.
+          // The old `h-auto w-full` let the <img> compute ITS OWN height independently
+          // from that same natural size — two separate calculations that can disagree
+          // by a sub-pixel/rounding amount, letting the wrapper's dark background peek
+          // through as a thin seam between stacked pages (very visible in dark mode).
+          // Absolutely filling the wrapper (`inset-0 h-full w-full object-fill`) removes
+          // the second calculation entirely, so there's nothing left to disagree with.
+          "absolute inset-0 z-[1] h-full w-full object-fill transition-opacity duration-300",
           state === "error" ? "opacity-0" : "opacity-100",
         ].join(" ")}
         style={{
