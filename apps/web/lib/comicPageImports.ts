@@ -5,6 +5,14 @@ import { markFileAsPreOptimized } from "@/lib/uploadOptimization";
 const ZIP_CDN_URL = "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js";
 const PDFJS_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs";
 const PDFJS_WORKER_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.worker.min.mjs";
+// v30 (round 7): the browser's native canvas.toBlob("image/webp") only ever uses WebP's
+// LOSSY encoder, even at quality 1.0 — there's no standard way to reach libwebp's actual
+// lossless mode through that API. @jsquash/webp is a WASM build of libwebp that exposes
+// real lossless encoding directly. Loaded from esm.sh (not unpkg, like the others above)
+// because esm.sh rewrites a package's internal relative imports/wasm asset references to
+// also resolve through esm.sh — needed for a package whose build assumes a bundler, unlike
+// pdf.js's CDN build above which is already a bundled, dependency-free single file.
+const WEBP_LOSSLESS_ENCODER_CDN_URL = "https://esm.sh/@jsquash/webp@1.4.0";
 
 type ZipEntry = {
   name: string;
@@ -171,6 +179,48 @@ async function loadPdfJs(): Promise<PdfJsModule> {
     });
   }
   return pdfJsPromise;
+}
+
+type WebpLosslessEncoder = { encode: (imageData: ImageData, options?: Record<string, unknown>) => Promise<ArrayBuffer> };
+
+let webpLosslessEncoderPromise: Promise<WebpLosslessEncoder | null> | null = null;
+
+// v30 (round 7): lazily loads the WASM lossless WebP encoder, caching the (successful or
+// failed) attempt so only the first page of a PDF pays for it. Never throws — a load
+// failure (CDN unreachable, unexpected module shape, WASM unsupported) just means the
+// caller falls back to the already-confirmed-correct PNG path below.
+async function loadWebpLosslessEncoder(): Promise<WebpLosslessEncoder | null> {
+  if (!webpLosslessEncoderPromise) {
+    webpLosslessEncoderPromise = (async () => {
+      try {
+        const importExternalModule = getExternalModuleImporter();
+        const mod: any = await importExternalModule(WEBP_LOSSLESS_ENCODER_CDN_URL);
+        const encode = mod?.encode || mod?.default?.encode;
+        return typeof encode === "function" ? { encode } : null;
+      } catch {
+        return null;
+      }
+    })();
+  }
+  return webpLosslessEncoderPromise;
+}
+
+// v30 (round 7): attempts a genuinely lossless WebP encode of the given canvas via the
+// WASM encoder above. Returns null (never throws) on ANY failure — encoder unavailable,
+// unexpected output, anything — so the caller can safely fall back to PNG.
+async function tryEncodeLosslessWebp(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  try {
+    const encoder = await loadWebpLosslessEncoder();
+    if (!encoder) return null;
+    const context = canvas.getContext("2d", { alpha: false });
+    if (!context) return null;
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const encoded = await encoder.encode(imageData, { lossless: 1, quality: 100 });
+    if (!encoded || encoded.byteLength <= 0) return null;
+    return new Blob([encoded], { type: "image/webp" });
+  } catch {
+    return null;
+  }
 }
 
 function blobToFile(blob: Blob, filename: string, fallbackType: string) {
@@ -505,26 +555,28 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
 
         if (!canvas || !context) throw new Error("Canvas 2D context is unavailable");
         const trimmedCanvas = trimVerticalMargins(canvas, context);
-        // v30 (round 6): back to WebP (quality 1.0), not PNG — now that tryDrawNativePdfImage
-        // (above) bypasses page.render()'s transform-compositing entirely, the canvas being
-        // encoded here is already a clean, unresampled pixel-for-pixel copy of the source.
-        // The earlier "WebP still looks soft" symptom (round 3-4) wasn't actually about
-        // WebP's encoder — it was because the CANVAS being fed to it was already softened
-        // by page.render()'s transform step, upstream of encoding entirely. With that fixed,
-        // WebP's lossy compression at max quality — applied to genuinely clean source
-        // pixels — should be visually indistinguishable while being dramatically smaller
-        // than PNG (PNG has no compression benefit on photographic/detailed art; it's only
-        // truly efficient on flat/limited-palette content). If a future comparison shows
-        // this is NOT visually equivalent to the round-5 PNG output, that's the signal WebP's
-        // lossy encoder itself really is the limiting factor here (not the render path), and
-        // PNG should come back.
-        const blob = await canvasToBlob(trimmedCanvas, "image/webp", 1);
+        // v30 (round 7): the browser's own WebP encoder (round 6) turned out to still be
+        // visibly softer than PNG even on these now-clean, unresampled pixels — confirming
+        // it really is WebP's LOSSY encoder itself that's the limiting factor here (its
+        // quality-1.0 setting is still lossy, not literal losslessness), not the render
+        // path. Try a genuinely lossless WebP encode via the WASM encoder above first —
+        // real lossless compression, typically noticeably smaller than PNG at identical
+        // fidelity — and fall back to the confirmed-correct PNG path if that encoder isn't
+        // available or fails for any reason.
+        let blob = await tryEncodeLosslessWebp(trimmedCanvas);
+        let outputExtension = "webp";
+        let outputContentType = "image/webp";
+        if (!blob) {
+          blob = await canvasToBlob(trimmedCanvas, "image/png");
+          outputExtension = "png";
+          outputContentType = "image/png";
+        }
         files.push(
           markFileAsPreOptimized(
             blobToFile(
               blob,
-              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.webp`,
-              "image/webp"
+              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.${outputExtension}`,
+              outputContentType
             )
           )
         );
