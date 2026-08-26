@@ -82,12 +82,13 @@ export const UPLOAD_PROFILES: Record<UploadOptimizationScope, UploadOptimization
   },
   pages: {
     scope: "pages",
-    // v30 (round 4): PDF-page extraction now encodes as PNG (fully lossless, no
-    // quantization at all) at the source's own native pixel density, with no fixed
-    // ceiling (see comicPageImports.ts) — a genuinely high-res, detailed scan can
-    // legitimately land well past the old 12MB limit. This is enforced server-side
-    // (server/services/api/uploads/presign/route.ts) as a hard reject, so it has to move
-    // too or big pages fail to upload outright.
+    // v30 (round 6): PDF-page extraction draws the embedded image's raw pixels directly
+    // (see tryDrawNativePdfImage in comicPageImports.ts) then encodes as WebP at quality
+    // 1.0, at the source's own native pixel density with no fixed ceiling — a genuinely
+    // high-res, detailed scan can still land well past the old 12MB limit. Kept generous
+    // (well above what WebP output normally needs) as a safety margin rather than tuned
+    // tight, since this is enforced server-side
+    // (server/services/api/uploads/presign/route.ts) as a hard reject.
     maxBytes: 60 * MB,
     allowedContentTypes: ["image/webp", "image/png", "image/jpeg"],
     allowOptimization: true,

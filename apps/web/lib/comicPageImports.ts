@@ -505,22 +505,26 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
 
         if (!canvas || !context) throw new Error("Canvas 2D context is unavailable");
         const trimmedCanvas = trimVerticalMargins(canvas, context);
-        // v30 (round 4): PNG, not WebP — even WebP's "quality 1.0" is still its LOSSY
-        // mode's highest setting, not literal losslessness; it still runs the source
-        // through frequency-domain quantization, which is exactly the kind of loss that's
-        // most visible on fine linework/screentone detail in manga/comic art. PNG has no
-        // such step at all: what's on the canvas is what gets written out, pixel for
-        // pixel. This was tried once before and reverted for producing 10-20MB pages that
-        // failed to upload — that failure turned out to be an unrelated R2-not-connected
-        // issue on the target deployment, not the file size itself, and the user has
-        // explicitly said a heavy page is an acceptable tradeoff for real sharpness.
-        const blob = await canvasToBlob(trimmedCanvas, "image/png");
+        // v30 (round 6): back to WebP (quality 1.0), not PNG — now that tryDrawNativePdfImage
+        // (above) bypasses page.render()'s transform-compositing entirely, the canvas being
+        // encoded here is already a clean, unresampled pixel-for-pixel copy of the source.
+        // The earlier "WebP still looks soft" symptom (round 3-4) wasn't actually about
+        // WebP's encoder — it was because the CANVAS being fed to it was already softened
+        // by page.render()'s transform step, upstream of encoding entirely. With that fixed,
+        // WebP's lossy compression at max quality — applied to genuinely clean source
+        // pixels — should be visually indistinguishable while being dramatically smaller
+        // than PNG (PNG has no compression benefit on photographic/detailed art; it's only
+        // truly efficient on flat/limited-palette content). If a future comparison shows
+        // this is NOT visually equivalent to the round-5 PNG output, that's the signal WebP's
+        // lossy encoder itself really is the limiting factor here (not the render path), and
+        // PNG should come back.
+        const blob = await canvasToBlob(trimmedCanvas, "image/webp", 1);
         files.push(
           markFileAsPreOptimized(
             blobToFile(
               blob,
-              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.png`,
-              "image/png"
+              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.webp`,
+              "image/webp"
             )
           )
         );
