@@ -382,11 +382,21 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         // list. A page with no embedded raster at all (pure vector/text) has no "native
         // resolution" to match — fallbackRenderScale covers only that case.
         const nativeImage = await detectNativePageImageSize(pdfjs, page);
+        // v30 (round 3): render a bit ABOVE the detected native resolution rather than
+        // exactly at it. Reason: these pages get viewed later on all kinds of screens,
+        // including high-DPI/retina phones whose actual physical pixel density can exceed
+        // a comic scan's native resolution — if we hand the browser exactly-native pixels,
+        // the DEVICE ends up upscaling our (correctly sharp) image for on-screen display,
+        // which reintroduces the same softening this file was fixed to remove, just one
+        // step later in the pipeline. A modest supersample gives that display scaling
+        // headroom instead. Kept mild (not a big fixed multiplier) since going too far
+        // above native still means interpolating detail that was never in the source.
+        const SUPERSAMPLE_FACTOR = 1.5;
         let scale: number;
         if (nativeImage) {
           const scaleFromWidth = nativeImage.width / Math.max(1, baseViewport.width);
           const scaleFromHeight = nativeImage.height / Math.max(1, baseViewport.height);
-          scale = Math.max(scaleFromWidth, scaleFromHeight);
+          scale = Math.max(scaleFromWidth, scaleFromHeight) * SUPERSAMPLE_FACTOR;
           if (!Number.isFinite(scale) || scale <= 0) scale = fallbackRenderScale(maxEdge);
         } else {
           scale = fallbackRenderScale(maxEdge);
