@@ -543,10 +543,18 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
       try {
         const baseViewport = page.getViewport({ scale: 1 });
         const maxEdge = Math.max(baseViewport.width, baseViewport.height);
-        // Pure browser-canvas-allocation safety ceiling, not a quality cap — real page
-        // scans don't come anywhere near this; it only protects against a pathological
-        // PDF (e.g. a corrupt/huge embedded image) crashing the tab.
-        const MAX_CANVAS_LONG_EDGE = 10000;
+        // Pure browser-canvas-allocation safety ceiling, not a quality cap. v30 (round 8):
+        // this was set to 10000 assuming "no real page scan needs more than that" — wrong.
+        // Long manhwa-style strips (one narrow, very tall image per PDF "page") routinely
+        // exceed it: real console data from this exact bug showed native heights of
+        // 11499-15096px at only 720px wide, ALL getting silently rejected from the direct
+        // pixel-extraction path and forced through a downscaled page.render() fallback
+        // instead — with each page's downscale ratio differing (more height over the cap =
+        // more forced reduction), which is exactly what produced "some pages HD, some
+        // blurry" within a single otherwise-uniform PDF. Raised well above that observed
+        // range, comfortably under common per-dimension canvas limits (~32767px in most
+        // browsers).
+        const MAX_CANVAS_LONG_EDGE = 24000;
 
         // v30 (round 2): render each page at the SAME pixel density as whatever raster
         // image is actually embedded in the source PDF, so nothing is upscaled (soft) or
