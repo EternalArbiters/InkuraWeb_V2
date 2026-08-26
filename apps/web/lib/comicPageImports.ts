@@ -382,21 +382,18 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         // list. A page with no embedded raster at all (pure vector/text) has no "native
         // resolution" to match — fallbackRenderScale covers only that case.
         const nativeImage = await detectNativePageImageSize(pdfjs, page);
-        // v30 (round 3): render a bit ABOVE the detected native resolution rather than
-        // exactly at it. Reason: these pages get viewed later on all kinds of screens,
-        // including high-DPI/retina phones whose actual physical pixel density can exceed
-        // a comic scan's native resolution — if we hand the browser exactly-native pixels,
-        // the DEVICE ends up upscaling our (correctly sharp) image for on-screen display,
-        // which reintroduces the same softening this file was fixed to remove, just one
-        // step later in the pipeline. A modest supersample gives that display scaling
-        // headroom instead. Kept mild (not a big fixed multiplier) since going too far
-        // above native still means interpolating detail that was never in the source.
-        const SUPERSAMPLE_FACTOR = 1.5;
+        // v30 (round 4): back to exactly 1:1 with the detected native resolution — no
+        // supersample multiplier. A round 3 attempt at rendering ~1.5x above native (to
+        // pre-empt high-DPI screens upscaling the image themselves) didn't resolve a
+        // reported blur, and any upscale — even one aimed at helping downstream display —
+        // still means interpolating pixels that don't exist in the source. Simplest and
+        // most literal reading of "just convert to an image, don't alter it": match native
+        // 1:1, nothing more.
         let scale: number;
         if (nativeImage) {
           const scaleFromWidth = nativeImage.width / Math.max(1, baseViewport.width);
           const scaleFromHeight = nativeImage.height / Math.max(1, baseViewport.height);
-          scale = Math.max(scaleFromWidth, scaleFromHeight) * SUPERSAMPLE_FACTOR;
+          scale = Math.max(scaleFromWidth, scaleFromHeight);
           if (!Number.isFinite(scale) || scale <= 0) scale = fallbackRenderScale(maxEdge);
         } else {
           scale = fallbackRenderScale(maxEdge);
@@ -420,19 +417,22 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         context.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: context, viewport, background: "#ffffff" }).promise;
         const trimmedCanvas = trimVerticalMargins(canvas, context);
-        // v30: PNG (fully lossless) was tried here first, but real comic pages at this
-        // resolution came out 10-20MB EACH as PNG — big enough to fail ("Failed to
-        // fetch") on ordinary/mobile connections during upload, even though the user is
-        // fine with a heavy page for a long manhwa-style chapter. WebP quality 1.0 (max,
-        // up from the old 0.92) is the closest this API gets to "not compressed" while
-        // staying reliably uploadable.
-        const blob = await canvasToBlob(trimmedCanvas, "image/webp", 1);
+        // v30 (round 4): PNG, not WebP — even WebP's "quality 1.0" is still its LOSSY
+        // mode's highest setting, not literal losslessness; it still runs the source
+        // through frequency-domain quantization, which is exactly the kind of loss that's
+        // most visible on fine linework/screentone detail in manga/comic art. PNG has no
+        // such step at all: what's on the canvas is what gets written out, pixel for
+        // pixel. This was tried once before and reverted for producing 10-20MB pages that
+        // failed to upload — that failure turned out to be an unrelated R2-not-connected
+        // issue on the target deployment, not the file size itself, and the user has
+        // explicitly said a heavy page is an acceptable tradeoff for real sharpness.
+        const blob = await canvasToBlob(trimmedCanvas, "image/png");
         files.push(
           markFileAsPreOptimized(
             blobToFile(
               blob,
-              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.webp`,
-              "image/webp"
+              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.png`,
+              "image/png"
             )
           )
         );
