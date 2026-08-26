@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
 
 export default function DesktopReaderDock({
   workSlug,
@@ -17,36 +18,35 @@ export default function DesktopReaderDock({
   const hrefAll = useMemo(() => `/w/${workSlug}`, [workSlug]);
 
   const btnBase =
-    "inline-flex items-center justify-center h-9 min-w-11 px-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-950/70 backdrop-blur " +
-    "text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 transition";
+    "inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-700 dark:text-white/90 " +
+    "hover:bg-black/5 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition";
 
   const btnDisabled =
-    "inline-flex items-center justify-center h-9 min-w-11 px-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-950/40 " +
-    "text-sm font-semibold opacity-45";
+    "inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-300 dark:text-white/15 cursor-not-allowed";
 
   return (
-    <div className="hidden lg:flex fixed bottom-6 right-6 z-[75] items-center gap-2">
+    <div className="hidden lg:flex fixed bottom-8 right-8 z-[75] items-center gap-1 rounded-full border border-black/5 bg-white/80 p-1.5 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.4)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0b0b12]/85">
       {hrefPrev ? (
         <Link href={hrefPrev} className={btnBase} aria-label="Previous">
-          Pre
+          <ChevronLeft className="h-5 w-5" />
         </Link>
       ) : (
         <span className={btnDisabled} aria-hidden="true">
-          Pre
+          <ChevronLeft className="h-5 w-5" />
         </span>
       )}
 
       <Link href={hrefAll} className={btnBase} aria-label="All chapters">
-        All
+        <LayoutGrid className="h-5 w-5" />
       </Link>
 
       {hrefNext ? (
         <Link href={hrefNext} className={btnBase} aria-label="Next">
-          Next
+          <ChevronRight className="h-5 w-5" />
         </Link>
       ) : (
         <span className={btnDisabled} aria-hidden="true">
-          Next
+          <ChevronRight className="h-5 w-5" />
         </span>
       )}
     </div>

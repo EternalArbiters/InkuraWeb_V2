@@ -20,11 +20,13 @@ function PageSkeleton({ index, total, state }: { index: number; total: number; s
     <div
       className={[
         "pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-300",
-        state === "error" ? "bg-gray-200/90 dark:bg-gray-900/95" : "bg-gray-200/80 dark:bg-gray-900/90",
+        state === "error"
+          ? "bg-neutral-200/90 dark:bg-black/95"
+          : "animate-pulse bg-neutral-200/80 dark:bg-white/[0.04]",
       ].join(" ")}
       aria-hidden="true"
     >
-      <div className="rounded-full bg-black/45 px-4 py-2 text-sm font-semibold tracking-wide text-white shadow-lg backdrop-blur-sm">
+      <div className="rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm font-semibold tracking-wide text-white shadow-lg backdrop-blur-md">
         {index + 1}/{total}
       </div>
     </div>
@@ -85,7 +87,7 @@ function ComicPageItem({
   return (
     <div
       ref={containerRef}
-      className="relative isolate overflow-hidden bg-gray-200 dark:bg-gray-900 select-none"
+      className="relative isolate overflow-hidden bg-neutral-200 dark:bg-black select-none"
       style={{
         aspectRatio,
         WebkitTouchCallout: "none",
@@ -163,10 +165,12 @@ export default function ComicPageStack({ pages }: { pages: ComicPage[] }) {
   const total = allPages.length;
 
   return (
-    <div className="-mx-0 flex flex-col gap-0 sm:-mx-0 lg:mx-0">
-      {allPages.map((page, index) => (
-        <ComicPageItem key={page.id} page={page} index={index} total={total} />
-      ))}
+    <div className="bg-neutral-100 dark:bg-black lg:rounded-3xl lg:shadow-[0_40px_90px_-50px_rgba(0,0,0,0.55)] lg:ring-1 lg:ring-black/5 lg:overflow-hidden dark:lg:ring-white/10">
+      <div className="-mx-0 flex flex-col gap-0 sm:-mx-0 lg:mx-0">
+        {allPages.map((page, index) => (
+          <ComicPageItem key={page.id} page={page} index={index} total={total} />
+        ))}
+      </div>
     </div>
   );
 }

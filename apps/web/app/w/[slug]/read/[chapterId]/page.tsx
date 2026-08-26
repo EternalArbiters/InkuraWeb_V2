@@ -8,6 +8,7 @@ import LockLabel from "@/app/components/LockLabel";
 import CommentSection from "@/app/components/work/CommentSection";
 import ReaderChrome from "@/app/components/reader/ReaderChrome";
 import DesktopReaderDock from "@/app/components/reader/DesktopReaderDock";
+import ReadingProgressBar from "@/app/components/reader/ReadingProgressBar";
 import CreatorNoteCard from "@/app/components/reader/CreatorNoteCard";
 import ReaderFloatingSeed from "@/app/components/reader/ReaderFloatingSeed";
 import ProtectedNovelContent from "@/app/components/reader/ProtectedNovelContent";
@@ -112,10 +113,11 @@ export default async function ReadChapterPage({
 
   const isComic = work.type === "COMIC";
   const novelHtml = isComic ? "" : getNovelReaderHtml(chapter.text?.content);
-  const [commentsTitle, seeAllCommentsLabel, backToNovelLabel] = await Promise.all([
+  const [commentsTitle, seeAllCommentsLabel, backToNovelLabel, upNextLabel] = await Promise.all([
     getActiveUILanguageText("Comments", { section: "Page Reader Comments" }),
     getActiveUILanguageText("See all comments", { section: "Page Reader" }),
     getActiveUILanguageText("Back to novel", { section: "Page Reader" }),
+    getActiveUILanguageText("Up next", { section: "Page Reader" }),
   ]);
 
   const mobileReaderFooter = (
@@ -187,6 +189,8 @@ export default async function ReadChapterPage({
           genreIds: Array.isArray(work.genres) ? work.genres.map((genre: any) => genre.id).filter(Boolean) : [],
         }}
       />
+      {isComic ? <ReadingProgressBar /> : null}
+
       {/* Desktop dock (Pre / All / Next) */}
       <DesktopReaderDock workSlug={work.slug} prevId={prev ? prev.id : null} nextId={next ? next.id : null} />
       <ReaderFloatingSeed
@@ -202,12 +206,21 @@ export default async function ReadChapterPage({
             <h1 className="sr-only">{work.title} — {chapterLabel(chapter.number, chapter.title)}</h1>
 
             {/* Desktop titles */}
-            <div className="hidden lg:block mb-4">
-              <Link href={`/w/${work.slug}`} className="block text-sm text-white/60 hover:text-white truncate">
+            <div className="hidden lg:block mb-6">
+              <Link
+                href={`/w/${work.slug}`}
+                className="block text-sm font-semibold text-gray-500 hover:text-violet-600 dark:text-white/60 dark:hover:text-white truncate transition"
+              >
                 {work.title}
               </Link>
-              <div className="mt-1 text-3xl font-extrabold tracking-tight text-white">
-                {chapterLabel(chapter.number, chapter.title)}
+              <div className="mt-1.5 flex items-center gap-3">
+                <span
+                  className="h-8 w-1 shrink-0 rounded-full bg-gradient-to-b from-fuchsia-500 to-violet-600"
+                  aria-hidden="true"
+                />
+                <div className="truncate text-3xl font-extrabold tracking-tight text-gray-950 dark:text-white">
+                  {chapterLabel(chapter.number, chapter.title)}
+                </div>
               </div>
             </div>
 
@@ -253,6 +266,25 @@ export default async function ReadChapterPage({
                 </ReaderChrome>
               </ContentWarningsGate>
             </div>
+
+            {isComic && next ? (
+              <div className="mx-4 mt-6 lg:mx-0">
+                <Link
+                  href={`/w/${work.slug}/read/${next.id}`}
+                  className="group flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-violet-600 px-5 py-4 text-white shadow-[0_20px_45px_-20px_rgba(168,85,247,0.75)] transition hover:brightness-110"
+                >
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">{upNextLabel}</div>
+                    <div className="mt-0.5 truncate text-lg font-extrabold">
+                      {chapterLabel(next.number, next.title)}
+                    </div>
+                  </div>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-xl transition group-hover:translate-x-0.5 group-hover:bg-white/30">
+                    →
+                  </span>
+                </Link>
+              </div>
+            ) : null}
 
             <style>{`
               @media (max-width: 1023px) {

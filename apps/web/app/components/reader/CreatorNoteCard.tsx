@@ -50,8 +50,8 @@ export default function CreatorNoteCard({
       data-reader-uploader-card
       className={
         compact
-          ? "rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-gray-900 shadow-sm dark:border-white/10 dark:bg-black/20 dark:text-white"
-          : "rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-gray-900 shadow-sm dark:border-white/10 dark:bg-black/20 dark:text-white"
+          ? "rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-gray-900 shadow-[0_18px_40px_-30px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+          : "rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-gray-900 shadow-[0_18px_40px_-30px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
       }
     >
       <div className="flex items-center gap-3">
