@@ -60,6 +60,8 @@ type PdfJsOpCodes = {
   paintImageXObject?: number;
   paintJpegXObject?: number;
   paintImageMaskXObject?: number;
+  paintImageXObjectRepeat?: number;
+  paintInlineImageXObject?: number;
 };
 
 type PdfJsModule = {
@@ -325,12 +327,18 @@ function trimVerticalMargins(canvas: HTMLCanvasElement, context: CanvasRendering
 // references (fonts, images) has finished loading, so by the time the caller below is
 // iterating that list's ops, every image id in it is expected to resolve promptly — the
 // timeout is just a last-resort escape hatch, not the expected path.
-function getPdfObjectAsync(objs: PdfJsObjectStore, objId: string, timeoutMs = 4000): Promise<any> {
+function getPdfObjectAsync(objs: PdfJsObjectStore, objId: string, timeoutMs = 20000): Promise<any> {
   return new Promise((resolve) => {
     let settled = false;
-    const finish = (value: any) => {
+    const finish = (value: any, timedOut = false) => {
       if (settled) return;
       settled = true;
+      if (timedOut) {
+        try {
+          // eslint-disable-next-line no-console
+          console.warn(`[pdf-import] object "${objId}" did not resolve within ${timeoutMs}ms`);
+        } catch {}
+      }
       resolve(value);
     };
     try {
@@ -339,11 +347,23 @@ function getPdfObjectAsync(objs: PdfJsObjectStore, objId: string, timeoutMs = 40
       finish(null);
       return;
     }
-    setTimeout(() => finish(null), timeoutMs);
+    setTimeout(() => finish(null, true), timeoutMs);
   });
 }
 
 type NativePdfImage = { width: number; height: number; raw: any };
+
+// v30 (round 8): logs (to the browser console, visible in Studio during import) exactly
+// why a given page fell back to the softer page.render() path, since per-page inconsistency
+// ("some pages HD, some blurry" within one otherwise-uniform PDF) means detection/extraction
+// is silently failing for SOME pages but not others — this makes the actual reason visible
+// instead of swallowed by a catch-and-return-null.
+function logNativeExtractionFallback(pageNumber: number, reason: string, detail?: unknown) {
+  try {
+    // eslint-disable-next-line no-console
+    console.warn(`[pdf-import] page ${pageNumber}: falling back to page.render() — ${reason}`, detail ?? "");
+  } catch {}
+}
 
 // v30 (round 2): finds the largest raster image actually embedded in this PDF page (e.g.
 // a full-page manga/comic scan), by walking the page's operator list for image-paint
@@ -351,24 +371,45 @@ type NativePdfImage = { width: number; height: number; raw: any };
 // the resolved image object itself, so the caller can attempt to draw its pixels directly.
 // Returns null for pages with no embedded raster at all (pure vector/text), since there's
 // no "native resolution" to match in that case.
-async function detectNativePageImage(pdfjs: PdfJsModule, page: PdfJsPage): Promise<NativePdfImage | null> {
+async function detectNativePageImage(pdfjs: PdfJsModule, page: PdfJsPage, pageNumber: number): Promise<NativePdfImage | null> {
   const OPS = pdfjs.OPS;
-  if (!OPS || typeof page.getOperatorList !== "function" || !page.objs) return null;
+  if (!OPS) {
+    logNativeExtractionFallback(pageNumber, "pdf.js build exposes no OPS table");
+    return null;
+  }
+  if (typeof page.getOperatorList !== "function" || !page.objs) {
+    logNativeExtractionFallback(pageNumber, "pdf.js build exposes no getOperatorList/objs");
+    return null;
+  }
 
   try {
     const opList = await page.getOperatorList();
+    // v30 (round 8): also recognize the "repeat" and inline-image paint ops — a page whose
+    // content stream references its image via one of these (instead of plain
+    // paintImageXObject/paintJpegXObject) was previously invisible to this scan entirely,
+    // silently falling back for that page alone while sibling pages using the plain op
+    // succeeded — a very plausible explanation for the reported per-page inconsistency.
     const imageOpCodes = new Set(
-      [OPS.paintImageXObject, OPS.paintJpegXObject, OPS.paintImageMaskXObject].filter(
-        (code): code is number => typeof code === "number"
-      )
+      [
+        OPS.paintImageXObject,
+        OPS.paintJpegXObject,
+        OPS.paintImageMaskXObject,
+        OPS.paintImageXObjectRepeat,
+        OPS.paintInlineImageXObject,
+      ].filter((code): code is number => typeof code === "number")
     );
-    if (!imageOpCodes.size) return null;
+    if (!imageOpCodes.size) {
+      logNativeExtractionFallback(pageNumber, "no recognized image-paint op codes in this pdf.js build");
+      return null;
+    }
 
     let best: NativePdfImage | null = null;
+    let candidateCount = 0;
     for (let i = 0; i < opList.fnArray.length; i += 1) {
       if (!imageOpCodes.has(opList.fnArray[i])) continue;
       const objId = opList.argsArray[i]?.[0];
       if (typeof objId !== "string") continue;
+      candidateCount += 1;
       // eslint-disable-next-line no-await-in-loop
       const img = await getPdfObjectAsync(page.objs, objId);
       const width = img?.width;
@@ -377,10 +418,21 @@ async function detectNativePageImage(pdfjs: PdfJsModule, page: PdfJsPage): Promi
         if (!best || width * height > best.width * best.height) {
           best = { width, height, raw: img };
         }
+      } else {
+        logNativeExtractionFallback(pageNumber, `image object "${objId}" resolved without usable width/height`, img);
       }
     }
+    if (!best) {
+      logNativeExtractionFallback(
+        pageNumber,
+        candidateCount > 0
+          ? `found ${candidateCount} image op(s) but none resolved to a usable image (pure vector/text page, or every candidate failed above)`
+          : "no image-paint ops found on this page (pure vector/text page)"
+      );
+    }
     return best;
-  } catch {
+  } catch (error) {
+    logNativeExtractionFallback(pageNumber, "getOperatorList() threw", error);
     return null;
   }
 }
@@ -501,25 +553,40 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         // downscaled (lossy) relative to the source. detectNativePageImage reads the
         // embedded image's own intrinsic width/height (and the resolved image object
         // itself) straight off the page's operator list.
-        const nativeImage = await detectNativePageImage(pdfjs, page);
+        const nativeImage = await detectNativePageImage(pdfjs, page, pageNumber);
 
         let canvas: HTMLCanvasElement | null = null;
         let context: CanvasRenderingContext2D | null = null;
 
-        if (nativeImage && Math.max(nativeImage.width, nativeImage.height) <= MAX_CANVAS_LONG_EDGE) {
-          const candidate = document.createElement("canvas");
-          candidate.width = Math.max(1, Math.round(nativeImage.width));
-          candidate.height = Math.max(1, Math.round(nativeImage.height));
-          const candidateContext = candidate.getContext("2d", { alpha: false });
-          if (candidateContext) {
-            candidateContext.fillStyle = "#ffffff";
-            candidateContext.fillRect(0, 0, candidate.width, candidate.height);
-            // v30 (round 5): try drawing the embedded image's own pixels directly first —
-            // see tryDrawNativePdfImage for why this is more trustworthy than rendering
-            // the page through pdf.js's normal transform pipeline even at a matched scale.
-            if (tryDrawNativePdfImage(nativeImage.raw, candidateContext, candidate.width, candidate.height)) {
-              canvas = candidate;
-              context = candidateContext;
+        if (nativeImage) {
+          if (Math.max(nativeImage.width, nativeImage.height) > MAX_CANVAS_LONG_EDGE) {
+            logNativeExtractionFallback(
+              pageNumber,
+              `detected image ${nativeImage.width}x${nativeImage.height} exceeds the ${MAX_CANVAS_LONG_EDGE}px safety cap`
+            );
+          } else {
+            const candidate = document.createElement("canvas");
+            candidate.width = Math.max(1, Math.round(nativeImage.width));
+            candidate.height = Math.max(1, Math.round(nativeImage.height));
+            const candidateContext = candidate.getContext("2d", { alpha: false });
+            if (!candidateContext) {
+              logNativeExtractionFallback(pageNumber, "could not acquire a 2D context for the direct-draw candidate canvas");
+            } else {
+              candidateContext.fillStyle = "#ffffff";
+              candidateContext.fillRect(0, 0, candidate.width, candidate.height);
+              // v30 (round 5): try drawing the embedded image's own pixels directly first —
+              // see tryDrawNativePdfImage for why this is more trustworthy than rendering
+              // the page through pdf.js's normal transform pipeline even at a matched scale.
+              if (tryDrawNativePdfImage(nativeImage.raw, candidateContext, candidate.width, candidate.height)) {
+                canvas = candidate;
+                context = candidateContext;
+              } else {
+                logNativeExtractionFallback(
+                  pageNumber,
+                  "tryDrawNativePdfImage did not recognize this image object's shape",
+                  nativeImage.raw
+                );
+              }
             }
           }
         }
