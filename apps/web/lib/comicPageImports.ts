@@ -1,6 +1,6 @@
 "use client";
 
-import { getTargetImageDimensions, markFileAsPreOptimized } from "@/lib/uploadOptimization";
+import { markFileAsPreOptimized } from "@/lib/uploadOptimization";
 
 const ZIP_CDN_URL = "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js";
 const PDFJS_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs";
@@ -20,8 +20,19 @@ type JSZipStatic = {
   loadAsync(data: ArrayBuffer): Promise<JSZipLike>;
 };
 
+type PdfJsOperatorList = {
+  fnArray: number[];
+  argsArray: any[][];
+};
+
+type PdfJsObjectStore = {
+  get(objId: string, callback?: (value: any) => void): any;
+};
+
 type PdfJsPage = {
   getViewport(params: { scale: number }): { width: number; height: number };
+  getOperatorList(): Promise<PdfJsOperatorList>;
+  objs: PdfJsObjectStore;
   render(params: {
     canvasContext: CanvasRenderingContext2D;
     viewport: { width: number; height: number };
@@ -37,9 +48,16 @@ type PdfJsDocument = {
   destroy(): void;
 };
 
+type PdfJsOpCodes = {
+  paintImageXObject?: number;
+  paintJpegXObject?: number;
+  paintImageMaskXObject?: number;
+};
+
 type PdfJsModule = {
   GlobalWorkerOptions?: { workerSrc?: string };
   getDocument(params: { data: Uint8Array }): { promise: Promise<PdfJsDocument> };
+  OPS?: PdfJsOpCodes;
 };
 
 declare global {
@@ -250,6 +268,79 @@ function trimVerticalMargins(canvas: HTMLCanvasElement, context: CanvasRendering
   return trimmedCanvas;
 }
 
+// v30 (round 2): pdf.js resolves an embedded image XObject asynchronously the first time
+// the operator list references it; `objs.get(id)` without a callback THROWS if it isn't
+// resolved yet instead of returning null, so this always goes through the callback form
+// and waits for it. `getOperatorList()` itself only resolves once every dependency it
+// references (fonts, images) has finished loading, so by the time the caller below is
+// iterating that list's ops, every image id in it is expected to resolve promptly — the
+// timeout is just a last-resort escape hatch, not the expected path.
+function getPdfObjectAsync(objs: PdfJsObjectStore, objId: string, timeoutMs = 4000): Promise<any> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value: any) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+    try {
+      objs.get(objId, finish);
+    } catch {
+      finish(null);
+      return;
+    }
+    setTimeout(() => finish(null), timeoutMs);
+  });
+}
+
+// v30 (round 2): finds the native pixel dimensions of the largest raster image actually
+// embedded in this PDF page (e.g. a full-page manga/comic scan), by walking the page's
+// operator list for image-paint operations and reading that image object's own intrinsic
+// width/height. Returns null for pages with no embedded raster at all (pure vector/text),
+// since there's no "native resolution" to match in that case.
+async function detectNativePageImageSize(
+  pdfjs: PdfJsModule,
+  page: PdfJsPage
+): Promise<{ width: number; height: number } | null> {
+  const OPS = pdfjs.OPS;
+  if (!OPS || typeof page.getOperatorList !== "function" || !page.objs) return null;
+
+  try {
+    const opList = await page.getOperatorList();
+    const imageOpCodes = new Set(
+      [OPS.paintImageXObject, OPS.paintJpegXObject, OPS.paintImageMaskXObject].filter(
+        (code): code is number => typeof code === "number"
+      )
+    );
+    if (!imageOpCodes.size) return null;
+
+    let best: { width: number; height: number } | null = null;
+    for (let i = 0; i < opList.fnArray.length; i += 1) {
+      if (!imageOpCodes.has(opList.fnArray[i])) continue;
+      const objId = opList.argsArray[i]?.[0];
+      if (typeof objId !== "string") continue;
+      // eslint-disable-next-line no-await-in-loop
+      const img = await getPdfObjectAsync(page.objs, objId);
+      const width = img?.width;
+      const height = img?.height;
+      if (typeof width === "number" && typeof height === "number" && width > 0 && height > 0) {
+        if (!best || width * height > best.width * best.height) {
+          best = { width, height };
+        }
+      }
+    }
+    return best;
+  } catch {
+    return null;
+  }
+}
+
+// Only reached when a page has no embedded raster to match (pure vector/text content).
+function fallbackRenderScale(maxEdge: number) {
+  const TARGET_LONG_EDGE = 4200;
+  return Math.max(1.5, Math.min(3.5, TARGET_LONG_EDGE / Math.max(1, maxEdge)));
+}
+
 export async function importComicPagesFromZip(zipFile: File): Promise<File[]> {
   const JSZip = await loadJsZip();
   const archive = await JSZip.loadAsync(await zipFile.arrayBuffer());
@@ -282,27 +373,33 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
       try {
         const baseViewport = page.getViewport({ scale: 1 });
         const maxEdge = Math.max(baseViewport.width, baseViewport.height);
-        // v30: the old target (~2200px long edge, capped at 2.2x zoom) was rendering
-        // PDF pages at noticeably less pixel density than the platform's own "pages"
-        // upload profile actually supports — no amount of WebP quality tuning can recover
-        // detail that was already thrown away at render time. Aim much higher (~4200px)
-        // with a raised zoom ceiling (3.5x, up from 2.2x) so small-nominal-size PDF pages
-        // can actually reach it, then clamp through getTargetImageDimensions — the SAME
-        // width/height/long-edge/megapixel limits the "pages" profile itself enforces —
-        // so this render can never exceed what that profile would otherwise resize down
-        // to anyway (including for unusually tall/wide pages, e.g. a whole webtoon strip
-        // exported as one PDF "page"). That's what makes it safe to mark the output
-        // pre-optimized below and skip the profile's own re-encode pass entirely: there's
-        // nothing left for a second pass to legitimately resize or compress further, and
-        // running one anyway would only add a generational quality hit for no benefit.
-        const TARGET_LONG_EDGE = 4200;
-        let scale = Math.max(1.5, Math.min(3.5, TARGET_LONG_EDGE / Math.max(1, maxEdge)));
-        const initialWidth = Math.max(1, Math.round(baseViewport.width * scale));
-        const initialHeight = Math.max(1, Math.round(baseViewport.height * scale));
-        const clamped = getTargetImageDimensions({ scope: "pages", width: initialWidth, height: initialHeight });
-        if (clamped.resized && clamped.scale > 0) {
-          scale *= clamped.scale;
+        // v30 (round 2): no more fixed pixel target — render each page at the SAME pixel
+        // density as whatever raster image is actually embedded in the source PDF, so
+        // nothing is upscaled (soft/blurry, the previous fixed-target approach's failure
+        // mode whenever a scan's native resolution was lower than the target) or
+        // downscaled (lossy) relative to the source. detectNativePageImageSize reads the
+        // embedded image's own intrinsic width/height straight off the page's operator
+        // list. A page with no embedded raster at all (pure vector/text) has no "native
+        // resolution" to match — fallbackRenderScale covers only that case.
+        const nativeImage = await detectNativePageImageSize(pdfjs, page);
+        let scale: number;
+        if (nativeImage) {
+          const scaleFromWidth = nativeImage.width / Math.max(1, baseViewport.width);
+          const scaleFromHeight = nativeImage.height / Math.max(1, baseViewport.height);
+          scale = Math.max(scaleFromWidth, scaleFromHeight);
+          if (!Number.isFinite(scale) || scale <= 0) scale = fallbackRenderScale(maxEdge);
+        } else {
+          scale = fallbackRenderScale(maxEdge);
         }
+
+        // Pure browser-canvas-allocation safety ceiling, not a quality cap — real page
+        // scans don't come anywhere near this; it only protects against a pathological
+        // PDF (e.g. a corrupt/huge embedded image) crashing the tab.
+        const MAX_CANVAS_LONG_EDGE = 10000;
+        if (maxEdge * scale > MAX_CANVAS_LONG_EDGE) {
+          scale = MAX_CANVAS_LONG_EDGE / Math.max(1, maxEdge);
+        }
+
         const viewport = page.getViewport({ scale });
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.ceil(viewport.width));
