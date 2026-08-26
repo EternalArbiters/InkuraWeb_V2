@@ -16,10 +16,27 @@ export type PreparedUploadFile = {
     | "scope-disabled"
     | "browser-unsupported"
     | "skip-small-modern"
+    | "pre-optimized"
     | "encode-not-smaller"
     | "optimization-failed";
   previewUrl?: string;
 };
+
+const PRE_OPTIMIZED_FILES = new WeakSet<File>();
+
+// v30: lets a producer that already generated a file at platform-appropriate quality and
+// dimensions (e.g. PDF-page extraction in comicPageImports.ts, which renders directly
+// against this same "pages" profile's own limits via getTargetImageDimensions) opt that
+// exact File instance out of the re-encode pass in prepareUploadFile entirely. Re-encoding
+// already-lossy-compressed image data through a second lossy pass — even at matching max
+// quality — introduces its own generational quantization loss on top of the first pass;
+// skipping it outright is the only way to guarantee zero additional loss, since the
+// size-based safety nets below (encode-not-smaller) only catch a re-encode that comes out
+// LARGER or barely smaller, not one that's meaningfully smaller yet visibly softer.
+export function markFileAsPreOptimized(file: File): File {
+  PRE_OPTIMIZED_FILES.add(file);
+  return file;
+}
 
 export type UploadOptimizationDecision = {
   skip: boolean;
@@ -145,6 +162,19 @@ export async function prepareUploadFile(params: {
 }): Promise<PreparedUploadFile> {
   const { scope, file, makePreviewUrl = false } = params;
   const originalContentType = inferImageContentType(file);
+
+  if (PRE_OPTIMIZED_FILES.has(file)) {
+    return makePreparedUploadFile({
+      originalFile: file,
+      file,
+      contentType: originalContentType,
+      width: null,
+      height: null,
+      compressionApplied: false,
+      reason: "pre-optimized",
+      makePreviewUrl,
+    });
+  }
 
   if (!isOptimizableUploadScope(scope)) {
     return makePreparedUploadFile({

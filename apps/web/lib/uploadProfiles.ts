@@ -89,9 +89,11 @@ export const UPLOAD_PROFILES: Record<UploadOptimizationScope, UploadOptimization
     preserveAlpha: true,
     stripMetadata: true,
     preserveAnimation: false,
-    // v30: matches the max-quality (1.0) WebP encode now used for PDF-derived pages
-    // (lib/comicPageImports.ts) — if a page is big enough to trigger this second pass
-    // anyway, it should lose nothing further rather than settle for a lower ceiling.
+    // v30: max-quality (1.0), for manually-picked/zip-derived pages that do go through
+    // this re-encode pass. PDF-derived pages (lib/comicPageImports.ts) render directly
+    // against these same maxWidth/maxHeight/maxLongEdge/maxMegapixels limits and are
+    // marked pre-optimized, so they skip this pass entirely rather than rely on matching
+    // quality settings alone — any second lossy pass, even at 1.0, adds generational loss.
     quality: 1,
     minWidth: null,
     minHeight: 400,

@@ -1,5 +1,7 @@
 "use client";
 
+import { getTargetImageDimensions, markFileAsPreOptimized } from "@/lib/uploadOptimization";
+
 const ZIP_CDN_URL = "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js";
 const PDFJS_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs";
 const PDFJS_WORKER_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.worker.min.mjs";
@@ -280,7 +282,27 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
       try {
         const baseViewport = page.getViewport({ scale: 1 });
         const maxEdge = Math.max(baseViewport.width, baseViewport.height);
-        const scale = Math.max(1.5, Math.min(2.2, 2200 / Math.max(1, maxEdge)));
+        // v30: the old target (~2200px long edge, capped at 2.2x zoom) was rendering
+        // PDF pages at noticeably less pixel density than the platform's own "pages"
+        // upload profile actually supports — no amount of WebP quality tuning can recover
+        // detail that was already thrown away at render time. Aim much higher (~4200px)
+        // with a raised zoom ceiling (3.5x, up from 2.2x) so small-nominal-size PDF pages
+        // can actually reach it, then clamp through getTargetImageDimensions — the SAME
+        // width/height/long-edge/megapixel limits the "pages" profile itself enforces —
+        // so this render can never exceed what that profile would otherwise resize down
+        // to anyway (including for unusually tall/wide pages, e.g. a whole webtoon strip
+        // exported as one PDF "page"). That's what makes it safe to mark the output
+        // pre-optimized below and skip the profile's own re-encode pass entirely: there's
+        // nothing left for a second pass to legitimately resize or compress further, and
+        // running one anyway would only add a generational quality hit for no benefit.
+        const TARGET_LONG_EDGE = 4200;
+        let scale = Math.max(1.5, Math.min(3.5, TARGET_LONG_EDGE / Math.max(1, maxEdge)));
+        const initialWidth = Math.max(1, Math.round(baseViewport.width * scale));
+        const initialHeight = Math.max(1, Math.round(baseViewport.height * scale));
+        const clamped = getTargetImageDimensions({ scope: "pages", width: initialWidth, height: initialHeight });
+        if (clamped.resized && clamped.scale > 0) {
+          scale *= clamped.scale;
+        }
         const viewport = page.getViewport({ scale });
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.ceil(viewport.width));
@@ -296,15 +318,15 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
         // fetch") on ordinary/mobile connections during upload, even though the user is
         // fine with a heavy page for a long manhwa-style chapter. WebP quality 1.0 (max,
         // up from the old 0.92) is the closest this API gets to "not compressed" while
-        // staying reliably uploadable — and since it's already at the ceiling, the later
-        // re-encode pass in uploadOptimization.ts (only triggered for files over 5MB)
-        // has nothing further to lose either, now that its own "pages" quality matches.
+        // staying reliably uploadable.
         const blob = await canvasToBlob(trimmedCanvas, "image/webp", 1);
         files.push(
-          blobToFile(
-            blob,
-            `${baseName}-page-${String(pageNumber).padStart(3, "0")}.webp`,
-            "image/webp"
+          markFileAsPreOptimized(
+            blobToFile(
+              blob,
+              `${baseName}-page-${String(pageNumber).padStart(3, "0")}.webp`,
+              "image/webp"
+            )
           )
         );
       } finally {
