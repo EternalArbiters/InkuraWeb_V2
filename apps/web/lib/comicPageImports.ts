@@ -293,15 +293,15 @@ function getPdfObjectAsync(objs: PdfJsObjectStore, objId: string, timeoutMs = 40
   });
 }
 
-// v30 (round 2): finds the native pixel dimensions of the largest raster image actually
-// embedded in this PDF page (e.g. a full-page manga/comic scan), by walking the page's
-// operator list for image-paint operations and reading that image object's own intrinsic
-// width/height. Returns null for pages with no embedded raster at all (pure vector/text),
-// since there's no "native resolution" to match in that case.
-async function detectNativePageImageSize(
-  pdfjs: PdfJsModule,
-  page: PdfJsPage
-): Promise<{ width: number; height: number } | null> {
+type NativePdfImage = { width: number; height: number; raw: any };
+
+// v30 (round 2): finds the largest raster image actually embedded in this PDF page (e.g.
+// a full-page manga/comic scan), by walking the page's operator list for image-paint
+// operations and reading that image object's own intrinsic width/height — plus (round 5)
+// the resolved image object itself, so the caller can attempt to draw its pixels directly.
+// Returns null for pages with no embedded raster at all (pure vector/text), since there's
+// no "native resolution" to match in that case.
+async function detectNativePageImage(pdfjs: PdfJsModule, page: PdfJsPage): Promise<NativePdfImage | null> {
   const OPS = pdfjs.OPS;
   if (!OPS || typeof page.getOperatorList !== "function" || !page.objs) return null;
 
@@ -314,7 +314,7 @@ async function detectNativePageImageSize(
     );
     if (!imageOpCodes.size) return null;
 
-    let best: { width: number; height: number } | null = null;
+    let best: NativePdfImage | null = null;
     for (let i = 0; i < opList.fnArray.length; i += 1) {
       if (!imageOpCodes.has(opList.fnArray[i])) continue;
       const objId = opList.argsArray[i]?.[0];
@@ -325,13 +325,81 @@ async function detectNativePageImageSize(
       const height = img?.height;
       if (typeof width === "number" && typeof height === "number" && width > 0 && height > 0) {
         if (!best || width * height > best.width * best.height) {
-          best = { width, height };
+          best = { width, height, raw: img };
         }
       }
     }
     return best;
   } catch {
     return null;
+  }
+}
+
+const PDF_IMAGE_KIND_GRAYSCALE_1BPP = 1;
+const PDF_IMAGE_KIND_RGB_24BPP = 2;
+const PDF_IMAGE_KIND_RGBA_32BPP = 3;
+
+// v30 (round 5): draws the PDF's embedded raster image object DIRECTLY onto the
+// destination canvas at its own native pixel dimensions, bypassing pdf.js's normal
+// page-render/composite pipeline entirely. page.render() draws everything (including this
+// image) through the page's coordinate transform matrix — even when the requested render
+// scale is chosen to nominally match the image 1:1, canvas 2D compositing through an
+// arbitrary transform can still introduce sub-pixel resampling, since nothing guarantees
+// the transform lands the image on exact integer pixel boundaries. That's the likely
+// explanation for a still-visible softness even once encoding is fully lossless (PNG):
+// the loss was never in the encode step, it was already baked into the canvas before
+// encoding even started. This writes the decoded pixel buffer straight into the canvas
+// with no transform involved at all — the only way to guarantee a truly untouched,
+// pixel-for-pixel copy. Returns false (leaving the canvas untouched) for any image shape
+// it doesn't confidently recognize, so the caller can fall back to the normal
+// page.render() path exactly as before.
+function tryDrawNativePdfImage(raw: any, context: CanvasRenderingContext2D, width: number, height: number): boolean {
+  if (!raw) return false;
+  try {
+    if (typeof raw.close === "function" && typeof raw.width === "number" && typeof raw.height === "number") {
+      context.drawImage(raw as CanvasImageSource, 0, 0, width, height);
+      return true;
+    }
+
+    const data = raw.data as Uint8ClampedArray | undefined;
+    if (!data || typeof raw.kind !== "number") return false;
+
+    const rgba = new Uint8ClampedArray(width * height * 4);
+    if (raw.kind === PDF_IMAGE_KIND_RGBA_32BPP) {
+      if (data.length < width * height * 4) return false;
+      rgba.set(data.subarray(0, width * height * 4));
+    } else if (raw.kind === PDF_IMAGE_KIND_RGB_24BPP) {
+      if (data.length < width * height * 3) return false;
+      for (let pixel = 0, byteOffset = 0; pixel < width * height; pixel += 1, byteOffset += 3) {
+        const outOffset = pixel * 4;
+        rgba[outOffset] = data[byteOffset];
+        rgba[outOffset + 1] = data[byteOffset + 1];
+        rgba[outOffset + 2] = data[byteOffset + 2];
+        rgba[outOffset + 3] = 255;
+      }
+    } else if (raw.kind === PDF_IMAGE_KIND_GRAYSCALE_1BPP) {
+      const bytesPerRow = Math.ceil(width / 8);
+      if (data.length < bytesPerRow * height) return false;
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const byteIndex = y * bytesPerRow + (x >> 3);
+          const bit = 7 - (x & 7);
+          const value = (data[byteIndex] >> bit) & 1 ? 255 : 0;
+          const outOffset = (y * width + x) * 4;
+          rgba[outOffset] = value;
+          rgba[outOffset + 1] = value;
+          rgba[outOffset + 2] = value;
+          rgba[outOffset + 3] = 255;
+        }
+      }
+    } else {
+      return false;
+    }
+
+    context.putImageData(new ImageData(rgba, width, height), 0, 0);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -373,49 +441,69 @@ export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
       try {
         const baseViewport = page.getViewport({ scale: 1 });
         const maxEdge = Math.max(baseViewport.width, baseViewport.height);
-        // v30 (round 2): no more fixed pixel target — render each page at the SAME pixel
-        // density as whatever raster image is actually embedded in the source PDF, so
-        // nothing is upscaled (soft/blurry, the previous fixed-target approach's failure
-        // mode whenever a scan's native resolution was lower than the target) or
-        // downscaled (lossy) relative to the source. detectNativePageImageSize reads the
-        // embedded image's own intrinsic width/height straight off the page's operator
-        // list. A page with no embedded raster at all (pure vector/text) has no "native
-        // resolution" to match — fallbackRenderScale covers only that case.
-        const nativeImage = await detectNativePageImageSize(pdfjs, page);
-        // v30 (round 4): back to exactly 1:1 with the detected native resolution — no
-        // supersample multiplier. A round 3 attempt at rendering ~1.5x above native (to
-        // pre-empt high-DPI screens upscaling the image themselves) didn't resolve a
-        // reported blur, and any upscale — even one aimed at helping downstream display —
-        // still means interpolating pixels that don't exist in the source. Simplest and
-        // most literal reading of "just convert to an image, don't alter it": match native
-        // 1:1, nothing more.
-        let scale: number;
-        if (nativeImage) {
-          const scaleFromWidth = nativeImage.width / Math.max(1, baseViewport.width);
-          const scaleFromHeight = nativeImage.height / Math.max(1, baseViewport.height);
-          scale = Math.max(scaleFromWidth, scaleFromHeight);
-          if (!Number.isFinite(scale) || scale <= 0) scale = fallbackRenderScale(maxEdge);
-        } else {
-          scale = fallbackRenderScale(maxEdge);
-        }
-
         // Pure browser-canvas-allocation safety ceiling, not a quality cap — real page
         // scans don't come anywhere near this; it only protects against a pathological
         // PDF (e.g. a corrupt/huge embedded image) crashing the tab.
         const MAX_CANVAS_LONG_EDGE = 10000;
-        if (maxEdge * scale > MAX_CANVAS_LONG_EDGE) {
-          scale = MAX_CANVAS_LONG_EDGE / Math.max(1, maxEdge);
+
+        // v30 (round 2): render each page at the SAME pixel density as whatever raster
+        // image is actually embedded in the source PDF, so nothing is upscaled (soft) or
+        // downscaled (lossy) relative to the source. detectNativePageImage reads the
+        // embedded image's own intrinsic width/height (and the resolved image object
+        // itself) straight off the page's operator list.
+        const nativeImage = await detectNativePageImage(pdfjs, page);
+
+        let canvas: HTMLCanvasElement | null = null;
+        let context: CanvasRenderingContext2D | null = null;
+
+        if (nativeImage && Math.max(nativeImage.width, nativeImage.height) <= MAX_CANVAS_LONG_EDGE) {
+          const candidate = document.createElement("canvas");
+          candidate.width = Math.max(1, Math.round(nativeImage.width));
+          candidate.height = Math.max(1, Math.round(nativeImage.height));
+          const candidateContext = candidate.getContext("2d", { alpha: false });
+          if (candidateContext) {
+            candidateContext.fillStyle = "#ffffff";
+            candidateContext.fillRect(0, 0, candidate.width, candidate.height);
+            // v30 (round 5): try drawing the embedded image's own pixels directly first —
+            // see tryDrawNativePdfImage for why this is more trustworthy than rendering
+            // the page through pdf.js's normal transform pipeline even at a matched scale.
+            if (tryDrawNativePdfImage(nativeImage.raw, candidateContext, candidate.width, candidate.height)) {
+              canvas = candidate;
+              context = candidateContext;
+            }
+          }
         }
 
-        const viewport = page.getViewport({ scale });
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.ceil(viewport.width));
-        canvas.height = Math.max(1, Math.ceil(viewport.height));
-        const context = canvas.getContext("2d", { alpha: false });
-        if (!context) throw new Error("Canvas 2D context is unavailable");
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvasContext: context, viewport, background: "#ffffff" }).promise;
+        if (!canvas || !context) {
+          // Fallback: the normal page.render() path — used whenever there's no embedded
+          // raster to match (pure vector/text pages) or the direct pixel draw above
+          // wasn't confidently applicable for this particular image's shape.
+          let scale: number;
+          if (nativeImage) {
+            const scaleFromWidth = nativeImage.width / Math.max(1, baseViewport.width);
+            const scaleFromHeight = nativeImage.height / Math.max(1, baseViewport.height);
+            scale = Math.max(scaleFromWidth, scaleFromHeight);
+            if (!Number.isFinite(scale) || scale <= 0) scale = fallbackRenderScale(maxEdge);
+          } else {
+            scale = fallbackRenderScale(maxEdge);
+          }
+          if (maxEdge * scale > MAX_CANVAS_LONG_EDGE) {
+            scale = MAX_CANVAS_LONG_EDGE / Math.max(1, maxEdge);
+          }
+
+          const viewport = page.getViewport({ scale });
+          canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.ceil(viewport.width));
+          canvas.height = Math.max(1, Math.ceil(viewport.height));
+          const fallbackContext = canvas.getContext("2d", { alpha: false });
+          if (!fallbackContext) throw new Error("Canvas 2D context is unavailable");
+          context = fallbackContext;
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: context, viewport, background: "#ffffff" }).promise;
+        }
+
+        if (!canvas || !context) throw new Error("Canvas 2D context is unavailable");
         const trimmedCanvas = trimVerticalMargins(canvas, context);
         // v30 (round 4): PNG, not WebP — even WebP's "quality 1.0" is still its LOSSY
         // mode's highest setting, not literal losslessness; it still runs the source
