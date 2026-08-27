@@ -12,6 +12,7 @@ type Props = {
   files: File[];
   setFiles: React.Dispatch<React.SetStateAction<File[]>>;
   onBusyChange?: (busy: boolean) => void;
+  pdfPassword?: string | null;
 };
 
 type PreviewFile = {
@@ -79,7 +80,7 @@ function normalizeImageFiles(files: File[]) {
   );
 }
 
-export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: Props) {
+export default function ComicPageFilesPicker({ files, setFiles, onBusyChange, pdfPassword }: Props) {
   const t = useUILanguageText();
   const [mode, setMode] = React.useState<UploadMode>("all");
   const [importError, setImportError] = React.useState<string | null>(null);
@@ -138,7 +139,7 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange }: 
     setImportNote(kind === "zip" ? "Reading ZIP file..." : "Converting PDF into image pages...");
     setImporting(true);
     try {
-      const imported = kind === "zip" ? await importComicPagesFromZip(file) : await importComicPagesFromPdf(file);
+      const imported = kind === "zip" ? await importComicPagesFromZip(file) : await importComicPagesFromPdf(file, pdfPassword);
       setFiles(imported);
       setImportNote(
         kind === "zip"

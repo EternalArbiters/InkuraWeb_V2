@@ -303,6 +303,11 @@ model Work {
   // work (and cascades to ALL its chapters, draft or published) even while status=DRAFT.
   isAdminCollection Boolean @default(false)
 
+  // v30: one shared password (creator-set) used to unlock this work's own password-
+  // protected PDFs during Studio's PDF-to-pages import — not an account/security field,
+  // never exposed on any public select.
+  pdfPassword String?
+
   // Cached counters (updated by API routes)
   likeCount   Int        @default(0)
   ratingAvg   Float      @default(0)

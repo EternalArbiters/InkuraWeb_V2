@@ -68,6 +68,7 @@ export async function getStudioWorkById(workId: string) {
       companyCredit: true,
       prevArcUrl: true,
       nextArcUrl: true,
+      pdfPassword: true,
       seriesId: true,
       seriesOrder: true,
       series: { select: { id: true, title: true } },
@@ -194,6 +195,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
   const companyCreditRaw = String(fd.get("companyCredit") || "").trim();
   const prevArcUrlRaw = String(fd.get("prevArcUrl") || "").trim();
   const nextArcUrlRaw = String(fd.get("nextArcUrl") || "").trim();
+  const pdfPasswordRaw = String(fd.get("pdfPassword") || "").trim();
   const seriesTitleRaw = String(fd.get("seriesTitle") || "").trim();
   const seriesOrderRaw = String(fd.get("seriesOrder") || "").trim();
   const seriesOrder = seriesOrderRaw ? Number(seriesOrderRaw) : null;
@@ -356,6 +358,7 @@ export async function patchStudioWorkById(req: Request, workId: string) {
           }),
       prevArcUrl: seriesTitleRaw ? null : (prevArcUrlRaw || null),
       nextArcUrl: seriesTitleRaw ? null : (nextArcUrlRaw || null),
+      pdfPassword: pdfPasswordRaw || null,
 
       genres: { set: genreIds.map((id) => ({ id })) },
       warningTags: { set: warningTagIds.map((id) => ({ id })) },

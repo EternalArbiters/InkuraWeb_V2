@@ -55,7 +55,14 @@ export default async function NewChapterPage({
           </Link>
         ) : null}
 
-        <ChapterCreateForm workTitle={work.title} workId={work.id} workType={work.type} nextNumber={nextNumber} warningTags={warningTags as any} />
+        <ChapterCreateForm
+          workTitle={work.title}
+          workId={work.id}
+          workType={work.type}
+          nextNumber={nextNumber}
+          warningTags={warningTags as any}
+          pdfPassword={work.pdfPassword}
+        />
       </div>
     </ListSurface>
   );

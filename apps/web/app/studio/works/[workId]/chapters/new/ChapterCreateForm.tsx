@@ -17,6 +17,7 @@ type Props = {
   workType: "NOVEL" | "COMIC";
   nextNumber: number;
   warningTags: PickerItem[];
+  pdfPassword?: string | null;
 };
 
 type CreatedChapter = { id: string };
@@ -35,7 +36,7 @@ function formatBytes(bytes: number) {
   return `${value >= 10 || unitIndex === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[unitIndex]}`;
 }
 
-export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags }: Props) {
+export default function ChapterCreateForm({ workId, workTitle, workType, nextNumber, warningTags, pdfPassword }: Props) {
   const router = useRouter();
   const t = useUILanguageText();
 
@@ -287,7 +288,7 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             <span className="text-sm font-semibold">Comic Pages</span>
           </div>
 
-          <ComicPageFilesPicker files={pages} setFiles={setPages} onBusyChange={setImportingPages} />
+          <ComicPageFilesPicker files={pages} setFiles={setPages} onBusyChange={setImportingPages} pdfPassword={pdfPassword} />
 
           {pageSummary ? (
             <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">

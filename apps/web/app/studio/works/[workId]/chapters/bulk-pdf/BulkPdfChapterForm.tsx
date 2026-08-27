@@ -12,6 +12,7 @@ type Props = {
   workId: string;
   nextNumber: number;
   warningTags: PickerItem[];
+  pdfPassword?: string | null;
 };
 
 type ItemStatus = "idle" | "extracting" | "uploading" | "creating" | "done" | "error";
@@ -62,7 +63,7 @@ function statusBadge(status: ItemStatus): { label: string; cls: string } {
   }
 }
 
-export default function BulkPdfChapterForm({ workId, nextNumber, warningTags }: Props) {
+export default function BulkPdfChapterForm({ workId, nextNumber, warningTags, pdfPassword }: Props) {
   const [items, setItems] = React.useState<PendingChapterItem[]>([]);
   const [batchStatus, setBatchStatus] = React.useState<"DRAFT" | "PUBLISHED">("DRAFT");
   const [batchIsMature, setBatchIsMature] = React.useState(false);
@@ -99,7 +100,7 @@ export default function BulkPdfChapterForm({ workId, nextNumber, warningTags }: 
 
     updateItemState(item.localId, { status: "extracting", progress: "Reading PDF...", errorMessage: undefined });
     try {
-      const pages = await importComicPagesFromPdf(item.file);
+      const pages = await importComicPagesFromPdf(item.file, pdfPassword);
       updateItemState(item.localId, { status: "uploading", progress: `Preparing ${pages.length} pages...` });
 
       const prepared = await prepareUploadFiles({ scope: "pages", files: pages });

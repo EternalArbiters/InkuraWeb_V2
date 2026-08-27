@@ -113,11 +113,10 @@ export default async function ReadChapterPage({
 
   const isComic = work.type === "COMIC";
   const novelHtml = isComic ? "" : getNovelReaderHtml(chapter.text?.content);
-  const [commentsTitle, seeAllCommentsLabel, backToNovelLabel, upNextLabel] = await Promise.all([
+  const [commentsTitle, seeAllCommentsLabel, backToNovelLabel] = await Promise.all([
     getActiveUILanguageText("Comments", { section: "Page Reader Comments" }),
     getActiveUILanguageText("See all comments", { section: "Page Reader" }),
     getActiveUILanguageText("Back to novel", { section: "Page Reader" }),
-    getActiveUILanguageText("Up next", { section: "Page Reader" }),
   ]);
 
   const mobileReaderFooter = (
@@ -266,25 +265,6 @@ export default async function ReadChapterPage({
                 </ReaderChrome>
               </ContentWarningsGate>
             </div>
-
-            {isComic && next ? (
-              <div className="mx-4 mt-6 lg:mx-0">
-                <Link
-                  href={`/w/${work.slug}/read/${next.id}`}
-                  className="group flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-violet-600 px-5 py-4 text-white shadow-[0_20px_45px_-20px_rgba(168,85,247,0.75)] transition hover:brightness-110"
-                >
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">{upNextLabel}</div>
-                    <div className="mt-0.5 truncate text-lg font-extrabold">
-                      {chapterLabel(next.number, next.title)}
-                    </div>
-                  </div>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-xl transition group-hover:translate-x-0.5 group-hover:bg-white/30">
-                    →
-                  </span>
-                </Link>
-              </div>
-            ) : null}
 
             <style>{`
               @media (max-width: 1023px) {

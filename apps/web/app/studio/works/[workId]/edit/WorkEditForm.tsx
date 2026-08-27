@@ -43,6 +43,7 @@ type Work = {
   companyCredit?: string | null;
   prevArcUrl?: string | null;
   nextArcUrl?: string | null;
+  pdfPassword?: string | null;
   seriesId?: string | null;
   seriesOrder?: number | null;
   series?: { id: string; title: string } | null;
@@ -105,6 +106,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
   const [uploaderNote, setUploaderNote] = React.useState(work.uploaderNote || "");
 
   const [companyCredit, setCompanyCredit] = React.useState(work.companyCredit || "");
+  const [pdfPassword, setPdfPassword] = React.useState(work.pdfPassword || "");
 
   const [seriesTitle, setSeriesTitle] = React.useState(work.series?.title || "");
   const [seriesOrder, setSeriesOrder] = React.useState(work.seriesOrder ? String(work.seriesOrder) : "");
@@ -234,6 +236,7 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
       fd.append("seriesOrder", seriesOrder.trim());
       fd.append("prevArcUrl", "");
       fd.append("nextArcUrl", "");
+      fd.append("pdfPassword", pdfPassword.trim());
 
       if (coverPrepared && !removeCover) {
         const up = await presignAndUpload({
@@ -319,6 +322,24 @@ export default function WorkEditForm({ work, genres, warningTags, deviantLoveTag
         origin={origin}
         setOrigin={setOrigin}
       />
+
+      {type === "COMIC" ? (
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-2">
+          <span className="text-sm font-semibold">PDF Password</span>
+          <input
+            type="text"
+            value={pdfPassword}
+            onChange={(e) => setPdfPassword(e.target.value)}
+            placeholder="Leave empty if your chapter PDFs aren't password-protected"
+            className="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            autoComplete="off"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            If this work's chapter PDFs are password-protected, set the password here once — it's used automatically
+            whenever you import PDFs into chapters for this work, for both single and bulk PDF import.
+          </p>
+        </div>
+      ) : null}
 
       <WorkSummaryField description={description} setDescription={setDescription} />
 

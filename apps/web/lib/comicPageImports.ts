@@ -66,7 +66,7 @@ type PdfJsOpCodes = {
 
 type PdfJsModule = {
   GlobalWorkerOptions?: { workerSrc?: string };
-  getDocument(params: { data: Uint8Array }): { promise: Promise<PdfJsDocument> };
+  getDocument(params: { data: Uint8Array; password?: string }): { promise: Promise<PdfJsDocument> };
   OPS?: PdfJsOpCodes;
 };
 
@@ -530,10 +530,30 @@ export async function importComicPagesFromZip(zipFile: File): Promise<File[]> {
   return files;
 }
 
-export async function importComicPagesFromPdf(pdfFile: File): Promise<File[]> {
+export async function importComicPagesFromPdf(pdfFile: File, password?: string | null): Promise<File[]> {
   const pdfjs = await loadPdfJs();
-  const task = pdfjs.getDocument({ data: new Uint8Array(await pdfFile.arrayBuffer()) });
-  const pdf = await task.promise;
+  const trimmedPassword = String(password || "").trim();
+  const task = pdfjs.getDocument({
+    data: new Uint8Array(await pdfFile.arrayBuffer()),
+    ...(trimmedPassword ? { password: trimmedPassword } : {}),
+  });
+  let pdf: PdfJsDocument;
+  try {
+    pdf = await task.promise;
+  } catch (error: any) {
+    // v30: pdf.js rejects with a PasswordException (code 1 = needs a password, code 2 =
+    // the one supplied was wrong) for encrypted PDFs — surface that distinctly instead of
+    // the generic "did not produce any image pages" failure, since the fix here is
+    // entirely different (set/correct the work's PDF password, not a file problem).
+    if (error?.name === "PasswordException") {
+      throw new Error(
+        error?.code === 1
+          ? "This PDF is password-protected. Set this work's PDF password in Edit Work, then try again."
+          : "The PDF password saved for this work is incorrect for this file."
+      );
+    }
+    throw error;
+  }
   const baseName = sanitizeBaseName(pdfFile.name) || "chapter";
   const files: File[] = [];
 

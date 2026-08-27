@@ -53,7 +53,12 @@ export default async function BulkPdfChapterPage({
           {nextNumber}.
         </p>
 
-        <BulkPdfChapterForm workId={work.id} nextNumber={nextNumber} warningTags={warningTags as any} />
+        <BulkPdfChapterForm
+          workId={work.id}
+          nextNumber={nextNumber}
+          warningTags={warningTags as any}
+          pdfPassword={work.pdfPassword}
+        />
       </div>
     </ListSurface>
   );
