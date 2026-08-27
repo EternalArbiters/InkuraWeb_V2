@@ -95,7 +95,7 @@ export default function DashboardNavbar() {
       >
         {/* solid bar — fades in once scrolled */}
         <div
-          className={`pointer-events-none absolute inset-0 -z-10 border-b border-[var(--ink-border)] bg-[var(--ink-bg)]/85 backdrop-blur transition-opacity duration-300 ${
+          className={`pointer-events-none absolute inset-0 -z-10 bg-[var(--ink-bg)]/85 backdrop-blur transition-opacity duration-300 ${
             navSolid ? "opacity-100" : "opacity-0"
           }`}
         />

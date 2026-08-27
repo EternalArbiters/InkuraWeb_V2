@@ -187,7 +187,7 @@ export default function WorkChaptersWebtoon({
                 href={`/w/${slug}/read/${c.id}`}
                 className={"flex w-full min-w-0 max-w-full items-center gap-3 py-2 " + rowSurface + " " + (read ? "opacity-60" : "")}
               >
-                <div className="relative h-[80px] w-[60px] shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                <div className="relative h-[64px] w-[96px] shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
                   {thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
