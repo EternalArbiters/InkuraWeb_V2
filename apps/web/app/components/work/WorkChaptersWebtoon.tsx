@@ -123,7 +123,7 @@ export default function WorkChaptersWebtoon({
         </button>
       </div>
 
-      <div className="mt-4 divide-y divide-[var(--ink-border)]">
+      <div className="mt-4 divide-y divide-black/5 dark:divide-white/5">
         {visibleChapters.length === 0 ? (
           <div className="py-3 text-sm text-gray-600 dark:text-gray-300">No chapters yet.</div>
         ) : isNovel ? (
@@ -140,7 +140,7 @@ export default function WorkChaptersWebtoon({
               <Link
                 key={chapter.id}
                 href={`/w/${slug}/read/${chapter.id}`}
-                className={"flex w-full min-w-0 max-w-full items-center gap-3 py-3 " + rowSurface + " " + (read ? "opacity-60" : "")}
+                className={"flex w-full min-w-0 max-w-full items-center gap-3 py-2 " + rowSurface + " " + (read ? "opacity-60" : "")}
               >
                 <div className="min-w-0 flex-1 overflow-hidden">
                   <div className="flex flex-wrap items-center gap-2">
@@ -165,9 +165,6 @@ export default function WorkChaptersWebtoon({
                   ) : null}
                 </div>
 
-                <span className="shrink-0 rounded-full border border-[var(--ink-border)] px-4 py-2 text-xs font-semibold sm:text-sm">
-                  Read
-                </span>
               </Link>
             );
           })
@@ -188,7 +185,7 @@ export default function WorkChaptersWebtoon({
               <Link
                 key={c.id}
                 href={`/w/${slug}/read/${c.id}`}
-                className={"flex w-full min-w-0 max-w-full items-center gap-3 py-3 " + rowSurface + " " + (read ? "opacity-60" : "")}
+                className={"flex w-full min-w-0 max-w-full items-center gap-3 py-2 " + rowSurface + " " + (read ? "opacity-60" : "")}
               >
                 <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
                   {thumb ? (
@@ -236,9 +233,6 @@ export default function WorkChaptersWebtoon({
                   ) : null}
                 </div>
 
-                <span className="shrink-0 rounded-full border border-[var(--ink-border)] px-4 py-2 text-xs font-semibold sm:text-sm">
-                  Read
-                </span>
               </Link>
             );
           })
