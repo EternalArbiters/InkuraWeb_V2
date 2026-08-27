@@ -18,6 +18,7 @@ import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
 import WorkDetailMobileTabs from "@/app/components/work/WorkDetailMobileTabs";
+import CoverAmbientGlow from "@/app/components/work/CoverAmbientGlow";
 import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
 import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
@@ -40,6 +41,8 @@ function buildSearchHref(params: Record<string, string | null | undefined>) {
 
 const chipLinkClass =
   "rounded-full border border-gray-200 px-2 py-1 transition hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900";
+const primaryChipLinkClass =
+  "rounded-full bg-purple-600/10 px-2.5 py-1 font-semibold text-purple-700 transition hover:bg-purple-600/20 dark:bg-purple-500/15 dark:text-purple-200 dark:hover:bg-purple-500/25";
 const nsfwChipLinkClass =
   "rounded-full border border-amber-200 px-2 py-1 text-[11px] text-amber-800 transition hover:bg-amber-50 dark:border-amber-900 dark:text-amber-200 dark:hover:bg-amber-950/40";
 const deviantChipLinkClass =
@@ -160,10 +163,11 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
             genreIds: Array.isArray(work.genres) ? work.genres.map((genre: any) => genre.id).filter(Boolean) : [],
           }}
         />
-        <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="relative max-w-5xl mx-auto px-4 py-10">
+          <CoverAmbientGlow src={work.coverImage} />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
             <div>
-              <div className="overflow-hidden rounded-[28px] border border-gray-200 bg-white/70 dark:border-gray-800 dark:bg-gray-900/50">
+              <div className="overflow-hidden rounded-[28px] border border-gray-200 bg-white/70 shadow-xl shadow-black/5 dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-black/40">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-[28px] bg-gray-100 dark:bg-gray-800">
                   {work.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -184,14 +188,14 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 <div className="p-4">
                   <UploaderIdentityLink user={work.author} className="w-full" textClassName="text-sm text-gray-600 dark:text-gray-300 font-medium" avatarClassName="h-8 w-8" />
                   <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                    <Link href={buildSearchHref({ kind: String(work.type || "").toLowerCase() })} className={chipLinkClass}>
+                    <Link href={buildSearchHref({ kind: String(work.type || "").toLowerCase() })} className={primaryChipLinkClass}>
                       {work.type}
                     </Link>
-                    <Link href={buildSearchHref({ completion: String(work.completion || "") })} className={chipLinkClass}>
+                    <Link href={buildSearchHref({ completion: String(work.completion || "") })} className={primaryChipLinkClass}>
                       {work.completion}
                     </Link>
                     {work.language ? (
-                      <Link href={buildSearchHref({ lang: String(work.language).toLowerCase() })} className={chipLinkClass}>
+                      <Link href={buildSearchHref({ lang: String(work.language).toLowerCase() })} className={primaryChipLinkClass}>
                         {String(work.language).toUpperCase()}
                       </Link>
                     ) : null}
