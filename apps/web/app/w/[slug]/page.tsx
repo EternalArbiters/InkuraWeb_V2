@@ -167,8 +167,8 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
           <CoverAmbientGlow src={work.coverImage} />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
             <div>
-              <div className="overflow-hidden rounded-[28px] border border-gray-200 bg-white/70 shadow-xl shadow-black/5 dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-black/40">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-[28px] bg-gray-100 dark:bg-gray-800">
+              <div className="overflow-hidden border border-gray-200 bg-white/70 shadow-xl shadow-black/5 dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-black/40">
+                <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-gray-800">
                   {work.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={work.coverImage} alt={work.title} className="h-full w-full object-cover" />
