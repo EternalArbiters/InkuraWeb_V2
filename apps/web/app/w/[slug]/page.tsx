@@ -17,6 +17,7 @@ import AddToListButton from "@/app/components/work/AddToListButton";
 import ReviewSection from "@/app/components/work/ReviewSection";
 import WorkInfoPanel from "@/app/components/work/WorkInfoPanel";
 import WorkChaptersWebtoon from "@/app/components/work/WorkChaptersWebtoon";
+import WorkDetailMobileTabs from "@/app/components/work/WorkDetailMobileTabs";
 import SeriesArcsPanel from "@/app/components/work/SeriesArcsPanel";
 import UploaderIdentityLink from "@/app/components/UploaderIdentityLink";
 import AnalyticsEventTracker from "@/app/components/analytics/AnalyticsEventTracker";
@@ -319,42 +320,135 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                 </div>
               </div>
 
-              {work.description ? <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{work.description}</p> : null}
+              {/* Desktop: existing stacked layout, unchanged */}
+              <div className="hidden md:block">
+                {work.description ? <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{work.description}</p> : null}
 
-              <div className="mt-6">
-                <WorkInfoPanel work={work} />
+                <div className="mt-6">
+                  <WorkInfoPanel work={work} />
+                </div>
+
+                <div className="mt-6">
+                  <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
+                    <div className="grid gap-3">
+                      <SeriesArcsPanel
+                        currentWorkId={work.id}
+                        currentWorkSlug={work.slug}
+                        currentWorkTitle={work.title}
+                        currentWorkCoverImage={work.coverImage}
+                        currentWorkSeriesOrder={work.seriesOrder}
+                        currentWorkType={work.type}
+                        currentWorkComicType={work.comicType}
+                        currentWorkPublishType={work.publishType}
+                        currentWorkIsMature={work.isMature}
+                        currentWorkLanguage={work.language}
+                        currentWorkCompletion={work.completion}
+                        currentWorkChapterCount={work.chapterCount}
+                        currentWorkChapterLoveCount={work.chapterLoveCount}
+                        currentWorkRatingAvg={work.ratingAvg}
+                        currentWorkRatingCount={work.ratingCount}
+                        currentWorkUpdatedAt={work.updatedAt}
+                        currentWorkGenres={work.genres}
+                        currentWorkDeviantLoveTags={work.deviantLoveTags}
+                        currentWorkAuthor={work.author}
+                        currentWorkTranslator={work.translator}
+                        seriesTitle={work.seriesTitle}
+                        works={Array.isArray(work.seriesWorks) ? work.seriesWorks : []}
+                        previousArc={work.previousArc}
+                        nextArc={work.nextArc}
+                      />
+
+                      <WorkChaptersWebtoon
+                        slug={work.slug}
+                        chapters={Array.isArray(work.chapters) ? work.chapters : []}
+                        workType={work.type}
+                        lastReadChapterId={typeof progress?.lastReadChapterId === "string" ? progress.lastReadChapterId : null}
+                        limit={5}
+                        showAllHref={Array.isArray(work.chapters) && work.chapters.length > 5 ? `/w/${work.slug}/chapters` : null}
+                      />
+                    </div>
+                  </ContentWarningsGate>
+                </div>
+
+                <ReviewSection
+                  workId={work.id}
+                  ratingAvg={Number(work.ratingAvg ?? 0)}
+                  ratingCount={Number(work.ratingCount ?? 0)}
+                  initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                  initialReviews={initialReviews as any}
+                  initialMyReviewId={initialMyReviewId}
+                />
+
+                <CommentSection
+                  targetType="CHAPTER"
+                  targetId={work.id}
+                  title="Comments"
+                  scope="workChapters"
+                  showComposer={false}
+                  sort="top"
+                  showChapterContext
+                  initialComments={initialComments as any}
+                  initialCanModerate={initialCanModerate}
+                  workAuthorId={work.authorId}
+                  workPublishType={(work as any).publishType || null}
+                />
               </div>
 
-              <div className="mt-6">
-                <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
-                  <div className="grid gap-3">
-                    <SeriesArcsPanel
-                      currentWorkId={work.id}
-                      currentWorkSlug={work.slug}
-                      currentWorkTitle={work.title}
-                      currentWorkCoverImage={work.coverImage}
-                      currentWorkSeriesOrder={work.seriesOrder}
-                      currentWorkType={work.type}
-                      currentWorkComicType={work.comicType}
-                      currentWorkPublishType={work.publishType}
-                      currentWorkIsMature={work.isMature}
-                      currentWorkLanguage={work.language}
-                      currentWorkCompletion={work.completion}
-                      currentWorkChapterCount={work.chapterCount}
-                      currentWorkChapterLoveCount={work.chapterLoveCount}
-                      currentWorkRatingAvg={work.ratingAvg}
-                      currentWorkRatingCount={work.ratingCount}
-                      currentWorkUpdatedAt={work.updatedAt}
-                      currentWorkGenres={work.genres}
-                      currentWorkDeviantLoveTags={work.deviantLoveTags}
-                      currentWorkAuthor={work.author}
-                      currentWorkTranslator={work.translator}
-                      seriesTitle={work.seriesTitle}
-                      works={Array.isArray(work.seriesWorks) ? work.seriesWorks : []}
-                      previousArc={work.previousArc}
-                      nextArc={work.nextArc}
-                    />
+              {/* Mobile: same sections, organized into Info / Chapter / Comment tabs */}
+              <WorkDetailMobileTabs
+                infoContent={
+                  <>
+                    {work.description ? <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">{work.description}</p> : null}
 
+                    <div className="mt-6">
+                      <WorkInfoPanel work={work} />
+                    </div>
+
+                    <div className="mt-6">
+                      <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
+                        <SeriesArcsPanel
+                          currentWorkId={work.id}
+                          currentWorkSlug={work.slug}
+                          currentWorkTitle={work.title}
+                          currentWorkCoverImage={work.coverImage}
+                          currentWorkSeriesOrder={work.seriesOrder}
+                          currentWorkType={work.type}
+                          currentWorkComicType={work.comicType}
+                          currentWorkPublishType={work.publishType}
+                          currentWorkIsMature={work.isMature}
+                          currentWorkLanguage={work.language}
+                          currentWorkCompletion={work.completion}
+                          currentWorkChapterCount={work.chapterCount}
+                          currentWorkChapterLoveCount={work.chapterLoveCount}
+                          currentWorkRatingAvg={work.ratingAvg}
+                          currentWorkRatingCount={work.ratingCount}
+                          currentWorkUpdatedAt={work.updatedAt}
+                          currentWorkGenres={work.genres}
+                          currentWorkDeviantLoveTags={work.deviantLoveTags}
+                          currentWorkAuthor={work.author}
+                          currentWorkTranslator={work.translator}
+                          seriesTitle={work.seriesTitle}
+                          works={Array.isArray(work.seriesWorks) ? work.seriesWorks : []}
+                          previousArc={work.previousArc}
+                          nextArc={work.nextArc}
+                        />
+                      </ContentWarningsGate>
+                    </div>
+
+                    <div className="mt-6">
+                      <ReviewSection
+                        workId={work.id}
+                        ratingAvg={Number(work.ratingAvg ?? 0)}
+                        ratingCount={Number(work.ratingCount ?? 0)}
+                        initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                        initialReviews={initialReviews as any}
+                        initialMyReviewId={initialMyReviewId}
+                      />
+                    </div>
+                  </>
+                }
+                chapterContent={
+                  <ContentWarningsGate storageKey={`work:${work.id}`} title={work.title} warnings={combinedWarnings}>
                     <WorkChaptersWebtoon
                       slug={work.slug}
                       chapters={Array.isArray(work.chapters) ? work.chapters : []}
@@ -363,31 +457,23 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                       limit={5}
                       showAllHref={Array.isArray(work.chapters) && work.chapters.length > 5 ? `/w/${work.slug}/chapters` : null}
                     />
-                  </div>
-                </ContentWarningsGate>
-              </div>
-
-              <ReviewSection
-                workId={work.id}
-                ratingAvg={Number(work.ratingAvg ?? 0)}
-                ratingCount={Number(work.ratingCount ?? 0)}
-                initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
-                initialReviews={initialReviews as any}
-                initialMyReviewId={initialMyReviewId}
-              />
-
-              <CommentSection
-                targetType="CHAPTER"
-                targetId={work.id}
-                title="Comments"
-                scope="workChapters"
-                showComposer={false}
-                sort="top"
-                showChapterContext
-                initialComments={initialComments as any}
-                initialCanModerate={initialCanModerate}
-                workAuthorId={work.authorId}
-                workPublishType={(work as any).publishType || null}
+                  </ContentWarningsGate>
+                }
+                commentContent={
+                  <CommentSection
+                    targetType="CHAPTER"
+                    targetId={work.id}
+                    title="Comments"
+                    scope="workChapters"
+                    showComposer={false}
+                    sort="top"
+                    showChapterContext
+                    initialComments={initialComments as any}
+                    initialCanModerate={initialCanModerate}
+                    workAuthorId={work.authorId}
+                    workPublishType={(work as any).publishType || null}
+                  />
+                }
               />
             </div>
           </div>
