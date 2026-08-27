@@ -50,9 +50,19 @@ export default function WorksGrid({
   const visibleWorks = works.slice(0, visibleCount);
   const hasMore = visibleCount < works.length;
 
+  // v30: cards revealed later via "Load more" are rendered in their OWN motion
+  // container (initial+animate, not whileInView) rather than appended into the
+  // first grid. The first grid's whileInView only fires once (viewport.once) —
+  // cards that inherit its "hidden"/"show" variants but mount afterward never
+  // get told to transition to "show" and can get stuck invisible. A container
+  // that animates immediately on mount has no such dependency on an
+  // already-resolved trigger.
+  const initialWorks = visibleWorks.slice(0, initialCount);
+  const extraWorks = visibleWorks.slice(initialCount);
+
   const gridClass = "grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4";
 
-  const cards = visibleWorks.map((w) => (
+  const renderCard = (w: Work) => (
     <InteractiveWorkCard
       key={w.id}
       work={w}
@@ -60,7 +70,7 @@ export default function WorksGrid({
       showBookmarkButton={showBookmarkButton}
       showUpdatedSubtitle={showUpdatedSubtitle}
     />
-  ));
+  );
 
   const emptyState =
     works.length === 0 ? (
@@ -79,9 +89,15 @@ export default function WorksGrid({
         whileInView="show"
         viewport={{ once: true, amount: 0.05 }}
       >
-        {cards}
+        {initialWorks.map(renderCard)}
         {emptyState}
       </motion.div>
+
+      {extraWorks.length ? (
+        <motion.div className={`${gridClass} mt-8`} variants={gridContainer} initial="hidden" animate="show">
+          {extraWorks.map(renderCard)}
+        </motion.div>
+      ) : null}
 
       {hasMore ? (
         <div className="mt-8 flex justify-center">

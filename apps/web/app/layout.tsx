@@ -7,6 +7,7 @@ import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
 import UILanguageProvider from "./components/ui-language/UILanguageProvider";
 import { UIThemeProvider, UIThemeScript } from "./components/ui-theme/UIThemeProvider";
+import { DarkModeScript } from "./components/dashboardNavbar/DarkModeScript";
 import { inkuraLanguageToHtmlLang } from "@/lib/inkuraLanguage";
 import { getSession } from "@/server/auth/session";
 import { getAllUILanguageCatalogs } from "@/server/services/uiLanguage/catalog";
@@ -58,6 +59,7 @@ export default async function RootLayout({
     <html lang={inkuraLanguageToHtmlLang(initialLanguage)} data-inkura-language={initialLanguage}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
         <UIThemeScript />
+        <DarkModeScript />
         <SessionWrapper session={hydratedSession}>
           <UILanguageProvider catalogs={catalogs} initialLanguage={initialLanguage}>
             <UIThemeProvider>
