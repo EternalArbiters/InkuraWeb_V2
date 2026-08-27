@@ -434,17 +434,6 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                         />
                       </ContentWarningsGate>
                     </div>
-
-                    <div className="mt-6">
-                      <ReviewSection
-                        workId={work.id}
-                        ratingAvg={Number(work.ratingAvg ?? 0)}
-                        ratingCount={Number(work.ratingCount ?? 0)}
-                        initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
-                        initialReviews={initialReviews as any}
-                        initialMyReviewId={initialMyReviewId}
-                      />
-                    </div>
                   </>
                 }
                 chapterContent={
@@ -458,6 +447,16 @@ export default async function WorkPage({ params: paramsPromise }: { params: Prom
                       showAllHref={Array.isArray(work.chapters) && work.chapters.length > 5 ? `/w/${work.slug}/chapters` : null}
                     />
                   </ContentWarningsGate>
+                }
+                reviewContent={
+                  <ReviewSection
+                    workId={work.id}
+                    ratingAvg={Number(work.ratingAvg ?? 0)}
+                    ratingCount={Number(work.ratingCount ?? 0)}
+                    initialMyRating={typeof interactions.myRating === "number" ? interactions.myRating : null}
+                    initialReviews={initialReviews as any}
+                    initialMyReviewId={initialMyReviewId}
+                  />
                 }
                 commentContent={
                   <CommentSection
