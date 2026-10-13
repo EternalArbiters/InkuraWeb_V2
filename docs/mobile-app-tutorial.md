@@ -260,11 +260,21 @@ Tunggu sampai selesai (~1–2 menit). Wajar kalau muncul beberapa baris `warn`.
 
 ## C2. Isi konfigurasi app
 
-Di VS Code, cari file `apps/mobile/app.config.example.json` → klik kanan →
-**Copy**, lalu klik kanan di folder `apps/mobile` → **Paste** → ganti nama
-hasilnya jadi **`app.config.json`**.
+Yang dibuat di sini adalah file **baru** bernama `app.config.json`. File
+`app.config.example.json` harus **tetap ada** — itu template cadangan, jangan
+di-rename.
 
-(Kalau lebih suka terminal PowerShell: `Copy-Item app.config.example.json app.config.json`)
+Cara paling aman, lewat terminal PowerShell di folder `apps/mobile`:
+
+```powershell
+Copy-Item app.config.example.json app.config.json
+```
+
+(Lewat VS Code juga bisa: klik kanan `app.config.example.json` → **Copy** →
+klik kanan folder `apps/mobile` → **Paste** → file salinannya yang diganti nama
+jadi `app.config.json`. Kalau setelah ini `app.config.example.json` hilang dari
+daftar file, berarti yang ter-rename file aslinya — kembalikan dengan
+`git checkout -- apps/mobile/app.config.example.json`.)
 
 Buka `apps/mobile/app.config.json`, isi jadi seperti ini:
 

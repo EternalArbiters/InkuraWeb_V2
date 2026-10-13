@@ -25,7 +25,15 @@ const semanticSections = [
   "Page Reset Password Legacy",
 ] as const;
 
-const getActivePattern = /getActiveUILanguageText\(\s*(["'])(.*?)\1\s*,\s*\{\s*section:\s*(["'])(.*?)\3\s*\}/gs;
+// [\s\S] instead of . with the /s flag: tsconfig targets ES2017, where dotAll is
+// not available. Same meaning — match across newlines too.
+//
+// The text group is tempered with (?!getActiveUILanguageText) so it cannot run past
+// the end of one call into a later one. Without that, a section-less call followed by
+// a sectioned call (very common in these Promise.all blocks) gets glued into a single
+// bogus "source" string that no catalog can ever contain.
+const getActivePattern =
+  /getActiveUILanguageText\(\s*(["'])((?:(?!getActiveUILanguageText)[\s\S])*?)\1\s*,\s*\{\s*section:\s*(["'])([\s\S]*?)\3\s*\}/g;
 const useSectionPattern = /const\s+(\w+)\s*=\s*useUILanguageText\((["'])(.*?)\2\)/g;
 
 function listCodeFiles(dir: string): string[] {
@@ -90,10 +98,15 @@ function collectStaticLookups(): StaticLookup[] {
   return lookups;
 }
 
+// The two catalogs are shaped differently on purpose. UIlanguage/EN is a flat registry
+// of source strings — almost all of it parses into the "Ungrouped" section, so EN has no
+// meaningful per-section index. UIlanguage/ID is the sectioned translation catalog, and
+// validateTranslatedCatalog() refuses any ID entry whose source is not registered in EN.
+// So section coverage is asserted against ID, and EN is asserted to have the source
+// registered (its own section or globally), which is the rule the parser enforces.
 describe("semantic UI language sections", () => {
-  it("keeps the semantic sections present in both EN and ID catalogs", () => {
+  it("keeps the semantic sections present in the ID catalog", () => {
     for (const section of semanticSections) {
-      expect(enCatalog.sectionLookup[section], `EN missing section ${section}`).toBeTruthy();
       expect(idCatalog.sectionLookup[section], `ID missing section ${section}`).toBeTruthy();
     }
   });
@@ -110,12 +123,12 @@ describe("semantic UI language sections", () => {
       checked.add(dedupeKey);
 
       expect(
-        enCatalog.sectionLookup[lookup.section]?.[sourceKey],
-        `EN missing ${lookup.section} -> ${lookup.source} (${lookup.file})`
-      ).toBeDefined();
-      expect(
         idCatalog.sectionLookup[lookup.section]?.[sourceKey],
         `ID missing ${lookup.section} -> ${lookup.source} (${lookup.file})`
+      ).toBeDefined();
+      expect(
+        enCatalog.sectionLookup[lookup.section]?.[sourceKey] ?? enCatalog.globalLookup[sourceKey],
+        `EN has no registered source for ${lookup.section} -> ${lookup.source} (${lookup.file})`
       ).toBeDefined();
     }
   });

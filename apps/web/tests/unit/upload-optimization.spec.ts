@@ -31,9 +31,11 @@ describe("upload optimization decision helpers", () => {
     expect(avatarTarget.resized).toBe(true);
     expect(avatarTarget.scale).toBeCloseTo(640 / 2400);
 
-    const pageTarget = getTargetImageDimensions({ scope: "pages", width: 2600, height: 4200 });
-    expect(pageTarget.width).toBeLessThanOrEqual(2600);
-    expect(pageTarget.height).toBeLessThanOrEqual(4200);
+    // A page only gets touched once it exceeds the "pages" caps (3600x7200, 20MP);
+    // anything smaller keeps its source resolution — see page-optimization-profile.spec.ts.
+    const pageTarget = getTargetImageDimensions({ scope: "pages", width: 5000, height: 9000 });
+    expect(pageTarget.width).toBeLessThanOrEqual(3600);
+    expect(pageTarget.height).toBeLessThanOrEqual(7200);
     expect(pageTarget.resized).toBe(true);
   });
 

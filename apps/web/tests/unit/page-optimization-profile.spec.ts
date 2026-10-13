@@ -14,15 +14,25 @@ describe("comic page optimization profile", () => {
   });
 
   it("applies adaptive downscaling to oversized page images", () => {
-    const portrait = getTargetImageDimensions({ scope: "pages", width: 2800, height: 5600 });
-    expect(portrait.width).toBeLessThanOrEqual(2800);
-    expect(portrait.height).toBeLessThanOrEqual(5600);
+    // 32MP: over the 20MP ceiling and over maxHeight.
+    const portrait = getTargetImageDimensions({ scope: "pages", width: 4000, height: 8000 });
+    expect(portrait.width).toBeLessThanOrEqual(3600);
+    expect(portrait.height).toBeLessThanOrEqual(7200);
     expect(portrait.resized).toBe(true);
 
     const landscape = getTargetImageDimensions({ scope: "pages", width: 4200, height: 1800 });
     expect(landscape.width).toBeLessThanOrEqual(3600);
     expect(landscape.height).toBeLessThanOrEqual(1800);
     expect(landscape.resized).toBe(true);
+  });
+
+  it("leaves pages that already fit the caps at their source resolution", () => {
+    // Deliberate policy: anything inside 3600x7200 / 20MP is uploaded untouched
+    // rather than re-sampled to a fixed target, so reader quality matches the source.
+    const inRange = getTargetImageDimensions({ scope: "pages", width: 2800, height: 5600 });
+    expect(inRange.width).toBe(2800);
+    expect(inRange.height).toBe(5600);
+    expect(inRange.resized).toBe(false);
   });
 
   it("keeps optimized page widths at least 400px when the original file already meets that threshold", () => {

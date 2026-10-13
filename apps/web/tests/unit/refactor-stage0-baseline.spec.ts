@@ -1,15 +1,20 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+// The scanner is a CommonJS script. Vite does not transform project-local CJS and
+// Node's own require() does not know the "@/" alias, so load it through createRequire
+// with a real relative path.
+const requireCjs = createRequire(import.meta.url);
 const {
   countMatches,
   formatBaselineReport,
   scanFile,
   summarizeScans,
-} = require("@/scripts/refactor-stage0-baseline.js");
+} = requireCjs("../../scripts/refactor-stage0-baseline.js");
 
 const tempDirs: string[] = [];
 

@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { computeChapterGate, computeWorkGate } from "@/server/services/works/gating";
 
+// inkuraLanguage is part of ViewerBasic but irrelevant to gating, so it stays null here.
 const adultViewer = {
   id: "user-1",
   role: "USER",
   adultConfirmed: true,
   deviantLoveConfirmed: false,
+  inkuraLanguage: null,
 } as const;
 
 const unlockedViewer = {
@@ -14,6 +16,7 @@ const unlockedViewer = {
   role: "USER",
   adultConfirmed: true,
   deviantLoveConfirmed: true,
+  inkuraLanguage: null,
 } as const;
 
 describe("works gating", () => {

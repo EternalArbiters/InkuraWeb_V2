@@ -45,12 +45,14 @@ Users = Pengguna
 User = Pengguna
 Guest = Tamu
 Chat Elya~ = Chat Elya~
+Creator Donations = Donasi Kreator
 
 ==========
 Shared Components
 ==========
 
 Back = Kembali
+Error = Error
 
 ==========
 Shared Errors
@@ -69,6 +71,7 @@ Incorrect email/username or password. = Email/nama pengguna atau kata sandi sala
 Password confirmation does not match. = Konfirmasi kata sandi tidak cocok.
 Sign-up failed. = Pendaftaran gagal.
 Failed to reset password. = Gagal mengatur ulang kata sandi.
+Password must be at least 6 characters. = Kata sandi minimal 6 karakter.
 
 ==========
 Shared Dialogs
@@ -211,6 +214,20 @@ Chat Elya = Chat Elya
 Liked = Disukai
 Like chapter = Sukai chapter
 Load more = Muat lebih banyak
+Comments = Komentar
+Previous = Sebelumnya
+Menu = Menu
+Next = Berikutnya
+Scroll mode = Mode gulir
+Slide mode = Mode geser
+Reader settings = Pengaturan pembaca
+Reader appearance = Tampilan pembaca
+Page color = Warna halaman
+Font size = Ukuran huruf
+Spacing = Jarak baris
+Cozy = Rapat
+Airy = Lega
+Font = Huruf
 
 ==========
 Page Error States
@@ -367,6 +384,12 @@ Dancing Script = Dancing Script
 ITC Lubalin Graph = ITC Lubalin Graph
 See all comments = Lihat semua komentar
 Back to novel = Kembali ke novel
+Liked = Disukai
+Like chapter = Sukai chapter
+Comments = Komentar
+Previous = Sebelumnya
+Menu = Menu
+Next = Berikutnya
 
 ==========
 Page Reader Comments
@@ -2037,6 +2060,29 @@ Page Admin Report
 
 Inbox reports from users. = Kotak masuk laporan dari pengguna.
 Send a report/issue to the admin. (Not for illegal requests, okay? 😅) = Kirim laporan/masalah ke admin. (Bukan untuk permintaan ilegal, ya? 😅)
+Failed to load reports = Gagal memuat laporan
+You can attach up to 4 files. = Kamu bisa melampirkan maksimal 4 file.
+Title is required. = Judul wajib diisi.
+Message is required. = Pesan wajib diisi.
+Failed to send report = Gagal mengirim laporan
+Sent! = Terkirim!
+Send a report to the admin = Kirim laporan ke admin
+Title = Judul
+Example: Login bug, chapter cannot be opened, etc. = Contoh: bug login, chapter tidak bisa dibuka, dll.
+Message = Pesan
+Explain the issue and the steps to reproduce it. = Jelaskan masalahnya dan langkah untuk memunculkannya kembali.
+Link (optional) = Tautan (opsional)
+Attachments = Lampiran
+Add attachment = Tambah lampiran
+Clear attachments = Hapus semua lampiran
+Remove attachment = Hapus lampiran
+Sending... = Mengirim...
+Send = Kirim
+Inbox reports = Kotak masuk laporan
+My reports = Laporan saya
+Refreshing... = Menyegarkan...
+Refresh = Segarkan
+No reports yet. = Belum ada laporan.
 
 ==========
 Page Studio
@@ -2076,6 +2122,9 @@ Send reply = Kirim balasan
 Tip: you can hide text with ||like this|| = Tip: kamu bisa menyembunyikan teks dengan ||seperti ini||
 Report reason = Alasan laporan
 Example: spam, hate speech, harassment... = Contoh: spam, ujaran kebencian, pelecehan...
+Chapter = Chapter
+Hide reply = Sembunyikan balasan
+See reply = Lihat balasan
 
 ==========
 Page Lists
@@ -2094,6 +2143,7 @@ Saved! = Tersimpan!
 Saving... = Menyimpan...
 Save = Simpan
 Delete list = Hapus list
+Browse works = Jelajahi karya
 
 ==========
 Page Admin Taxonomy
@@ -2152,6 +2202,7 @@ Repeat password = Ulangi kata sandi
 Processing... = Memproses...
 Success! Redirecting... = Berhasil! Mengarahkan...
 If the link is invalid or expired, request a new one via “Forgot password”. = Jika tautan tidak valid atau kedaluwarsa, minta yang baru lewat “Lupa kata sandi”.
+Minimum 6 characters = Minimal 6 karakter
 
 ==========
 Shared UI Extended
@@ -2303,6 +2354,8 @@ Just so you know, content containing adult or deviant elements will be hidden an
 Hello, creators on Inkura! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders! = Halo para kreator di Inkura! Silahkan upload apapun yang kamu mau. Tapi tetap patuhi aturannya, ya! Kalau kamu translator, ya atur karya jadi hasil translate. Karya original itu untuk para author dan pencipta langsung! Jangan salah, ya. Begitu pun kalian yang re-upload!
 Don't show again = Jangan tampilkan lagi
 Inkura Mascot = Maskot Inkura
+Previous = Sebelumnya
+Next = Berikutnya
 
 ==========
 Hero Banner
@@ -2411,3 +2464,35 @@ Reject = Tolak
 Copy = Salin
 Failed to update. = Gagal memperbarui.
 
+==========
+Page Search
+==========
+
+Advanced Search = Pencarian Lanjutan
+Advance Search = Pencarian Lanjutan
+Min chapters = Chapter minimal
+Max chapters = Chapter maksimal
+Only = Hanya
+Ignore my language preferences (settings) = Abaikan preferensi bahasaku (pengaturan)
+Ignore my blocked genres/NSFW (settings) = Abaikan genre/NSFW yang kublokir (pengaturan)
+
+==========
+Page Community Ranking
+==========
+
+Top 7 = 7 Teratas
+No ranked users yet. = Belum ada pengguna dalam peringkat.
+points = poin
+Donatur = Donatur
+
+==========
+Page Followers
+==========
+
+No followers yet. = Belum ada pengikut.
+
+==========
+Page Following
+==========
+
+Not following anyone yet. = Belum mengikuti siapa pun.
