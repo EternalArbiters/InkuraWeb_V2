@@ -6,12 +6,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
+import { useIsInkuraApp } from "@/hooks/useIsInkuraApp";
 
 function SignInInner() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params?.get("callbackUrl") || "/home";
   const t = useUILanguageText("Page Sign In");
+  // v31: Google blocks its OAuth flow inside embedded WebViews
+  // ("disallowed_useragent"), so the APK offers email/username login only.
+  const isApp = useIsInkuraApp();
   const tErrors = useUILanguageText("Shared Errors");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -81,13 +85,15 @@ function SignInInner() {
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => signIn("google", { callbackUrl })}
-          className="mt-3 w-full py-3 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105 flex items-center justify-center gap-2"
-        >
-          <FaGoogle /> {t("Continue with Google")}
-        </button>
+        {!isApp && (
+          <button
+            type="button"
+            onClick={() => signIn("google", { callbackUrl })}
+            className="mt-3 w-full py-3 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/50 hover:brightness-105 flex items-center justify-center gap-2"
+          >
+            <FaGoogle /> {t("Continue with Google")}
+          </button>
+        )}
 
         <div className="mt-3 text-sm">
           <Link href="/auth/forgot" className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">

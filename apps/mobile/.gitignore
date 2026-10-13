@@ -1,0 +1,13 @@
+# Real values (contains the APP_ACCESS_TOKEN) — never commit.
+app.config.json
+
+# Native project is fully regenerable: `npm run android:add && npm run sync`.
+# Branding lives in apps/mobile/assets/, not in here.
+android/
+
+# Signing material — never commit.
+*.keystore
+*.jks
+keystore.properties
+
+node_modules/

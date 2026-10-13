@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { appKeyFromUserAgent, matchesAppKey } from "@/lib/appMode";
 
 function isAdminPath(pathname: string) {
   return pathname === "/admin" || pathname.startsWith("/admin/");
@@ -11,6 +12,62 @@ function isAdminPath(pathname: string) {
 // byte-for-byte identical to before this change for Project 1.
 function isPrivateModeEnabled() {
   return process.env.PRIVATE_MODE === "true";
+}
+
+// v31: app-only gate for the APK deployment (Project 3). Only active when
+// APP_MODE=true, so Projects 1 and 2 are untouched by this whole block.
+//
+// Project 3 serves the normal public Inkura experience (PRIVATE_MODE unset), but
+// ONLY to the Capacitor WebView inside the Inkura APK, which identifies itself
+// through its User-Agent. Everything else gets a 404, so the deployment is not
+// browsable, linkable or crawlable from a normal browser.
+//
+// Fails CLOSED on purpose: APP_MODE=true without APP_ACCESS_TOKEN blocks
+// everything rather than silently serving the site to the open internet.
+function isAppModeEnabled() {
+  return process.env.APP_MODE === "true";
+}
+
+// Paths that must stay reachable without the app key even when APP_MODE is on.
+function isAppModeExempt(pathname: string) {
+  // Vercel Cron calls this with a Bearer secret and a Vercel User-Agent, never
+  // the APK's. The route itself rejects a wrong/missing CRON_SECRET.
+  if (pathname.startsWith("/api/cron/")) return true;
+  return false;
+}
+
+// Deliberately tiny and self-contained: served to browsers that reach Project 3,
+// so it must not leak anything about the catalog, and must not depend on a route
+// that is itself gated.
+const APP_GATE_NOTICE = `<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Not Found</title>
+<style>
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;background:#0a0a1a;color:#e6e6f0;
+       font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;text-align:center}
+  p{margin:0;opacity:.7;font-size:14px}
+</style>
+</head>
+<body><p>404 — Not Found</p></body>
+</html>`;
+
+function appGateResponse(isApi: boolean) {
+  if (isApi) {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404, headers: { "cache-control": "no-store" } });
+  }
+  return new NextResponse(APP_GATE_NOTICE, {
+    status: 404,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "x-robots-tag": "noindex, nofollow",
+    },
+  });
 }
 
 // Paths reachable with NO session even when PRIVATE_MODE is on.
@@ -31,6 +88,16 @@ export async function middleware(req: NextRequest) {
   const isApi = pathname.startsWith("/api/");
   const privateModeOn = isPrivateModeEnabled();
   const needsAdminCheck = isAdminPath(pathname);
+
+  // v31: runs before everything else — on Project 3 a request without the app
+  // key must not even learn whether a route exists.
+  if (isAppModeEnabled() && !isAppModeExempt(pathname)) {
+    const presentedKey =
+      appKeyFromUserAgent(req.headers.get("user-agent")) ?? req.headers.get("x-inkura-app-key");
+    if (!matchesAppKey(presentedKey, process.env.APP_ACCESS_TOKEN ?? "")) {
+      return appGateResponse(isApi);
+    }
+  }
 
   // v30 fix: getToken() in Edge Middleware auto-detects whether to look for the
   // "__Secure-"-prefixed session cookie by guessing at the request's protocol — and
@@ -86,6 +153,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|txt|xml|woff2?)$).*)",
+    "/((?!_next/static|_next/image|favicon\.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|txt|xml|woff2?)$).*)",
   ],
 };

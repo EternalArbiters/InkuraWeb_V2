@@ -1,2 +1,5 @@
 # speed up uploads
 **/*.zip
+
+# mobile shell: never part of a Vercel deploy
+apps/mobile

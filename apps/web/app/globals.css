@@ -263,8 +263,12 @@ html {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-* {
-  cursor: none !important;
+/* v31: the custom cursor is a desktop-only flourish. On touch devices (and the
+   Inkura APK WebView) `cursor: none` does nothing useful, so scope it to real pointers. */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
 }
 
 /* ——— Ink server-component theme utilities ————————————————————
