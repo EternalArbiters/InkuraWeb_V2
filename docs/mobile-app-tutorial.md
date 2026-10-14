@@ -452,9 +452,17 @@ langkah yang sama:
 
 # FASE E — Versi rilis (opsional, nanti saja)
 
-APK debug di atas sudah bisa dipakai sehari-hari. Bedanya versi rilis: ukurannya
-lebih kecil, jalannya sedikit lebih ngebut, dan bisa di-update menimpa versi
-lama tanpa uninstall.
+APK debug di atas sudah bisa dipakai sehari-hari, dan sama-sama bisa di-update
+menimpa versi lama. Bedanya versi rilis: ukurannya lebih kecil, jalannya sedikit
+lebih ngebut, dan — yang paling penting — **ditandatangani kunci milikmu sendiri
+yang bisa kamu backup**.
+
+APK debug ditandatangani kunci bawaan Android Studio di
+`C:\Users\<kamu>\.android\debug.keystore`. Kunci itu terikat ke komputer ini.
+Kalau suatu saat hilang (ganti PC, install ulang Android Studio), APK update
+berikutnya **tidak bisa dipasang menimpa** yang sudah terpasang di HP
+teman-temanmu — mereka semua harus uninstall dulu. Itu alasan sebenarnya untuk
+pindah ke keystore sendiri, bukan soal ukuran file.
 
 Kalau nanti mau:
 
@@ -493,6 +501,29 @@ begitu mereka membukanya. **Tidak perlu bikin atau membagi APK baru.**
 - Ikon atau splash diganti
 - Nama/ID aplikasi diubah
 - Plugin Capacitor ditambah
+
+## Kalau APK baru memang harus dibagikan
+
+Teman-temanmu **tidak perlu uninstall**. Mereka cukup membuka file APK yang baru
+dan menekan **Update** — aplikasi tertimpa di tempat, dan sesi login serta
+pengaturan mereka tetap utuh. Syaratnya dua, dan dua-duanya ada di tanganmu:
+
+1. APK baru ditandatangani **kunci yang sama** dengan yang sudah terpasang
+2. `versionCode` di `apps/mobile/android/app/build.gradle` **lebih tinggi** dari
+   versi yang terpasang
+
+Kalau salah satu tidak terpenuhi, Android menolak dengan pesan seperti *"App not
+installed"*, dan satu-satunya jalan adalah uninstall dulu — yang berarti mereka
+kehilangan sesi login.
+
+Dua hal yang memaksa semua orang uninstall, jadi hindari setelah APK tersebar:
+
+- **Ganti kunci penandatangan** (termasuk kehilangan keystore)
+- **Ganti `appId`** — bagi Android itu aplikasi yang sama sekali berbeda, jadi
+  yang lama tetap terpasang berdampingan
+
+Karena tidak lewat Play Store, **tidak ada update otomatis**: setiap kali ada APK
+baru, filenya harus kamu kirim lagi dan mereka pasang manual.
 
 Urutannya selalu sama: ubah `app.config.json` atau aset → `npm run sync` →
 Build APK di Android Studio.
