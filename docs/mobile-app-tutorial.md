@@ -97,42 +97,65 @@ kJ8vQ2mN4pR7xT1wY5zA3bC6dE9fG0hI
 Vercel (Fase A5) dan di file konfigurasi APK (Fase C2). Keduanya harus sama
 persis, beda satu huruf pun app-nya tidak jalan.
 
-## A3. Ambil daftar env dari Project 2
+## A3. Kumpulkan env yang dibutuhkan Project 3
 
-Project 3 butuh env yang hampir sama dengan Project 2 (koneksi database, R2,
-dan lain-lain). Mengetik ulang satu-satu rawan typo, jadi tarik saja:
+> **Jangan coba menyalin env dari Project 2 lewat `vercel env pull`.** Env yang
+> ditandai *Sensitive* di Vercel bersifat **write-only**: nilainya tidak bisa
+> dibaca ulang oleh siapa pun, termasuk CLI dan dashboard. Yang keluar hanya
+> tulisan `[SENSITIVE]`. Ini bukan error, memang begitu desainnya.
 
-```bash
-npx vercel login
-```
+Kabar baiknya, Project 3 **tidak** butuh semua env Project 2. Sebagian besar
+diisi Vercel sendiri, sebagian lagi khusus testing, dan dua di antaranya justru
+harus dibiarkan kosong.
 
-Ikuti prosesnya (biasanya membuka browser untuk konfirmasi). Lalu:
+### Yang WAJIB ada
 
-```bash
-npx vercel link
-```
+| Env | Ambil dari mana |
+|---|---|
+| `DATABASE_URL` | Neon → project → **Connection string** (yang *pooled*). Harus DB yang sama dengan Project 2. |
+| `DIRECT_URL` | Neon → connection string **direct / unpooled** |
+| `NEXTAUTH_SECRET` | **Bikin baru**, tidak perlu sama dengan Project 2 — lihat catatan di bawah |
+| `NEXTAUTH_URL` | URL Project 3 (baru diketahui setelah langkah A5) |
+| `NEXT_PUBLIC_SITE_URL` | URL Project 3 |
+| `APP_MODE` | `true` |
+| `APP_ACCESS_TOKEN` | token dari Langkah A2 |
 
-Akan muncul pertanyaan beruntun. Jawabannya:
+### Yang sangat disarankan (upload gambar mati tanpa ini)
 
-- `Set up ...?` → **y**
-- `Which scope?` → pilih akunmu (Enter)
-- `Link to existing project?` → **y**
-- `What's the name of your existing project?` → ketik nama **Project 2** (yang
-  private, mis. `koleksiatmint`)
+| Env | Ambil dari mana |
+|---|---|
+| `R2_ENDPOINT` | Cloudflare R2 → bucket → **Settings** (bukan rahasia) |
+| `R2_BUCKET` | nama bucket-nya (bukan rahasia) |
+| `R2_PUBLIC_BASE_URL` | URL publik bucket (bukan rahasia) |
+| `R2_ACCESS_KEY_ID` | Cloudflare R2 → **Manage API Tokens** |
+| `R2_SECRET_ACCESS_KEY` | sama; kalau sudah hilang, **bikin token baru** |
 
-Lalu tarik env-nya ke sebuah file:
+> Secret R2 cuma ditampilkan sekali saat token dibuat. Kalau catatannya hilang,
+> bikin token R2 baru saja — R2 mengizinkan banyak token sekaligus, dan token
+> lama milik Project 2 **tidak ikut mati**.
 
-```bash
-npx vercel env pull .env.project2 --environment=production
-```
+### Opsional (fiturnya saja yang mati kalau kosong)
 
-Sekarang ada file `.env.project2` di folder repo. File itu **berisi semua
-password dan kunci rahasiamu**, tapi aman dari git: pola `.env.*` sudah masuk
-`.gitignore`. Buka file itu di VS Code, isinya daftar baris `NAMA=nilai`.
+`RESEND_API_KEY` + `EMAIL_FROM` (email reset password), `GOOGLE_CLIENT_ID/SECRET`
+dan `DISCORD_CLIENT_ID/SECRET` (login OAuth — ingat tombol Google memang
+disembunyikan di app), `UPSTASH_REDIS_REST_URL/TOKEN` (rate limit; tanpa ini
+pembatasan tidak aktif), `TELEGRAM_CHAT_ID`, dan semua `INKURA_*` yang hanya
+mengatur logging dan sudah punya nilai default aman.
 
-> Kalau langkah ini gagal atau membingungkan, boleh dilewati — kamu juga bisa
-> menyalin nilai env satu per satu dari dashboard Vercel Project 2 →
-> Settings → Environment Variables.
+### Yang JANGAN diisi
+
+- `PRIVATE_MODE` — ini yang bikin katalog terkunci; harus kosong di Project 3
+- `CRON_SECRET` — dibiarkan kosong supaya cron kembar jadi no-op
+- `SEED_ADMIN_PASSWORD`, `E2E_*`, `PLAYWRIGHT_BASE_URL` — khusus testing lokal
+- semua `VERCEL_*` — Vercel mengisinya sendiri
+
+### Kenapa `NEXTAUTH_SECRET` boleh baru
+
+Secret itu dipakai menandatangani token sesi login. Project 2 dan Project 3
+adalah dua deployment terpisah dengan login masing-masing; sesi tidak perlu
+berpindah antar keduanya. Jadi bikin saja yang baru:
+
+    node -e "console.log(require(\"crypto\").randomBytes(32).toString(\"base64\"))"
 
 ## A4. Bikin Project 3 di Vercel
 
@@ -144,22 +167,29 @@ password dan kunci rahasiamu**, tapi aman dari git: pola `.env.*` sudah masuk
 4. **Root Directory**: harus sama dengan Project 2. Cara mengeceknya: buka tab
    baru → Project 2 → Settings → General → lihat kolom *Root Directory* →
    samakan. Kalau di sana kosong/`./`, biarkan default di sini juga.
-5. **Environment Variables**: buka bagian ini, lalu **paste seluruh isi file
-   `.env.project2`** sekaligus (Vercel menerima tempelan banyak baris). Setelah
-   itu tambahkan dua baris baru:
+5. **Environment Variables**: isi dari daftar yang kamu kumpulkan di Langkah A3.
+   Vercel menerima tempelan banyak baris sekaligus, jadi paling cepat tulis dulu
+   di Notepad dalam bentuk `NAMA=nilai` per baris, lalu tempel semuanya:
 
    ```
+   DATABASE_URL=...
+   DIRECT_URL=...
+   NEXTAUTH_SECRET=...
+   R2_ENDPOINT=...
+   R2_BUCKET=...
+   R2_PUBLIC_BASE_URL=...
+   R2_ACCESS_KEY_ID=...
+   R2_SECRET_ACCESS_KEY=...
    APP_MODE=true
    APP_ACCESS_TOKEN=<token dari langkah A2>
    ```
 
-   Lalu **hapus baris `CRON_SECRET`** kalau ikut tertempel. (Alasannya: tanpa
-   itu, jadwal mingguan rebuild leaderboard di project ini otomatis mati, jadi
-   leaderboard tidak dihitung dobel.)
+   `NEXTAUTH_URL` dan `NEXT_PUBLIC_SITE_URL` sengaja belum diisi — alamatnya
+   baru ketahuan setelah project jadi, dan itu dibereskan di Langkah A5.
 
-   Pastikan **tidak ada** baris `PRIVATE_MODE` di sini. Kalau ada, hapus —
-   baris itu yang bikin katalog terkunci, padahal di app kita mau katalognya
-   terbuka normal.
+   Pastikan **tidak ada** `PRIVATE_MODE` maupun `CRON_SECRET` di sini. Yang
+   pertama bikin katalog terkunci, padahal di app kita mau terbuka normal; yang
+   kedua kalau diisi bikin cron rebuild leaderboard jalan dobel dengan Project 2.
 6. Klik **Deploy**, tunggu sampai selesai (2–5 menit)
 
 ## A5. Betulkan alamat, lalu deploy ulang
