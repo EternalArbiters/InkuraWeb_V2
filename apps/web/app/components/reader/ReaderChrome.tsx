@@ -67,7 +67,7 @@ function SettingChip({
         (disabled
           ? "cursor-not-allowed border-gray-200 bg-gray-100 text-slate-400 dark:border-white/5 dark:bg-white/[0.03] dark:text-slate-500"
           : active
-            ? "border-purple-500 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(168,85,247,0.9)]"
+            ? "border-purple-500 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(248,235,160,0.9)]"
             : "border-gray-200 bg-white text-slate-700 hover:border-gray-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-white/10")
       }
     >
@@ -263,7 +263,7 @@ export default function ReaderChrome({
                     className={
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (novelPreferences.mode === "scroll"
-                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
+                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(248,235,160,0.9)]"
                         : "border-gray-200 bg-white/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "scroll" })}
@@ -277,7 +277,7 @@ export default function ReaderChrome({
                     className={
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (novelPreferences.mode === "slide"
-                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
+                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(248,235,160,0.9)]"
                         : "border-gray-200 bg-white/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10")
                     }
                     onClick={() => updatePreferences({ mode: "slide" })}
@@ -291,7 +291,7 @@ export default function ReaderChrome({
                     className={
                       "inline-flex h-10 w-10 items-center justify-center rounded-full border transition " +
                       (settingsOpen
-                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(168,85,247,0.9)]"
+                        ? "border-purple-400 bg-purple-600 text-white shadow-[0_12px_26px_-18px_rgba(248,235,160,0.9)]"
                         : "border-gray-200 bg-white/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10")
                     }
                     onClick={() => setSettingsOpen((current) => !current)}

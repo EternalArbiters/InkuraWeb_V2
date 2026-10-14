@@ -365,7 +365,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         .novel-editor-surface h3 { font-size: 1.2rem; }
         .novel-editor-surface ul, .novel-editor-surface ol { margin: 0 0 1rem 1.4rem; }
         .novel-editor-surface li { margin: .25rem 0; }
-        .novel-editor-surface blockquote { margin: 1.2rem 0; border-left: 3px solid rgba(168,85,247,.75); padding-left: 1rem; opacity: .95; }
+        .novel-editor-surface blockquote { margin: 1.2rem 0; border-left: 3px solid rgba(248,235,160,.75); padding-left: 1rem; opacity: .95; }
         .novel-editor-surface img { display: block; max-width: min(100%, 760px); height: auto; margin: 1.2rem auto; border-radius: 1rem; }
         .novel-editor-surface figure { margin: 1.2rem 0; }
         .novel-editor-surface table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
@@ -426,7 +426,7 @@ export default function NovelRichTextEditor({ value, onChange, placeholder = "Wr
         </ToolbarButton>
       </ToolbarRow>
 
-      <div className="border border-purple-400/80 bg-white/70 shadow-[0_0_0_1px_rgba(168,85,247,0.15)] dark:bg-gray-900/60">
+      <div className="border border-purple-400/80 bg-white/70 shadow-[0_0_0_1px_rgba(248,235,160,0.15)] dark:bg-gray-900/60">
         <input
           ref={inputRef}
           type="file"

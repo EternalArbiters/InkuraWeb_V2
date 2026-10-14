@@ -9,7 +9,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ===========================================================================
-   Inkura brand palette (v32) — steel blue / blue-grey / gold
+   Inkura brand palette (v32) — steel blue / pale yellow / gold
 
    The old identity was blue -> violet -> pink. Rather than rewriting ~855
    colour classes across 126 files, the Tailwind ramps those classes already
@@ -17,7 +17,7 @@
    `from-blue-500`, `to-pink-500` repaints itself:
 
      blue / sky / cyan            -> steel blue   (anchor #3f72a8)
-     purple / violet / fuchsia /  -> blue-grey    (anchor #5d7893)
+     purple / violet / fuchsia /  -> pale yellow  (anchor #f7e998)
        indigo
      pink                         -> gold         (anchor #d9a528)
 
@@ -70,54 +70,54 @@
   --color-cyan-900: #273f58;
   --color-cyan-950: #1a2838;
 
-/* abu-biru — anchor #5d7893 */
-  --color-purple-50: #f6f7f8;
-  --color-purple-100: #ebedef;
-  --color-purple-200: #d6dbe1;
-  --color-purple-300: #bac4cf;
-  --color-purple-400: #96a8ba;
-  --color-purple-500: #728ca6;
-  --color-purple-600: #5b7590;
-  --color-purple-700: #4c6176;
-  --color-purple-800: #3f4f5f;
-  --color-purple-900: #34404c;
-  --color-purple-950: #212930;
+/* kuning pucat — anchor #f7e998 */
+  --color-purple-50: #fefdfb;
+  --color-purple-100: #fbfaf4;
+  --color-purple-200: #f9f6e7;
+  --color-purple-300: #f7f2d4;
+  --color-purple-400: #f7eebb;
+  --color-purple-500: #f8eba0;
+  --color-purple-600: #f5e584;
+  --color-purple-700: #efd858;
+  --color-purple-800: #e3c726;
+  --color-purple-900: #b09a1c;
+  --color-purple-950: #706215;
 
-  --color-violet-50: #f6f7f8;
-  --color-violet-100: #ebedef;
-  --color-violet-200: #d6dbe1;
-  --color-violet-300: #bac4cf;
-  --color-violet-400: #96a8ba;
-  --color-violet-500: #728ca6;
-  --color-violet-600: #5b7590;
-  --color-violet-700: #4c6176;
-  --color-violet-800: #3f4f5f;
-  --color-violet-900: #34404c;
-  --color-violet-950: #212930;
+  --color-violet-50: #fefdfb;
+  --color-violet-100: #fbfaf4;
+  --color-violet-200: #f9f6e7;
+  --color-violet-300: #f7f2d4;
+  --color-violet-400: #f7eebb;
+  --color-violet-500: #f8eba0;
+  --color-violet-600: #f5e584;
+  --color-violet-700: #efd858;
+  --color-violet-800: #e3c726;
+  --color-violet-900: #b09a1c;
+  --color-violet-950: #706215;
 
-  --color-fuchsia-50: #f6f7f8;
-  --color-fuchsia-100: #ebedef;
-  --color-fuchsia-200: #d6dbe1;
-  --color-fuchsia-300: #bac4cf;
-  --color-fuchsia-400: #96a8ba;
-  --color-fuchsia-500: #728ca6;
-  --color-fuchsia-600: #5b7590;
-  --color-fuchsia-700: #4c6176;
-  --color-fuchsia-800: #3f4f5f;
-  --color-fuchsia-900: #34404c;
-  --color-fuchsia-950: #212930;
+  --color-fuchsia-50: #fefdfb;
+  --color-fuchsia-100: #fbfaf4;
+  --color-fuchsia-200: #f9f6e7;
+  --color-fuchsia-300: #f7f2d4;
+  --color-fuchsia-400: #f7eebb;
+  --color-fuchsia-500: #f8eba0;
+  --color-fuchsia-600: #f5e584;
+  --color-fuchsia-700: #efd858;
+  --color-fuchsia-800: #e3c726;
+  --color-fuchsia-900: #b09a1c;
+  --color-fuchsia-950: #706215;
 
-  --color-indigo-50: #f6f7f8;
-  --color-indigo-100: #ebedef;
-  --color-indigo-200: #d6dbe1;
-  --color-indigo-300: #bac4cf;
-  --color-indigo-400: #96a8ba;
-  --color-indigo-500: #728ca6;
-  --color-indigo-600: #5b7590;
-  --color-indigo-700: #4c6176;
-  --color-indigo-800: #3f4f5f;
-  --color-indigo-900: #34404c;
-  --color-indigo-950: #212930;
+  --color-indigo-50: #fefdfb;
+  --color-indigo-100: #fbfaf4;
+  --color-indigo-200: #f9f6e7;
+  --color-indigo-300: #f7f2d4;
+  --color-indigo-400: #f7eebb;
+  --color-indigo-500: #f8eba0;
+  --color-indigo-600: #f5e584;
+  --color-indigo-700: #efd858;
+  --color-indigo-800: #e3c726;
+  --color-indigo-900: #b09a1c;
+  --color-indigo-950: #706215;
 
 /* emas — anchor #d9a528 */
   --color-pink-50: #faf8f5;
@@ -314,7 +314,7 @@
   --ink-accent-hover: #37608b;
   --ink-accent-fg: #ffffff;
   /* Inkura signature gradient */
-  --ink-gradient: linear-gradient(to right, #588bc0, #5b7590);
+  --ink-gradient: linear-gradient(to right, #588bc0, #f5e584);
 }
 
 [data-ui-theme="modern"].dark {
@@ -328,7 +328,7 @@
   --ink-accent: #84a7cd;
   --ink-accent-hover: #afc4da;
   --ink-accent-fg: #0a0e1a;
-  --ink-gradient: linear-gradient(to right, #588bc0, #5b7590);
+  --ink-gradient: linear-gradient(to right, #588bc0, #f5e584);
 }
 
 .ink-btn-primary {

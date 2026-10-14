@@ -160,7 +160,7 @@ export default async function ReadChapterPage({
       <div className="flex items-center justify-center pt-2">
         <Link
           href={`/w/${work.slug}`}
-          className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-[0_18px_40px_-24px_rgba(168,85,247,0.9)]"
+          className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-[0_18px_40px_-24px_rgba(248,235,160,0.9)]"
         >
           {backToNovelLabel}
         </Link>
