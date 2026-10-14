@@ -17,12 +17,38 @@ di Vercel.
 | Status | **paused, jangan disentuh** | private link | backend APK |
 | Env penanda | — | `PRIVATE_MODE=true` | `APP_MODE=true` + `APP_ACCESS_TOKEN` |
 | Yang bisa masuk | — | ADMIN / SPECIAL_USER | **hanya APK Hohoo** |
-| Isi yang terlihat | — | katalog + Koleksi Admin | katalog publik normal |
+| Isi yang terlihat | — | katalog + Koleksi Admin | **katalog publik + Koleksi Admin** |
 
 Project 3 menjalankan Hohoo seperti versi publik dulu (registrasi terbuka,
 semua karya published kelihatan), tapi `middleware.ts` menjawab **404 untuk
 semua request yang bukan dari APK**. Jadi tidak ada web yang bisa dijelajahi,
 dishare, atau diindeks dari browser.
+
+## App = gabungan Project 1 dan Project 2
+
+Ini perilaku yang disengaja, dan tidak butuh kode khusus:
+
+- **Sisi Project 1** datang dari `PRIVATE_MODE` yang dibiarkan kosong. Flag itu
+  hanya mengubah tiga hal — gerbang di `middleware.ts`, halaman root
+  (`app/page.tsx`), dan blokir pendaftaran mandiri
+  (`server/services/api/auth/register/route.ts`). Tanpa flag itu, ketiganya
+  kembali ke perilaku publik: siapa pun yang punya APK bisa daftar dan menjelajah
+  seluruh katalog published.
+- **Sisi Project 2** datang dari aturan Koleksi Admin yang **murni berbasis peran**.
+  `canViewNonPublishedWork()` di `server/services/works/gating.ts` hanya melihat
+  `viewer.role` dan `work.isAdminCollection` — tidak pernah menyentuh `PRIVATE_MODE`
+  atau flag deployment apa pun. Jadi SPECIAL_USER yang login lewat APK tetap melihat
+  Koleksi Admin, termasuk chapter draft-nya.
+
+Artinya satu akun SPECIAL_USER mendapat katalog publik penuh **dan** Koleksi Admin
+dalam satu aplikasi, tanpa perlu deployment terpisah.
+
+Aturan ini dikunci oleh `tests/unit/works-gating.spec.ts` (blok "Koleksi Admin
+visibility"): published terlihat semua orang, draft ber-flag hanya untuk
+SPECIAL_USER dan ADMIN, draft tanpa flag tetap tersembunyi, dan SPECIAL_USER
+**tidak** mendapat keringanan gate mature/deviant-love. Kalau nanti ada yang
+menambahkan pengecekan `PRIVATE_MODE` ke dalam gating, tes itu yang akan
+menangkapnya.
 
 Cara APK dikenali: WebView-nya menambahkan penanda ke User-Agent —
 `InkuraApp/<versi> (key=<APP_ACCESS_TOKEN>)` — dan middleware membandingkan
