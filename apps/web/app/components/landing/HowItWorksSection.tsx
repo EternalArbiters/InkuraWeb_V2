@@ -21,7 +21,7 @@ export default function HowItWorksSection({ items }: Props) {
       <div className="max-w-6xl mx-auto px-6 text-center">
         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-16">
           How{" "}
-          <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Hohoho</span>
+          <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Hohoo</span>
           {" "}Works
         </h2>
 

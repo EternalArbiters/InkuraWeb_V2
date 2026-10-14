@@ -1,6 +1,6 @@
 # inkura-mobile
 
-Capacitor shell Android untuk Hohoho. Tidak ada UI di sini: WebView-nya me-load
+Capacitor shell Android untuk Hohoo. Tidak ada UI di sini: WebView-nya me-load
 deployment `APP_MODE` (Vercel Project 3), jadi perubahan web cukup dideploy
 tanpa bikin APK baru.
 

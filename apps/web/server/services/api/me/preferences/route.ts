@@ -32,7 +32,7 @@ export const PATCH = apiRoute(async (req: Request) => {
   const blockedDeviantLoveIds = Array.isArray(body.blockedDeviantLoveIds) ? body.blockedDeviantLoveIds.map(String) : undefined;
 
   if (body.inkuraLanguage !== undefined && body.inkuraLanguage !== null && !inkuraLanguage) {
-    return badRequest("Invalid Hohoho language");
+    return badRequest("Invalid Hohoo language");
   }
 
   const current = await prisma.user.findUnique({

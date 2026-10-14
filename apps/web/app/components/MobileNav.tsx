@@ -72,7 +72,7 @@ export default function MobileNav({
   type OrbitItem   = OrbitLink | OrbitClose | OrbitLogout;
 
   const bookOrbit: OrbitItem[] = [
-    { type: "link", href: "/donate",           label: t("Donate For Hohoho"), Icon: Gift,        red: true },
+    { type: "link", href: "/donate",           label: t("Donate For Hohoo"), Icon: Gift,        red: true },
     { type: "link", href: "/search",           label: t("Advanced Search"),   Icon: Search },
     { type: "link", href: "/all",              label: t("All"),               Icon: LayoutGrid },
     { type: "link", href: "/novel",            label: t("Novel"),             Icon: BookText },
@@ -87,7 +87,7 @@ export default function MobileNav({
   ];
 
   const settingsOrbit: OrbitItem[] = [
-    { type: "link", href: "/donate",            label: t("Donate For Hohoho"),       Icon: Gift,       red: true },
+    { type: "link", href: "/donate",            label: t("Donate For Hohoo"),       Icon: Gift,       red: true },
     { type: "link", href: "/notifications",     label: t("Notifications"),           Icon: Bell,       badge: "/api/notifications/unread-count" },
     { type: "link", href: "/studio",            label: t("Upload"),                  Icon: Upload },
     { type: "link", href: "/community",         label: t("Community"),               Icon: Users },

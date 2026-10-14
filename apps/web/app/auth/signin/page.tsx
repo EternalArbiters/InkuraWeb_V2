@@ -51,7 +51,7 @@ function SignInInner() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#f8fbff] via-[#e9f2fc] to-[#dbe9fa] dark:from-[#0c1538] dark:via-[#15214e] dark:to-[#1e3166]">
       <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl shadow-2xl p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Sign in to Hohoho")}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Sign in to Hohoo")}</h1>
         <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t("Use your email or username.")}</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-3">

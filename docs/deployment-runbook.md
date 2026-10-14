@@ -1,6 +1,6 @@
 # Deployment runbook
 
-This document memandu deploy repo Hohoho cleaned to kombinasi **Vercel + Neon Postgres + Cloudflare R2**.
+This document memandu deploy repo Hohoo cleaned to kombinasi **Vercel + Neon Postgres + Cloudflare R2**.
 
 ## Target deploy
 

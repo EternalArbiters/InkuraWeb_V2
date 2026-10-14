@@ -76,7 +76,7 @@ export default function HeroSection({ next, onLogin, onSignup }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            In every stroke and sentence, there is an unspoken hope. Hohoho wanna be a home for works that come with
+            In every stroke and sentence, there is an unspoken hope. Hohoo wanna be a home for works that come with
             writer&apos;s heart to reader. The infinite world is waiting to be tread, doesn&apos;t wind want to open this
             page?
           </motion.p>
@@ -111,7 +111,7 @@ export default function HeroSection({ next, onLogin, onSignup }: Props) {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative w-[450px] h-[450px] md:w-[400px] md:h-[400px]">
-            <Image src="/images/Kucchan.png" alt="Maskot Hohoho" fill className="object-contain" priority />
+            <Image src="/images/Kucchan.png" alt="Maskot Hohoo" fill className="object-contain" priority />
           </div>
           {/* Neon Line */}
           <div className="w-3/4 h-[5px] mt-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg drop-shadow-[0_0_10px_rgba(236,72,153,0.6)] animate-pulse" />

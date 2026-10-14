@@ -213,7 +213,7 @@ export default function DesktopActions({
                 prefetch={false}
                 className="block w-full text-center px-3 py-2 rounded-full text-sm font-semibold bg-red-600 text-white shadow-md hover:bg-red-700 transition"
               >
-                {t("Donate For Hohoho")}
+                {t("Donate For Hohoo")}
               </Link>
             </div>
             {isAuthed ? (

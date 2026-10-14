@@ -1,6 +1,6 @@
 # Env vars reference
 
-This document is sumber kebenaran env vars for repo Hohoho cleaned stage 10.
+This document is sumber kebenaran env vars for repo Hohoo cleaned stage 10.
 
 File example used developer:
 
@@ -73,7 +73,7 @@ Note:
 
 ```env
 RESEND_API_KEY=
-EMAIL_FROM="Hohoho <no-reply@example.com>"
+EMAIL_FROM="Hohoo <no-reply@example.com>"
 RESET_PASSWORD_URL_BASE=http://localhost:3000
 APP_BASE_URL=http://localhost:3000
 SHOW_RESET_TOKEN=1

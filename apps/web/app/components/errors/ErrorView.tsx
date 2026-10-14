@@ -33,7 +33,7 @@ export default function ErrorView({
   return (
     <main className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl shadow-2xl p-6">
-        <div className="text-sm text-gray-500 dark:text-gray-400">Hohoho</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">Hohoo</div>
         <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
         <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">{message}</p>
 

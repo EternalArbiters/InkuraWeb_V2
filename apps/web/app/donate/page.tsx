@@ -6,8 +6,8 @@ export const revalidate = 3600;
 
 export default async function DonatePage() {
   const [title, description, donateQrLabel] = await Promise.all([
-    getActiveUILanguageText("Donate For Hohoho", { section: "Navigation" }),
-    getActiveUILanguageText("Thank you for supporting Hohoho's development. Scan the QR code below to donate.", { section: "Page Donate" }),
+    getActiveUILanguageText("Donate For Hohoo", { section: "Navigation" }),
+    getActiveUILanguageText("Thank you for supporting Hohoo's development. Scan the QR code below to donate.", { section: "Page Donate" }),
     getActiveUILanguageText("Donate QR", { section: "Page Donate" }),
   ]);
 

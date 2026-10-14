@@ -1,6 +1,6 @@
 # Perf Refactor — Stage 0 Baseline & Guardrails
 
-This document is baseline work for refactor performa Hohoho next.
+This document is baseline work for refactor performa Hohoo next.
 
 ## Guardrails non-negotiable
 

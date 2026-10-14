@@ -1,6 +1,6 @@
 # Database reset & seeding
 
-This document explain cara menangani database local for repo Hohoho cleaned.
+This document explain cara menangani database local for repo Hohoo cleaned.
 
 ## Prinsip most penting
 

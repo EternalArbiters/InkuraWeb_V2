@@ -61,7 +61,7 @@ const SPECIAL_BADGE_GUIDE = [
   {
     key: "GREED",
     label: "Greed",
-    description: "Donates the most to Hohoho.",
+    description: "Donates the most to Hohoo.",
   },
   {
     key: "GLUTTONY",

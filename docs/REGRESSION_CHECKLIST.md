@@ -1,4 +1,4 @@
-# Regression Checklist (Manual) – Hohoho
+# Regression Checklist (Manual) – Hohoo
 
 Checklist this used each kali we refactor/tidy up repo so that **features not lost**.
 

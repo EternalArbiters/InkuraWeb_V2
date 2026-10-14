@@ -1,6 +1,6 @@
-# Hohoho Android App (Capacitor) — Runbook
+# Hohoo Android App (Capacitor) — Runbook
 
-Versi aplikasi Android dari Hohoho. Bentuknya **APK** yang dibagikan langsung
+Versi aplikasi Android dari Hohoo. Bentuknya **APK** yang dibagikan langsung
 (bukan Play Store), isinya Capacitor WebView yang me-load deployment khusus app
 di Vercel.
 
@@ -16,10 +16,10 @@ di Vercel.
 | Domain | `inkura.id` | `koleksiatmint.vercel.app` | bebas, mis. `inkura-app.vercel.app` |
 | Status | **paused, jangan disentuh** | private link | backend APK |
 | Env penanda | — | `PRIVATE_MODE=true` | `APP_MODE=true` + `APP_ACCESS_TOKEN` |
-| Yang bisa masuk | — | ADMIN / SPECIAL_USER | **hanya APK Hohoho** |
+| Yang bisa masuk | — | ADMIN / SPECIAL_USER | **hanya APK Hohoo** |
 | Isi yang terlihat | — | katalog + Koleksi Admin | katalog publik normal |
 
-Project 3 menjalankan Hohoho seperti versi publik dulu (registrasi terbuka,
+Project 3 menjalankan Hohoo seperti versi publik dulu (registrasi terbuka,
 semua karya published kelihatan), tapi `middleware.ts` menjawab **404 untuk
 semua request yang bukan dari APK**. Jadi tidak ada web yang bisa dijelajahi,
 dishare, atau diindeks dari browser.
@@ -132,8 +132,8 @@ Isi `app.config.json`:
   "url": "https://inkura-app.vercel.app",
   "key": "<token dari Langkah 1>",
   "version": "1.0",
-  "appId": "id.inkura.app",
-  "appName": "Hohoho"
+  "appId": "id.hohoo.app",
+  "appName": "Hohoo"
 }
 ```
 
@@ -176,7 +176,7 @@ lewat kabel:
 adb install -r apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Yang harus terlihat: splash gelap, lalu langsung halaman Hohoho. Kalau yang
+Yang harus terlihat: splash gelap, lalu langsung halaman Hohoo. Kalau yang
 muncul halaman putih atau tulisan `404 — Not Found`, berarti token APK tidak
 sama dengan `APP_ACCESS_TOKEN` (lihat Troubleshooting).
 
@@ -205,7 +205,7 @@ npm run apk:release
 
 ## Langkah 8 — Bagikan APK-nya
 
-Bucket R2 yang sudah dipakai Hohoho adalah tempat paling praktis: upload
+Bucket R2 yang sudah dipakai Hohoo adalah tempat paling praktis: upload
 APK-nya, lalu bagikan URL `R2_PUBLIC_BASE_URL/...`. Tidak perlu server baru.
 
 Yang perlu diberitahu ke teman-teman saat pasang pertama kali: Android menolak

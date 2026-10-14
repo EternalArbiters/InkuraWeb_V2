@@ -108,13 +108,13 @@ export default function DashboardNavbar() {
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between space-x-4">
           <div className="flex items-center justify-between w-full md:w-auto">
             <Link href="/home" className="flex items-center gap-2">
-              <Image src="/logo-inkura.png" alt="Hohoho" width={36} height={36} />
+              <Image src="/logo-inkura.png" alt="Hohoo" width={36} height={36} />
               <span
                 className={`text-2xl font-semibold tracking-tight ${
                   transparentNav ? "text-white drop-shadow" : "text-[var(--ink-fg)]"
                 }`}
               >
-                HOHOHO
+                HOHOO
               </span>
             </Link>
             <div className={`flex items-center gap-2 md:hidden ml-2 ${transparentNav ? "text-white" : ""}`}>

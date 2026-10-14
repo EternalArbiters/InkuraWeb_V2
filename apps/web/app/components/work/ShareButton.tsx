@@ -21,7 +21,7 @@ export default function ShareButton({ title, className = "" }: Props) {
   }, []);
 
   const share = async () => {
-    const shareData = { title: title || "Hohoho", url };
+    const shareData = { title: title || "Hohoo", url };
     const nav: any = typeof navigator !== "undefined" ? navigator : null;
     if (nav?.share && url) {
       try {

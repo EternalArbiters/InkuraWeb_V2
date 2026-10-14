@@ -1,4 +1,4 @@
-# Hohoho V15 – Sanity Checklist (Regression Guard)
+# Hohoo V15 – Sanity Checklist (Regression Guard)
 
 
 > Note (cleaned repo): the regression checklist that is now the **primary source** is in `../../docs/REGRESSION_CHECKLIST.md`.

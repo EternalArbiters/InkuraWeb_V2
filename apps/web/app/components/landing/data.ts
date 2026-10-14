@@ -169,7 +169,7 @@ export const HOW_IT_WORKS_ITEMS: HowItWorksItem[] = [
     icon: faUserPlus,
     bg: "from-blue-500 to-purple-600",
     title: "Sign Up",
-    desc: "Create your free Hohoho account as a reader or creator to get started.",
+    desc: "Create your free Hohoo account as a reader or creator to get started.",
   },
   {
     icon: faCompass,

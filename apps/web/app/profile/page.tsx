@@ -272,7 +272,7 @@ export default async function ProfilePage() {
               </Link>
               <ProfileShareButton
                 path={profile.username ? `/u/${profile.username}` : "/profile"}
-                title={`${displayName} · Hohoho`}
+                title={`${displayName} · Hohoo`}
                 iconOnlyOnMobile
                 className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800 md:h-auto md:w-auto md:px-5 md:py-2.5"
               />

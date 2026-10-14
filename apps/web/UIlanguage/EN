@@ -28,7 +28,7 @@ Logout
 Sign In
 Profile
 Settings
-Donate For Hohoho
+Donate For Hohoo
 Search anything on
 Search
 Search title...
@@ -107,8 +107,8 @@ Page Settings Account
 
 Account Settings
 Preferred languages
-Hohoho Language
-Choose which language Hohoho should use for the website UI.
+Hohoo Language
+Choose which language Hohoo should use for the website UI.
 Mature / 18+
 I'm 18+ (Unlock it)
 Deviant Love
@@ -116,17 +116,17 @@ Unlock it
 
 Page Onboarding
 
-Welcome to Hohoho
+Welcome to Hohoo
 Finish setting up your account
 We need your UI language choice before you continue. Demographic details stay here too so analytics and recommendations can understand your audience better.
 What language do you want to use on this website?
-Hohoho UI language
-You can change your Hohoho UI language later from your account settings.
-Continue to Hohoho
+Hohoo UI language
+You can change your Hohoo UI language later from your account settings.
+Continue to Hohoo
 
 Page Sign In
 
-Sign in to Hohoho
+Sign in to Hohoo
 Use your email or username.
 Email or username
 Password
@@ -138,7 +138,7 @@ Sign Up
 
 Page Sign Up
 
-Sign up for Hohoho
+Sign up for Hohoo
 Display name (optional)
 Username
 Email
@@ -216,7 +216,7 @@ Return to All
 
 Page Donate
 
-Thank you for supporting Hohoho's development. Scan the QR code below to donate.
+Thank you for supporting Hohoo's development. Scan the QR code below to donate.
 Donate QR
 
 Page Newsletter
@@ -527,7 +527,7 @@ Failed to update follow status
 
 Sweep app/components/user/ProfileShareButton.tsx
 
-Hohoho profile
+Hohoo profile
 
 Sweep app/components/user/PublicProfileActionsMenu.tsx
 
@@ -1247,9 +1247,9 @@ Forum thread (placeholder) so /forum/* links do not 404.
 Event page (placeholder) so /events/* links do not 404.
 Creator profile (placeholder) so /creator/* links do not 404.
 Work detail (placeholder) so /content/* links do not 404.
-Hohoho Mascot
+Hohoo Mascot
 Footer Illustration
-Hohoho Logo
+Hohoo Logo
 Sorry, an error occurred while loading this page.
 Online
 Sign-in failed
@@ -1367,7 +1367,7 @@ Final Sweep Auth & Profile
 Registration failed
 Login Art
 Welcome Back!
-Join Hohoho
+Join Hohoo
 Log in to access amazing content.
 Create your account to start your journey.
 Email or Username
@@ -1416,7 +1416,7 @@ Discover zines, short stories, and expressive creative content made with passion
 Anime & Donghua
 Asian Dramas
 Watch Korean, Japanese, and other Asian dramas to brighten your days with heartfelt stories.
-Create your free Hohoho account as a reader or creator to get started.
+Create your free Hohoo account as a reader or creator to get started.
 Explore & Enjoy
 Browse original comics, novels, and art from global creators. No AI-generated content.
 Upload Your Work
@@ -1431,8 +1431,8 @@ Support Creators
 Donate directly to support your favorite creators and help them grow.
 Join the Community
 Connect with other fans and creators, join discussions, events, and creative groups.
-Maskot Hohoho
-Logo Hohoho
+Maskot Hohoo
+Logo Hohoo
 
 Final Sweep Admin & Studio
 
@@ -1547,7 +1547,7 @@ Create series
 Rename
 Every work already belongs to a series.
 Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP.
-If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Hohoho, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Hohoho will remove it automatically.
+If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Hohoo, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Hohoo will remove it automatically.
 Add sub title
 Add images
 Choose all images
@@ -1627,11 +1627,11 @@ Failed to rebuild community snapshots
 Welcome Popup
 ==========
 
-Welcome to Hohoho! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^
+Welcome to Hohoo! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^
 Just so you know, content containing adult or deviant elements will be hidden and not advertised for everyone's comfort. Adjust your settings if you want to read them. We must protect minors from reading what they shouldn't ^^
-Hello, creators on Hohoho! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders!
+Hello, creators on Hohoo! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders!
 Don't show again
-Hohoho Mascot
+Hohoo Mascot
 
 ==========
 Hero Banner
@@ -1722,7 +1722,7 @@ Account No.
 Already transferred? Let us know!
 Scan the QR above to pay, then fill in this form so we get notified.
 Your name
-Your donation to Hohoho has been received. We appreciate your support!
+Your donation to Hohoo has been received. We appreciate your support!
 Confirm Donation
 Message
 Remove

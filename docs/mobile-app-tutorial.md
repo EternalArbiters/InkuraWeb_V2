@@ -1,4 +1,4 @@
-# Tutorial Lengkap: Bikin APK Hohoho dari Nol
+# Tutorial Lengkap: Bikin APK Hohoo dari Nol
 
 Panduan ini ditulis dengan asumsi kamu **belum pernah bikin APK sama sekali**.
 Semua langkah ditulis apa adanya: perintah yang diketik, tombol yang diklik, dan
@@ -12,14 +12,14 @@ dokumen itu peta detailnya.
 
 ## Apa yang sebenarnya kita bikin
 
-APK Hohoho **bukan** aplikasi yang isinya ditulis ulang. Isinya adalah
-"browser mini" yang cuma bisa membuka satu alamat: deployment Hohoho khusus app.
+APK Hohoo **bukan** aplikasi yang isinya ditulis ulang. Isinya adalah
+"browser mini" yang cuma bisa membuka satu alamat: deployment Hohoo khusus app.
 Jadi:
 
-- Semua halaman, fitur, dan tampilan = web Hohoho yang sudah ada
+- Semua halaman, fitur, dan tampilan = web Hohoo yang sudah ada
 - Kalau kamu ubah kode web lalu deploy, **app teman-temanmu langsung ikut
   berubah** tanpa bikin APK baru
-- Alamat itu dikunci: dibuka di browser biasa hasilnya 404, cuma APK Hohoho yang
+- Alamat itu dikunci: dibuka di browser biasa hasilnya 404, cuma APK Hohoo yang
   bisa masuk
 
 Jadi yang perlu dibikin ada dua: **server khusus app** (Fase A) dan **file APK**
@@ -80,7 +80,7 @@ git push
 
 ## A2. Bikin token rahasia
 
-Token ini yang membedakan "request dari APK Hohoho" dan "orang iseng buka URL di
+Token ini yang membedakan "request dari APK Hohoo" dan "orang iseng buka URL di
 browser". Jalankan di terminal:
 
 ```bash
@@ -181,7 +181,7 @@ bertuliskan `404 — Not Found`.**
 | Yang muncul | Artinya |
 |---|---|
 | Halaman hitam `404 — Not Found` | ✅ Benar. Gerbang aktif, web tidak bisa dibuka publik. |
-| Halaman Hohoho normal | ❌ `APP_MODE` belum terbaca. Cek ejaannya persis `APP_MODE` = `true`, lalu Redeploy. |
+| Halaman Hohoo normal | ❌ `APP_MODE` belum terbaca. Cek ejaannya persis `APP_MODE` = `true`, lalu Redeploy. |
 | Halaman error Vercel / build failed | ❌ Ada env yang kurang. Buka tab Deployments → klik deployment-nya → baca log paling bawah. |
 
 ## A7. Izinkan upload gambar dari alamat baru (CORS R2)
@@ -189,7 +189,7 @@ bertuliskan `404 — Not Found`.**
 Tanpa langkah ini, upload cover dan halaman komik dari app akan gagal.
 
 1. Buka [dash.cloudflare.com](https://dash.cloudflare.com) → **R2** → klik
-   bucket Hohoho-mu
+   bucket Hohoo-mu
 2. Tab **Settings** → cari **CORS Policy** → **Edit** / **Add CORS policy**
 3. Kalau sudah ada isinya, **tambahkan** entri baru ke dalam daftar (jangan
    ditimpa). Kalau masih kosong, isi seperti ini:
@@ -283,8 +283,8 @@ Buka `apps/mobile/app.config.json`, isi jadi seperti ini:
   "url": "https://inkura-app.vercel.app",
   "key": "kJ8vQ2mN4pR7xT1wY5zA3bC6dE9fG0hI",
   "version": "1.0",
-  "appId": "id.inkura.app",
-  "appName": "Hohoho"
+  "appId": "id.hohoo.app",
+  "appName": "Hohoo"
 }
 ```
 
@@ -304,7 +304,7 @@ Perintah ini membuat folder `apps/mobile/android` — itu proyek Android asli ya
 nanti dibuka di Android Studio. Kalau muncul tulisan seperti
 `✔ add in ...` berarti berhasil.
 
-> Kalau yang muncul justru pesan error panjang berisi `Missing Hohoho app
+> Kalau yang muncul justru pesan error panjang berisi `Missing Hohoo app
 > config`, berarti `app.config.json` belum ada atau belum terisi. Balik ke C2.
 
 ## C4. Pasang ikon dan splash screen
@@ -375,11 +375,11 @@ Telegram, atau upload ke Google Drive lalu buka di HP.
 
 ## D3. Tes
 
-Yang benar: splash gelap sebentar, lalu langsung halaman Hohoho seperti di web.
+Yang benar: splash gelap sebentar, lalu langsung halaman Hohoo seperti di web.
 
 | Yang muncul | Penyebab |
 |---|---|
-| Halaman Hohoho normal | ✅ Berhasil |
+| Halaman Hohoo normal | ✅ Berhasil |
 | Layar putih / `404 — Not Found` | Token di `app.config.json` ≠ `APP_ACCESS_TOKEN` di Vercel. Betulkan, lalu **wajib** `npm run sync` + build ulang (token ikut tertanam saat build, mengedit JSON saja tidak cukup) |
 | "Tidak ada koneksi" | Alamat `url` salah, atau Project 3 sedang gagal deploy |
 | Login berhasil tapi balik lagi ke halaman login | `NEXTAUTH_URL` di Vercel belum sama dengan alamat Project 3 (ulangi A5) |
@@ -453,7 +453,7 @@ Build APK di Android Studio.
 
 | Pesan / gejala | Artinya | Yang dilakukan |
 |---|---|---|
-| `Missing Hohoho app config` saat `npm run android:add` | `app.config.json` belum dibuat/terisi | Ulangi langkah C2 |
+| `Missing Hohoo app config` saat `npm run android:add` | `app.config.json` belum dibuat/terisi | Ulangi langkah C2 |
 | Gradle sync gagal, menyebut SDK atau Build-Tools | Komponen SDK kurang | Klik link "Install missing..." di notifikasi Android Studio |
 | Gradle gagal dengan error aneh soal path | Kadang karena ada spasi di `D:\Projek Web Cleo\...` | Copy folder `apps\mobile\android` ke path tanpa spasi (mis. `D:\inkura-android`), buka dari sana |
 | APK jadi, tapi app layar putih | Token tidak cocok | Samakan token, `npm run sync`, build ulang |

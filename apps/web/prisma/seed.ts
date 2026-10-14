@@ -34,7 +34,7 @@ async function main() {
       preferredLanguagesJson: JSON.stringify(["id", "en"]),
     },
     create: {
-      name: "Hohoho Admin",
+      name: "Hohoo Admin",
       username: "noel",
       email: "noelephgoddess.game@gmail.com",
       password: hashedPassword,
@@ -158,7 +158,7 @@ async function main() {
             text: {
               create: {
                 content:
-                  "Welcome to Hohoho.\n\nThis is sample NOVEL content.\n\nTry opening Studio → Work → New Chapter / Edit Chapter.",
+                  "Welcome to Hohoo.\n\nThis is sample NOVEL content.\n\nTry opening Studio → Work → New Chapter / Edit Chapter.",
               },
             },
           },

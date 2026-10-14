@@ -114,7 +114,7 @@ export default function AuthModal() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">
-              {isLogin ? "Welcome Back!" : "Join Hohoho"}
+              {isLogin ? "Welcome Back!" : "Join Hohoo"}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               {isLogin

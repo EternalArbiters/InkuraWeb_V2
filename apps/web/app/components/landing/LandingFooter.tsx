@@ -11,8 +11,8 @@ export default function LandingFooter() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-inkura.png" alt="Hohoho Logo" className="w-8 h-8" />
-            <h4 className="text-xl font-bold text-gray-800 dark:text-white">Hohoho</h4>
+            <img src="/logo-inkura.png" alt="Hohoo Logo" className="w-8 h-8" />
+            <h4 className="text-xl font-bold text-gray-800 dark:text-white">Hohoo</h4>
           </div>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
             International creative ecosystem platform is non-pirated and will not use your work for AI training, it&apos;s
@@ -32,7 +32,7 @@ export default function LandingFooter() {
             </li>
             <li>
               <a href="#Why" className="hover:text-primary transition">
-                Why Hohoho
+                Why Hohoo
               </a>
             </li>
             <li>
@@ -89,7 +89,7 @@ export default function LandingFooter() {
 
       {/* Copyright */}
       <div className="mt-12 border-t border-gray-200 dark:border-white/10 pt-6 text-center text-xs text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} Hohoho. All rights reserved.
+        &copy; {new Date().getFullYear()} Hohoo. All rights reserved.
       </div>
     </footer>
   );
