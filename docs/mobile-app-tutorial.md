@@ -134,13 +134,33 @@ harus dibiarkan kosong.
 > bikin token R2 baru saja — R2 mengizinkan banyak token sekaligus, dan token
 > lama milik Project 2 **tidak ikut mati**.
 
+> **Cek dulu file `.env` lokal yang mungkin sudah kamu punya** (mis. di folder
+> induk repo). Biasanya di situ sudah tersimpan `DATABASE_URL`, `DIRECT_URL`,
+> `NEXTAUTH_SECRET`, dan kelima env R2 — kalau ada, tidak perlu menggali ke Neon
+> maupun Cloudflare sama sekali. Yang tetap harus diganti cuma `NEXTAUTH_URL`
+> dan `NEXT_PUBLIC_SITE_URL`, karena isinya masih alamat lama.
+
 ### Opsional (fiturnya saja yang mati kalau kosong)
 
-`RESEND_API_KEY` + `EMAIL_FROM` (email reset password), `GOOGLE_CLIENT_ID/SECRET`
-dan `DISCORD_CLIENT_ID/SECRET` (login OAuth — ingat tombol Google memang
-disembunyikan di app), `UPSTASH_REDIS_REST_URL/TOKEN` (rate limit; tanpa ini
-pembatasan tidak aktif), `TELEGRAM_CHAT_ID`, dan semua `INKURA_*` yang hanya
-mengatur logging dan sudah punya nilai default aman.
+| Env | Kalau kosong |
+|---|---|
+| `RESEND_API_KEY` + `EMAIL_FROM` | email reset password tidak terkirim |
+| `UPSTASH_REDIS_REST_URL/TOKEN` | rate limit tidak aktif (fail-open) |
+| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | notifikasi donasi ke Telegram diam saja |
+| `INKURA_*` | hanya pengatur logging, semua sudah punya default aman |
+
+Telegram butuh **dua-duanya**. Kodenya `return` diam tanpa error kalau salah satu
+kosong, jadi fitur ini aman ditinggal kosong. Bot token-nya hanya bisa diambil
+dari BotFather di Telegram (`/mybots` → pilih bot → **API Token**), bukan dari
+dashboard Vercel.
+
+### `GOOGLE_*` dan `DISCORD_*` tidak ada gunanya di Project 3
+
+Jangan buang waktu mencarinya. Di Project 3 tidak ada satu pun jalur yang bisa
+memakainya: Google menolak alur OAuth di dalam WebView sehingga tombolnya
+disembunyikan di app, dan gerbang `APP_MODE` menjawab 404 untuk semua browser —
+jadi tidak ada cara membuka halaman login lewat browser biasa. Login di app
+sepenuhnya memakai email/username + password.
 
 ### Yang JANGAN diisi
 
