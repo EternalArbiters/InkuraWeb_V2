@@ -77,7 +77,7 @@ export default function ChatElyaPage() {
     <main
       className="min-h-screen flex flex-col transition-colors duration-500
         bg-[linear-gradient(to_bottom,#ffffff_0%,#ffffff_22%,#bfe6ff_22%,#bfe6ff_100%)]
-        dark:bg-[linear-gradient(to_bottom_right,#0c1538,#15214e,#1e3166)]
+        dark:bg-[linear-gradient(to_bottom_right,#080f28,#15214e,#1e3166)]
         text-black dark:text-white"
     >
       {/* Header */}

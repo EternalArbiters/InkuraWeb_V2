@@ -325,7 +325,7 @@
 }
 
 [data-ui-theme="modern"].dark {
-  --ink-bg: #0c1538;
+  --ink-bg: #080f28;
   --ink-fg: #e9f2fc;
   --ink-muted: #8099c9;
   --ink-border: #233c7e;
