@@ -3,10 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "../lib/fontawesome";
 import CustomCursor from "./components/CustomCursor";
+import ForceUpdateGate from "./components/ForceUpdateGate";
+import PullToRefresh from "./components/PullToRefresh";
 import SessionWrapper from "./components/SessionWrapper";
 import LayoutClientWrapper from "./components/LayoutClientWrapper";
 import UILanguageProvider from "./components/ui-language/UILanguageProvider";
-import { UIThemeProvider, UIThemeScript } from "./components/ui-theme/UIThemeProvider";
+import { UIThemeProvider } from "./components/ui-theme/UIThemeProvider";
 import { DarkModeScript } from "./components/dashboardNavbar/DarkModeScript";
 import { inkuraLanguageToHtmlLang } from "@/lib/inkuraLanguage";
 import { getSession } from "@/server/auth/session";
@@ -56,14 +58,19 @@ export default async function RootLayout({
     : session;
 
   return (
-    <html lang={inkuraLanguageToHtmlLang(initialLanguage)} data-inkura-language={initialLanguage}>
+    <html
+      lang={inkuraLanguageToHtmlLang(initialLanguage)}
+      data-inkura-language={initialLanguage}
+      data-ui-theme="modern"
+    >
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
-        <UIThemeScript />
         <DarkModeScript />
         <SessionWrapper session={hydratedSession}>
           <UILanguageProvider catalogs={catalogs} initialLanguage={initialLanguage}>
             <UIThemeProvider>
               <CustomCursor />
+              <ForceUpdateGate />
+              <PullToRefresh />
               <LayoutClientWrapper>{children}</LayoutClientWrapper>
             </UIThemeProvider>
           </UILanguageProvider>

@@ -570,6 +570,48 @@ Dua hal yang memaksa semua orang uninstall, jadi hindari setelah APK tersebar:
 Karena tidak lewat Play Store, **tidak ada update otomatis**: setiap kali ada APK
 baru, filenya harus kamu kirim lagi dan mereka pasang manual.
 
+## Memaksa semua orang update (layar "Update tersedia")
+
+App sekarang punya pengecekan versi bawaan: kalau versi yang terpasang di HP
+seseorang lebih lama dari yang kamu tentukan, begitu app dibuka langsung muncul
+layar "Update tersedia" yang **tidak bisa ditutup** — tidak ada tombol silang,
+tidak hilang kalau diklik di luar. Satu-satunya jalan keluar: tekan tombol
+**Update sekarang**, yang membuka link unduhan APK terbarumu lewat browser/Download
+Manager Android (bukan di dalam WebView app, supaya proses unduhnya benar-benar
+jalan). Begitu APK baru terpasang dan app dibuka ulang, layar itu hilang sendiri.
+
+Dipakai cuma kalau mau **mewajibkan** update (ada bug penting, fitur yang
+mengubah cara kerja sesuatu, dll) — biarkan dua env di bawah ini kosong kalau
+tidak perlu memaksa siapa pun, app jalan normal seperti biasa.
+
+Langkah tiap kali kamu mau mewajibkan versi baru:
+
+1. Naikkan `versionCode` di `apps/mobile/android/app/build.gradle` (seperti
+   biasa tiap bikin APK baru)
+2. Build APK-nya, upload ke tempat yang bisa diakses publik — paling praktis
+   bucket R2 yang sudah dipakai Inkura, sama seperti saran membagikan APK di
+   atas
+3. Di Vercel Project 3 → Environment Variables, set:
+   - `APP_MIN_VERSION` = angka `versionCode` yang baru itu
+   - `APP_DOWNLOAD_URL` = link ke APK yang baru diupload
+4. Redeploy Project 3
+
+Begitu langkah 4 selesai, semua HP dengan versi di bawah `APP_MIN_VERSION`
+bakal lihat layar itu di buka berikutnya — tidak perlu kamu kirim pesan satu-satu
+ke teman-teman.
+
+Beberapa hal yang perlu diketahui:
+
+- Ini murni pengecekan angka `versionCode`, **tidak terkait** dengan perubahan
+  web biasa (tema, fitur baru, dll) — itu tetap otomatis sampai ke semua orang
+  tanpa APK baru maupun layar ini.
+- Gagal aman: kalau `APP_MIN_VERSION` belum pernah diisi, atau sedang ada
+  gangguan jaringan saat app mengecek, layar ini **tidak pernah muncul** —
+  tidak akan mengunci orang keluar dari app yang sudah bisa mereka buka.
+- Tombol Update butuh patch native `DownloadListener` yang sudah otomatis
+  terpasang lewat `npm run sync` (lihat `scripts/patch-native.mjs`) — tanpa itu,
+  WebView Capacitor memang tidak bisa mengunduh file sama sekali.
+
 Urutannya selalu sama: ubah `app.config.json` atau aset → `npm run sync` →
 Build APK di Android Studio.
 

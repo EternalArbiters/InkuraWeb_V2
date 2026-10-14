@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Link from "next/link";
-import { motion, type Variants } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import WelcomePopup from "./WelcomePopup";
-import ModernHero from "./ModernHero";
-import ModernWorkCard from "@/app/components/work/ModernWorkCard";
-import type { BannerWork } from "@/server/services/home/getBannerWorks";
+import * as React from 'react';
+import Link from 'next/link';
+import { motion, type Variants } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import WelcomePopup from './WelcomePopup';
+import ModernHero from './ModernHero';
+import ModernWorkCard from '@/app/components/work/ModernWorkCard';
+import type { BannerWork } from '@/server/services/home/getBannerWorks';
 
 type RailItem = {
   title: string;
@@ -27,8 +27,8 @@ type Props = {
 function AuroraBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <div className="absolute -left-24 top-[20%] h-80 w-80 transform-gpu rounded-full bg-blue-600/10 blur-3xl will-change-transform animate-blob" />
-      <div className="absolute right-[-6rem] top-[50%] h-72 w-72 transform-gpu rounded-full bg-purple-600/12 blur-3xl will-change-transform animate-blob animation-delay-2000" />
+      <div className="animate-blob absolute top-[20%] -left-24 h-80 w-80 transform-gpu rounded-full bg-blue-600/10 blur-3xl will-change-transform" />
+      <div className="animate-blob animation-delay-2000 absolute top-[50%] right-[-6rem] h-72 w-72 transform-gpu rounded-full bg-purple-600/12 blur-3xl will-change-transform" />
     </div>
   );
 }
@@ -41,18 +41,29 @@ const railContainer: Variants = {
 };
 
 /** Bold Netflix-style row header. */
-function SectionHeader({ title, href, seeAllLabel }: { title: string; href: string; seeAllLabel: string }) {
+function SectionHeader({
+  title,
+  href,
+  seeAllLabel,
+}: {
+  title: string;
+  href: string;
+  seeAllLabel: string;
+}) {
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
         <span className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-500 to-purple-600" />
-        <h2 className="text-lg font-extrabold tracking-tight text-[var(--ink-fg)] md:text-xl">{title}</h2>
+        <h2 className="text-lg font-extrabold tracking-tight text-[var(--ink-fg)] md:text-xl">
+          {title}
+        </h2>
       </div>
       <Link
         href={href}
-        className="group/all shrink-0 text-xs font-bold uppercase tracking-wide text-[var(--ink-muted)] opacity-100 transition-all hover:text-[var(--ink-accent)] md:opacity-0 md:group-hover/row:opacity-100"
+        className="group/all shrink-0 text-xs font-bold tracking-wide text-[var(--ink-muted)] uppercase opacity-100 transition-all hover:text-[var(--ink-accent)] md:opacity-0 md:group-hover/row:opacity-100"
       >
-        {seeAllLabel} <span className="inline-block transition-transform group-hover/all:translate-x-0.5">›</span>
+        {seeAllLabel}{' '}
+        <span className="inline-block transition-transform group-hover/all:translate-x-0.5">›</span>
       </Link>
     </div>
   );
@@ -72,7 +83,7 @@ function ModernRail({
   const scrollByDir = (dir: number) => {
     const el = scrollerRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' });
   };
 
   if (!works?.length) return null;
@@ -85,7 +96,7 @@ function ModernRail({
       <div className="relative">
         <div
           ref={scrollerRef}
-          className="-mx-4 overflow-x-auto overscroll-x-contain px-4 py-4 no-scrollbar sm:-mx-6 sm:px-6"
+          className="no-scrollbar -mx-4 overflow-x-auto overscroll-x-contain px-4 py-4 sm:-mx-6 sm:px-6"
         >
           <motion.div
             className="flex w-max gap-3 md:gap-4"
@@ -111,7 +122,7 @@ function ModernRail({
           type="button"
           onClick={() => scrollByDir(-1)}
           aria-label="Scroll left"
-          className="absolute left-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ink-surface)]/95 text-[var(--ink-fg)] shadow-lg ring-1 ring-black/10 backdrop-blur-sm transition hover:bg-[var(--ink-accent)] hover:text-white opacity-0 group-hover/row:opacity-100 md:flex"
+          className="absolute top-1/2 left-1 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ink-surface)]/95 text-[var(--ink-fg)] opacity-0 shadow-lg ring-1 ring-black/10 backdrop-blur-sm transition group-hover/row:opacity-100 hover:bg-[var(--ink-accent)] hover:text-white md:flex"
         >
           <ChevronLeft size={20} />
         </button>
@@ -119,7 +130,7 @@ function ModernRail({
           type="button"
           onClick={() => scrollByDir(1)}
           aria-label="Scroll right"
-          className="absolute right-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ink-surface)]/95 text-[var(--ink-fg)] shadow-lg ring-1 ring-black/10 backdrop-blur-sm transition hover:bg-[var(--ink-accent)] hover:text-white opacity-0 group-hover/row:opacity-100 md:flex"
+          className="absolute top-1/2 right-1 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ink-surface)]/95 text-[var(--ink-fg)] opacity-0 shadow-lg ring-1 ring-black/10 backdrop-blur-sm transition group-hover/row:opacity-100 hover:bg-[var(--ink-accent)] hover:text-white md:flex"
         >
           <ChevronRight size={20} />
         </button>
@@ -133,11 +144,7 @@ function ModernRail({
  * server `page.tsx`; the modern layout is a fully custom, Netflix-style build
  * (cinematic billboard + poster rows), while the classic layout is preserved.
  */
-export default function HomeView({
-  seeAllLabel,
-  bannerWorks,
-  railItems,
-}: Props) {
+export default function HomeView({ seeAllLabel, bannerWorks, railItems }: Props) {
   const [featured, ...restRails] = railItems;
 
   return (
@@ -148,7 +155,7 @@ export default function HomeView({
 
       <div className="relative">
         <AuroraBackdrop />
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 lg:pt-16">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pt-12 pb-24 sm:px-6 lg:pt-16">
           <div className="space-y-10">
             {featured ? <ModernRail {...featured} seeAllLabel={seeAllLabel} ranked /> : null}
             {restRails.map((rail) => (
@@ -157,7 +164,7 @@ export default function HomeView({
           </div>
 
           <footer className="mt-20 border-t border-[var(--ink-border)] pt-8 text-xs text-[var(--ink-muted)]">
-            Hohoo v16
+            Hohoo v.1
           </footer>
         </div>
       </div>

@@ -162,13 +162,15 @@ export default function CommentCard(props: CommentCardProps) {
 
 
   const useCommentCard = variant === "full";
+  // v37: same surface token as every other card/row in the app (chapter list rows,
+  // etc.) — this used to be bg-white/dark:bg-gray-950, a leftover from before the
+  // --ink-* token system, which read as a visibly different (near-black) shade
+  // against the app's actual navy background.
   const wrapperClassName = useCommentCard
-    ? `rounded-xl border px-4 py-3 ${
-        depth > 0 ? "bg-white/60 dark:bg-gray-950/80" : "bg-white dark:bg-gray-950"
-      } ${
+    ? `rounded-xl border px-4 py-3 bg-[var(--ink-surface)] ${depth > 0 ? "opacity-80" : ""} ${
         isPinned
           ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20"
-          : "border-gray-200 dark:border-gray-800"
+          : "border-[var(--ink-border)]"
       } ${isFocused ? "ring-2 ring-amber-400/40" : ""}`
     : `${depth === 0 ? "py-5" : "py-4 pl-4"} ${
         isPinned && depth === 0

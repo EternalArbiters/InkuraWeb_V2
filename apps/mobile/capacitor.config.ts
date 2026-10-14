@@ -82,6 +82,9 @@ const config: CapacitorConfig = {
     // Flip to true only while debugging over chrome://inspect.
     webContentsDebuggingEnabled: false,
     backgroundColor: "#080f28",
+    // v37: off by default in Capacitor — without this, pinch-to-zoom (e.g. on
+    // comic pages in the reader) silently does nothing.
+    zoomEnabled: true,
   },
 
   plugins: {

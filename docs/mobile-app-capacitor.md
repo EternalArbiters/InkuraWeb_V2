@@ -305,4 +305,15 @@ browser atau file manager yang mereka pakai (Settings → Apps → akses khusus)
 - `app/auth/signin/page.tsx` — tombol Google disembunyikan saat jalan di app
 - `app/globals.css` — `cursor: none` dibatasi ke pointer presisi, supaya tidak
   aktif di layar sentuh
-- `.env.example` — dokumentasi `APP_MODE` / `APP_ACCESS_TOKEN`
+- `.env.example` — dokumentasi `APP_MODE` / `APP_ACCESS_TOKEN` /
+  `APP_MIN_VERSION` / `APP_DOWNLOAD_URL`
+- `app/components/ForceUpdateGate.tsx` + `app/layout.tsx` — layar "Update
+  tersedia" yang tidak bisa ditutup kalau versi APK yang terpasang ketinggalan.
+  `@capacitor/core` + `@capacitor/app` di-`import()` dinamis (bukan import
+  statis), jadi nol dampak ke bundle atau perilaku di browser biasa manapun —
+  lihat bagian "Memaksa semua orang update" di `mobile-app-tutorial.md`
+- `server/services/api/app/version/route.ts` (+ shim di `app/api/app/version/`)
+  — endpoint publik yang dibaca layar itu, murni baca dua env var di atas
+- `apps/mobile/scripts/patch-native.mjs` — sekarang juga menambahkan
+  `DownloadListener` ke `MainActivity.java` (WebView Capacitor polos tidak bisa
+  mengunduh file sama sekali tanpa ini)
