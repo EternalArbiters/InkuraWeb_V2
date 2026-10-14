@@ -95,10 +95,11 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: "DARK",
       backgroundColor: "#080f28",
-      // Keep the web content below the status bar. Android 15 (API 35, which
-      // Capacitor 7 targets) turns on edge-to-edge by default, which would let
-      // the Inkura navbar slide under the clock.
-      overlaysWebView: false,
+      // v35: the status bar itself is now hidden entirely (real fix is native, see
+      // MainActivity.java / scripts/patch-native.mjs — this JS plugin's own .hide()
+      // is not reliable enough on Android on its own). With no bar left to avoid,
+      // the web content should fill that space rather than leave it blank.
+      overlaysWebView: true,
     },
   },
 };

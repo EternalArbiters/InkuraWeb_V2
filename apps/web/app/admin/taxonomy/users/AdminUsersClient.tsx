@@ -16,6 +16,16 @@ const ROLE_OPTIONS = [
   { value: "SPECIAL_USER", label: "Special User" },
 ] as const;
 
+// Convenience only — not a security boundary (the server still enforces the real
+// minimum length). Avoids visually-ambiguous characters (0/O, 1/l/I) since this is
+// meant to be read aloud or typed by hand when relayed to a user over chat.
+const PASSWORD_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+function generatePassword(length = 12) {
+  const bytes = new Uint8Array(length);
+  window.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => PASSWORD_CHARS[b % PASSWORD_CHARS.length]).join("");
+}
+
 function roleBadgeClass(role: string) {
   if (role === "ADMIN") return "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-200";
   if (role === "SPECIAL_USER") return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200";
@@ -31,6 +41,11 @@ export default function AdminUsersClient() {
   const [drafts, setDrafts] = React.useState<Record<string, string>>({});
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Password reset: only one row's panel open at a time, keyed by user id.
+  const [resetOpenFor, setResetOpenFor] = React.useState<string | null>(null);
+  const [resetDrafts, setResetDrafts] = React.useState<Record<string, string>>({});
+  const [resetting, setResetting] = React.useState<string | null>(null);
 
   const [newEmail, setNewEmail] = React.useState("");
   const [newUsername, setNewUsername] = React.useState("");
@@ -91,6 +106,38 @@ export default function AdminUsersClient() {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(null);
+    }
+  }
+
+  async function resetPassword(userId: string) {
+    const next = resetDrafts[userId] || "";
+    if (next.length < 8) {
+      setError("New password must be at least 8 characters.");
+      return;
+    }
+    setResetting(userId);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/password`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ password: next }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Failed to reset password");
+      setResetDrafts((prev) => {
+        const copy = { ...prev };
+        delete copy[userId];
+        return copy;
+      });
+      setResetOpenFor(null);
+      const target = users.find((u) => u.id === userId);
+      setMessage(`Password updated for ${target?.username || target?.email || "user"}. Share it with them yourself — it isn't stored anywhere you can look it up again.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reset password");
+    } finally {
+      setResetting(null);
     }
   }
 
@@ -233,51 +280,103 @@ export default function AdminUsersClient() {
                 const isAdminAccount = user.role === "ADMIN";
                 const changed = draft && draft !== user.role;
                 const isSaving = saving === user.id;
+                const isResetOpen = resetOpenFor === user.id;
+                const resetDraft = resetDrafts[user.id] || "";
+                const isResetting = resetting === user.id;
 
                 return (
-                  <div
-                    key={user.id}
-                    className="flex flex-col gap-3 rounded-xl border border-neutral-200 px-4 py-3 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">{user.name || user.username || user.email}</span>
-                        {user.username ? <span className="text-xs text-neutral-400">@{user.username}</span> : null}
-                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${roleBadgeClass(user.role)}`}>
-                          {user.role}
-                        </span>
+                  <div key={user.id} className="rounded-xl border border-neutral-200 dark:border-neutral-800">
+                    <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold">{user.name || user.username || user.email}</span>
+                          {user.username ? <span className="text-xs text-neutral-400">@{user.username}</span> : null}
+                          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${roleBadgeClass(user.role)}`}>
+                            {user.role}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-xs text-neutral-400">{user.email}</div>
                       </div>
-                      <div className="mt-1 text-xs text-neutral-400">{user.email}</div>
+
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        {isAdminAccount ? (
+                          <span className="text-xs text-neutral-400">Role & password locked (hardcoded admin account)</span>
+                        ) : (
+                          <>
+                            <select
+                              value={draft ?? user.role}
+                              onChange={(e) => setDrafts((prev) => ({ ...prev, [user.id]: e.target.value }))}
+                              disabled={isSaving}
+                              className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+                            >
+                              {ROLE_OPTIONS.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.label}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => saveRole(user.id)}
+                              disabled={!changed || isSaving}
+                              className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                            >
+                              {isSaving ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isResetOpen) {
+                                  setResetOpenFor(null);
+                                } else {
+                                  setResetOpenFor(user.id);
+                                  setMessage(null);
+                                  setError(null);
+                                }
+                              }}
+                              className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                            >
+                              {isResetOpen ? "Cancel" : "Reset password"}
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-2">
-                      {isAdminAccount ? (
-                        <span className="text-xs text-neutral-400">Role locked (hardcoded admin account)</span>
-                      ) : (
-                        <>
-                          <select
-                            value={draft ?? user.role}
-                            onChange={(e) => setDrafts((prev) => ({ ...prev, [user.id]: e.target.value }))}
-                            disabled={isSaving}
-                            className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900"
-                          >
-                            {ROLE_OPTIONS.map((o) => (
-                              <option key={o.value} value={o.value}>
-                                {o.label}
-                              </option>
-                            ))}
-                          </select>
+                    {isResetOpen ? (
+                      <div className="flex flex-col gap-2 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800 sm:flex-row sm:items-center">
+                        <input
+                          type="text"
+                          value={resetDraft}
+                          onChange={(e) => setResetDrafts((prev) => ({ ...prev, [user.id]: e.target.value }))}
+                          placeholder="New password (min 8 chars)"
+                          disabled={isResetting}
+                          className="flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+                        />
+                        <div className="flex shrink-0 items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => saveRole(user.id)}
-                            disabled={!changed || isSaving}
+                            onClick={() => setResetDrafts((prev) => ({ ...prev, [user.id]: generatePassword() }))}
+                            disabled={isResetting}
+                            className="rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                          >
+                            Generate
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => resetPassword(user.id)}
+                            disabled={resetDraft.length < 8 || isResetting}
                             className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"
                           >
-                            {isSaving ? "Saving..." : "Save"}
+                            {isResetting ? "Saving..." : "Confirm"}
                           </button>
-                        </>
-                      )}
-                    </div>
+                        </div>
+                        <p className="text-xs text-neutral-400 sm:basis-full">
+                          This sets their password directly — there is no way to see what it currently is (it's
+                          stored as a one-way hash). Share the new one with {user.username || "them"} yourself.
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}

@@ -388,6 +388,51 @@ Kalau muncul notifikasi kuning/merah berisi link seperti *"Install missing SDK
 package(s)"* atau *"Install Build Tools ... and sync project"* → **klik link
 itu**, setujui lisensinya, tunggu, selesai. Itu normal.
 
+## C5a. Kalau Gradle Sync gagal dengan "Unsupported class file major version"
+
+Ini kejadian nyata di mesin yang dipakai menulis tutorial ini, bukan skenario
+andai-andai: Android Studio versi baru membundel JDK-nya sendiri (`jbr/`, JDK 25
+di versi 2026.2), tapi proyek Android yang dibuat Capacitor masih memakai Gradle
+8.11.1 — versi itu belum sanggup jalan di atas JDK sebaru itu. Hasilnya Gradle
+Sync (atau build) gagal dengan pesan seperti:
+
+```
+Unsupported class file major version 69
+```
+
+(angkanya beda-beda tergantung versi JDK — 69 = JDK 25, 68 = JDK 24, dst.)
+
+**Jangan dibetulkan dengan menaikkan versi Gradle/AGP proyek.** Gradle 9.x
+memang mendukung JDK sebaru itu, tapi pasangan versi Android Gradle Plugin yang
+cocok dengannya masih berubah-ubah dan belum terdokumentasi rapi — berisiko
+malah menambah masalah baru. Jalan amannya: **pasang satu JDK LTS lebih tua
+khusus buat Gradle**, biarkan JBR bawaan Android Studio tetap dipakai IDE-nya
+sendiri.
+
+1. Pasang **Eclipse Temurin 21** (JDK LTS, gratis):
+
+   ```powershell
+   winget install --id EclipseAdoptium.Temurin.21.JDK --silent --accept-package-agreements --accept-source-agreements
+   ```
+
+   (Atau unduh manual dari [adoptium.net](https://adoptium.net) kalau `winget`
+   tidak tersedia.)
+
+2. Di Android Studio: **File → Settings** (Windows) → **Build, Execution,
+   Deployment → Build Tools → Gradle** → kolom **Gradle JDK** → pilih
+   **Add JDK...** → arahkan ke folder instalasi Temurin, biasanya
+   `C:\Program Files\Eclipse Adoptium\jdk-21.x.x.x-hotspot`
+3. **OK**, lalu klik ikon gajah "Sync Project with Gradle Files" di toolbar atas
+
+Kalau build lewat terminal (bukan tombol di Android Studio), set `JAVA_HOME`
+ke folder itu sebelum menjalankan `gradlew`:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.x.x.x-hotspot"
+cd apps\mobile\android
+.\gradlew.bat assembleDebug
+```
+
 ## C6. Build APK-nya
 
 1. Menu atas: **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**
@@ -402,7 +447,7 @@ Lokasi filenya:
 apps\mobile\android\app\build\outputs\apk\debug\app-debug.apk
 ```
 
-Itu APK-mu. Ukurannya kecil (~5 MB) karena isinya memang cuma pembungkus.
+Itu APK-mu. Ukurannya kecil (~7 MB) karena isinya memang cuma pembungkus.
 
 ---
 
@@ -537,6 +582,7 @@ Build APK di Android Studio.
 | `Missing Hohoo app config` saat `npm run android:add` | `app.config.json` belum dibuat/terisi | Ulangi langkah C2 |
 | Gradle sync gagal, menyebut SDK atau Build-Tools | Komponen SDK kurang | Klik link "Install missing..." di notifikasi Android Studio |
 | Gradle gagal dengan error aneh soal path | Kadang karena ada spasi di `D:\Projek Web Cleo\...` | Copy folder `apps\mobile\android` ke path tanpa spasi (mis. `D:\inkura-android`), buka dari sana |
+| Build gagal: `Unsupported class file major version 69` (atau angka lain) | JDK yang dipakai Gradle lebih baru dari yang didukung versi Gradle proyek ini. Android Studio versi baru membundel JDK 25 di `jbr/`, sementara Gradle yang di-scaffold Capacitor (8.11.1) baru jalan sampai sekitar JDK 23. Lihat **Langkah C5a** di bawah — ini bukan kesalahanmu, dan terjadi di hampir semua install Android Studio baru saat ini. | Pasang JDK 21 LTS terpisah khusus untuk Gradle (lihat C5a); **jangan** menaikkan versi Gradle/AGP proyek untuk "mengejar" JDK barunya — kombinasi Gradle 9.x + AGP yang cocok belum stabil/terdokumentasi baik per sekarang |
 | APK jadi, tapi app layar putih | Token tidak cocok | Samakan token, `npm run sync`, build ulang |
 | Semua halaman di app 404 | `APP_ACCESS_TOKEN` kosong di Vercel | Isi, lalu Redeploy |
 | Upload gambar gagal di app | CORS R2 belum memuat alamat Project 3 | Ulangi A7 |

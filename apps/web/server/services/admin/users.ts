@@ -75,6 +75,69 @@ export async function createAdminUser(input: CreateAdminUserInput) {
   return created;
 }
 
+export type AdminResetUserPasswordInput = {
+  adminId: string;
+  userId: string;
+  password: string;
+  ip?: string | null;
+  userAgent?: string | null;
+};
+
+// v31: lets an admin set a user's password directly — for when a user (often a
+// SPECIAL_USER the admin created, who has no email on file to self-serve a reset)
+// forgets their password and has no other way back in. Password reset tokens
+// (server/services/api/auth/password-reset/*) remain the normal self-service path;
+// this is the admin-assisted fallback.
+//
+// Deliberately does NOT read the user's CURRENT password first — bcrypt hashes
+// cannot be reversed, so there is nothing to show even to an admin. This can only
+// ever overwrite with a new one, never reveal the old one.
+export async function adminResetUserPassword(input: AdminResetUserPasswordInput) {
+  if (!input.password || input.password.length < 8) {
+    throw new Error("Password must be at least 8 characters");
+  }
+
+  const hashed = await bcrypt.hash(input.password, 10);
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const before = await tx.user.findUnique({
+      where: { id: input.userId },
+      select: { id: true, email: true, username: true, role: true },
+    });
+    if (!before) throw new Error("User not found");
+    // Mirrors patchAdminUserRole's guard: the hardcoded admin account already has
+    // its own "Forgot password" flow (it has a real email on file), and routing
+    // self-service through this panel instead would be a confusing extra path to
+    // the same account this panel is gated behind.
+    if (before.role === "ADMIN") throw new Error("Cannot reset the hardcoded admin account's password here");
+
+    const after = await tx.user.update({
+      where: { id: input.userId },
+      data: { password: hashed },
+      select: { id: true, email: true, username: true, name: true, role: true },
+    });
+
+    // IMPORTANT: never write the password — hashed or plain — into the audit log.
+    // The log exists to record WHO changed WHAT and WHEN, not to become a second
+    // place secrets live.
+    await tx.adminAuditLog.create({
+      data: {
+        adminId: input.adminId,
+        action: "UPDATE",
+        entity: "User",
+        entityId: after.id,
+        beforeJson: toJsonSafe({ ...before, password: "[redacted]" }) as any,
+        afterJson: toJsonSafe({ ...after, password: "[redacted]" }) as any,
+        ip: input.ip ?? null,
+        userAgent: input.userAgent ?? null,
+      },
+    });
+    return after;
+  });
+
+  return updated;
+}
+
 export type PatchAdminUserRoleInput = {
   adminId: string;
   userId: string;

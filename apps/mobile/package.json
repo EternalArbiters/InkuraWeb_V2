@@ -5,7 +5,7 @@
   "description": "Capacitor Android shell for Hohoo. Wraps the APP_MODE deployment (Project 3) into an installable APK.",
   "scripts": {
     "android:add": "cap add android",
-    "sync": "cap sync android",
+    "sync": "cap sync android && node scripts/patch-native.mjs",
     "open": "cap open android",
     "icons": "capacitor-assets generate --android --iconBackgroundColor #080f28 --splashBackgroundColor #080f28",
     "apk:debug": "cd android && gradlew assembleDebug",
