@@ -156,7 +156,7 @@ export default function PublicProfileActionsMenu({
               const nav = navigator as Navigator & { share?: (data: { title?: string; url?: string }) => Promise<void> };
               try {
                 if (typeof nav.share === "function") {
-                  await nav.share({ title: `${displayName} · Inkura`, url: profileUrl });
+                  await nav.share({ title: `${displayName} · Hohoho`, url: profileUrl });
                 } else {
                   const copied = await copyText(profileUrl);
                   if (!copied) window.prompt(t("Copy profile URL"), profileUrl);

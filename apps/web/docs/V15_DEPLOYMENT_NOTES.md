@@ -1,4 +1,4 @@
-# Inkura V15 Deployment Notes (Vercel + Neon)
+# Hohoho V15 Deployment Notes (Vercel + Neon)
 
 This document focuses on to **guardrails deploy** so that:
 - Prisma Client sethen sinkron
@@ -29,13 +29,13 @@ Set in Vercel: Project Settings → Environment Variables (Production)
 - `NEXTAUTH_URL` = URL domain production (example: `https://inkura.vercel.app` or domain custom)
 - `NEXTAUTH_SECRET` = secret random (example generate via `openssl rand -base64 32`)
 
-## 3) ENV that sangat disarankan (features Inkura)
+## 3) ENV that sangat disarankan (features Hohoho)
 If empty, several features upload will error.
 
 ### Cloudflare R2
 - `R2_PUBLIC_BASE_URL` (base URL for akses public file/cover)
 
-Inkura support dua style penamaan env (see `apps/web/server/storage/r2.ts`):
+Hohoho support dua style penamaan env (see `apps/web/server/storage/r2.ts`):
 
 **Style A (explicit endpoint, match for local/dev):**
 - `R2_ENDPOINT` (example: `https://<accountId>.r2.cloudflarestorage.com`)

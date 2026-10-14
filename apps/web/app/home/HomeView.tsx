@@ -157,7 +157,7 @@ export default function HomeView({
           </div>
 
           <footer className="mt-20 border-t border-[var(--ink-border)] pt-8 text-xs text-[var(--ink-muted)]">
-            Inkura v16
+            Hohoho v16
           </footer>
         </div>
       </div>

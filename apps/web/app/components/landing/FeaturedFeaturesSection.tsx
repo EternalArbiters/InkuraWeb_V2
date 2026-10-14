@@ -26,7 +26,7 @@ export default function FeaturedFeaturesSection({ features }: Props) {
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Inkura</span>{" "}
+          <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Hohoho</span>{" "}
           Featured Features
         </motion.h2>
 

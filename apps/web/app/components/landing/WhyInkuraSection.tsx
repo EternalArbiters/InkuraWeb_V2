@@ -20,7 +20,7 @@ export default function WhyInkuraSection({ items }: Props) {
     >
       <div className="max-w-7xl mx-auto px-6 text-center">
         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-16">
-          Why <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Inkura</span>?
+          Why <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Hohoho</span>?
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

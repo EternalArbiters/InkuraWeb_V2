@@ -42,7 +42,7 @@ const appVersion = (local.version ?? "1.0").trim();
 if (!appUrl || !appKey) {
   throw new Error(
     [
-      "Missing Inkura app config.",
+      "Missing Hohoho app config.",
       "",
       "  cp app.config.example.json app.config.json",
       "",
@@ -59,7 +59,7 @@ const appHost = new URL(appUrl).host;
 
 const config: CapacitorConfig = {
   appId: local.appId ?? "id.inkura.app",
-  appName: local.appName ?? "Inkura",
+  appName: local.appName ?? "Hohoho",
 
   // Required by the CLI even though the UI is remote. Holds the pre-connection
   // placeholder only — see www/index.html.

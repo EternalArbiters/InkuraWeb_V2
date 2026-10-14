@@ -37,11 +37,11 @@ async function sendEmail(params: SendEmailParams) {
 }
 
 export async function sendPasswordResetEmail(params: { to: string; resetUrl: string }) {
-  const subject = "Reset password Inkura";
+  const subject = "Reset password Hohoho";
   const html = `
     <div style="font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.5">
       <h2>Reset password</h2>
-      <p>You requested an Inkura password reset. Click the button below to set a new password.</p>
+      <p>You requested an Hohoho password reset. Click the button below to set a new password.</p>
       <p style="margin:16px 0">
         <a href="${params.resetUrl}" style="display:inline-block;padding:10px 14px;background:#111;color:#fff;border-radius:8px;text-decoration:none">
           Reset password

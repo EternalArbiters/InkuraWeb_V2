@@ -20,7 +20,7 @@ export default function DiscoverSection({ items }: Props) {
       <div className="max-w-6xl mx-auto px-6 text-center">
         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-16">
           What Can You Discover on{" "}
-          <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Inkura</span>?
+          <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Hohoho</span>?
         </h2>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 text-left">

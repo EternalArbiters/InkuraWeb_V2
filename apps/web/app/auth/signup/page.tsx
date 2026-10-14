@@ -65,7 +65,7 @@ export default function SignUpPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fbfcfe] via-[#f2f6fa] to-[#f4faff] dark:from-[#0b1220] dark:via-[#141d2c] dark:to-[#1d2839]">
       <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl shadow-2xl p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Sign up for Inkura")}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Sign up for Hohoho")}</h1>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
           <input

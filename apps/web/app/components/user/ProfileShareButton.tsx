@@ -28,7 +28,7 @@ async function copyText(value: string) {
 
 export default function ProfileShareButton({
   path = "/profile",
-  title = "Inkura profile",
+  title = "Hohoho profile",
   className = "",
   iconOnlyOnMobile = false,
 }: Props) {

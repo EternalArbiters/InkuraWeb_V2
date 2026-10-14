@@ -2,7 +2,7 @@
   "name": "inkura-mobile",
   "version": "1.0.0",
   "private": true,
-  "description": "Capacitor Android shell for Inkura. Wraps the APP_MODE deployment (Project 3) into an installable APK.",
+  "description": "Capacitor Android shell for Hohoho. Wraps the APP_MODE deployment (Project 3) into an installable APK.",
   "scripts": {
     "android:add": "cap add android",
     "sync": "cap sync android",

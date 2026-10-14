@@ -19,8 +19,8 @@ export default function LandingHeader({ isDarkMode, toggleDarkMode, onLogin, onS
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between space-x-4">
         {/* Logo */}
         <div className="flex items-center space-x-3 flex-shrink-0">
-          <Image src="/logo-inkura.png" alt="Logo Inkura" width={40} height={40} />
-          <span className="text-2xl font-bold text-gray-800 dark:text-white tracking-wide">INKURA</span>
+          <Image src="/logo-inkura.png" alt="Logo Hohoho" width={40} height={40} />
+          <span className="text-2xl font-bold text-gray-800 dark:text-white tracking-wide">HOHOHO</span>
         </div>
 
         {/* Desktop Nav */}
@@ -29,7 +29,7 @@ export default function LandingHeader({ isDarkMode, toggleDarkMode, onLogin, onS
             Feature
           </a>
           <a href="#Why" className="hover:text-primary transition">
-            Why Inkura
+            Why Hohoho
           </a>
           <a href="#Content" className="hover:text-primary transition">
             Content
@@ -88,7 +88,7 @@ export default function LandingHeader({ isDarkMode, toggleDarkMode, onLogin, onS
             Feature
           </a>
           <a href="#Why" className="block hover:text-primary transition">
-            Why Inkura
+            Why Hohoho
           </a>
           <a href="#Content" className="block hover:text-primary transition">
             Content

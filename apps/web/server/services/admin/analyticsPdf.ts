@@ -314,7 +314,7 @@ export async function buildAdminAnalyticsPdf(args: QueryArgs = {}) {
   const pdf = new PdfBuilder();
 
   pdf.addPage();
-  pdf.text(40, 42, "Inkura Analytics Report", { size: 24, font: "bold", color: [0.08, 0.12, 0.2] });
+  pdf.text(40, 42, "Hohoho Analytics Report", { size: 24, font: "bold", color: [0.08, 0.12, 0.2] });
   pdf.text(40, 70, `Range: ${formatDate(data.range.start)} - ${formatDate(data.range.end)} (${data.range.days} days)`, {
     size: 11,
     color: [0.36, 0.4, 0.48],
@@ -363,7 +363,7 @@ export async function buildAdminAnalyticsPdf(args: QueryArgs = {}) {
 
   pdf.addPage();
   pdf.text(40, 38, "Content, creators, and discovery", { size: 21, font: "bold", color: [0.08, 0.12, 0.2] });
-  pdf.text(40, 60, "Exported from Inkura admin analytics dashboard.", { size: 10, color: [0.5, 0.54, 0.62] });
+  pdf.text(40, 60, "Exported from Hohoho admin analytics dashboard.", { size: 10, color: [0.5, 0.54, 0.62] });
 
   drawSimpleTable(
     pdf,

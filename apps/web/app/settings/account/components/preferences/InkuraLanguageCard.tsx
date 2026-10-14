@@ -14,9 +14,9 @@ export default function InkuraLanguageCard({ inkuraLanguage, onChange }: Props) 
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 grid gap-3">
       <div className="grid gap-1">
-        <div className="text-sm font-semibold">{t("Inkura Language")}</div>
+        <div className="text-sm font-semibold">{t("Hohoho Language")}</div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {t("Choose which language Inkura should use for the website UI.")}
+          {t("Choose which language Hohoho should use for the website UI.")}
         </p>
       </div>
 

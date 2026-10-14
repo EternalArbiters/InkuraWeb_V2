@@ -29,7 +29,7 @@ Logout = Keluar
 Sign In = Masuk
 Profile = Profil
 Settings = Pengaturan
-Donate For Inkura = Donasi untuk Inkura
+Donate For Hohoho = Donasi untuk Hohoho
 Search anything on = Cari apa saja di
 Search = Cari
 Search title... = Cari judul...
@@ -122,8 +122,8 @@ Page Settings Account
 
 Account Settings = Pengaturan Akun
 Preferred languages = Bahasa pilihan
-Inkura Language = Bahasa Inkura
-Choose which language Inkura should use for the website UI. = Pilih bahasa yang harus digunakan Inkura untuk UI website.
+Hohoho Language = Bahasa Hohoho
+Choose which language Hohoho should use for the website UI. = Pilih bahasa yang harus digunakan Hohoho untuk UI website.
 Mature / 18+ = Dewasa / 18+
 I'm 18+ (Unlock it) = Aku sudah diatas 18+ (Buka aksesnya)
 Deviant Love = Cinta Terlarang
@@ -133,19 +133,19 @@ Unlock it = Buka aksesnya
 Page Onboarding
 ==========
 
-Welcome to Inkura = Selamat datang di Inkura
+Welcome to Hohoho = Selamat datang di Hohoho
 Finish setting up your account = Selesaikan pengaturan akunmu
 We need your UI language choice before you continue. Demographic details stay here too so analytics and recommendations can understand your audience better. = Kami memerlukan pilihan bahasa UI-mu sebelum kamu melanjutkan. Detail demografis juga tetap ada di sini agar analitik dan rekomendasi bisa memahami audiensmu dengan lebih baik.
 What language do you want to use on this website? = Bahasa apa yang ingin kamu gunakan di website ini?
-Inkura UI language = Bahasa UI Inkura
-You can change your Inkura UI language later from your account settings. = Kamu bisa mengubah bahasa UI Inkura nanti dari pengaturan akunmu.
-Continue to Inkura = Lanjut ke Inkura
+Hohoho UI language = Bahasa UI Hohoho
+You can change your Hohoho UI language later from your account settings. = Kamu bisa mengubah bahasa UI Hohoho nanti dari pengaturan akunmu.
+Continue to Hohoho = Lanjut ke Hohoho
 
 ==========
 Page Sign In
 ==========
 
-Sign in to Inkura = Masuk ke Inkura
+Sign in to Hohoho = Masuk ke Hohoho
 Use your email or username. = Gunakan email atau nama pengguna kamu.
 Email or username = Email atau nama pengguna
 Password = Kata sandi
@@ -160,7 +160,7 @@ Sign In = Masuk
 Page Sign Up
 ==========
 
-Sign up for Inkura = Daftar ke Inkura
+Sign up for Hohoho = Daftar ke Hohoho
 Display name (optional) = Nama tampilan (opsional)
 Username = Nama pengguna
 Email = Email
@@ -275,7 +275,7 @@ Return to All = Kembali ke Semua
 Page Donate
 ==========
 
-Thank you for supporting Inkura's development. Scan the QR code below to donate. = Terima kasih telah mendukung pengembangan Inkura. Pindai kode QR di bawah untuk berdonasi.
+Thank you for supporting Hohoho's development. Scan the QR code below to donate. = Terima kasih telah mendukung pengembangan Hohoho. Pindai kode QR di bawah untuk berdonasi.
 Donate QR = QR Donasi
 
 ==========
@@ -680,7 +680,7 @@ Failed to update follow status = Gagal memperbarui status follow
 Sweep app/components/user/ProfileShareButton.tsx
 ==========
 
-Inkura profile = Profil Inkura
+Hohoho profile = Profil Hohoho
 
 ==========
 Sweep app/components/user/PublicProfileActionsMenu.tsx
@@ -1702,9 +1702,9 @@ Forum thread (placeholder) so /forum/* links do not 404. = Thread forum (placeho
 Event page (placeholder) so /events/* links do not 404. = Halaman event (placeholder) supaya link /events/* tidak 404.
 Creator profile (placeholder) so /creator/* links do not 404. = Profil creator (placeholder) supaya link /creator/* tidak 404.
 Work detail (placeholder) so /content/* links do not 404. = Detail karya (placeholder) supaya semua link /content/* tidak 404.
-Inkura Mascot = Maskot Inkura
+Hohoho Mascot = Maskot Hohoho
 Footer Illustration = Ilustrasi Footer
-Inkura Logo = Logo Inkura
+Hohoho Logo = Logo Hohoho
 Sorry, an error occurred while loading this page. = Maaf, terjadi kesalahan saat memuat halaman ini.
 Online = Online
 Sign-in failed = Gagal Masuk
@@ -1856,7 +1856,7 @@ Final Sweep Auth & Profile
 Registration failed = Pendaftaran gagal
 Login Art = Seni Login
 Welcome Back! = Selamat datang kembali!
-Join Inkura = Gabung Inkura
+Join Hohoho = Gabung Hohoho
 Log in to access amazing content. = Masuk untuk mengakses konten keren.
 Create your account to start your journey. = Buat akunmu untuk memulai perjalananmu.
 Email or Username = Email atau Nama Pengguna
@@ -1911,7 +1911,7 @@ Discover zines, short stories, and expressive creative content made with passion
 Anime & Donghua = Anime & Donghua
 Asian Dramas = Drama Asia
 Watch Korean, Japanese, and other Asian dramas to brighten your days with heartfelt stories. = Tonton drama Korea, Jepang, dan Asia lainnya untuk mewarnai harimu dengan cerita yang menyentuh hati.
-Create your free Inkura account as a reader or creator to get started. = Buat akun Inkura gratis sebagai pembaca atau kreator untuk memulai.
+Create your free Hohoho account as a reader or creator to get started. = Buat akun Hohoho gratis sebagai pembaca atau kreator untuk memulai.
 Explore & Enjoy = Jelajahi & Nikmati
 Browse original comics, novels, and art from global creators. No AI-generated content. = Jelajahi komik, novel, dan karya seni orisinal dari kreator global. Tanpa konten buatan AI.
 Upload Your Work = Unggah Karyamu
@@ -1926,8 +1926,8 @@ Support Creators = Dukung Kreator
 Donate directly to support your favorite creators and help them grow. = Berdonasi langsung untuk mendukung kreator favoritmu dan membantu mereka berkembang.
 Join the Community = Gabung Komunitas
 Connect with other fans and creators, join discussions, events, and creative groups. = Terhubung dengan penggemar dan kreator lain, ikuti diskusi, event, dan grup kreatif.
-Maskot Inkura = Maskot Inkura
-Logo Inkura = Logo Inkura
+Maskot Hohoho = Maskot Hohoho
+Logo Hohoho = Logo Hohoho
 
 ==========
 Final Sweep Admin & Studio
@@ -2266,7 +2266,7 @@ Create series = Buat Kelompok Karya
 Rename = Ganti nama
 Every work already belongs to a series. = Semua karya sudah masuk ke dalam kelompok karya yang ada.
 Auto-optimized before upload. Target max 2MB. Format: JPG/PNG/WebP. = Otomatis dioptimalkan sebelum diunggah. Maks. 2MB. Format: JPG/PNG/WebP.
-If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Inkura, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Inkura will remove it automatically. = Jika pemilik hak cipta melaporkan pelanggaran hak cipta, kamu mungkin akan dimintai pertanggungjawaban. Untuk menghindari kerugian bagi Inkura, pembaca, dan dirimu sendiri, kamu akan diberi waktu 1 minggu setelah pemberitahuan diberikan, untuk menghapus karya tersebut. Jika tidak dihapus dalam waktu tersebut, Inkura akan menghapusnya secara otomatis.
+If the rights holder reports a copyright violation, you may be held responsible. To avoid harm to Hohoho, readers, and yourself, you will be given 1 week after notification to remove the work. If it is not removed within that time, Hohoho will remove it automatically. = Jika pemilik hak cipta melaporkan pelanggaran hak cipta, kamu mungkin akan dimintai pertanggungjawaban. Untuk menghindari kerugian bagi Hohoho, pembaca, dan dirimu sendiri, kamu akan diberi waktu 1 minggu setelah pemberitahuan diberikan, untuk menghapus karya tersebut. Jika tidak dihapus dalam waktu tersebut, Hohoho akan menghapusnya secara otomatis.
 Add sub title = Tambahkan judul lainnya
 Add images = Masukkan gambar
 Choose all images = Pilih semua gambar
@@ -2349,11 +2349,11 @@ Failed to rebuild community snapshots = Gagal membangun ulang snapshot komunitas
 Welcome Popup
 ==========
 
-Welcome to Inkura! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^ = Selamat datang di Inkura! Secara default, kamu akan berada di wilayah aman, tanpa bacaan yang berbahaya untuk dilihat. Sebaiknya jangan melewati pintu untuk ke zona terlarang, ya ^^
+Welcome to Hohoho! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^ = Selamat datang di Hohoho! Secara default, kamu akan berada di wilayah aman, tanpa bacaan yang berbahaya untuk dilihat. Sebaiknya jangan melewati pintu untuk ke zona terlarang, ya ^^
 Just so you know, content containing adult or deviant elements will be hidden and not advertised for everyone's comfort. Adjust your settings if you want to read them. We must protect minors from reading what they shouldn't ^^ = Sebagai informasi, konten yang mengandung unsur dewasa dan penyimpangan, akan di sembunyikan dan tidak diiklankan demi kenyamanan bersama. Atur sendiri kalau mau baca. Kita harus menjaga minor dari membaca yang tidak-tidak ^^
-Hello, creators on Inkura! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders! = Halo para kreator di Inkura! Silahkan upload apapun yang kamu mau. Tapi tetap patuhi aturannya, ya! Kalau kamu translator, ya atur karya jadi hasil translate. Karya original itu untuk para author dan pencipta langsung! Jangan salah, ya. Begitu pun kalian yang re-upload!
+Hello, creators on Hohoho! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders! = Halo para kreator di Hohoho! Silahkan upload apapun yang kamu mau. Tapi tetap patuhi aturannya, ya! Kalau kamu translator, ya atur karya jadi hasil translate. Karya original itu untuk para author dan pencipta langsung! Jangan salah, ya. Begitu pun kalian yang re-upload!
 Don't show again = Jangan tampilkan lagi
-Inkura Mascot = Maskot Inkura
+Hohoho Mascot = Maskot Hohoho
 Previous = Sebelumnya
 Next = Berikutnya
 
@@ -2446,7 +2446,7 @@ Account No. = No. Rekening
 Already transferred? Let us know! = Sudah transfer? Beritahu kami!
 Scan the QR above to pay, then fill in this form so we get notified. = Scan QR di atas untuk membayar, lalu isi form ini agar kami mendapat notifikasi.
 Your name = Namamu
-Your donation to Inkura has been received. We appreciate your support! = Donasi ke Inkura telah diterima. Terima kasih atas dukunganmu!
+Your donation to Hohoho has been received. We appreciate your support! = Donasi ke Hohoho telah diterima. Terima kasih atas dukunganmu!
 Confirm Donation = Konfirmasi Donasi
 Message = Pesan
 Remove = Hapus

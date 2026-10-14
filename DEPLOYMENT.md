@@ -1,4 +1,4 @@
-# Inkura Deployment (Shortcut)
+# Hohoho Deployment (Shortcut)
 
 For the final stage 10 deployment guide, open:
 

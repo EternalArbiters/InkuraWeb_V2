@@ -1,4 +1,4 @@
-# Inkura V15 – Sanity Checklist (Regression Guard)
+# Hohoho V15 – Sanity Checklist (Regression Guard)
 
 
 > Note (cleaned repo): the regression checklist that is now the **primary source** is in `../../docs/REGRESSION_CHECKLIST.md`.

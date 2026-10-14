@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Inkura",
+  title: "Hohoho",
   description: "An International Platform For Original Works Made Without AI",
   icons: {
     icon: "/logo-inkura.png",

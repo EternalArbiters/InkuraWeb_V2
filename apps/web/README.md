@@ -1,4 +1,4 @@
-# Inkura Web (`apps/web`)
+# Hohoho Web (`apps/web`)
 
 Ini is satu-satunya app runtime active in repo cleaned stage 10.
 

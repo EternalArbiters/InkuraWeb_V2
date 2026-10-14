@@ -44,7 +44,7 @@ export default function SearchOverlay({
           >
             <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-white">
               {t("Search anything on")}{" "}
-              <span className="text-pink-500 font-bold">Inkura</span>
+              <span className="text-pink-500 font-bold">Hohoho</span>
             </h2>
             <form
               onSubmit={onSubmit}

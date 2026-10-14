@@ -1,6 +1,6 @@
 # Debug upload issues
 
-This document membantu melacak issue upload that most general in Inkura, especially for cover, comic pages, and comment media.
+This document membantu melacak issue upload that most general in Hohoho, especially for cover, comic pages, and comment media.
 
 ## Gambaran flow upload
 

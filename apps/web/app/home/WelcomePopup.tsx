@@ -70,9 +70,9 @@ export default function WelcomePopup() {
   }
 
   const slideTexts = [
-    t("Welcome to Inkura! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^"),
+    t("Welcome to Hohoho! By default, you will be in the safe zone, with no dangerous reading to see. It's best not to open the door to the forbidden zone, okay ^^"),
     t("Just so you know, content containing adult or deviant elements will be hidden and not advertised for everyone's comfort. Adjust your settings if you want to read them. We must protect minors from reading what they shouldn't ^^"),
-    t("Hello, creators on Inkura! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders!"),
+    t("Hello, creators on Hohoho! Feel free to upload whatever you like. But please follow the rules! If you're a translator, mark your work as a translation. Original works are for authors and direct creators only! Don't mix them up. Same goes for re-uploaders!"),
   ];
 
   const isLastSlide = slide === TOTAL_SLIDES - 1;
@@ -97,7 +97,7 @@ export default function WelcomePopup() {
         <div className="flex justify-center pt-7 pb-1">
           <Image
             src="/images/Kucchan.png"
-            alt={t("Inkura Mascot")}
+            alt={t("Hohoho Mascot")}
             width={110}
             height={110}
             className="object-contain drop-shadow-md"

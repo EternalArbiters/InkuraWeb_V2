@@ -15,7 +15,7 @@ test("seed admin can sign in, read seeded work, and post a comment thread", asyn
   await expect(page.getByRole('heading', { name: /Benara: Great Sin of InSys Lab/i })).toBeVisible();
   await page.getByRole('link', { name: /Chapter 1/i }).first().click();
 
-  await expect(page.getByText('Welcome to Inkura.')).toBeVisible();
+  await expect(page.getByText('Welcome to Hohoho.')).toBeVisible();
 
   await page.getByPlaceholder('Write a comment...').fill(commentText);
   await page.getByRole('button', { name: 'Send' }).click();

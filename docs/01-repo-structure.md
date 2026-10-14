@@ -1,6 +1,6 @@
 # Repo structure & tooling (Stage 1)
 
-The purpose of this document: explain the current Inkura repo structure (v13+) so it stays consistent, easy to understand, and does not make new developers feel lost.
+The purpose of this document: explain the current Hohoho repo structure (v13+) so it stays consistent, easy to understand, and does not make new developers feel lost.
 
 ## Package manager
 

@@ -85,10 +85,10 @@ export default function OnboardingForm({ initial }: Props) {
       <div className="relative">
         <div className="flex items-center gap-4">
           <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-2 shadow-lg shadow-black/20">
-            <Image src="/logo-inkura.png" alt="Inkura" fill className="object-contain p-2" sizes="56px" priority />
+            <Image src="/logo-inkura.png" alt="Hohoho" fill className="object-contain p-2" sizes="56px" priority />
           </div>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-200/70">{t("Welcome to Inkura")}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-200/70">{t("Welcome to Hohoho")}</div>
             <h1 className="mt-1 text-2xl font-black tracking-tight md:text-3xl">{t("Finish setting up your account")}</h1>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function OnboardingForm({ initial }: Props) {
                     aria-pressed={selected}
                   >
                     <div className="text-base font-bold">{option.label}</div>
-                    <div className="mt-1 text-xs text-blue-100/70">{t("Inkura UI language")}</div>
+                    <div className="mt-1 text-xs text-blue-100/70">{t("Hohoho UI language")}</div>
                   </button>
                 );
               })}
@@ -178,14 +178,14 @@ export default function OnboardingForm({ initial }: Props) {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-blue-100/65">
-              {t("You can change your Inkura UI language later from your account settings.")}
+              {t("You can change your Hohoho UI language later from your account settings.")}
             </p>
             <button
               type="submit"
               disabled={saving}
               className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-950/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {saving ? tForms("Saving...") : t("Continue to Inkura")}
+              {saving ? tForms("Saving...") : t("Continue to Hohoho")}
             </button>
           </div>
         </form>

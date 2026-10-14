@@ -25,7 +25,7 @@ export const POST = apiRoute(async (req: Request) => {
   const inkuraLanguage = normalizeInkuraLanguage(body.inkuraLanguage);
 
   if (!gender || !birthMonth || !birthYear || !inkuraLanguage) {
-    return badRequest("Gender, birth month, birth year, and Inkura language are required");
+    return badRequest("Gender, birth month, birth year, and Hohoho language are required");
   }
 
   const current = await prisma.user.findUnique({

@@ -1,6 +1,6 @@
 # Database reset & seeding
 
-This document explain cara menangani database local for repo Inkura cleaned.
+This document explain cara menangani database local for repo Hohoho cleaned.
 
 ## Prinsip most penting
 

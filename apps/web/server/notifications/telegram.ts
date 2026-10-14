@@ -24,7 +24,7 @@ export async function sendInkuraDonationNotification(data: {
   const amountStr = formatIDR(data.amount, data.currency);
 
   const text = [
-    `💜 *Donasi ke Inkura!*`,
+    `💜 *Donasi ke Hohoho!*`,
     ``,
     `*Dari:* ${data.donorName}`,
     `*Jumlah:* ${amountStr}`,
