@@ -155,7 +155,7 @@ perintah itu. Branding-nya ada di `apps/mobile/assets/`, bukan di dalamnya.
 Taruh dua file di `apps/mobile/assets/`:
 
 - `icon.png` — 1024x1024, hindari transparansi di tepi
-- `splash.png` — 2732x2732, logo di tengah, latar `#0a0a1a`
+- `splash.png` — 2732x2732, logo di tengah, latar `#0b1220`
 
 ```bash
 npm run icons

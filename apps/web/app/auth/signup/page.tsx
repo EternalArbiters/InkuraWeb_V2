@@ -63,7 +63,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fdfbff] via-[#f8f5ff] to-[#f4faff] dark:from-[#0a0a1a] dark:via-[#151629] dark:to-[#1b1c34]">
+    <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#fbfcfe] via-[#f2f6fa] to-[#f4faff] dark:from-[#0b1220] dark:via-[#141d2c] dark:to-[#1d2839]">
       <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl shadow-2xl p-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("Sign up for Inkura")}</h1>
 

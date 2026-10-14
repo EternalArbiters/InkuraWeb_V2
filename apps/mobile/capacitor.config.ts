@@ -81,12 +81,12 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
     // Flip to true only while debugging over chrome://inspect.
     webContentsDebuggingEnabled: false,
-    backgroundColor: "#0a0a1a",
+    backgroundColor: "#0b1220",
   },
 
   plugins: {
     SplashScreen: {
-      backgroundColor: "#0a0a1a",
+      backgroundColor: "#0b1220",
       showSpinner: false,
       launchAutoHide: true,
       launchShowDuration: 600,
@@ -94,7 +94,7 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: "DARK",
-      backgroundColor: "#0a0a1a",
+      backgroundColor: "#0b1220",
       // Keep the web content below the status bar. Android 15 (API 35, which
       // Capacitor 7 targets) turns on edge-to-edge by default, which would let
       // the Inkura navbar slide under the clock.

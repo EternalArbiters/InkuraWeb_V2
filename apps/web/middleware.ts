@@ -48,7 +48,7 @@ const APP_GATE_NOTICE = `<!doctype html>
 <title>Not Found</title>
 <style>
   html,body{height:100%;margin:0}
-  body{display:flex;align-items:center;justify-content:center;background:#0a0a1a;color:#e6e6f0;
+  body{display:flex;align-items:center;justify-content:center;background:#0b1220;color:#e6e6f0;
        font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;text-align:center}
   p{margin:0;opacity:.7;font-size:14px}
 </style>

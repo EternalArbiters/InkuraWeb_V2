@@ -8,6 +8,131 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ===========================================================================
+   Inkura brand palette (v32) — steel blue / blue-grey / gold
+
+   The old identity was blue -> violet -> pink. Rather than rewriting ~855
+   colour classes across 126 files, the Tailwind ramps those classes already
+   resolve against are redefined here, so every existing `purple-600`,
+   `from-blue-500`, `to-pink-500` repaints itself:
+
+     blue / sky / cyan            -> steel blue   (anchor #3f72a8)
+     purple / violet / fuchsia /  -> blue-grey    (anchor #5d7893)
+       indigo
+     pink                         -> gold         (anchor #d9a528)
+
+   Deliberately NOT remapped: rose, red, amber, yellow, emerald, green,
+   orange and the grays. Those carry meaning (errors, success, warnings,
+   analytics categories, UI chrome), not brand identity.
+
+   Gold's dark end is pulled below the shared lightness curve on purpose:
+   white-on-pink-600 is a real pairing (the COMIC badge), and this keeps its
+   contrast at 4.85:1 — the old pink-600 was 4.70:1 — while 400/500 stay
+   bright enough to carry the gradients.
+
+   To retune the whole brand, change only the values in this block.
+   =========================================================================== */
+@theme {
+/* steel blue — anchor #3f72a8 */
+  --color-blue-50: #f6f7f9;
+  --color-blue-100: #e8edf2;
+  --color-blue-200: #d0dbe6;
+  --color-blue-300: #afc4da;
+  --color-blue-400: #84a7cd;
+  --color-blue-500: #588bc0;
+  --color-blue-600: #4074ab;
+  --color-blue-700: #37608b;
+  --color-blue-800: #2f4e6f;
+  --color-blue-900: #273f58;
+  --color-blue-950: #1a2838;
+
+  --color-sky-50: #f6f7f9;
+  --color-sky-100: #e8edf2;
+  --color-sky-200: #d0dbe6;
+  --color-sky-300: #afc4da;
+  --color-sky-400: #84a7cd;
+  --color-sky-500: #588bc0;
+  --color-sky-600: #4074ab;
+  --color-sky-700: #37608b;
+  --color-sky-800: #2f4e6f;
+  --color-sky-900: #273f58;
+  --color-sky-950: #1a2838;
+
+  --color-cyan-50: #f6f7f9;
+  --color-cyan-100: #e8edf2;
+  --color-cyan-200: #d0dbe6;
+  --color-cyan-300: #afc4da;
+  --color-cyan-400: #84a7cd;
+  --color-cyan-500: #588bc0;
+  --color-cyan-600: #4074ab;
+  --color-cyan-700: #37608b;
+  --color-cyan-800: #2f4e6f;
+  --color-cyan-900: #273f58;
+  --color-cyan-950: #1a2838;
+
+/* abu-biru — anchor #5d7893 */
+  --color-purple-50: #f6f7f8;
+  --color-purple-100: #ebedef;
+  --color-purple-200: #d6dbe1;
+  --color-purple-300: #bac4cf;
+  --color-purple-400: #96a8ba;
+  --color-purple-500: #728ca6;
+  --color-purple-600: #5b7590;
+  --color-purple-700: #4c6176;
+  --color-purple-800: #3f4f5f;
+  --color-purple-900: #34404c;
+  --color-purple-950: #212930;
+
+  --color-violet-50: #f6f7f8;
+  --color-violet-100: #ebedef;
+  --color-violet-200: #d6dbe1;
+  --color-violet-300: #bac4cf;
+  --color-violet-400: #96a8ba;
+  --color-violet-500: #728ca6;
+  --color-violet-600: #5b7590;
+  --color-violet-700: #4c6176;
+  --color-violet-800: #3f4f5f;
+  --color-violet-900: #34404c;
+  --color-violet-950: #212930;
+
+  --color-fuchsia-50: #f6f7f8;
+  --color-fuchsia-100: #ebedef;
+  --color-fuchsia-200: #d6dbe1;
+  --color-fuchsia-300: #bac4cf;
+  --color-fuchsia-400: #96a8ba;
+  --color-fuchsia-500: #728ca6;
+  --color-fuchsia-600: #5b7590;
+  --color-fuchsia-700: #4c6176;
+  --color-fuchsia-800: #3f4f5f;
+  --color-fuchsia-900: #34404c;
+  --color-fuchsia-950: #212930;
+
+  --color-indigo-50: #f6f7f8;
+  --color-indigo-100: #ebedef;
+  --color-indigo-200: #d6dbe1;
+  --color-indigo-300: #bac4cf;
+  --color-indigo-400: #96a8ba;
+  --color-indigo-500: #728ca6;
+  --color-indigo-600: #5b7590;
+  --color-indigo-700: #4c6176;
+  --color-indigo-800: #3f4f5f;
+  --color-indigo-900: #34404c;
+  --color-indigo-950: #212930;
+
+/* emas — anchor #d9a528 */
+  --color-pink-50: #faf8f5;
+  --color-pink-100: #f4f0e6;
+  --color-pink-200: #ece2ca;
+  --color-pink-300: #e5d2a4;
+  --color-pink-400: #e0bf70;
+  --color-pink-500: #ddad3c;
+  --color-pink-600: #8f6c19;
+  --color-pink-700: #775b17;
+  --color-pink-800: #604a16;
+  --color-pink-900: #4d3c14;
+  --color-pink-950: #30260d;
+}
+
 @layer utilities {
   .animate-blob {
     animation: blob 8s infinite;
@@ -185,11 +310,11 @@
   --ink-surface: #ffffff;
   --ink-surface-2: #f1f5f9;
   --ink-surface-hover: #f1f5f9;
-  --ink-accent: #7c3aed; /* Inkura brand violet (blue→purple) */
-  --ink-accent-hover: #6d28d9;
+  --ink-accent: #4074ab; /* Inkura brand steel blue (v32) */
+  --ink-accent-hover: #37608b;
   --ink-accent-fg: #ffffff;
   /* Inkura signature gradient */
-  --ink-gradient: linear-gradient(to right, #3b82f6, #9333ea);
+  --ink-gradient: linear-gradient(to right, #588bc0, #5b7590);
 }
 
 [data-ui-theme="modern"].dark {
@@ -200,10 +325,10 @@
   --ink-surface: #111827;
   --ink-surface-2: #0f1626;
   --ink-surface-hover: #1e293b;
-  --ink-accent: #a78bfa;
-  --ink-accent-hover: #c4b5fd;
+  --ink-accent: #84a7cd;
+  --ink-accent-hover: #afc4da;
   --ink-accent-fg: #0a0e1a;
-  --ink-gradient: linear-gradient(to right, #3b82f6, #9333ea);
+  --ink-gradient: linear-gradient(to right, #588bc0, #5b7590);
 }
 
 .ink-btn-primary {

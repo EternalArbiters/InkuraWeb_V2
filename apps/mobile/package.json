@@ -7,7 +7,7 @@
     "android:add": "cap add android",
     "sync": "cap sync android",
     "open": "cap open android",
-    "icons": "capacitor-assets generate --android --iconBackgroundColor #0a0a1a --splashBackgroundColor #0a0a1a",
+    "icons": "capacitor-assets generate --android --iconBackgroundColor #0b1220 --splashBackgroundColor #0b1220",
     "apk:debug": "cd android && gradlew assembleDebug",
     "apk:release": "cd android && gradlew assembleRelease"
   },

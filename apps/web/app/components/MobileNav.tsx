@@ -200,7 +200,7 @@ export default function MobileNav({
                   position: "absolute", left, top,
                   width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: activeTab === tab ? "linear-gradient(135deg,#3b82f6,#9333ea)" : "rgba(14,18,32,0.95)",
+                  background: activeTab === tab ? "linear-gradient(135deg,#588bc0,#5b7590)" : "rgba(14,18,32,0.95)",
                   color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.45)",
                   boxShadow: activeTab === tab
                     ? "0 4px 14px rgba(147,51,234,0.45)"
@@ -242,7 +242,7 @@ export default function MobileNav({
                 width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(14,18,32,0.95)",
-                color: isDarkMode ? "#c4b5fd" : "#fbbf24",
+                color: isDarkMode ? "#afc4da" : "#d9a528",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
                 transition: "all 0.2s",
                 zIndex: 20,
