@@ -43,11 +43,11 @@ export default function CustomCursor() {
       trail.style.width = "6px";
       trail.style.height = "6px";
       trail.style.borderRadius = "50%";
-      trail.style.background = "radial-gradient(circle, #ddad3c, #588bc0)";
+      trail.style.background = "radial-gradient(circle, #d9f2f7, #4574d3)";
       trail.style.pointerEvents = "none";
       trail.style.zIndex = "9998";
       trail.style.opacity = "0.5";
-      trail.style.boxShadow = "0 0 6px #afc4da";
+      trail.style.boxShadow = "0 0 6px #bdddf5";
       trail.style.transition = "opacity 0.4s ease-out, transform 0.4s ease-out";
       trail.style.transform = "scale(1)";
 
@@ -87,11 +87,11 @@ export default function CustomCursor() {
           width: 20,
           height: 20,
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #ddad3c, #588bc0)",
+          background: "linear-gradient(135deg, #d9f2f7, #4574d3)",
           boxShadow: `
-            0 0 10px rgba(221, 173, 60, 0.8),
-            0 0 20px rgba(88, 139, 192, 0.6),
-            0 0 40px rgba(88, 139, 192, 0.4)
+            0 0 10px rgba(217,242,247, 0.8),
+            0 0 20px rgba(69,116,211, 0.6),
+            0 0 40px rgba(69,116,211, 0.4)
           `,
           animation: "pulse-glow 2s ease-in-out infinite",
         }}

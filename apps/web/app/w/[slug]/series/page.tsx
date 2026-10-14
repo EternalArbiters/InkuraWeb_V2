@@ -111,7 +111,7 @@ export default async function WorkSeriesPage({ params: paramsPromise }: { params
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-10 flex items-start justify-between gap-3">
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--ink-accent,#4074ab)]">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[var(--ink-accent,#2d5cbe)]">
               {tMoreInSeries}
             </p>
             <div className="flex items-center gap-3">

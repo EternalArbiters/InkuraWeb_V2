@@ -43,7 +43,7 @@ function ReaderRailButton({
     (disabled
       ? "border-white/10 bg-[#081126]/55 text-white/35 opacity-45 pointer-events-none"
       : active
-        ? "border-fuchsia-400/70 bg-gradient-to-br from-fuchsia-500/28 to-violet-500/28 text-white shadow-[0_18px_36px_-22px_rgba(248,235,160,0.9)]"
+        ? "border-fuchsia-400/70 bg-gradient-to-br from-fuchsia-500/28 to-violet-500/28 text-white shadow-[0_18px_36px_-22px_rgba(78,96,202,0.9)]"
         : "border-white/10 bg-[#081126]/88 text-white/88 shadow-[0_18px_36px_-26px_rgba(2,8,23,0.85)] hover:bg-[#0d1830] hover:text-white");
 
   if (href) {
@@ -90,7 +90,7 @@ function SettingChip({
         (disabled
           ? "cursor-not-allowed border-white/10 bg-white/[0.03] text-slate-500"
           : active
-            ? "border-purple-400 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(248,235,160,0.9)]"
+            ? "border-purple-400 bg-purple-600 text-white shadow-[0_14px_30px_-20px_rgba(78,96,202,0.9)]"
             : "border-white/10 bg-white/[0.03] text-white/86 hover:border-white/20 hover:bg-white/[0.07]")
       }
     >
@@ -195,7 +195,7 @@ function DesktopRailLikeButton({
         (isPending
           ? "border-white/10 bg-[#081126]/55 text-white/35 opacity-45"
           : liked
-            ? "border-fuchsia-400/70 bg-gradient-to-br from-fuchsia-500/28 to-violet-500/28 text-white shadow-[0_18px_36px_-22px_rgba(248,235,160,0.9)]"
+            ? "border-fuchsia-400/70 bg-gradient-to-br from-fuchsia-500/28 to-violet-500/28 text-white shadow-[0_18px_36px_-22px_rgba(78,96,202,0.9)]"
             : "border-white/10 bg-[#081126]/88 text-white/88 shadow-[0_18px_36px_-26px_rgba(2,8,23,0.85)] hover:bg-[#0d1830] hover:text-white")
       }
     >

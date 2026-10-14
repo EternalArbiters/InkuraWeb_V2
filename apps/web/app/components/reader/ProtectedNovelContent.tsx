@@ -526,7 +526,7 @@ export default function ProtectedNovelContent({ html, slideEndingContent }: Prot
         .novel-reader-surface h3 { font-size: 1.2rem; }
         .novel-reader-surface ul, .novel-reader-surface ol { margin: 0 0 0 1.4rem; }
         .novel-reader-surface li { margin: .25rem 0; }
-        .novel-reader-surface blockquote { margin: 1.2rem 0; border-left: 3px solid rgba(248,235,160,.75); padding-left: 1rem; opacity: .95; }
+        .novel-reader-surface blockquote { margin: 1.2rem 0; border-left: 3px solid rgba(78,96,202,.75); padding-left: 1rem; opacity: .95; }
         .novel-reader-surface img { display: block; max-width: min(100%, 760px); height: auto; margin: 1.2rem auto; border-radius: 1rem; }
         .novel-reader-surface figure { margin: 1.2rem 0; }
         .novel-reader-surface table { width: 100%; border-collapse: collapse; margin: 1rem 0; }

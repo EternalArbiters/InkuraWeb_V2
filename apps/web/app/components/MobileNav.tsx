@@ -120,7 +120,7 @@ export default function MobileNav({
       <aside
         className="fixed inset-0 z-50 overflow-hidden"
         style={{
-          background: "linear-gradient(150deg,rgba(6,8,20,0.30) 0%,rgba(10,15,28,0.28) 60%,rgba(11,18,32,0.25) 100%)",
+          background: "linear-gradient(150deg,rgba(6,8,20,0.30) 0%,rgba(10,15,28,0.28) 60%,rgba(12,21,56,0.25) 100%)",
           backdropFilter: "blur(32px) saturate(180%)",
           WebkitBackdropFilter: "blur(32px) saturate(180%)",
           boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06), inset 1px 0 0 rgba(255,255,255,0.04)",
@@ -136,8 +136,8 @@ export default function MobileNav({
             pointerEvents: "none",
             zIndex: 0,
             background:
-              "radial-gradient(ellipse 80% 60% at 20% 50%, rgba(239,216,88,0.08) 0%, transparent 70%), " +
-              "radial-gradient(ellipse 50% 80% at 80% 20%, rgba(64,116,171,0.06) 0%, transparent 65%)",
+              "radial-gradient(ellipse 80% 60% at 20% 50%, rgba(47,61,147,0.08) 0%, transparent 70%), " +
+              "radial-gradient(ellipse 50% 80% at 80% 20%, rgba(45,92,190,0.06) 0%, transparent 65%)",
           }}
         />
 
@@ -162,7 +162,7 @@ export default function MobileNav({
                   style={{
                     width: 110,
                     height: 110,
-                    boxShadow: "0 0 0 3px rgba(248,235,160,0.55), 0 0 0 6px rgba(88,139,192,0.18)",
+                    boxShadow: "0 0 0 3px rgba(78,96,202,0.55), 0 0 0 6px rgba(69,116,211,0.18)",
                   }}
                 >
                   <img
@@ -200,10 +200,10 @@ export default function MobileNav({
                   position: "absolute", left, top,
                   width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: activeTab === tab ? "linear-gradient(135deg,#588bc0,#f5e584)" : "rgba(14,18,32,0.95)",
+                  background: activeTab === tab ? "linear-gradient(135deg,#1e3166,#4574d3)" : "rgba(14,18,32,0.95)",
                   color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.45)",
                   boxShadow: activeTab === tab
-                    ? "0 4px 14px rgba(245,229,132,0.45)"
+                    ? "0 4px 14px rgba(54,72,180,0.45)"
                     : "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
                   transition: "all 0.2s",
                   zIndex: 20,
@@ -242,7 +242,7 @@ export default function MobileNav({
                 width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(14,18,32,0.95)",
-                color: isDarkMode ? "#afc4da" : "#d9a528",
+                color: isDarkMode ? "#bdddf5" : "#d9a528",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10)",
                 transition: "all 0.2s",
                 zIndex: 20,
@@ -262,8 +262,8 @@ export default function MobileNav({
                 {/* display name — bordered card */}
                 <div
                   style={{
-                    background: "linear-gradient(135deg,rgba(176,154,28,0.80) 0%,rgba(39,63,88,0.65) 100%)",
-                    border: "1px solid rgba(248,235,160,0.40)",
+                    background: "linear-gradient(135deg,rgba(35,43,93,0.80) 0%,rgba(30,52,97,0.65) 100%)",
+                    border: "1px solid rgba(78,96,202,0.40)",
                     borderRadius: 10,
                     padding: "5px 12px 5px 20px",
                     backdropFilter: "blur(12px)",
@@ -340,7 +340,7 @@ export default function MobileNav({
           const dropFilter = isRed
             ? "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 6px rgba(185,28,28,0.5))"
             : active
-              ? "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(248,235,160,0.7))"
+              ? "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(78,96,202,0.7))"
               : "drop-shadow(0 1px 5px rgba(0,0,0,1)) drop-shadow(0 0 12px rgba(0,0,0,0.95))";
 
           const badgeEndpoint = item.type === "link" ? (item as OrbitLink).badge : undefined;
