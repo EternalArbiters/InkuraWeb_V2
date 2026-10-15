@@ -1,7 +1,7 @@
-import PrivateLoginForm from "./PrivateLoginForm";
+import PrivateLoginForm from './PrivateLoginForm';
 
 const MESSAGE =
-  "Mohon maaf, Hohoo sedang tidak dapat beroprasi. Jika kamu adalah pengunjung, silahkan hubungi owner untuk informasi lebih lanjut terkait pemberhentian ini. Dan jika kamu adalah owner, silahkan buktikan dirimu memanglah ownernya. Karena Hohoo saat ini tidak menerima pengunjung.";
+  'Ngapain klean kesini, mau lihat my koleksi gweh? Hoo tidak semudah itu ferguso. Ini my mine gwej doang.';
 
 // v30: shown instead of the normal landing page when PRIVATE_MODE=true. Deliberately
 // self-contained (no imports from LandingPage.tsx / AuthModal) so it can never surface
