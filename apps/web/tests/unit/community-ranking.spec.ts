@@ -15,6 +15,9 @@ describe("community ranking foundation", () => {
   it("excludes admin accounts from ranking", () => {
     expect(isAdminExcludedFromCommunityRanking({ role: "ADMIN" })).toBe(true);
     expect(isCommunityRankingEligibleUser({ role: "USER" })).toBe(true);
+    expect(isCommunityRankingEligibleUser({ role: "SPECIAL_USER" })).toBe(true);
+    // v41: only ADMIN is excluded from ranking — IOS_USER ranks like everyone else.
+    expect(isCommunityRankingEligibleUser({ role: "IOS_USER" })).toBe(true);
     expect(isCommunityRankingEligibleUser(null)).toBe(false);
   });
 

@@ -122,7 +122,9 @@ export async function middleware(req: NextRequest) {
   if (privateModeOn && !isPublicInPrivateMode(pathname)) {
     const t = await ensureToken();
     const role = (t as any)?.role;
-    if (!t || (role !== "ADMIN" && role !== "SPECIAL_USER")) {
+    // v41: IOS_USER gets into Project 2 same as SPECIAL_USER — the "Koleksi
+    // Admin" distinction between the two lives entirely in gating.ts, not here.
+    if (!t || (role !== "ADMIN" && role !== "SPECIAL_USER" && role !== "IOS_USER")) {
       if (isApi) {
         return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
       }

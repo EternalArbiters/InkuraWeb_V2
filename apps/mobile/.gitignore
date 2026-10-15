@@ -5,6 +5,11 @@ app.config.json
 # Branding lives in apps/mobile/assets/, not in here.
 android/
 
+# Same idea as android/ above, but for iOS — fully regenerable on a Mac via
+# `npm run ios:add && npm run sync:ios`. Never generated/committed from
+# Windows: `cap add ios` needs CocoaPods, which is Mac-only here.
+ios/
+
 # Signing material — never commit.
 *.keystore
 *.jks

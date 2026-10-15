@@ -113,6 +113,11 @@ enum Role {
   ADMIN
   USER
   SPECIAL_USER
+  // v41: admin-invited iOS friends (PWA via Project 2, like SPECIAL_USER) — but
+  // with NO "Koleksi Admin" bypass. Every SPECIAL_USER-gated check in
+  // server/services/works/gating.ts (and its call sites) deliberately does NOT
+  // special-case this role, so it falls through to the same rules as USER there.
+  IOS_USER
 }
 
 enum UserGender {

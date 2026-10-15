@@ -8,14 +8,17 @@ export function isAdminEmail(email?: string | null): boolean {
 }
 
 // v30: Reconciles a role against the hardcoded admin email WITHOUT stomping other
-// non-ADMIN roles (e.g. SPECIAL_USER) back to USER. Only the admin email is ever
-// force-asserted; every other email keeps whatever role is already known.
+// non-ADMIN roles (e.g. SPECIAL_USER, IOS_USER) back to USER. Only the admin email
+// is ever force-asserted; every other email keeps whatever role is already known.
 export function reconcileRole(
   email: string | null | undefined,
   currentRole: string | null | undefined
-): "ADMIN" | "USER" | "SPECIAL_USER" {
+): "ADMIN" | "USER" | "SPECIAL_USER" | "IOS_USER" {
   if (isAdminEmail(email)) return "ADMIN";
   if (currentRole === "SPECIAL_USER") return "SPECIAL_USER";
+  // v41: same preservation as SPECIAL_USER above — without this branch, every
+  // IOS_USER would get silently demoted back to USER on their next login.
+  if (currentRole === "IOS_USER") return "IOS_USER";
   return "USER";
 }
 

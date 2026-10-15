@@ -327,10 +327,10 @@ export function buildBestUserCommunityRows(args: {
 }
 
 async function listCommunityEligibleUsers() {
-  // v37: SPECIAL_USER (Project 2/3's admin-created accounts) should rank alongside
-  // regular USER accounts — ADMIN stays excluded, same as before.
+  // v37/v41: SPECIAL_USER and IOS_USER (Project 2's admin-created accounts) should
+  // rank alongside regular USER accounts — ADMIN stays excluded, same as before.
   const rows = await prisma.user.findMany({
-    where: { role: { in: ["USER", "SPECIAL_USER"] } },
+    where: { role: { in: ["USER", "SPECIAL_USER", "IOS_USER"] } },
     select: {
       id: true,
       username: true,

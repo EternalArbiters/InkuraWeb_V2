@@ -9,7 +9,7 @@ import { toJsonSafe } from "@/server/http";
 // deliberately excluded — server/auth/adminEmail.ts's reconcileRole() would just
 // demote it back to USER on that account's next login (it only ever force-asserts
 // ADMIN for the one hardcoded email), so allowing it here would be a confusing dead end.
-const ASSIGNABLE_ROLES = ["USER", "SPECIAL_USER"] as const;
+const ASSIGNABLE_ROLES = ["USER", "SPECIAL_USER", "IOS_USER"] as const;
 export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
 export function isAssignableRole(value: unknown): value is AssignableRole {

@@ -14,6 +14,7 @@ type UserItem = {
 const ROLE_OPTIONS = [
   { value: "USER", label: "User" },
   { value: "SPECIAL_USER", label: "Special User" },
+  { value: "IOS_USER", label: "iOS User" },
 ] as const;
 
 // Convenience only — not a security boundary (the server still enforces the real
@@ -29,6 +30,7 @@ function generatePassword(length = 12) {
 function roleBadgeClass(role: string) {
   if (role === "ADMIN") return "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-200";
   if (role === "SPECIAL_USER") return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200";
+  if (role === "IOS_USER") return "border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-200";
   return "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300";
 }
 

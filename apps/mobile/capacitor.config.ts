@@ -87,6 +87,18 @@ const config: CapacitorConfig = {
     zoomEnabled: true,
   },
 
+  ios: {
+    // Same APP_MODE gate token as Android — same User-Agent format, so
+    // middleware.ts needs no iOS-specific branch.
+    appendUserAgent: `InkuraApp/${appVersion} (key=${appKey})`,
+    backgroundColor: "#080f28",
+    // Mirrors the Android zoomEnabled fix above — same pinch-to-zoom need on
+    // comic/PDF pages.
+    zoomEnabled: true,
+    // Flip to true only while debugging over Safari's Web Inspector.
+    webContentsDebuggingEnabled: false,
+  },
+
   plugins: {
     SplashScreen: {
       backgroundColor: "#080f28",

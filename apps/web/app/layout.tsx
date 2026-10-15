@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "../lib/fontawesome";
@@ -31,9 +31,32 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Hohoo",
   description: "An International Platform For Original Works Made Without AI",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/logo-inkura.png",
+    apple: "/apple-touch-icon.png",
   },
+  // v41: iOS "Add to Home Screen" — without these, Safari treats the installed
+  // icon as a bookmark (opens inside normal Safari chrome instead of full-screen
+  // standalone). Android already gets its "real app" look from the Capacitor
+  // shell, so this is the iOS-only equivalent of that.
+  appleWebApp: {
+    capable: true,
+    title: "Hohoo",
+    // "black" (opaque, not "black-translucent"): deliberately NOT pairing this
+    // with viewport-fit=cover below. This app has no app-wide safe-area-inset
+    // handling yet (only a few components use it ad hoc), so content is kept
+    // below the status bar rather than risking it rendering under the notch.
+    statusBarStyle: "black",
+  },
+};
+
+export const viewport: Viewport = {
+  // Next's own defaults, restated: defining a custom `viewport` export replaces
+  // the framework default entirely rather than merging with it.
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#080f28",
 };
 
 export default async function RootLayout({
