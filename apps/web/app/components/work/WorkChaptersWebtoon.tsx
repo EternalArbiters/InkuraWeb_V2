@@ -100,7 +100,9 @@ export default function WorkChaptersWebtoon({
   const hasMoreChapters = sorted.length > effectiveLimit;
 
   const panelClass = "";
-  const rowSurface = "bg-[var(--ink-surface)] transition hover:bg-[var(--ink-surface-hover)]";
+  // v40: rows blend into the page background at rest (no visible box) and only
+  // surface a fill on hover/tap, for the same "no box" look as comment cards.
+  const rowSurface = "bg-transparent transition hover:bg-[var(--ink-surface-hover)]";
   const pillButtonClass = "inline-flex w-full items-center justify-center rounded-lg border border-[var(--ink-border)] bg-[var(--ink-surface)] px-4 py-3 text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]";
   const sortButtonClass = "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--ink-border)] text-sm font-semibold transition hover:border-[var(--ink-accent)] hover:text-[var(--ink-accent)]";
 

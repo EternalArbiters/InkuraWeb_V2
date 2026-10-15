@@ -27,16 +27,16 @@ export default function ReviewCard({
   const edited = review.updatedAt && review.updatedAt !== review.createdAt;
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-950/20 p-4">
+    <div className="min-w-0 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-950/20 p-4">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {review.user?.username ? (
-              <Link href={`/u/${review.user.username}`} className="font-semibold text-sm hover:text-purple-400">
+              <Link href={`/u/${review.user.username}`} className="block min-w-0 max-w-full truncate font-semibold text-sm hover:text-purple-400">
                 {displayName(review.user)}
               </Link>
             ) : (
-              <div className="font-semibold text-sm">{displayName(review.user)}</div>
+              <div className="min-w-0 max-w-full truncate font-semibold text-sm">{displayName(review.user)}</div>
             )}
             <Stars value={review.rating} />
             {review.isMine ? (
@@ -60,7 +60,7 @@ export default function ReviewCard({
         </div>
 
         {review.isMine ? (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"

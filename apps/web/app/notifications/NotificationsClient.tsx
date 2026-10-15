@@ -37,7 +37,10 @@ function NotifIcon({ type }: { type: string }) {
   let to = "to-purple-600";
 
   if (t.includes("like") || t.includes("heart") || t.includes("favorite")) {
-    Icon = Heart; from = "from-pink-500"; to = "to-rose-500";
+    // v39: both stops `rose`, not `pink` → `rose` — `pink` is brand-remapped to
+    // gold, which clashed against a Heart icon. See the matching note in
+    // LikeButton.tsx.
+    Icon = Heart; from = "from-rose-400"; to = "to-rose-600";
   } else if (t.includes("comment") || t.includes("reply")) {
     Icon = MessageCircle; from = "from-sky-500"; to = "to-blue-600";
   } else if (t.includes("chapter") || t.includes("update") || t.includes("new")) {

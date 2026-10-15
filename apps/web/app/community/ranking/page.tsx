@@ -118,7 +118,13 @@ function EntryRow({
         </div>
       </div>
 
-      <div className="ml-3 flex shrink-0 items-center gap-2">
+      {/* v39: no ml-3/shrink-0 here anymore — a long username + a wide badge like
+          "Diamond" + "1,457 points" could together need more room than the row
+          has, and shrink-0 refused to give any of it back, so the whole row
+          pushed past the screen edge instead of wrapping. flex-wrap on the row
+          below (+ gap instead of margin) lets this cluster drop to its own line
+          on a narrow phone instead. */}
+      <div className="flex shrink-0 items-center gap-2">
         {title ? (
           <TitleBadge
             title={title}
@@ -135,14 +141,14 @@ function EntryRow({
     return (
       <Link
         href={`/u/${entry.username}`}
-        className="flex items-center justify-between gap-3 rounded-2xl border border-transparent px-3 py-3 transition hover:border-gray-200 hover:bg-gray-50 dark:hover:border-gray-700 dark:hover:bg-white/5"
+        className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-transparent px-3 py-3 transition hover:border-gray-200 hover:bg-gray-50 dark:hover:border-gray-700 dark:hover:bg-white/5"
       >
         {content}
       </Link>
     );
   }
 
-  return <div className="flex items-center justify-between gap-3 rounded-2xl px-3 py-3">{content}</div>;
+  return <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl px-3 py-3">{content}</div>;
 }
 
 export default async function CommunityRankingPage() {
@@ -171,11 +177,22 @@ export default async function CommunityRankingPage() {
           return (
             <section
               key={section.category}
-              className="rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]"
+              // v39: min-w-0 here too — CSS Grid items default to min-width: auto,
+              // same as flex items, so WITHOUT this the card refuses to shrink below
+              // its own content's natural width and overflows past its grid track's
+              // actual boundary, no matter what truncation happens to elements
+              // *inside* it. Confirmed by measuring the real page: the grid track was
+              // correctly 358px, but this card was still rendering at 415px.
+              className="min-w-0 rounded-[28px] border border-gray-200 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-[#04112b]"
             >
+              {/* v39: min-w-0 + truncate on the title, shrink-0 on the badge — same
+                  fix as EntryRow below. Without min-w-0, a flex child defaults to
+                  never shrinking past its own content width, so a long enough
+                  category name pushed the "Top 7" pill past the card/screen edge
+                  instead of the title just truncating. */}
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-extrabold tracking-tight md:text-xl">{sectionLabel}</h2>
-                <span className="rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-300">
+                <h2 className="min-w-0 truncate text-lg font-extrabold tracking-tight md:text-xl">{sectionLabel}</h2>
+                <span className="shrink-0 whitespace-nowrap rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-300">
                   {topSevenLabel}
                 </span>
               </div>

@@ -162,16 +162,16 @@ export default function CommentCard(props: CommentCardProps) {
 
 
   const useCommentCard = variant === "full";
-  // v37: same surface token as every other card/row in the app (chapter list rows,
-  // etc.) — this used to be bg-white/dark:bg-gray-950, a leftover from before the
-  // --ink-* token system, which read as a visibly different (near-black) shade
-  // against the app's actual navy background.
+  // v40: default comment cards blend into the page background (no visible box) —
+  // the --ink-surface fill from v37 was still a visibly different shade from
+  // --ink-bg, reading as a boxed card. Pinned/focused comments keep a surface
+  // fill + accent border/ring since those are meant to stand out on purpose.
   const wrapperClassName = useCommentCard
-    ? `rounded-xl border px-4 py-3 bg-[var(--ink-surface)] ${depth > 0 ? "opacity-80" : ""} ${
+    ? `rounded-xl border px-4 py-3 transition ${depth > 0 ? "opacity-80" : ""} ${
         isPinned
-          ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20"
-          : "border-[var(--ink-border)]"
-      } ${isFocused ? "ring-2 ring-amber-400/40" : ""}`
+          ? "border-purple-300/70 dark:border-purple-500/40 ring-2 ring-purple-500/20 bg-[var(--ink-surface)]"
+          : "border-transparent"
+      } ${isFocused ? "ring-2 ring-amber-400/40 bg-[var(--ink-surface)]" : ""}`
     : `${depth === 0 ? "py-5" : "py-4 pl-4"} ${
         isPinned && depth === 0
           ? "border-l-2 border-purple-400/70 dark:border-purple-500/60"

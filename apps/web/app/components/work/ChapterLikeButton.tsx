@@ -58,8 +58,9 @@ export default function ChapterLikeButton({
         onClick={toggle}
         disabled={isPending}
         className={`inline-flex items-center justify-center w-11 h-11 rounded-full border transition disabled:opacity-60 ${
+          // v39: `rose`, not `pink` — see the matching note in LikeButton.tsx.
           liked
-            ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
+            ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-200"
             : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
         } ${className}`}
         aria-label={liked ? `Unlike (${count})` : `Like (${count})`}
@@ -78,8 +79,9 @@ export default function ChapterLikeButton({
       onClick={toggle}
       disabled={isPending}
       className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold border transition disabled:opacity-60 ${
+        // v39: `rose`, not `pink` — see the matching note in LikeButton.tsx.
         liked
-          ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
+          ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-200"
           : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
       } ${className}`}
       aria-label="Like chapter"

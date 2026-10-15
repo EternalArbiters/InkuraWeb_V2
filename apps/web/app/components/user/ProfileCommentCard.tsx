@@ -17,7 +17,7 @@ export default function ProfileCommentCard({ comment }: { comment: ViewerComment
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {comment.href ? (
-            <Link href={comment.href} className="font-semibold hover:underline truncate">
+            <Link href={comment.href} className="block truncate font-semibold hover:underline">
               {comment.workTitle}
             </Link>
           ) : (

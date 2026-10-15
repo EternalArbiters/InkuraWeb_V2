@@ -34,13 +34,13 @@ export default async function GenrePage() {
         ) : (
           <ul className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             {genres.map((g) => (
-              <li key={g.id}>
+              <li key={g.id} className="min-w-0">
                 <Link
                   href={`/search?genre=${encodeURIComponent(g.slug)}`}
-                  className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
-                  <span className="font-semibold">{g.name}</span>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">{g._count?.works ?? 0}</span>
+                  <span className="min-w-0 truncate font-semibold">{g.name}</span>
+                  <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">{g._count?.works ?? 0}</span>
                 </Link>
               </li>
             ))}

@@ -110,7 +110,7 @@ export default async function ListsPage() {
                 <Link
                   key={l.id}
                   href={`/lists/${l.slug}`}
-                  className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden hover:shadow-lg transition"
+                  className="min-w-0 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 overflow-hidden hover:shadow-lg transition"
                 >
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">

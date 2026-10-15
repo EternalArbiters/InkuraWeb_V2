@@ -52,8 +52,13 @@ export default function LikeButton({ workId, initialLiked, initialCount, classNa
       onClick={toggle}
       disabled={isPending}
       className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold leading-none transition disabled:opacity-60 ${
+        // v39: "liked" state is deliberately `rose`, not `pink` — the whole `pink`
+        // Tailwind family was remapped to gold for the brand palette, but a heart
+        // turning red when favorited is a semantic convention, not a brand colour,
+        // so it's one of the few families (with `rose` itself, the gem-tier badges,
+        // the landing icon palette) left out of that remap on purpose.
         liked
-          ? "border-pink-300 bg-pink-50 text-pink-700 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200"
+          ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-200"
           : "border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
       } ${className}`.trim()}
       aria-label="Like work"

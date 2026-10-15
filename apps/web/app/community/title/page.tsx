@@ -318,13 +318,17 @@ export default async function CommunityTitlePage() {
                 {standingSummary.standing.map((item) => {
                   const itemTitle = item.title === "Donatur" ? t("Donatur") : item.title;
                   return (
-                    <div key={item.category} className="rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">{t(item.label)}</div>
-                      <div className="mt-3 flex items-center justify-between gap-3">
+                    <div key={item.category} className="min-w-0 rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
+                      <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{t(item.label)}</div>
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                         <div className="text-2xl font-extrabold tracking-tight">
                           {item.rank ? `#${item.rank}` : t("Unranked")}
                         </div>
-                        {itemTitle && item.badgeTone ? <BadgePill label={itemTitle} tone={item.badgeTone} /> : null}
+                        {itemTitle && item.badgeTone ? (
+                          <div className="shrink-0">
+                            <BadgePill label={itemTitle} tone={item.badgeTone} />
+                          </div>
+                        ) : null}
                       </div>
                       <div className="mt-3 text-sm font-semibold text-gray-600 dark:text-gray-300">
                         {formatStandingValue(item, t("points"))}

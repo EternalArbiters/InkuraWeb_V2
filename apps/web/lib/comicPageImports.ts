@@ -14,6 +14,52 @@ const PDFJS_WORKER_CDN_URL = "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.wor
 // pdf.js's CDN build above which is already a bundled, dependency-free single file.
 const WEBP_LOSSLESS_ENCODER_CDN_URL = "https://esm.sh/@jsquash/webp@1.4.0";
 
+// v38: pdfjs-dist@4.9.124 uses `Promise.withResolvers()` (ES2024 — Chrome 119+,
+// roughly late 2023) all over both its main-thread bundle AND its worker bundle.
+// On an older/un-updated Android System WebView that predates it, every PDF-to-pages
+// import fails outright with "Promise.withResolvers is not a function" — confirmed
+// against a real user's device; it's a WebView-version gap, not a usage bug on their
+// end. Polyfilling on the main thread alone is not enough: the worker runs in its
+// own separate global scope, so it needs the exact same polyfill applied again,
+// inside that scope, before pdf.js's own worker code ever runs.
+const PROMISE_WITH_RESOLVERS_POLYFILL = `
+if (typeof Promise.withResolvers !== "function") {
+  Promise.withResolvers = function () {
+    let resolve, reject;
+    const promise = new Promise(function (res, rej) { resolve = res; reject = rej; });
+    return { promise: promise, resolve: resolve, reject: reject };
+  };
+}
+`;
+
+function ensurePromiseWithResolversPolyfill() {
+  if (typeof Promise.withResolvers !== "function") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Promise as any).withResolvers = function () {
+      let resolve: (value: unknown) => void;
+      let reject: (reason?: unknown) => void;
+      const promise = new Promise((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+      return { promise, resolve: resolve!, reject: reject! };
+    };
+  }
+}
+
+// pdf.js's own worker-loading code already wraps cross-origin workerSrc URLs (unpkg.com
+// is cross-origin to the app) in a same-origin Blob shim of its own, since classic Worker
+// cross-origin loading is restricted — see PDFWorker._createCDNWrapper in pdf.min.mjs.
+// This does the equivalent, but ALSO injects the polyfill into that shim before it loads
+// the real worker script, instead of just a bare re-export. The worker is `type: "module"`
+// (per pdf.js's own `new Worker(src, { type: "module" })`), so a dynamic `import()` for
+// the real script is the right syntax here — `importScripts()` is classic-worker-only.
+function buildPdfWorkerSrc(): string {
+  const bootstrap = `${PROMISE_WITH_RESOLVERS_POLYFILL}\nimport(${JSON.stringify(PDFJS_WORKER_CDN_URL)});\n`;
+  const blob = new Blob([bootstrap], { type: "application/javascript" });
+  return URL.createObjectURL(blob);
+}
+
 type ZipEntry = {
   name: string;
   dir: boolean;
@@ -171,11 +217,12 @@ function getExternalModuleImporter() {
 
 async function loadPdfJs(): Promise<PdfJsModule> {
   if (!pdfJsPromise) {
+    ensurePromiseWithResolversPolyfill();
     const importExternalModule = getExternalModuleImporter();
     pdfJsPromise = importExternalModule(PDFJS_CDN_URL).then((mod: any) => {
       const pdfjs = (mod?.default || mod) as PdfJsModule;
       if (pdfjs?.GlobalWorkerOptions) {
-        pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_CDN_URL;
+        pdfjs.GlobalWorkerOptions.workerSrc = buildPdfWorkerSrc();
       }
       return pdfjs;
     });

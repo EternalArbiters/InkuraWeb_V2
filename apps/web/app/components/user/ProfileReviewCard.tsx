@@ -29,7 +29,7 @@ export default function ProfileReviewCard({ review }: { review: ProfileReviewCar
     <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/40">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <Link href={review.work?.slug ? `/w/${review.work.slug}` : "#"} className="font-semibold hover:underline truncate">
+          <Link href={review.work?.slug ? `/w/${review.work.slug}` : "#"} className="block truncate font-semibold hover:underline">
             {review.work?.title || "Untitled work"}
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">

@@ -54,7 +54,7 @@ function UserCard({ user }: { user: Awaited<ReturnType<typeof searchUsers>>["use
     <AnalyticsTrackedLink
       href={`/u/${user.username}`}
       analyticsEvent={user.analyticsEvent ?? null}
-      className="rounded-2xl border border-gray-200 bg-white/70 p-4 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900"
+      className="min-w-0 rounded-2xl border border-gray-200 bg-white/70 p-4 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900"
     >
       <div className="flex items-start gap-4">
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
