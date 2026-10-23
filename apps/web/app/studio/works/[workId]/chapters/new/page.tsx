@@ -1,4 +1,3 @@
-import Link from "next/link";
 import BackButton from "@/app/components/BackButton";
 import { redirect } from "next/navigation";
 import ChapterCreateForm from "./ChapterCreateForm";
@@ -45,15 +44,6 @@ export default async function NewChapterPage({
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           Work: <b>{work.title}</b> ({work.type})
         </p>
-
-        {work.type === "COMIC" ? (
-          <Link
-            href={`/studio/works/${work.id}/chapters/bulk-pdf`}
-            className="mt-3 inline-block text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-          >
-            Import multiple chapters from PDFs →
-          </Link>
-        ) : null}
 
         <ChapterCreateForm
           workTitle={work.title}

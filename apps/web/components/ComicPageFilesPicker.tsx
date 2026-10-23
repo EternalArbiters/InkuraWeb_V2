@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useUILanguageText } from "@/app/components/ui-language/UILanguageProvider";
 
 import * as React from "react";
-import { ArrowDown, ArrowUp, FileArchive, FileText, ImagePlus, Images, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, FileArchive, FileStack, FileText, ImagePlus, Images, Trash2, X } from "lucide-react";
 import { importComicPagesFromPdf, importComicPagesFromZip, sortComicPageFiles } from "@/lib/comicPageImports";
 
 type UploadMode = "manual" | "all" | "zip" | "pdf";
@@ -13,6 +14,12 @@ type Props = {
   setFiles: React.Dispatch<React.SetStateAction<File[]>>;
   onBusyChange?: (busy: boolean) => void;
   pdfPassword?: string | null;
+  // Navigates away to the bulk multi-chapter PDF import flow instead of staying
+  // on this single-chapter form — not a mode of this picker, so it is rendered
+  // as its own tile (a link, not a button) right after "Upload chapter PDF"
+  // rather than living in MODE_COPY. Omit this prop (e.g. from the Manage Pages
+  // picker for an EXISTING chapter) to hide the tile entirely.
+  bulkPdfHref?: string | null;
 };
 
 type PreviewFile = {
@@ -80,7 +87,7 @@ function normalizeImageFiles(files: File[]) {
   );
 }
 
-export default function ComicPageFilesPicker({ files, setFiles, onBusyChange, pdfPassword }: Props) {
+export default function ComicPageFilesPicker({ files, setFiles, onBusyChange, pdfPassword, bulkPdfHref }: Props) {
   const t = useUILanguageText();
   const [mode, setMode] = React.useState<UploadMode>("all");
   const [importError, setImportError] = React.useState<string | null>(null);
@@ -188,6 +195,23 @@ export default function ComicPageFilesPicker({ files, setFiles, onBusyChange, pd
             </button>
           );
         })}
+
+        {bulkPdfHref ? (
+          <Link
+            href={bulkPdfHref}
+            className="rounded-2xl border border-gray-200 bg-white/70 p-4 text-left transition hover:border-purple-300 dark:border-gray-800 dark:bg-gray-900/40 dark:hover:border-purple-700"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-xl border border-current/10 bg-black/5 p-2 dark:bg-white/5">
+                <FileStack className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">Upload all PDF</div>
+                <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">Import multiple chapters from PDFs →</div>
+              </div>
+            </div>
+          </Link>
+        ) : null}
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">

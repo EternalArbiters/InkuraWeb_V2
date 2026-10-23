@@ -288,7 +288,13 @@ export default function ChapterCreateForm({ workId, workTitle, workType, nextNum
             <span className="text-sm font-semibold">Comic Pages</span>
           </div>
 
-          <ComicPageFilesPicker files={pages} setFiles={setPages} onBusyChange={setImportingPages} pdfPassword={pdfPassword} />
+          <ComicPageFilesPicker
+            files={pages}
+            setFiles={setPages}
+            onBusyChange={setImportingPages}
+            pdfPassword={pdfPassword}
+            bulkPdfHref={`/studio/works/${workId}/chapters/bulk-pdf`}
+          />
 
           {pageSummary ? (
             <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
